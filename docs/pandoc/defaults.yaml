@@ -33,4 +33,6 @@ variables:
     - \AtBeginEnvironment{Shaded}{\scriptsize}
     - \setlength{\emergencystretch}{8em}
     - \allowdisplaybreaks
+    - \setlength{\lineskiplimit}{2pt}
+    - \setlength{\lineskip}{3pt}
 highlight-style: tango
