@@ -27,7 +27,8 @@ variables:
     - \captionsetup{labelformat=empty,font=small}
     - \floatplacement{figure}{H}
     - \usepackage{etoolbox}
-    - \AtBeginEnvironment{longtable}{\footnotesize}
+    - \newcommand{\tablefont}{\footnotesize}
+    - \AtBeginEnvironment{longtable}{\tablefont}
     - \usepackage{fvextra}
     - \fvset{breaklines=true,breakautoindent=true}
     - \AtBeginEnvironment{Shaded}{\scriptsize}

@@ -90,6 +90,15 @@ function Table(tbl)
     end
     for c = 1, ncol do specs[c][2] = ws[c] / tot end
     tbl.colspecs = specs
+    if ncol >= 7 then
+      -- Seven or more columns do not fit at footnote size: use script size and tight padding
+      -- for this table only (the group ends after the table).
+      return {
+        pandoc.RawBlock("latex", "\\begingroup\\renewcommand{\\tablefont}{\\scriptsize}\\setlength{\\tabcolsep}{3pt}"),
+        tbl,
+        pandoc.RawBlock("latex", "\\endgroup"),
+      }
+    end
     return tbl
   end
 
