@@ -30,7 +30,8 @@ variables:
     - \usepackage{etoolbox}
     - \usepackage{needspace}
     - \newcommand{\tablefont}{\footnotesize}
-    - \AtBeginEnvironment{longtable}{\tablefont\renewcommand{\arraystretch}{1.18}}
+    - \newcommand{\tablestretch}{1}
+    - \AtBeginEnvironment{longtable}{\tablefont\renewcommand{\arraystretch}{\tablestretch}}
     - \usepackage{fvextra}
     - \fvset{breaklines=true,breakautoindent=true}
     - \AtBeginEnvironment{Shaded}{\scriptsize}

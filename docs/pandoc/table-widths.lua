@@ -41,7 +41,7 @@ local function len_of(cell)
   return n, chunk, piece
 end
 
-function Table(tbl)
+local function TableCore(tbl)
   local specs = tbl.colspecs
   local ncol = #specs
   if ncol < 3 then return nil end
@@ -173,3 +173,26 @@ function Table(tbl)
   tbl.colspecs = specs
   return tbl
 end
+
+-- In the Final Deliverable the tables carry tall math (integrals, fractions) in narrow cells, so
+-- their rows get a little more vertical room. The Full Derivation keeps the default spacing.
+local FINAL = false
+
+local function Table(tbl)
+  local res = TableCore(tbl) or tbl
+  if not FINAL then return res end
+  local out = pandoc.Blocks({})
+  out:insert(pandoc.RawBlock("latex", "\\begingroup\\renewcommand{\\tablestretch}{1.18}"))
+  if res.t == "Table" then
+    out:insert(res)
+  else
+    for _, b in ipairs(res) do out:insert(b) end
+  end
+  out:insert(pandoc.RawBlock("latex", "\\endgroup"))
+  return out
+end
+
+return {
+  { Meta = function(m) FINAL = pandoc.utils.stringify(m.title or ""):find("Final Deliverable", 1, true) ~= nil end },
+  { Table = Table },
+}
