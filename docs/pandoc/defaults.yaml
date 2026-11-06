@@ -6,6 +6,7 @@ filters:
   - ${.}/table-caption.lua
   - ${.}/table-widths.lua
   - ${.}/break-long-tokens.lua
+  - ${.}/keep-code-together.lua
 variables:
   documentclass: article
   papersize: a4
@@ -27,6 +28,7 @@ variables:
     - \captionsetup{labelformat=empty,font=small}
     - \floatplacement{figure}{H}
     - \usepackage{etoolbox}
+    - \usepackage{needspace}
     - \newcommand{\tablefont}{\footnotesize}
     - \AtBeginEnvironment{longtable}{\tablefont}
     - \usepackage{fvextra}
