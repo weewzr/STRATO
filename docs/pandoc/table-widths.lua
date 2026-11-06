@@ -36,12 +36,17 @@ function Table(tbl)
   scan(tbl.head.rows)
   for _, body in ipairs(tbl.bodies) do scan(body.body) end
   if count == 0 then return nil end
+  local longest = 0
+  for c = 1, ncol do if maxlen[c] > longest then longest = maxlen[c] end end
+  if longest <= 60 then return nil end
 
   local weights, total = {}, 0
   for c = 1, ncol do
     local avg = sumlen[c] / count
     local w = 0.6 * math.min(maxlen[c], 60) + 0.4 * math.min(avg, 60)
-    if w < 9 then w = 9 end
+    local need = 1.3 * math.min(maxlen[c], 16)
+    if w < need then w = need end
+    if w < 14 then w = 14 end
     weights[c] = w
     total = total + w
   end
