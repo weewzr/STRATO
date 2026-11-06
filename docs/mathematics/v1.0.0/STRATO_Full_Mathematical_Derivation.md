@@ -741,7 +741,11 @@ A positive divergence means arrows spread out from the point, like water from a 
 **The small box in Cartesian coordinates.** Take a box with corner $(x, y, z)$ and sides $\Delta x$, $\Delta y$, $\Delta z$. The two faces perpendicular to $x$ have area $\Delta y\,\Delta z$. Through the face at $x + \Delta x$ the outward normal is $+\mathbf e_x$, so $\mathbf J\cdot\mathbf n = J_x$; through the face at $x$ it is $-\mathbf e_x$, so $\mathbf J\cdot\mathbf n = -J_x$. Treating $J_x$ as constant over each small face (the error vanishes as the box shrinks), their net outflow is approximately
 
 $$
-J_x(x+\Delta x)\,\Delta y\,\Delta z - J_x(x)\,\Delta y\,\Delta z = \frac{J_x(x+\Delta x) - J_x(x)}{\Delta x}\,\Delta x\,\Delta y\,\Delta z \approx \frac{\partial J_x}{\partial x}\,\Delta x\,\Delta y\,\Delta z ,
+\begin{aligned}
+J_x(x+\Delta x)\,\Delta y\,\Delta z - J_x(x)\,\Delta y\,\Delta z
+&= \frac{J_x(x+\Delta x) - J_x(x)}{\Delta x}\,\Delta x\,\Delta y\,\Delta z\\
+&\approx \frac{\partial J_x}{\partial x}\,\Delta x\,\Delta y\,\Delta z ,
+\end{aligned}
 $$
 
 where the middle step multiplies and divides by $\Delta x$ and the last step uses the definition of the derivative.
@@ -3200,7 +3204,10 @@ $$
 **Step 2: name the face flows.** Define the amount per second that crosses face $j+1/2$ outward during the step ($\mathrm{mol\ s^{-1}}$):
 
 $$
-\Phi_{j+1/2} = G_{j+1/2}\left(C^{n+1}_j - C^{n+1}_{j+1}\right)\ (1 \le j \le N_c - 1),\qquad \Phi_{1/2} = 0,\qquad \Phi_{N_c+1/2} = G_RC^{n+1}_{N_c}.
+\begin{aligned}
+\Phi_{j+1/2} &= G_{j+1/2}\left(C^{n+1}_j - C^{n+1}_{j+1}\right)\ (1 \le j \le N_c - 1),\\
+\Phi_{1/2} &= 0,\qquad \Phi_{N_c+1/2} = G_RC^{n+1}_{N_c}.
+\end{aligned}
 $$
 
 $\Phi_{1/2} = 0$ because the centre face has zero area, so $g^W_1 = 0$ (Eq. (5.10)). $\Phi_{N_c+1/2}$ is the flow into the perfect sink, where the concentration is $0$ (Eq. (5.11)). With $g^W_j = G_{j-1/2}$ and $g^E_j = G_{j+1/2}$ the row of Step 1 reads "change inside the cell equals inflow minus outflow":
@@ -3533,11 +3540,14 @@ $$
 V_j\frac{d\bar c_j}{dt} = A_{j-1/2}J_r(r_{j-1/2},t) - A_{j+1/2}J_r(r_{j+1/2},t) .
 $$
 
-The only spatial approximation of Code B replaces the exact face flow $A_{j+1/2}J_r(r_{j+1/2},t)$ by $G_{j+1/2}(C_j - C_{j+1})$, Eq. (5.9). Define the face truncation error ($\mathrm{mol\ s^{-1}}$) by inserting exact averages:
+The only spatial approximation of Code B replaces the exact face flow
+$A_{j+1/2}J_r(r_{j+1/2},t)$ by $G_{j+1/2}(C_j - C_{j+1})$, Eq. (5.9). Define the face truncation error ($\mathrm{mol\ s^{-1}}$) by inserting exact averages:
 
 $$
-\tau_{j+1/2} = G_{j+1/2}\left(\bar c_j - \bar c_{j+1}\right) - A_{j+1/2}J_r(r_{j+1/2},t), \qquad
-\tau_R = G_R\,\bar c_{N_c} - A(R)\,J_r(R,t), \qquad \tau_{1/2} = 0 .
+\begin{aligned}
+\tau_{j+1/2} &= G_{j+1/2}\left(\bar c_j - \bar c_{j+1}\right) - A_{j+1/2}J_r(r_{j+1/2},t),\\
+\tau_R &= G_R\,\bar c_{N_c} - A(R)\,J_r(R,t), \qquad \tau_{1/2} = 0 .
+\end{aligned}
 $$
 
 $\tau_{1/2} = 0$ exactly because the centre face has zero area. Replacing each exact face flow by $G(\bar c_j - \bar c_{j+1}) - \tau$ in the exact balance gives
@@ -3814,7 +3824,10 @@ $$
 which holds because $\tfrac{G}{2}\Delta^2 + \tfrac{\tau^2}{2G} - \tau\Delta = \tfrac12\left(\sqrt G\,\Delta - \tau/\sqrt G\right)^2 \ge 0$ (and the same with $-\tau$). Apply it to every internal face and to the outer face:
 
 $$
-\frac{d}{dt}\,\frac12\lVert\boldsymbol\eta\rVert_V^2 \le -\frac12\left(\sum_fG_f\Delta\eta_f^2 + G_R\eta_{N_c}^2\right) + \frac12\left(\sum_f\frac{\tau_f^2}{G_f} + \frac{\tau_R^2}{G_R}\right) \le \frac12\left(\sum_f\frac{\tau_f^2}{G_f} + \frac{\tau_R^2}{G_R}\right).
+\begin{aligned}
+\frac{d}{dt}\,\frac12\lVert\boldsymbol\eta\rVert_V^2 &\le -\frac12\left(\sum_fG_f\Delta\eta_f^2 + G_R\eta_{N_c}^2\right) + \frac12\left(\sum_f\frac{\tau_f^2}{G_f} + \frac{\tau_R^2}{G_R}\right)\\
+&\le \frac12\left(\sum_f\frac{\tau_f^2}{G_f} + \frac{\tau_R^2}{G_R}\right).
+\end{aligned}
 $$
 
 **Step 5: integrate in time.** Multiply by 2 and integrate from $0$ to $t$:

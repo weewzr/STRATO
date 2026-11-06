@@ -2198,8 +2198,11 @@ $$
 
 $$
 \begin{aligned}
-\int_0^{L}u^2\,ds &= \frac{(a^2 + b^2)L}{2} + \frac{(a^2 - b^2)\sin(2kL)}{4k} + \frac{ab\,\left(1 - \cos(2kL)\right)}{2k},\\
-\int_0^{L}(R_{\ell-1} + s)\,u\,ds &= \frac{R_{\ell-1}}{k}\left[a\sin(kL) + b\left(1 - \cos(kL)\right)\right] + a\left[\frac{L\sin(kL)}{k} + \frac{\cos(kL) - 1}{k^2}\right] + b\left[\frac{\sin(kL)}{k^2} - \frac{L\cos(kL)}{k}\right].
+\int_0^{L}u^2\,ds &= \frac{(a^2 + b^2)L}{2} + \frac{(a^2 - b^2)\sin(2kL)}{4k}\\
+&\quad + \frac{ab\,\left(1 - \cos(2kL)\right)}{2k},\\
+\int_0^{L}(R_{\ell-1} + s)\,u\,ds &= \frac{R_{\ell-1}}{k}\left[a\sin(kL) + b\left(1 - \cos(kL)\right)\right]\\
+&\quad + a\left[\frac{L\sin(kL)}{k} + \frac{\cos(kL) - 1}{k^2}\right]\\
+&\quad + b\left[\frac{\sin(kL)}{k^2} - \frac{L\cos(kL)}{k}\right].
 \end{aligned}
 \tag{4.25}
 $$

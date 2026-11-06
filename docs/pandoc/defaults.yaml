@@ -30,6 +30,6 @@ variables:
     - \usepackage{fvextra}
     - \fvset{breaklines=true,breakautoindent=true}
     - \AtBeginEnvironment{Shaded}{\scriptsize}
-    - \setlength{\emergencystretch}{3em}
+    - \setlength{\emergencystretch}{8em}
     - \allowdisplaybreaks
 highlight-style: tango
