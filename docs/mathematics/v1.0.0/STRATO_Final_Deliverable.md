@@ -163,18 +163,22 @@ The first equation set (1.1) and (1.2) gives the layer radii and thicknesses tha
 **Pseudocode.**
 
 ```text
-GIVEN  radii R[1..5] that obey 0 = R[0] < R[1] < ... < R[5]        # Eq. (1.1): layers stack outward
-GIVEN  cell counts n[1..5]                                         # one whole number per layer
+GIVEN  radii R[1..5] that obey 0 = R[0] < R[1] < ... < R[5]  # Eq. (1.1): layers stack outward
+GIVEN  cell counts n[1..5]                                   # one whole number per layer
 FOR each layer l = 1 to 5:
-    1. L[l] = R[l] - R[l-1]                                        # Eq. (1.2): thickness of the layer
-    2. w[l] = L[l] / n[l]                                          # Eq. (5.2): all cells of a layer share one width
-    3. FOR offset i = 0 to n[l]-1:                                 # i counts cells inside this layer from 0
+    # Eq. (1.2): thickness of the layer
+    1. L[l] = R[l] - R[l-1]
+    # Eq. (5.2): all cells of a layer share one width
+    2. w[l] = L[l] / n[l]
+    # i counts cells inside this layer from 0
+    3. FOR offset i = 0 to n[l]-1:
          3a. inner_face = R[l-1] + i * w[l]
          3b. IF i < n[l]-1:
                  outer_face = R[l-1] + (i+1) * w[l]
              ELSE:
-                 outer_face = R[l]                                 # last cell ends exactly on the layer radius,
-                                                                   # so no rounding gap is left at the interface
+                 # last cell ends exactly on the layer radius,
+                 # so no rounding gap is left at the interface
+                 outer_face = R[l]
          3c. store (inner_face, outer_face) as the next cell
 ```
 
@@ -220,10 +224,12 @@ $$
 
 ```text
 DEFINE volume_of_shell(a, b):
-    1. RETURN (4 * pi / 3) * (b^3 - a^3)                           # Eq. (1.6): big ball minus small ball
+    # Eq. (1.6): big ball minus small ball
+    1. RETURN (4 * pi / 3) * (b^3 - a^3)
 
 FOR each cell j = 1 to Nc:
-    2. V[j] = volume_of_shell(inner_face of j, outer_face of j)    # Eq. (5.3): a cell is one thin shell
+    # Eq. (5.3): a cell is one thin shell
+    2. V[j] = volume_of_shell(inner_face of j, outer_face of j)
 ```
 
 **Rust.**
@@ -254,12 +260,13 @@ The first cell has $r_{1/2}=0$, which gives $r_1=\tfrac34 r_{3/2}$.
 ```text
 FOR each cell j = 1 to Nc:
     IF j = 1:
-        1. r[1] = (3/4) * outer_face of cell 1                     # inner face is 0, so the general
-                                                                   # formula collapses to this
+        1. r[1] = (3/4) * outer_face of cell 1       # inner face is 0, so the general
+                                                     # formula collapses to this
     ELSE:
         2. a = inner_face of j,  b = outer_face of j
-        3. r[j] = (3/4) * (b^4 - a^4) / (b^3 - a^3)                # Eq. (5.4): the volume-weighted mean radius
-                                                                   # of the shell, used as the cell's position
+        # Eq. (5.4): the volume-weighted mean radius
+        # of the shell, used as the cell's position
+        3. r[j] = (3/4) * (b^4 - a^4) / (b^3 - a^3)
 ```
 
 **Rust.**
@@ -299,7 +306,7 @@ $$
 ```text
 FOR each face between cell j and cell j+1 (j = 1 to Nc-1), and the face at R:
     1. rf = radius of the face
-    2. A_face[j] = 4 * pi * rf^2                                   # Eqs. (1.5), (5.5): area of a sphere of radius rf
+    2. A_face[j] = 4 * pi * rf^2  # Eqs. (1.5), (5.5): area of a sphere of radius rf
 ```
 
 **Rust.**
@@ -331,8 +338,8 @@ $$
 
 ```text
 FOR each internal face j+1/2 (between cell j and cell j+1):
-    1. deltaL[j] = rf - r[j]                                       # Eq. (5.7): from the centroid of cell j to the face
-    2. deltaR[j] = r[j+1] - rf                                     # Eq. (5.7): from the face to the centroid of cell j+1
+    1. deltaL[j] = rf - r[j]    # Eq. (5.7): from the centroid of cell j to the face
+    2. deltaR[j] = r[j+1] - rf  # Eq. (5.7): from the face to the centroid of cell j+1
 ```
 
 **Rust.**
@@ -372,9 +379,12 @@ Eq. (5.8) is the flux through the face written from each side; eliminating the f
 ```text
 FOR each internal face j+1/2:
     # How Eq. (5.9) comes from Eq. (5.8):
-    1. J from the left  : J = D[j]   * (C[j]  - Cf)   / deltaL[j]   # Eq. (5.8), left side of the face
-    2. J from the right : J = D[j+1] * (Cf - C[j+1])  / deltaR[j]   # Eq. (5.8), right side of the face
-    3. Both are the same J                                          # what leaves cell j arrives in cell j+1
+    # Eq. (5.8), left side of the face
+    1. J from the left  : J = D[j]   * (C[j]  - Cf)   / deltaL[j]
+    # Eq. (5.8), right side of the face
+    2. J from the right : J = D[j+1] * (Cf - C[j+1])  / deltaR[j]
+    # what leaves cell j arrives in cell j+1
+    3. Both are the same J
     4. Solve each for the drop in concentration:
          C[j] - Cf    = J * deltaL[j] / D[j]
          Cf - C[j+1]  = J * deltaR[j] / D[j+1]
@@ -383,7 +393,8 @@ FOR each internal face j+1/2:
     6. Multiply by the face area:  A_face * J = G * (C[j] - C[j+1])  # Eq. (5.9)
 
     # What the program computes (step 6 solved for G):
-    7. G[j] = A_face[j] / ( deltaL[j]/D[j] + deltaR[j]/D[j+1] )     # Eq. (5.9): two resistors in series
+    # Eq. (5.9): two resistors in series
+    7. G[j] = A_face[j] / ( deltaL[j]/D[j] + deltaR[j]/D[j+1] )
 ```
 
 **Rust.**
@@ -423,13 +434,14 @@ $$
 **Pseudocode.**
 
 ```text
-GIVEN  the boundary rule c5(R, t) = 0                              # Eq. (3.4): the outside acts as a perfect sink
-1. A_R  = 4 * pi * R^2                                             # area of the particle surface
-2. dist = R - r[Nc]                                                # from the last centroid to the surface
-3. G_R  = A_R / (dist / D[5] + 0)                                  # Eq. (5.11): one resistor only; the "+ 0" is the
-                                                                   # surface-side resistor, which a perfect sink does not have
+GIVEN  the boundary rule c5(R, t) = 0       # Eq. (3.4): the outside acts as a perfect sink
+1. A_R  = 4 * pi * R^2                      # area of the particle surface
+2. dist = R - r[Nc]                         # from the last centroid to the surface
+# Eq. (5.11): one resistor only; the "+ 0" is the
+# surface-side resistor, which a perfect sink does not have
+3. G_R  = A_R / (dist / D[5] + 0)
    which is  G_R = 4 * pi * R^2 * D[5] / (R - r[Nc])
-4. Later, release rate = G_R * (C[Nc] - 0)                         # Eq. (5.11): concentration outside is 0
+4. Later, release rate = G_R * (C[Nc] - 0)  # Eq. (5.11): concentration outside is 0
 ```
 
 **Rust.**
@@ -463,9 +475,10 @@ The mesh stores no conductance for $r=0$. The condition enters as $g^W_1=0$ in t
 **Pseudocode.**
 
 ```text
-GIVEN  the centre rule: no flow through r = 0                      # Eq. (3.1): flux 4*pi*r^2*D1*dc/dr goes to 0
-1. Store no conductance for a face at r = 0                       # the mesh holds only internal faces and the surface
-2. When the step is assembled, set gW[1] = 0                       # Eq. (5.10): cell 1 has no inner neighbour
+GIVEN  the centre rule: no flow through r = 0  # Eq. (3.1): flux 4*pi*r^2*D1*dc/dr goes to 0
+# the mesh holds only internal faces and the surface
+1. Store no conductance for a face at r = 0
+2. When the step is assembled, set gW[1] = 0   # Eq. (5.10): cell 1 has no inner neighbour
 ```
 
 **Rust.**
@@ -499,10 +512,10 @@ $$
 ```text
 FOR each cell j = 1 to Nc:
     IF cell j lies in layer 1 (the kernel):
-        1. C[j] = c0                                               # Eq. (3.5): kernel starts at c0
+        1. C[j] = c0               # Eq. (3.5): kernel starts at c0
     ELSE:
-        2. C[j] = 0                                                # Eq. (3.5): all coatings start empty
-3. M0 = sum over j of V[j] * C[j]                                  # Eq. (5.20): initial amount of material
+        2. C[j] = 0                # Eq. (3.5): all coatings start empty
+3. M0 = sum over j of V[j] * C[j]  # Eq. (5.20): initial amount of material
 ```
 
 **Rust.**
@@ -549,13 +562,14 @@ $$
 **Pseudocode.**
 
 ```text
-# Target (Eq. 1.7): M = integral of c(r) * 4*pi*r^2 dr, the sum of (concentration x shell volume)
+# Target (Eq. 1.7): M = integral of c(r) * 4*pi*r^2 dr, the sum of (concentration x shell
+# volume)
 GIVEN concentrations C[1..Nc] at time level n
 1. M = 0
 2. FOR each cell j = 1 to Nc:
-       M = M + V[j] * C[j]                                         # Eq. (5.21): in each cell the integral becomes
-                                                                   # (cell concentration) x (cell volume)
-3. RETURN M                                                        # applied to the initial values this is M0, Eq. (5.20)
+       M = M + V[j] * C[j]  # Eq. (5.21): in each cell the integral becomes
+                            # (cell concentration) x (cell volume)
+3. RETURN M                 # applied to the initial values this is M0, Eq. (5.20)
 ```
 
 **Rust.**
@@ -593,9 +607,9 @@ $$
 
 ```text
 GIVEN  requested step dt_in and end time t_end
-1. Nt = ceil(t_end / dt_in)                                        # Eq. (5.16): whole number of steps, rounded up
-2. dt = t_end / Nt                                                 # Eq. (5.16): step stretched to land exactly on t_end
-3. dt is never larger than dt_in                                   # Eq. (5.16): dt <= dt_in
+1. Nt = ceil(t_end / dt_in)       # Eq. (5.16): whole number of steps, rounded up
+2. dt = t_end / Nt                # Eq. (5.16): step stretched to land exactly on t_end
+3. dt is never larger than dt_in  # Eq. (5.16): dt <= dt_in
 ```
 
 **Rust.**
@@ -635,16 +649,17 @@ The code assembles the coefficients of Eq. (5.14) cell by cell and never forms t
 **Pseudocode.**
 
 ```text
-# Idea (Eq. 5.12): rate of change of the amount in cell j = inflow from inside + inflow from outside
+# Idea (Eq. 5.12): rate of change of the amount in cell j = inflow from inside + inflow from
+# outside
 # Backward Euler (Eq. 5.13): evaluate the right-hand side with the NEW values at level n+1
 GIVEN old values C[j] (level n), dt, V[j], gW[j], gE[j]
    with gW[1] = 0 and gE[Nc] = G_R and the value just outside cell Nc equal to 0
 FOR each cell j = 1 to Nc:
     1. v[j]    = V[j] / dt
-    2. lower[j]= - gW[j]                                           # multiplies the new value of cell j-1 (Eq. 5.14)
-    3. diag[j] = v[j] + gW[j] + gE[j]                              # multiplies the new value of cell j (Eq. 5.14)
-    4. upper[j]= - gE[j]                                           # multiplies the new value of cell j+1 (Eq. 5.14)
-    5. rhs[j]  = v[j] * C[j]                                       # Eq. (5.14): old amount per unit time
+    2. lower[j]= - gW[j]               # multiplies the new value of cell j-1 (Eq. 5.14)
+    3. diag[j] = v[j] + gW[j] + gE[j]  # multiplies the new value of cell j (Eq. 5.14)
+    4. upper[j]= - gE[j]               # multiplies the new value of cell j+1 (Eq. 5.14)
+    5. rhs[j]  = v[j] * C[j]           # Eq. (5.14): old amount per unit time
 # The equations lower[j]*Cnew[j-1] + diag[j]*Cnew[j] + upper[j]*Cnew[j+1] = rhs[j]
 # are Eq. (5.14), one per cell.
 ```
@@ -709,13 +724,15 @@ Eq. (5.17) is the textbook pivot (DERIVED NOT IMPLEMENTED). The code uses Eqs. (
 
 ```text
 # Goal: solve the chain of equations of B.12 from cell 1 outward
-1. e[1] = v[1]                                                     # Eq. (5.18)
-2. d[1] = e[1] + gE[1]                                             # Eq. (5.18): d[j] = e[j] + gE[j]
-3. y[1] = rhs[1] / d[1]                                            # Eq. (5.19)
+1. e[1] = v[1]                                              # Eq. (5.18)
+2. d[1] = e[1] + gE[1]                                      # Eq. (5.18): d[j] = e[j] + gE[j]
+3. y[1] = rhs[1] / d[1]                                     # Eq. (5.19)
 4. FOR j = 2 to Nc:
-       4a. e[j] = v[j] + gW[j] * e[j-1] / (e[j-1] + gW[j])         # Eq. (5.18): only additions of positive numbers
-       4b. d[j] = e[j] + gE[j]                                     # Eq. (5.18)
-       4c. y[j] = (rhs[j] + gW[j] * y[j-1]) / d[j]                 # Eq. (5.19): fold cell j-1 into cell j
+       # Eq. (5.18): only additions of positive numbers
+       4a. e[j] = v[j] + gW[j] * e[j-1] / (e[j-1] + gW[j])
+       4b. d[j] = e[j] + gE[j]                              # Eq. (5.18)
+       # Eq. (5.19): fold cell j-1 into cell j
+       4c. y[j] = (rhs[j] + gW[j] * y[j-1]) / d[j]
 ```
 
 Implementation detail: the textbook pivot of Eq. (5.17) is `d[j] = v[j] + gW[j] + gE[j] - gW[j]^2 / d[j-1]`. With `d[j-1] = e[j-1] + gW[j]` (because `gE[j-1] = gW[j]`) it has the same value as Eq. (5.18), but it contains a subtraction. The code uses the form without subtraction.
@@ -767,11 +784,13 @@ $$
 
 ```text
 # The values y[j] and d[j] come from B.13
-1. Cnew[Nc] = y[Nc]                                                # Eq. (5.19): the last cell is finished first
+# Eq. (5.19): the last cell is finished first
+1. Cnew[Nc] = y[Nc]
 2. FOR j = Nc-1 down to 1:
-       Cnew[j] = y[j] + (gE[j] / d[j]) * Cnew[j+1]                 # Eq. (5.19): correct cell j using the finished
-                                                                   # neighbour on its outer side
-3. RETURN Cnew[1..Nc]                                              # these are C at level n+1
+       # Eq. (5.19): correct cell j using the finished
+       # neighbour on its outer side
+       Cnew[j] = y[j] + (gE[j] / d[j]) * Cnew[j+1]
+3. RETURN Cnew[1..Nc]                               # these are C at level n+1
 ```
 
 **Rust.**
@@ -814,9 +833,10 @@ In the code the rate is $\Phi_R=G_RC_{N_c}$ in $\mathrm{mol\ s^{-1}}$.
 ```text
 # Meaning (Eq. 3.7): release rate = surface area x outward flux at r = R
 GIVEN  Cnew[Nc] from B.14 and G_R from B.7
-1. Phi_R = G_R * Cnew[Nc]                                          # Eqs. (5.11), (5.22): flow through the surface, in mol/s
-2. Mrel_new = Mrel_old + dt * Phi_R                                # Eq. (5.22): rate x time step = amount released in this step
-3. Mrel at level 0 is 0                                            # Eq. (5.22)
+1. Phi_R = G_R * Cnew[Nc]            # Eqs. (5.11), (5.22): flow through the surface, in mol/s
+# Eq. (5.22): rate x time step = amount released in this step
+2. Mrel_new = Mrel_old + dt * Phi_R
+3. Mrel at level 0 is 0              # Eq. (5.22)
 ```
 
 Implementation detail: the code does not use the plain sum of step 2. It uses the compensated sum of row B.16 (Eq. (5.23)).
@@ -860,10 +880,10 @@ The plain recurrence of Eq. (5.22) is replaced by the compensated form of Eq. (5
 ```text
 # Same sum as Eq. (5.22), but a small leftover is carried from step to step (Eq. 5.23)
 GIVEN  Phi_R of this step, dt, Mrel (running total), kappa (the carried leftover)
-1. upsilon = dt * Phi_R - kappa                                    # Eq. (5.23): add back what was lost last time
-2. Sigma   = Mrel + upsilon                                        # Eq. (5.23): the new total
-3. kappa   = (Sigma - Mrel) - upsilon                              # Eq. (5.23): what the addition just lost
-4. Mrel    = Sigma                                                 # Eq. (5.23)
+1. upsilon = dt * Phi_R - kappa        # Eq. (5.23): add back what was lost last time
+2. Sigma   = Mrel + upsilon            # Eq. (5.23): the new total
+3. kappa   = (Sigma - Mrel) - upsilon  # Eq. (5.23): what the addition just lost
+4. Mrel    = Sigma                     # Eq. (5.23)
 ```
 
 Implementation detail: Eq. (5.23) does not give the starting value of `kappa`. The usual starting value is 0, together with `Mrel = 0` from Eq. (5.22).
@@ -904,13 +924,14 @@ Eq. (6.1) is the property that makes $\varepsilon^n=0$ in exact arithmetic; the 
 ```text
 # Material that is still inside + material that has left - material at the start should be 0
 GIVEN  M0, and at level n: M (from B.10) and Mrel (from B.16)
-1. eps = M + Mrel - M0                                             # Eq. (5.24)
-2. F   = Mrel / M0                                                 # Eq. (5.24)
+1. eps = M + Mrel - M0                     # Eq. (5.24)
+2. F   = Mrel / M0                         # Eq. (5.24)
 
 # Why eps is 0 in exact arithmetic (Eq. 6.1): add Eq. (5.13) over all cells.
-# The flow from cell j to cell j+1 appears once with a plus sign and once with a minus sign, so
+# The flow from cell j to cell j+1 appears once with a plus sign and once with a minus sign,
+# so
 # internal terms cancel. gW[1] = 0 removes the centre. Only the surface term is left:
-#     M_new + dt * G_R * Cnew[Nc] = M_old                          # Eq. (6.1)
+#     M_new + dt * G_R * Cnew[Nc] = M_old  # Eq. (6.1)
 ```
 
 Implementation detail: the code only evaluates `eps` of Eq. (5.24) and reports it. It does not force Eq. (6.1).
@@ -944,10 +965,11 @@ $$
 **Pseudocode.**
 
 ```text
-# Meaning (Eq. 3.9): fraction released = released amount / starting amount = 1 - (amount left) / (starting amount)
+# Meaning (Eq. 3.9): fraction released = released amount / starting amount = 1 - (amount left)
+# / (starting amount)
 GIVEN  Mrel at level n and M0
-1. F[n] = Mrel / M0                                                # Eq. (5.24)
-2. Equivalent form: F = 1 - M / M0                                 # Eq. (3.9), holds when eps = 0
+1. F[n] = Mrel / M0                 # Eq. (5.24)
+2. Equivalent form: F = 1 - M / M0  # Eq. (3.9), holds when eps = 0
 ```
 
 **Rust.**
@@ -975,8 +997,8 @@ $$
 
 ```text
 FOR n = 1 to Nt:
-    1. t_n = n * dt                                                # Eq. (5.25)
-    2. IF (n mod n_out = 0) OR (n = Nt):                           # Eq. (5.25): every n_out-th step, plus the last
+    1. t_n = n * dt                       # Eq. (5.25)
+    2. IF (n mod n_out = 0) OR (n = Nt):  # Eq. (5.25): every n_out-th step, plus the last
            save one output row for time t_n
 ```
 
@@ -1031,10 +1053,10 @@ $$
 
 ```text
 1. FOR each cell j = 1 to Nc:
-       ratio[j] = V[j] / (gW[j] + gE[j])                           # Eq. (6.6): how long cell j takes to empty at its
-                                                                   # present outflow rate
-2. dt_FE = smallest ratio[j]                                       # Eq. (6.6)
-3. Print dt_FE once                                                # diagnostic: the run does not use it to change dt
+       ratio[j] = V[j] / (gW[j] + gE[j])  # Eq. (6.6): how long cell j takes to empty at its
+                                          # present outflow rate
+2. dt_FE = smallest ratio[j]              # Eq. (6.6)
+3. Print dt_FE once                       # diagnostic: the run does not use it to change dt
 ```
 
 **Rust.**
@@ -1115,12 +1137,14 @@ v1.0.0 sets $S=0$ and uses the perfect-sink face of Eq. (3.4). No Rust code cont
 
 ```text
 NOT IMPLEMENTED. No Rust code contains these. What v1.0.0 does instead:
-1. Source S = 0 in Eq. (2.6)                                       # the equation then has only the diffusion term
+# the equation then has only the diffusion term
+1. Source S = 0 in Eq. (2.6)
 2. Outer face uses the perfect sink c5(R, t) = 0 of Eq. (3.4), not Eq. (3.10)
 
 What the equations would add in a later version (description of the equations only):
-3. Source: add S to the rate of change of c                         # Eq. (2.6)
-4. Robin outer face: flux out of the surface = h_m * (c5(R, t) - c_inf)   # Eq. (3.10): -D5 * dc5/dr = h_m * (c5 - c_inf)
+3. Source: add S to the rate of change of c                              # Eq. (2.6)
+# Eq. (3.10): -D5 * dc5/dr = h_m * (c5 - c_inf)
+4. Robin outer face: flux out of the surface = h_m * (c5(R, t) - c_inf)
 ```
 
 **Rust.**
@@ -1189,10 +1213,11 @@ The code does not compute these equations. They are the basis of the modal probl
 
 ```text
 NOT COMPUTED by the code. The module comment states it as the basis of the modal problem.
-1. Look for solutions of the form c(r, t) = phi(r) * exp(-Lambda * t)   # Eq. (4.1): shape in r times decay in t
+# Eq. (4.1): shape in r times decay in t
+1. Look for solutions of the form c(r, t) = phi(r) * exp(-Lambda * t)
 2. Put this form into the diffusion equation, divide out exp(-Lambda*t)
 3. The shape must satisfy, inside each layer l = 1..5:
-       (1/r^2) * d/dr( r^2 * D[l] * dphi/dr ) + Lambda * phi = 0   # Eq. (4.2)
+       (1/r^2) * d/dr( r^2 * D[l] * dphi/dr ) + Lambda * phi = 0       # Eq. (4.2)
 4. Only some values of Lambda allow a shape that meets all the conditions: the eigenvalues
 ```
 
@@ -1233,12 +1258,15 @@ $$
 **Pseudocode.**
 
 ```text
-1. Define u = r * phi                                              # removes the 1/r^2 factor of Eq. (4.2)
-2. Then dphi/dr = (r * du/dr - u) / r^2                            # Eq. (4.3)
-3. Inside a layer the shape equation becomes  u'' + k^2 * u = 0    # Eq. (4.4): a plain oscillation in r
+# removes the 1/r^2 factor of Eq. (4.2)
+1. Define u = r * phi
+2. Then dphi/dr = (r * du/dr - u) / r^2                          # Eq. (4.3)
+# Eq. (4.4): a plain oscillation in r
+3. Inside a layer the shape equation becomes  u'' + k^2 * u = 0
 4. FOR each layer l = 1 to 5, for the trial value Lambda:
-       k[l] = sqrt(Lambda / D[l])                                  # Eq. (4.4): oscillations are faster in a layer
-                                                                   # with small D
+       # Eq. (4.4): oscillations are faster in a layer
+       # with small D
+       k[l] = sqrt(Lambda / D[l])
 ```
 
 **Rust.**
@@ -1277,12 +1305,13 @@ $$
 **Pseudocode.**
 
 ```text
-# State: u and q = D * du/dr. Inside a layer u(s) = a*cos(k*s) + b*sin(k*s), s = distance from the layer entrance.
+# State: u and q = D * du/dr. Inside a layer u(s) = a*cos(k*s) + b*sin(k*s), s = distance from
+# the layer entrance.
 GIVEN  (u_in, q_in) at the layer entrance, k = k[l], D = D[l], L = L[l]
 1. cs = cos(k * L),  sn = sin(k * L)
-2. u_out = cs * u_in + (sn / (D * k)) * q_in                       # Eq. (4.6), first row of the matrix T
-3. q_out = -(D * k * sn) * u_in + cs * q_in                        # Eq. (4.6), second row of the matrix T
-4. RETURN (u_out, q_out)                                           # state at the layer exit
+2. u_out = cs * u_in + (sn / (D * k)) * q_in  # Eq. (4.6), first row of the matrix T
+3. q_out = -(D * k * sn) * u_in + cs * q_in   # Eq. (4.6), second row of the matrix T
+4. RETURN (u_out, q_out)                      # state at the layer exit
 ```
 
 **Rust.**
@@ -1329,12 +1358,13 @@ $$
 **Pseudocode.**
 
 ```text
-# At r = R[l] the layers l and l+1 meet. Physics: same concentration and same flux on both sides (Eqs. 3.2, 3.3).
+# At r = R[l] the layers l and l+1 meet. Physics: same concentration and same flux on both
+# sides (Eqs. 3.2, 3.3).
 GIVEN  (u, q) just inside the interface, D[l], D[l+1], R[l]
-1. u_plus = u                                                      # Eq. (4.7): u is continuous
-2. D * (du/dr - u/r) must be the same on both sides                # Eq. (4.7)
-3. q_plus = q + (D[l+1] - D[l]) * u / R[l]                         # Eq. (4.8): q jumps when D jumps
-4. RETURN (u_plus, q_plus)                                         # state at the start of layer l+1
+1. u_plus = u                                        # Eq. (4.7): u is continuous
+2. D * (du/dr - u/r) must be the same on both sides  # Eq. (4.7)
+3. q_plus = q + (D[l+1] - D[l]) * u / R[l]           # Eq. (4.8): q jumps when D jumps
+4. RETURN (u_plus, q_plus)                           # state at the start of layer l+1
 ```
 
 **Rust.**
@@ -1372,11 +1402,13 @@ The value of $g$ is computed and discarded (item I13); the eigenvalues come from
 
 ```text
 GIVEN a trial Lambda
-1. (u, q) = (0, 1) at r = 0                                        # Eq. (4.9): u = r*phi is 0 at the centre
+# Eq. (4.9): u = r*phi is 0 at the centre
+1. (u, q) = (0, 1) at r = 0
 2. FOR layer l = 1 to 5:
-       2a. (u, q) = transfer across layer l                        # row C.3
-       2b. IF l < 5: (u, q) = interface rule at R[l]               # row C.4 (four interfaces, l = 1..4)
-3. g(Lambda) = u at r = R                                          # Eq. (4.10): g is zero exactly at the eigenvalues
+       2a. (u, q) = transfer across layer l           # row C.3
+       2b. IF l < 5: (u, q) = interface rule at R[l]  # row C.4 (four interfaces, l = 1..4)
+# Eq. (4.10): g is zero exactly at the eigenvalues
+3. g(Lambda) = u at r = R
 ```
 
 Implementation detail: the value of `g` is computed and then discarded (item I13 of Table 7.1). The eigenvalues come from the count of row C.6.
@@ -1441,18 +1473,24 @@ $$
 
 ```text
 GIVEN a trial Lambda
-1. (u, q) = (0, 1) at r = 0                                        # row C.5
+1. (u, q) = (0, 1) at r = 0                                 # row C.5
 2. count = 0
 3. FOR layer l = 1 to 5:
-       3a. a = u_in                                                # Eq. (4.11)
-       3b. b = q_in / (D[l] * k[l])                                # Eq. (4.11)
-       3c. theta0 = atan2(a, b)                                    # Eq. (4.11): u(s) = H * sin(k*s + theta0)
+       3a. a = u_in                                         # Eq. (4.11)
+       3b. b = q_in / (D[l] * k[l])                         # Eq. (4.11)
+       # Eq. (4.11): u(s) = H * sin(k*s + theta0)
+       3c. theta0 = atan2(a, b)
        3d. zeros_in_layer = floor((theta0 + k[l]*L[l]) / pi) - floor(theta0 / pi)
-                                                                   # Eq. (4.12): the sine crosses zero once each time
-                                                                   # its angle passes a multiple of pi
-       3e. count = count + zeros_in_layer                          # Eq. (4.13): sum over the five layers
-       3f. carry (u, q) across the layer and the interface         # rows C.3 and C.4
-4. RETURN count                                                    # Eq. (4.13): count = number of eigenvalues <= Lambda
+                                                                   # Eq. (4.12): the sine
+                                                                   # crosses zero once each
+                                                                   # time
+                                                                   # its angle passes a
+                                                                   # multiple of pi
+       # Eq. (4.13): sum over the five layers
+       3e. count = count + zeros_in_layer
+       3f. carry (u, q) across the layer and the interface  # rows C.3 and C.4
+# Eq. (4.13): count = number of eigenvalues <= Lambda
+4. RETURN count
 ```
 
 **Rust.**
@@ -1498,12 +1536,13 @@ $$
 
 ```text
 GIVEN  Lambda_max and the cap K_max = 20000
-1. n_top = count(Lambda_max)                                       # row C.6
+1. n_top = count(Lambda_max)                                    # row C.6
 2. IF n_top <= K_max:
-       Lambda_cov = Lambda_max                                     # Eq. (4.16): every wanted mode fits
+       # Eq. (4.16): every wanted mode fits
+       Lambda_cov = Lambda_max
    ELSE:
        find Lambda_cov by a geometric search such that count(Lambda_cov) <= K_max
-       Lambda_cov = the lower end ("lo") of the search bracket     # Eq. (4.16)
+       Lambda_cov = the lower end ("lo") of the search bracket  # Eq. (4.16)
 3. Only eigenvalues up to Lambda_cov are kept
 ```
 
@@ -1550,9 +1589,9 @@ $$
 
 ```text
 1. S = sum over l = 1..5 of L[l] / sqrt(D[l])
-2. Lambda_lo = 1e-6 * S^(-2)                                       # Eq. (4.14): a value far below the first eigenvalue
+2. Lambda_lo = 1e-6 * S^(-2)         # Eq. (4.14): a value far below the first eigenvalue
 3. WHILE count(Lambda_lo) is not 0:
-       Lambda_lo = 0.01 * Lambda_lo                                # Eq. (4.14): shrink by a factor 100
+       Lambda_lo = 0.01 * Lambda_lo  # Eq. (4.14): shrink by a factor 100
 4. Now no eigenvalue lies at or below Lambda_lo
 ```
 
@@ -1609,16 +1648,19 @@ $$
 # The count N(Lambda) of row C.6 says how many eigenvalues lie at or below Lambda (Eq. 4.13).
 # So N(b) - N(a) is the number of eigenvalues in the bracket (a, b].
 1. Put the bracket (Lambda_lo, Lambda_cov) with counts (0, N(Lambda_cov)) on the stack
-                                                                   # N(Lambda_lo) = 0 by row C.8
+                                                                   # N(Lambda_lo) = 0 by row
+                                                                   # C.8
 2. WHILE the stack is not empty:
        2a. take a bracket (a, b) and its counts (na, nb) from the stack
-       2b. IF nb - na = 0: drop it                                 # Eq. (4.13): no eigenvalue in (a, b]
-       2c. IF b - a <= 4e-15 * b:                                  # Eq. (4.15): stopping rule
-               IF nb - na > 1: STOP with an error                  # unresolved cluster of eigenvalues
+       2b. IF nb - na = 0: drop it                 # Eq. (4.13): no eigenvalue in (a, b]
+       2c. IF b - a <= 4e-15 * b:                  # Eq. (4.15): stopping rule
+               IF nb - na > 1: STOP with an error  # unresolved cluster of eigenvalues
                record (a + b) / 2 as an eigenvalue
            ELSE:
-               IF b > 4 * a:  m = sqrt(a * b)                      # Eq. (4.15): wide bracket, split by geometric mean
-               ELSE:          m = (a + b) / 2                      # Eq. (4.15): narrow bracket, split by arithmetic mean
+               # Eq. (4.15): wide bracket, split by geometric mean
+               IF b > 4 * a:  m = sqrt(a * b)
+               # Eq. (4.15): narrow bracket, split by arithmetic mean
+               ELSE:          m = (a + b) / 2
                nm = N(m), kept between na and nb
                push (a, m, na, nm) and (m, b, nm, nb)
 3. Sort the recorded eigenvalues in ascending order
@@ -1679,9 +1721,9 @@ $$
 ```text
 1. R[0] = 0
 2. FOR l = 1 to 5:
-       2a. Check that R[l] > R[l-1]                                # Eq. (1.1): each radius is larger than the one before
-       2b. L[l] = R[l] - R[l-1]                                    # Eq. (1.2): thickness, positive by step 2a
-3. The particle radius is R = R[5]                                 # Eq. (1.1)
+       2a. Check that R[l] > R[l-1]  # Eq. (1.1): each radius is larger than the one before
+       2b. L[l] = R[l] - R[l-1]      # Eq. (1.2): thickness, positive by step 2a
+3. The particle radius is R = R[5]   # Eq. (1.1)
 ```
 
 **Rust.**
@@ -1723,12 +1765,17 @@ $$
 
 ```text
 FOR each eigenvalue Lambda_n kept:
-    1. (u, q) = (0, 1) at r = 0                                    # rows C.5 and C.12
+    # rows C.5 and C.12
+    1. (u, q) = (0, 1) at r = 0
     2. FOR layer l = 1 to 5:
-           2a. k = sqrt(Lambda_n / D[l])                           # row C.2
-           2b. a = u_in,  b = q_in / (D[l] * k)                    # as in Eq. (4.11) of row C.6
-           2c. In this layer: u(s) = a * cos(k * s) + b * sin(k * s),  0 <= s <= L[l]   # Eq. (4.5)
-           2d. carry (u, q) to the next layer                      # rows C.3 and C.4
+           # row C.2
+           2a. k = sqrt(Lambda_n / D[l])
+           # as in Eq. (4.11) of row C.6
+           2b. a = u_in,  b = q_in / (D[l] * k)
+           # Eq. (4.5)
+           2c. In this layer: u(s) = a * cos(k * s) + b * sin(k * s),  0 <= s <= L[l]
+           # rows C.3 and C.4
+           2d. carry (u, q) to the next layer
 ```
 
 **Rust.**
@@ -1769,10 +1816,12 @@ The scale is fixed by $q(0)=1$ of Eq. (4.9) and divides out in the weight $w_n$ 
 **Pseudocode.**
 
 ```text
-1. Start each eigenfunction with (u, q) = (0, 1) at r = 0          # Eq. (4.9): q(0) = 1 fixes the overall size
+# Eq. (4.9): q(0) = 1 fixes the overall size
+1. Start each eigenfunction with (u, q) = (0, 1) at r = 0
 2. Every mode is built with this same rule, so its size is fixed
-3. In the weight w[n] = 3 * I1[n] * I[n] / (R[1]^3 * N[n]), I1 and I each grow in proportion to the
-   size of u and N grows with its square, so the size cancels      # Eqs. (4.20), (4.22)
+3. In the weight w[n] = 3 * I1[n] * I[n] / (R[1]^3 * N[n]), I1 and I each grow in proportion
+   to the
+   size of u and N grows with its square, so the size cancels  # Eqs. (4.20), (4.22)
 ```
 
 Implementation detail: there is no separate normalisation step. The scale is set only by `q(0) = 1`.
@@ -1808,17 +1857,21 @@ $$
 
 ```text
 # Goal: integral of f(r) over layer l, from R[l-1] to R[l]
-GIVEN  16 nodes x[m] and weights omega[m] on [-1, 1]               # Gauss-Legendre rule, 16 points
-1. Np = ceil( k[l] * L[l] / (pi/2) ) + 1                           # Eq. (4.24): one panel per quarter oscillation, plus one
-2. h  = L[l] / Np                                                  # width of each panel
+# Gauss-Legendre rule, 16 points
+GIVEN  16 nodes x[m] and weights omega[m] on [-1, 1]
+# Eq. (4.24): one panel per quarter oscillation, plus one
+1. Np = ceil( k[l] * L[l] / (pi/2) ) + 1
+# width of each panel
+2. h  = L[l] / Np
 3. total = 0
 4. FOR panel i = 1 to Np:
        4a. mid = midpoint of panel i
        4b. panel_sum = 0
        4c. FOR m = 1 to 16:
-               panel_sum = panel_sum + omega[m] * f( mid + (h/2) * x[m] )   # Eq. (4.24)
-       4d. total = total + (h/2) * panel_sum                       # Eq. (4.24)
-5. RETURN total                                                    # add the totals of the five layers to cover 0..R
+               panel_sum = panel_sum + omega[m] * f( mid + (h/2) * x[m] )  # Eq. (4.24)
+       4d. total = total + (h/2) * panel_sum                               # Eq. (4.24)
+# add the totals of the five layers to cover 0..R
+5. RETURN total
 ```
 
 **Rust.**
@@ -1889,9 +1942,9 @@ $$
 
 ```text
 FOR each mode n:
-    1. I1[n] = integral over 0..R[1] of r * u_n dr                 # Eq. (4.20): kernel only
-    2. I[n]  = integral over 0..R    of r * u_n dr                 # Eq. (4.20): whole particle
-    3. N[n]  = integral over 0..R    of u_n^2 dr                   # Eq. (4.20): the norm
+    1. I1[n] = integral over 0..R[1] of r * u_n dr  # Eq. (4.20): kernel only
+    2. I[n]  = integral over 0..R    of r * u_n dr  # Eq. (4.20): whole particle
+    3. N[n]  = integral over 0..R    of u_n^2 dr    # Eq. (4.20): the norm
     # each integral is the sum of the quadrature of row C.13 over the layers it covers
 ```
 
@@ -1968,8 +2021,10 @@ $$
 
 ```text
 GIVEN  time t, weights w[1..K], eigenvalues Lambda[1..K]
-1. remaining = sum over n = 1..K of w[n] * exp(-Lambda[n] * t)     # Eq. (4.22): each mode fades at its own rate
-2. F = 1 - remaining                                               # Eq. (4.22): released = 1 - what is left
+# Eq. (4.22): each mode fades at its own rate
+1. remaining = sum over n = 1..K of w[n] * exp(-Lambda[n] * t)
+# Eq. (4.22): released = 1 - what is left
+2. F = 1 - remaining
 3. RETURN F
 ```
 
@@ -2010,11 +2065,14 @@ $$
 
 ```text
 GIVEN  t_min = the smallest positive time requested
-1. Lambda_max = 45 / t_min                                         # Eq. (4.26): upper limit of the eigenvalues wanted
+# Eq. (4.26): upper limit of the eigenvalues wanted
+1. Lambda_max = 45 / t_min
 2. Find Lambda_cov (row C.7) and keep the modes up to Lambda_cov
-3. t_valid = 40 / Lambda_cov                                       # Eq. (4.26): earliest time the series is trusted
-4. For a time t:  IF t >= t_valid: report F_ex(t) from row C.16    # Eq. (4.26)
-                  ELSE: report no value                            # F_ex is reported only for t >= t_valid
+# Eq. (4.26): earliest time the series is trusted
+3. t_valid = 40 / Lambda_cov
+4. For a time t:  IF t >= t_valid: report F_ex(t) from row C.16  # Eq. (4.26)
+                  # F_ex is reported only for t >= t_valid
+                  ELSE: report no value
 ```
 
 **Rust.**
@@ -2075,11 +2133,15 @@ $$
 ```text
 rho_min = infinity
 FOR each mode n and each interface l = 1 to 4:
-    1. take u, the post-jump q = q+ and D = D[l+1] at r = R[l]     # outer side of the interface (item I15 of Table 7.1)
-    2. rho = |q - D*u/R[l]| / ( |q| + |D*u/R[l]| )                 # Eq. (4.27): near 0 when the two terms nearly cancel,
-                                                                   # which is where digits are lost
-    3. rho_min = smaller of rho_min and rho                        # Eq. (4.27): minimum over modes and layers
-4. eps_F = 2.2e-16 / min(rho_min, 1)                               # Eq. (4.28): machine rounding size, enlarged by cancellation
+    # outer side of the interface (item I15 of Table 7.1)
+    1. take u, the post-jump q = q+ and D = D[l+1] at r = R[l]
+    # Eq. (4.27): near 0 when the two terms nearly cancel,
+    # which is where digits are lost
+    2. rho = |q - D*u/R[l]| / ( |q| + |D*u/R[l]| )
+    # Eq. (4.27): minimum over modes and layers
+    3. rho_min = smaller of rho_min and rho
+# Eq. (4.28): machine rounding size, enlarged by cancellation
+4. eps_F = 2.2e-16 / min(rho_min, 1)
 ```
 
 Implementation detail: this is a rule of thumb. The bound itself is CLAIMED ONLY.
@@ -2123,9 +2185,9 @@ $$
 
 ```text
 GIVEN  Biot number Bi = h_m * R / D
-1. residual(z) = z * cot(z) - (1 - Bi)                             # Eq. (4.31) moved to one side
-2. A root is a value z with residual(z) = 0                        # Eq. (4.31): z * cot(z) = 1 - Bi
-3. Find the roots z                                                # used in a unit test as a Case B reference only
+1. residual(z) = z * cot(z) - (1 - Bi)       # Eq. (4.31) moved to one side
+2. A root is a value z with residual(z) = 0  # Eq. (4.31): z * cot(z) = 1 - Bi
+3. Find the roots z                          # used in a unit test as a Case B reference only
 ```
 
 Implementation detail: Eq. (4.31) does not say how the roots are located.
@@ -2213,11 +2275,16 @@ No Rust function computes these equations.
 
 ```text
 NOT IMPLEMENTED. No Rust function computes these. Description of the equations only:
-1. Different modes are orthogonal:  integral of u_m * u_n dr = 0 for m not equal to n   # Eq. (4.17)
-2. Expansion coefficient: A[n] = c0 * I1[n] / N[n]                 # Eq. (4.18): how much of mode n the start state holds
-3. Concentration: c(r, t) = sum over n of A[n] * u_n(r)/r * exp(-Lambda[n] * t)   # Eq. (4.19)
-4. Inventory: M(t) = 4 * pi * sum over n of A[n] * I[n] * exp(-Lambda[n] * t)     # Eq. (4.21)
-5. Integrals over one layer could be written in closed form (formulas of Eq. (4.25), with a, b, k, L of that layer)
+# Eq. (4.17)
+1. Different modes are orthogonal:  integral of u_m * u_n dr = 0 for m not equal to n
+# Eq. (4.18): how much of mode n the start state holds
+2. Expansion coefficient: A[n] = c0 * I1[n] / N[n]
+# Eq. (4.19)
+3. Concentration: c(r, t) = sum over n of A[n] * u_n(r)/r * exp(-Lambda[n] * t)
+# Eq. (4.21)
+4. Inventory: M(t) = 4 * pi * sum over n of A[n] * I[n] * exp(-Lambda[n] * t)
+5. Integrals over one layer could be written in closed form (formulas of Eq. (4.25), with a,
+   b, k, L of that layer)
    instead of by the quadrature of row C.13
 ```
 
@@ -2246,9 +2313,12 @@ Eq. (4.23) is CLAIMED ONLY as a theorem for the layered sphere. The other items 
 
 ```text
 NOT IMPLEMENTED. Description of the equations only:
-1. Completeness: the weights add to 1 when all modes are kept:  limit of sum_{n=1..K} w[n] = 1 as K grows   # Eq. (4.23)
+# Eq. (4.23)
+1. Completeness: the weights add to 1 when all modes are kept:
+   limit of sum_{n=1..K} w[n] = 1 as K grows
    (CLAIMED ONLY as a theorem for the layered sphere; this means F(0) = 0)
-2. Robin release for the layered particle: -D5 * dc5/dr (R, t) = h_m * (c5(R, t) - c_inf)   # Eq. (3.10)
+# Eq. (3.10)
+2. Robin release for the layered particle: -D5 * dc5/dr (R, t) = h_m * (c5(R, t) - c_inf)
 3. Tail bound, clamp of negative F, partition coefficients: no equation, so no step is written
 ```
 
@@ -2456,8 +2526,8 @@ $$
 **Pseudocode.**
 
 ```text
-1. Build a list of the five layers in order, layer 1 first          # radii ordered as in Eq. (1.1)
-2. Each entry holds the outer radius R[l] of that layer            # Eq. (1.1)
+1. Build a list of the five layers in order, layer 1 first  # radii ordered as in Eq. (1.1)
+2. Each entry holds the outer radius R[l] of that layer     # Eq. (1.1)
 3. Hand the list to Code C
 ```
 
@@ -2607,10 +2677,11 @@ $$
 
 ```text
 FOR each output time t_n:
-    1. IF t_n < t_valid: skip this time                            # Eq. (7.1): compare only where the series is valid
-    2. F_FV = F[n] from the finite-volume run                      # Eq. (7.1): F_FV(t_n) = F^n
-    3. F_ex = series value at t_n                                  # row C.16
-    4. e(t_n) = | F_FV - F_ex |                                    # Eq. (7.1)
+    # Eq. (7.1): compare only where the series is valid
+    1. IF t_n < t_valid: skip this time
+    2. F_FV = F[n] from the finite-volume run  # Eq. (7.1): F_FV(t_n) = F^n
+    3. F_ex = series value at t_n              # row C.16
+    4. e(t_n) = | F_FV - F_ex |                # Eq. (7.1)
 ```
 
 **Rust.**
@@ -2658,9 +2729,10 @@ $$
 **Pseudocode.**
 
 ```text
-1. e_max = largest e(t_n) over all output times with t_n >= t_valid   # Eq. (7.2)
-2. IF e_max < 3 * eps_F:                                           # Eq. (7.2): the differences are as small as the
-                                                                   # series itself can resolve
+1. e_max = largest e(t_n) over all output times with t_n >= t_valid  # Eq. (7.2)
+# Eq. (7.2): the differences are as small as the
+# series itself can resolve
+2. IF e_max < 3 * eps_F:
        print a warning that the differences are not resolved
 ```
 
@@ -2835,8 +2907,8 @@ $$
 
 ```text
 FOR each pair of neighbouring levels k and k+1:
-    1. p[k] = log2( err[k] / err[k+1] )                            # Eq. (6.11): if halving the step divides the
-                                                                   # error by 2^p, this gives p
+    1. p[k] = log2( err[k] / err[k+1] )  # Eq. (6.11): if halving the step divides the
+                                         # error by 2^p, this gives p
 ```
 
 **Rust.**
@@ -2871,9 +2943,10 @@ $$
 ```text
 1. resolved = TRUE
 2. FOR every level k:
-       IF NOT ( err[k] > 3 * eps_F ):  resolved = FALSE            # Eq. (6.12): errors below this size cannot be
-                                                                   # told apart from the series floor
-3. RETURN resolved                                                 # TRUE only if every level passes
+       # Eq. (6.12): errors below this size cannot be
+       # told apart from the series floor
+       IF NOT ( err[k] > 3 * eps_F ):  resolved = FALSE
+3. RETURN resolved                                       # TRUE only if every level passes
 ```
 
 **Rust.**
@@ -2906,11 +2979,12 @@ $$
 
 ```text
 # Cost of one run, in cell-steps:
-1. W = ( t_end / dt_in ) * Nc                                      # Eq. (6.14): number of steps x number of cells
+# Eq. (6.14): number of steps x number of cells
+1. W = ( t_end / dt_in ) * Nc
 # Cost of the whole study:
 2. spatial_sum  = sum of W(lambda_x) for lambda_x in {0.5, 1, 2, 4, 8}
 3. temporal_sum = sum of W(lambda_t) for lambda_t in {4, 2, 1, 1/2, 1/4}
-4. W_study = 1.75 * spatial_sum + temporal_sum                     # Eq. (6.14)
+4. W_study = 1.75 * spatial_sum + temporal_sum  # Eq. (6.14)
 ```
 
 Implementation detail: the factor 1.75 is what the code uses. Item K1 of Table 7.1 records that it should be 7. The limit that the guard compares `W_study` with is not given by Eq. (6.14), and neither is how `Nc` and `dt` change with a factor `lambda`.
