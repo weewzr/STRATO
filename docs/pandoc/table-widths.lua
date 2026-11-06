@@ -1,11 +1,23 @@
 -- Pipe tables whose rows are wider than the Markdown line limit get equal column widths from
 -- pandoc, which wastes space on short columns (symbol, unit, section) and squeezes the long text
 -- column. This filter sets the widths in proportion to the text in each column, but only for tables
--- whose widths are still all equal; a table with hand-tuned dash lengths is left alone.
--- Formatting only: no cell content changes.
+-- that contain a long text cell and whose widths are still all equal; a table with hand-tuned dash
+-- lengths is left alone. Formatting only: no cell content changes.
 
+-- Approximate printed width of a cell in characters: TeX commands count as one character,
+-- code counts a little wider than prose.
 local function len_of(cell)
-  return #pandoc.utils.stringify(cell.contents)
+  local n = #pandoc.utils.stringify(cell.contents)
+  pandoc.Blocks(cell.contents):walk({
+    Math = function(m)
+      local s = m.text:gsub("\\%a+", "x"):gsub("[{}^_ ]", "")
+      n = n - #m.text + #s
+    end,
+    Code = function(c)
+      n = n + math.floor(0.15 * #c.text)
+    end,
+  })
+  return n
 end
 
 function Table(tbl)
@@ -43,7 +55,7 @@ function Table(tbl)
   local weights, total = {}, 0
   for c = 1, ncol do
     local avg = sumlen[c] / count
-    local w = 0.6 * math.min(maxlen[c], 60) + 0.4 * math.min(avg, 60)
+    local w = 0.55 * math.min(maxlen[c], 50) + 0.45 * math.min(avg, 50)
     local need = 1.3 * math.min(maxlen[c], 16)
     if w < need then w = need end
     if w < 14 then w = 14 end
