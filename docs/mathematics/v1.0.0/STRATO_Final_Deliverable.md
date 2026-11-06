@@ -2722,7 +2722,10 @@ Lines 50 to 57 (the list of compared times) are omitted from the excerpt.
 **Final equation.**
 
 $$
-\max_{n:\ t_n \ge t_{\mathrm{valid}}} e(t_n) < 3\,\varepsilon_F \quad\Longrightarrow\quad \text{print a warning that the differences are not resolved,}
+\begin{aligned}
+&\max_{n:\ t_n \ge t_{\mathrm{valid}}} e(t_n) < 3\,\varepsilon_F\\
+&\quad\Longrightarrow\quad \text{print a warning that the differences are not resolved,}
+\end{aligned}
 \tag{7.2}
 $$
 

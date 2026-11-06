@@ -674,7 +674,8 @@ $$
 $$
 \begin{aligned}
 4\pi(r+\Delta r)^2 J_r(r+\Delta r) - 4\pi r^2 J_r(r)
-&= 4\pi\bigl(r^2 + 2r\Delta r + \Delta r^2\bigr) J_r(r+\Delta r) - 4\pi r^2 J_r(r)\\
+&= 4\pi\bigl(r^2 + 2r\Delta r + \Delta r^2\bigr) J_r(r+\Delta r)\\
+&\quad - 4\pi r^2 J_r(r)\\
 &= 4\pi r^2 J_r(r+\Delta r) - 4\pi r^2 J_r(r)\\
 &\quad + 4\pi\bigl(2r\Delta r + \Delta r^2\bigr)J_r(r+\Delta r)\\
 &= 4\pi r^2\bigl[J_r(r+\Delta r) - J_r(r)\bigr]\\
@@ -4152,7 +4153,10 @@ where $F^n$ is Eq. (5.24) and $F^{\mathrm{ex}}$ is Eq. (4.22). Only the absolute
 The driver then applies the warning rule of Eq. (7.2) ([src/main.rs, lines 124 to 128](https://github.com/weewzr/STRATO/blob/v1.0.0/src/main.rs#L124-L128)):
 
 $$
-\max_{n:\ t_n \ge t_{\mathrm{valid}}} e(t_n) < 3\,\varepsilon_F \quad\Longrightarrow\quad \text{print a warning that the differences are not resolved,}
+\begin{aligned}
+&\max_{n:\ t_n \ge t_{\mathrm{valid}}} e(t_n) < 3\,\varepsilon_F\\
+&\quad\Longrightarrow\quad \text{print a warning that the differences are not resolved,}
+\end{aligned}
 \tag{7.2}
 $$
 
@@ -4560,6 +4564,7 @@ Part IV cites this section for the future improvements named in Table 7.4. Items
 | Convergence proof for the non-uniform interface cells and the discontinuous initial step | Eq. (6.15) | PROVED for smooth data only; CLAIMED ONLY for the v1.0.0 initial step |
 
 Table: 7.4 Future improvements and the properties that stay open in v1.0.0.
+
 ### 7.5.1 Open provenance and verification items
 
 Table 7.3 lists disagreements between documents and code. Table 7.5 lists the statements of Parts I to VI whose evidence is thinner than the label of the surrounding section might suggest. Each row names the section that makes the statement and says what is missing; the last column gives the status that the statement carries in this document. Nothing in the table changes a result; the rows tell the reader how far to trust a number or a sentence.

@@ -5,7 +5,7 @@ function Table(tbl)
   local first = tbl.caption.long[1]
   if first and first.content and first.content[1] and first.content[1].t == "Str" then
     local s = first.content[1].text
-    if s:match("^%d+%.%d+") then
+    if s:match("^%d+%.%d+") or s:match("^%u%.%d+") then
       first.content[1].text = "Table " .. s
     end
   end

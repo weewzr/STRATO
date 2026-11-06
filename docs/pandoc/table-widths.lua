@@ -51,12 +51,47 @@ function Table(tbl)
       end
     end
   end
+  -- body-only measures, used by the numeric-table mode below
+  local bodymax, headword = {}, {}
+  for c = 1, ncol do bodymax[c] = 0; headword[c] = 0 end
   scan(tbl.head.rows)
-  for _, body in ipairs(tbl.bodies) do scan(body.body) end
+  for _, row in ipairs(tbl.head.rows) do
+    for c, cell in ipairs(row.cells) do
+      if c <= ncol then
+        for word in pandoc.utils.stringify(cell.contents):gmatch("%S+") do
+          if #word > headword[c] then headword[c] = #word end
+        end
+      end
+    end
+  end
+  for _, body in ipairs(tbl.bodies) do
+    scan(body.body)
+    for _, row in ipairs(body.body) do
+      for c, cell in ipairs(row.cells) do
+        if c <= ncol then
+          local n = len_of(cell)
+          if n > bodymax[c] then bodymax[c] = n end
+        end
+      end
+    end
+  end
   if count == 0 then return nil end
   local longest = 0
   for c = 1, ncol do if maxlen[c] > longest then longest = maxlen[c] end end
-  if longest <= 60 then return nil end
+  if longest <= 60 then
+    -- Four or more columns of short cells (numbers): give each column what its widest cell needs.
+    if ncol < 4 then return nil end
+    local ws, tot = {}, 0
+    for c = 1, ncol do
+      local w = 1.9 * math.max(bodymax[c], headword[c]) + 4
+      if w < 14 then w = 14 end
+      ws[c] = w
+      tot = tot + w
+    end
+    for c = 1, ncol do specs[c][2] = ws[c] / tot end
+    tbl.colspecs = specs
+    return tbl
+  end
 
   local weights, total = {}, 0
   for c = 1, ncol do
