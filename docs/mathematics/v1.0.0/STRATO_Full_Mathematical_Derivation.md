@@ -246,7 +246,7 @@ TRISO stands for tristructural isotropic. A TRISO particle is a small sphere of 
 
 Each layer has a job. Table 1.1 lists the main functions given by the IAEA for a UO$_2$ TRISO particle (International Atomic Energy Agency [IAEA], 2012, Table 3.2, p. 51), together with the AGR-1 baseline dimensions measured by Morris et al. (2016, Table 2, p. 27). The AGR-1 kernel is UCO, a mixture of uranium oxide and uranium carbide (Morris et al., 2016, p. 24; Collin et al., 2016, p. 379). In UCO kernels the formation of carbon monoxide gas is suppressed and no kernel migration occurs (IAEA, 1997, Section 3.2.1, p. 46).
 
-| $\ell$ | Layer | Main functions (IAEA, 2012, Table 3.2) | AGR-1 size ($\mathrm{\mu m}$) | AGR-1 $R_\ell$ ($\mathrm{\mu m}$) | v1.0.0 input $R_\ell$ ($\mathrm{\mu m}$) |
+| $\ell$ | Layer | Main functions (IAEA, 2012, Table 3.2) | AGR-1 size ($\mu\mathrm{m}$) | AGR-1 $R_\ell$ ($\mu\mathrm{m}$) | v1.0.0 input $R_\ell$ ($\mu\mathrm{m}$) |
 |---|---|---|---|---|---|
 | 1 | Kernel (UO$_2$ or UCO) | source of fission; retains fission products; substrate for the buffer | diameter 350 | 175.0 | 200 |
 | 2 | Buffer (porous carbon) | free volume for gaseous fission products; absorbs kernel swelling; shields the IPyC from fission-fragment recoil | 103.5 | 278.5 | 300 |
@@ -254,7 +254,7 @@ Each layer has a job. Table 1.1 lists the main functions given by the IAEA for a
 | 4 | SiC (silicon carbide) | pressure vessel for CO, CO$_2$ and fission gases; barrier against release of gaseous and solid fission products | 35.3 | 353.2 | 400 |
 | 5 | OPyC (dense pyrolytic carbon) | protects the SiC from mechanical damage during manufacture; extra barrier to fission gases if the SiC fails | 41.0 | 394.2 | 450 |
 
-Table: 1.1 Layers of a TRISO particle. Functions: IAEA (2012), Table 3.2 (written for the HTR-10 UO$_2$ particle). AGR-1 sizes: measured baseline averages, Morris et al. (2016), Table 2; Collin et al. (2016, p. 380) give the rounded nominal values 350, 100, 40, 35 and 40 $\mathrm{\mu m}$. AGR-1 radii: calculated here by adding thicknesses to the kernel radius (P1-5). Last column: the bundled synthetic input `inputs/synthetic/synthetic_five_layer.toml`, which is a numerical benchmark and not literature data.
+Table: 1.1 Layers of a TRISO particle. Functions: IAEA (2012), Table 3.2 (written for the HTR-10 UO$_2$ particle). AGR-1 sizes: measured baseline averages, Morris et al. (2016), Table 2; Collin et al. (2016, p. 380) give the rounded nominal values 350, 100, 40, 35 and 40 $\mu\mathrm{m}$. AGR-1 radii: calculated here by adding thicknesses to the kernel radius (P1-5). Last column: the bundled synthetic input `inputs/synthetic/synthetic_five_layer.toml`, which is a numerical benchmark and not literature data.
 
 **Literature values against the bundled input.** The AGR-1 numbers in Table 1.1 are published measurements (adapted from published literature). The only input file that v1.0.0 can run is synthetic: its header reads "SYNTHETIC NUMERICAL BENCHMARK - NOT LITERATURE TRISO DATA", its species is `"synthetic"`, and its five diffusivities were chosen to test the solvers. The literature template `inputs/literature/literature_inputs.template.toml` contains only `INSERT_VALUE_HERE` placeholders, and [src/config.rs, lines 62 to 73](https://github.com/weewzr/STRATO/blob/v1.0.0/src/config.rs#L62-L73) refuses to run it until they are filled. The synthetic radii happen to give a kernel that fills a similar share of the particle volume as in AGR-1: $(R_1/R)^3 = 0.08779$ for the synthetic input and $0.08749$ for AGR-1 (P1-5c, P1-6c).
 
@@ -272,7 +272,7 @@ L_\ell = R_\ell - R_{\ell-1}, \qquad \ell = 1, \dots, 5
 \tag{1.2}
 $$
 
-For the kernel, $L_1 = R_1$ is simply the kernel radius. For the synthetic input, $L = 200, 100, 50, 50, 50\ \mathrm{\mu m}$ (P1-6b). The radius axis below shows both sets of radii.
+For the kernel, $L_1 = R_1$ is simply the kernel radius. For the synthetic input, $L = 200, 100, 50, 50, 50\ \mu\mathrm{m}$ (P1-6b). The radius axis below shows both sets of radii.
 
 ```text
 r = 0          R1          R2          R3          R4          R5 = R
@@ -1684,7 +1684,7 @@ Part III gave the complete problem: the layer equation (2.7) in each of the five
 
 Table: 4.1 Symbols local to Part IV (all others are in Tables 0.1 to 0.4).
 
-**Synthetic input used for every number in Part IV.** Radii $R_1, \dots, R_5 = 200, 300, 350, 400, 450\ \mathrm{\mu m}$; diffusivities $D_1, \dots, D_5 = 1.0\times10^{-12}$, $4.0\times10^{-10}$, $8.0\times10^{-13}$, $2.0\times10^{-14}$, $7.0\times10^{-13}\ \mathrm{m^2\ s^{-1}}$; output every 2000 s up to $2\times10^5\ \mathrm{s}$ ([inputs/synthetic/synthetic_five_layer.toml](https://github.com/weewzr/STRATO/blob/v1.0.0/inputs/synthetic/synthetic_five_layer.toml)). These are synthetic numbers chosen to test the code. They are not literature data for any TRISO particle or fission product.
+**Synthetic input used for every number in Part IV.** Radii $R_1, \dots, R_5 = 200, 300, 350, 400, 450\ \mu\mathrm{m}$; diffusivities $D_1, \dots, D_5 = 1.0\times10^{-12}$, $4.0\times10^{-10}$, $8.0\times10^{-13}$, $2.0\times10^{-14}$, $7.0\times10^{-13}\ \mathrm{m^2\ s^{-1}}$; output every 2000 s up to $2\times10^5\ \mathrm{s}$ ([inputs/synthetic/synthetic_five_layer.toml](https://github.com/weewzr/STRATO/blob/v1.0.0/inputs/synthetic/synthetic_five_layer.toml)). These are synthetic numbers chosen to test the code. They are not literature data for any TRISO particle or fission product.
 
 **Verification.** Two scripts check every formula of this part, `v1_0_0_p4_separation.py` (41 PASS lines) and `v1_0_0_p4_sturm_weights.py` (24 PASS lines), and a third, `v1_0_0_eigenfunctions.py`, draws Figure 4.1. Appendix A lists them with the run command. The PASS lines are quoted where they support a statement, in the form "(check: `4.8 jump keeps D(u' - u/r) ...` PASS)".
 
