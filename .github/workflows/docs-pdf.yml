@@ -1,0 +1,51 @@
+name: Documentation PDFs
+
+# Builds the PDF version of each Markdown document listed below with pandoc and XeLaTeX,
+# then renders every page to PNG so the layout can be inspected. The PDFs are uploaded as
+# an artifact; they are committed next to their Markdown sources after inspection.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**/*.md'
+      - 'docs/**/*.png'
+      - 'docs/pandoc/**'
+      - '.github/workflows/docs-pdf.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pdf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pandoc, XeLaTeX and poppler
+        timeout-minutes: 12
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq pandoc texlive-xetex texlive-latex-extra texlive-fonts-recommended fonts-dejavu poppler-utils
+          pandoc --version | head -1
+      - name: Build PDFs
+        run: |
+          set -e
+          mkdir -p pdf-out
+          for md in docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md \
+                    docs/mathematics/v1.0.0/STRATO_Final_Deliverable.md; do
+            [ -f "$md" ] || continue
+            dir=$(dirname "$md"); base=$(basename "$md" .md)
+            (cd "$dir" && pandoc "$base.md" \
+              --from markdown+tex_math_dollars+pipe_tables+implicit_figures \
+              --defaults "$GITHUB_WORKSPACE/docs/pandoc/defaults.yaml" \
+              --output "$GITHUB_WORKSPACE/pdf-out/$base.pdf")
+            pdfinfo "pdf-out/$base.pdf" | grep -E "Pages|Page size"
+            mkdir -p "pdf-out/render/$base"
+            pdftoppm -png -r 80 "pdf-out/$base.pdf" "pdf-out/render/$base/page"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: documentation-pdfs
+          path: pdf-out/

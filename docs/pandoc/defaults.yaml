@@ -1,0 +1,32 @@
+# Shared pandoc settings for the STRATO documentation PDFs (see .github/workflows/docs-pdf.yml).
+pdf-engine: xelatex
+standalone: true
+resource-path: ["."]
+filters:
+  - ${.}/table-caption.lua
+variables:
+  documentclass: article
+  papersize: a4
+  fontsize: 11pt
+  geometry: "margin=2.2cm"
+  mainfont: "DejaVu Serif"
+  sansfont: "DejaVu Sans"
+  monofont: "DejaVu Sans Mono"
+  mathfont: "Latin Modern Math"
+  linkcolor: "blue"
+  urlcolor: "blue"
+  colorlinks: true
+  toc: true
+  toc-depth: 2
+  header-includes:
+    - \usepackage{float}
+    - \usepackage{xurl}
+    - \usepackage{caption}
+    - \captionsetup{labelformat=empty,font=small}
+    - \floatplacement{figure}{H}
+    - \usepackage{etoolbox}
+    - \AtBeginEnvironment{longtable}{\footnotesize}
+    - \AtBeginEnvironment{Shaded}{\footnotesize}
+    - \setlength{\emergencystretch}{3em}
+    - \allowdisplaybreaks
+highlight-style: tango
