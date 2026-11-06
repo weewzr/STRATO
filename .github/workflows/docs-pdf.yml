@@ -20,14 +20,14 @@ permissions:
 jobs:
   pdf:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - name: Install pandoc, XeLaTeX and poppler
-        timeout-minutes: 12
+        timeout-minutes: 20
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq pandoc texlive-xetex texlive-latex-extra texlive-fonts-recommended fonts-dejavu poppler-utils
+          sudo apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update -qq
+          sudo apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 install -y -qq pandoc texlive-xetex texlive-latex-extra texlive-fonts-recommended fonts-dejavu poppler-utils
           pandoc --version | head -1
       - name: Build PDFs
         run: |
