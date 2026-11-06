@@ -14,7 +14,7 @@ local function len_of(cell)
       n = n - #m.text + #s
     end,
     Code = function(c)
-      n = n + math.floor(0.15 * #c.text)
+      n = n + math.floor(0.4 * #c.text)
     end,
   })
   return n
