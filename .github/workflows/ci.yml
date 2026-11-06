@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rust:
+    name: Format, lint, test, verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --all --check
+      - name: Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+      - name: Unit, integration and Phase 1 regression tests
+        run: cargo test --all-targets
+      - name: Documentation builds without warnings
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --no-deps
+      - name: Release build
+        run: cargo build --release
+      - name: Numerical verification (asserts every printed claim)
+        run: |
+          set -o pipefail
+          cargo run --release --example verify | tee verify_stdout.txt
+          grep -q "FV_VERIFICATION PASS" verify_stdout.txt
+      - name: Synthetic five-layer run
+        run: |
+          set -o pipefail
+          cargo run --release -- inputs/synthetic/synthetic_five_layer.toml | tee main_run_stdout.txt
+      - name: Record toolchain
+        run: |
+          rustc --version | tee toolchain.txt
+          cargo --version | tee -a toolchain.txt
+          echo "commit=$GITHUB_SHA" | tee -a toolchain.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verification-evidence
+          path: |
+            verify_stdout.txt
+            main_run_stdout.txt
+            toolchain.txt
+            results/
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
+      - run: cargo audit

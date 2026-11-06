@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use STRATO, please cite it using these metadata."
+title: "STRATO: Spherical TRISO Analysis and Transport Operations"
+type: software
+authors:
+  - alias: weewzr
+version: 1.0.0
+date-released: 2026-11-06
+license: MIT
+repository-code: "https://github.com/weewzr/STRATO"
+abstract: >-
+  STRATO models fission-product diffusion through the five layers of a
+  TRISO coated fuel particle. It solves the multilayer spherical diffusion
+  problem with a conservative finite-volume method and with an exact
+  Sturm-Liouville eigenfunction expansion, and uses each to verify the other.
+keywords:
+  - nuclear engineering
+  - TRISO fuel
+  - fission product release
+  - diffusion
+  - finite volume
+  - Sturm-Liouville

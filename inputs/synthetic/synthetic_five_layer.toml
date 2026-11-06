@@ -1,0 +1,45 @@
+# SYNTHETIC NUMERICAL BENCHMARK - NOT LITERATURE TRISO DATA
+case_name = "synthetic-five-layer-release"
+species = "synthetic"
+temperature_k = 1000.0
+
+[[regions]]
+name = "Kernel"
+outer_radius_m = 2.0e-4
+diffusivity_m2_s = 1.0e-12
+cells = 40
+
+[[regions]]
+name = "Buffer"
+outer_radius_m = 3.0e-4
+diffusivity_m2_s = 4.0e-10
+cells = 40
+
+[[regions]]
+name = "IPyC"
+outer_radius_m = 3.5e-4
+diffusivity_m2_s = 8.0e-13
+cells = 40
+
+[[regions]]
+name = "SiC"
+outer_radius_m = 4.0e-4
+diffusivity_m2_s = 2.0e-14
+cells = 40
+
+[[regions]]
+name = "OPyC"
+outer_radius_m = 4.5e-4
+diffusivity_m2_s = 7.0e-13
+cells = 40
+
+[initial]
+kernel_concentration_mol_m3 = 1.0
+
+[time]
+dt_s = 2.0e2
+end_time_s = 2.0e5
+output_every_steps = 10
+
+[output]
+directory = "results/synthetic-five-layer"

@@ -1,0 +1,28 @@
+[package]
+name = "strato"
+version = "1.0.0"
+edition = "2021"
+description = "STRATO: Spherical TRISO Analysis and Transport Operations. Fission-product diffusion in multilayer TRISO fuel particles, solved by finite volume and by Sturm-Liouville eigenfunction expansion."
+license = "MIT"
+repository = "https://github.com/weewzr/STRATO"
+readme = "README.md"
+keywords = ["nuclear", "triso", "diffusion", "finite-volume", "sturm-liouville"]
+categories = ["science", "simulation"]
+
+[lib]
+name = "strato"
+path = "src/lib.rs"
+
+[[bin]]
+name = "strato"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+csv = "1"
+plotters = { version = "0.3", default-features = false, features = ["svg_backend", "line_series"] }
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+
+[profile.release]
+debug = false
