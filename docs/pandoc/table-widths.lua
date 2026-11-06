@@ -105,15 +105,31 @@ function Table(tbl)
       ws[c] = w
       tot = tot + w
     end
+    local size = "\\scriptsize"
+    local pad = 3
     if ncol >= 7 then
-      -- Script size, 3 pt padding: a column needs its longest unbreakable piece (about 5.3 pt
-      -- per character) plus 6 pt; the rest of the 460 pt line is shared by the cell lengths.
-      local need, sumneed, extra, sumextra = {}, 0, {}, 0
+      -- A column needs its longest unbreakable piece plus one character (a trailing times sign)
+      -- plus the padding on both sides. At script size (8 pt) one character is about 5.3 pt;
+      -- if the columns do not fit in 460 pt, 7 pt type (4.64 pt) with 2.5 pt padding is used.
+      local pieces, fulls = {}, {}
       for c = 1, ncol do
         local full = math.max(bodymax[c], headword[c])
-        local piece = math.min(math.max(maxpiece[c], headword[c]), full)
-        need[c] = 5.3 * piece + 7
-        extra[c] = full - piece
+        fulls[c] = full
+        pieces[c] = math.min(math.max(maxpiece[c], headword[c]), full) + 1
+      end
+      local function total_need(cw, pd)
+        local t = 0
+        for c = 1, ncol do t = t + cw * pieces[c] + 2 * pd end
+        return t
+      end
+      local cw = 5.3
+      if total_need(cw, pad) > 460 then
+        cw, pad, size = 4.64, 2.5, "\\fontsize{7}{8.4}\\selectfont"
+      end
+      local need, sumneed, extra, sumextra = {}, 0, {}, 0
+      for c = 1, ncol do
+        need[c] = cw * pieces[c] + 2 * pad
+        extra[c] = math.max(fulls[c] + 1 - pieces[c], 0)
         sumneed = sumneed + need[c]
         sumextra = sumextra + extra[c]
       end
@@ -127,10 +143,10 @@ function Table(tbl)
     for c = 1, ncol do specs[c][2] = ws[c] / tot end
     tbl.colspecs = specs
     if ncol >= 7 then
-      -- Seven or more columns do not fit at footnote size: use script size and tight padding
+      -- Seven or more columns do not fit at footnote size: use a smaller size and tight padding
       -- for this table only (the group ends after the table).
       return {
-        pandoc.RawBlock("latex", "\\begingroup\\renewcommand{\\tablefont}{\\scriptsize}\\setlength{\\tabcolsep}{3pt}"),
+        pandoc.RawBlock("latex", "\\begingroup\\renewcommand{\\tablefont}{" .. size .. "}\\setlength{\\tabcolsep}{" .. pad .. "pt}"),
         tbl,
         pandoc.RawBlock("latex", "\\endgroup"),
       }
