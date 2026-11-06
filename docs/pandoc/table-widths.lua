@@ -65,7 +65,7 @@ function Table(tbl)
     local need = 1.3 * math.min(maxlen[c], 16)
     if w < need then w = need end
     -- a code piece that cannot break must fit inside the column (monospace, footnote size)
-    local fit = 2.1 * maxchunk[c] + 4.5
+    local fit = 3.0 * maxchunk[c] + 6
     if maxchunk[c] > 0 and w < fit then w = fit end
     if w < 14 then w = 14 end
     weights[c] = w
