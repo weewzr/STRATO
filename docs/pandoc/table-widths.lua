@@ -106,13 +106,13 @@ function Table(tbl)
       tot = tot + w
     end
     if ncol >= 7 then
-      -- Script size, 3 pt padding: a column needs its longest unbreakable piece (about 4.6 pt
+      -- Script size, 3 pt padding: a column needs its longest unbreakable piece (about 5.3 pt
       -- per character) plus 6 pt; the rest of the 460 pt line is shared by the cell lengths.
       local need, sumneed, extra, sumextra = {}, 0, {}, 0
       for c = 1, ncol do
         local full = math.max(bodymax[c], headword[c])
         local piece = math.min(math.max(maxpiece[c], headword[c]), full)
-        need[c] = 4.6 * piece + 6
+        need[c] = 5.3 * piece + 7
         extra[c] = full - piece
         sumneed = sumneed + need[c]
         sumextra = sumextra + extra[c]
