@@ -26,6 +26,13 @@ function Blocks(blocks)
   while i <= #blocks do
     local b = blocks[i]
     local nxt = blocks[i + 1]
+    -- a section heading followed by an "Operation B.n." paragraph needs room for the paragraph,
+    -- the "Final equation." label and the first equation
+    if b.t == "Header" and nxt and nxt.t == "Para" and #nxt.content > 0
+        and nxt.content[1].t == "Strong"
+        and pandoc.utils.stringify(nxt.content[1]):match("^Operation B%.") then
+      out:insert(pandoc.RawBlock("latex", "\\Needspace{14\\baselineskip}"))
+    end
     if is_label(b) and nxt then
       if nxt.t == "CodeBlock" then
         local n = select(2, nxt.text:gsub("\n", "\n")) + 1
