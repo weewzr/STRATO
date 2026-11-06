@@ -3700,7 +3700,7 @@ IMPLEMENTED in `resolved`, [src/postprocessing/comparison.rs, lines 120 to 126](
 | Study | Steps | Errors $\mathrm{err}_k$ | Orders $p_k$ |
 |---|---|---|---|
 | Space (time-extrapolated, $\Delta t = 200\ \mathrm{s}$) | 100, 200, 400, 800, 1600 cells | $2.190\times10^{-5}$, $5.476\times10^{-6}$, $1.369\times10^{-6}$, $3.423\times10^{-7}$, $8.556\times10^{-8}$ | 2.00, 2.00, 2.00, 2.00 |
-| Time, against the series (printed) | $\Delta t = 800, 400, 200, 100, 50\ \mathrm{s}$, 200 cells | $4.912\times10^{-4}$, $2.485\times10^{-4}$, $1.270\times10^{-4}$, $6.626\times10^{-5}$, $3.587\times10^{-5}$ | 0.98, 0.97, 0.94, 0.89 |
+| Time, against the series (printed) | $\Delta t = 800$, $400$, $200$, $100$, $50\ \mathrm{s}$, 200 cells | $4.912\times10^{-4}$, $2.485\times10^{-4}$, $1.270\times10^{-4}$, $6.626\times10^{-5}$, $3.587\times10^{-5}$ | 0.98, 0.97, 0.94, 0.89 |
 | Time, against the same-mesh reference | same runs | $4.857\times10^{-4}$, $2.430\times10^{-4}$, $1.216\times10^{-4}$, $6.079\times10^{-5}$, $3.040\times10^{-5}$ | 0.999, 1.000, 1.000, 1.000 |
 
 Table: 6.3 Observed orders for the synthetic input (calculated). Rows 1 and 2 are the v1.0.0 output (`tests/golden/v1.0/convergence_study.csv` and `main_run_stdout.txt`); row 3 uses the 200-cell time-extrapolated FV value $0.4325501631858728$ as reference (the spatial row for 200 cells of `convergence_study.csv`), which v1.0.0 does not use as a reference.
