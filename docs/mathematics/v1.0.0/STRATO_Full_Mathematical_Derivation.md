@@ -374,7 +374,8 @@ in $\mathrm{m^3}$. This is the volume of the ball of radius $b$ minus the ball o
 
 $$
 \begin{aligned}
-\sum_{\ell=1}^{5} V(R_{\ell-1}, R_\ell) &= \frac{4\pi}{3}\left[(R_1^3 - R_0^3) + (R_2^3 - R_1^3) + (R_3^3 - R_2^3) + (R_4^3 - R_3^3) + (R_5^3 - R_4^3)\right] \\
+\sum_{\ell=1}^{5} V(R_{\ell-1}, R_\ell) &= \frac{4\pi}{3}\left[(R_1^3 - R_0^3) + (R_2^3 - R_1^3) + (R_3^3 - R_2^3)\right.\\
+&\qquad\left. +\, (R_4^3 - R_3^3) + (R_5^3 - R_4^3)\right] \\
 &= \frac{4\pi}{3}\left(R_5^3 - R_0^3\right) = \frac{4\pi}{3}R^3
 \end{aligned}
 $$
@@ -634,9 +635,11 @@ $$
 **Step 1: divide Eq. (2.2) by $\Delta r$.** Valid because $\Delta r > 0$:
 
 $$
+\begin{aligned}
 \frac{1}{\Delta r}\,\frac{\partial}{\partial t}\int_r^{r+\Delta r} c\,4\pi r'^2\,dr'
-= -\,\frac{A(r+\Delta r)J_r(r+\Delta r) - A(r)J_r(r)}{\Delta r}
-+ \frac{1}{\Delta r}\int_r^{r+\Delta r} S\,4\pi r'^2\,dr' .
+&= -\,\frac{A(r+\Delta r)J_r(r+\Delta r) - A(r)J_r(r)}{\Delta r}\\
+&\quad + \frac{1}{\Delta r}\int_r^{r+\Delta r} S\,4\pi r'^2\,dr' .
+\end{aligned}
 $$
 
 The flux terms were reordered as (outer minus inner) with one minus sign in front, so that the fraction has the shape of a difference quotient.
@@ -672,16 +675,21 @@ $$
 \begin{aligned}
 4\pi(r+\Delta r)^2 J_r(r+\Delta r) - 4\pi r^2 J_r(r)
 &= 4\pi\bigl(r^2 + 2r\Delta r + \Delta r^2\bigr) J_r(r+\Delta r) - 4\pi r^2 J_r(r)\\
-&= 4\pi r^2 J_r(r+\Delta r) - 4\pi r^2 J_r(r) + 4\pi\bigl(2r\Delta r + \Delta r^2\bigr)J_r(r+\Delta r)\\
-&= 4\pi r^2\bigl[J_r(r+\Delta r) - J_r(r)\bigr] + 4\pi\bigl(2r\Delta r + \Delta r^2\bigr)J_r(r+\Delta r).
+&= 4\pi r^2 J_r(r+\Delta r) - 4\pi r^2 J_r(r)\\
+&\quad + 4\pi\bigl(2r\Delta r + \Delta r^2\bigr)J_r(r+\Delta r)\\
+&= 4\pi r^2\bigl[J_r(r+\Delta r) - J_r(r)\bigr]\\
+&\quad + 4\pi\bigl(2r\Delta r + \Delta r^2\bigr)J_r(r+\Delta r).
 \end{aligned}
 $$
 
 Divide by $\Delta r$:
 
 $$
+\begin{aligned}
 \frac{4\pi(r+\Delta r)^2 J_r(r+\Delta r) - 4\pi r^2 J_r(r)}{\Delta r}
-= 4\pi r^2\,\frac{J_r(r+\Delta r) - J_r(r)}{\Delta r} + 4\pi\,(2r + \Delta r)\,J_r(r+\Delta r).
+&= 4\pi r^2\,\frac{J_r(r+\Delta r) - J_r(r)}{\Delta r}\\
+&\quad + 4\pi\,(2r + \Delta r)\,J_r(r+\Delta r).
+\end{aligned}
 $$
 
 Let $\Delta r \to 0$. The first quotient becomes $\partial J_r/\partial r$ by the definition of the derivative, $2r + \Delta r \to 2r$, and $J_r(r+\Delta r) \to J_r(r)$ because $J_r$ is continuous:
@@ -2290,8 +2298,11 @@ Because $u$ is a sine and a cosine in each layer, the integrals have closed form
 
 $$
 \begin{aligned}
-\int_0^{L}u^2\,ds &= \frac{(a^2 + b^2)L}{2} + \frac{(a^2 - b^2)\sin(2kL)}{4k} + \frac{ab\,\left(1 - \cos(2kL)\right)}{2k},\\
-\int_0^{L}(R_{\ell-1} + s)\,u\,ds &= \frac{R_{\ell-1}}{k}\left[a\sin(kL) + b\left(1 - \cos(kL)\right)\right] + a\left[\frac{L\sin(kL)}{k} + \frac{\cos(kL) - 1}{k^2}\right] + b\left[\frac{\sin(kL)}{k^2} - \frac{L\cos(kL)}{k}\right].
+\int_0^{L}u^2\,ds &= \frac{(a^2 + b^2)L}{2} + \frac{(a^2 - b^2)\sin(2kL)}{4k}\\
+&\quad + \frac{ab\,\left(1 - \cos(2kL)\right)}{2k},\\
+\int_0^{L}(R_{\ell-1} + s)\,u\,ds &= \frac{R_{\ell-1}}{k}\left[a\sin(kL) + b\left(1 - \cos(kL)\right)\right]\\
+&\quad + a\left[\frac{L\sin(kL)}{k} + \frac{\cos(kL) - 1}{k^2}\right]\\
+&\quad + b\left[\frac{\sin(kL)}{k^2} - \frac{L\cos(kL)}{k}\right].
 \end{aligned}
 \tag{4.25}
 $$
@@ -2368,7 +2379,10 @@ For the synthetic case $\varepsilon_F = 3.997\times10^{-12}$ (check: `4.27-4.28 
 **Step 3 (integrals).** With the scale $b = 1$ and $k_n = n\pi/R$ (the code's scale differs by a factor that cancels, Section 4.9), direct integration gives
 
 $$
-u_n = \sin\frac{n\pi r}{R}, \qquad \Lambda_n = \frac{n^2\pi^2D}{R^2}, \qquad I_{1,n} = \frac{\sin(k_n R_1) - k_n R_1\cos(k_n R_1)}{k_n^2}, \qquad I_n = \frac{R^2(-1)^{n+1}}{n\pi}, \qquad N_n = \frac R2 .
+\begin{aligned}
+u_n &= \sin\frac{n\pi r}{R}, \qquad \Lambda_n = \frac{n^2\pi^2D}{R^2}, \qquad N_n = \frac R2,\\
+I_{1,n} &= \frac{\sin(k_n R_1) - k_n R_1\cos(k_n R_1)}{k_n^2}, \qquad I_n = \frac{R^2(-1)^{n+1}}{n\pi} .
+\end{aligned}
 \tag{4.29}
 $$
 

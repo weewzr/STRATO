@@ -4,6 +4,7 @@ standalone: true
 resource-path: ["."]
 filters:
   - ${.}/table-caption.lua
+  - ${.}/break-long-tokens.lua
 variables:
   documentclass: article
   papersize: a4
@@ -26,7 +27,9 @@ variables:
     - \floatplacement{figure}{H}
     - \usepackage{etoolbox}
     - \AtBeginEnvironment{longtable}{\footnotesize}
-    - \AtBeginEnvironment{Shaded}{\footnotesize}
+    - \usepackage{fvextra}
+    - \fvset{breaklines=true,breakautoindent=true}
+    - \AtBeginEnvironment{Shaded}{\scriptsize}
     - \setlength{\emergencystretch}{3em}
     - \allowdisplaybreaks
 highlight-style: tango
