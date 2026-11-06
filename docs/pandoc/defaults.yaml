@@ -4,8 +4,8 @@ standalone: true
 resource-path: ["."]
 filters:
   - ${.}/table-caption.lua
-  - ${.}/break-long-tokens.lua
   - ${.}/table-widths.lua
+  - ${.}/break-long-tokens.lua
 variables:
   documentclass: article
   papersize: a4
