@@ -22,7 +22,23 @@ local function len_of(cell)
       end
     end,
   })
-  return n, chunk
+  -- longest piece that TeX cannot break: a word, or a math string up to a times or dot sign
+  local buf = {}
+  pandoc.Blocks(cell.contents):walk({
+    Str = function(s) buf[#buf + 1] = s.text end,
+    Space = function() buf[#buf + 1] = " " end,
+    SoftBreak = function() buf[#buf + 1] = " " end,
+    Math = function(m)
+      local s = m.text:gsub("\\times", " "):gsub("\\cdot", " "):gsub("\\%a+", "x"):gsub("[{}^_]", "")
+      buf[#buf + 1] = s
+    end,
+    Code = function(c) buf[#buf + 1] = c.text end,
+  })
+  local piece = 0
+  for word in table.concat(buf):gmatch("%S+") do
+    if #word > piece then piece = #word end
+  end
+  return n, chunk, piece
 end
 
 function Table(tbl)
@@ -36,14 +52,15 @@ function Table(tbl)
     if not w or math.abs(w - first) > 1e-6 then return nil end
   end
 
-  local maxlen, sumlen, maxchunk, count = {}, {}, {}, 0
-  for c = 1, ncol do maxlen[c] = 0; sumlen[c] = 0; maxchunk[c] = 0 end
+  local maxlen, sumlen, maxchunk, maxpiece, count = {}, {}, {}, {}, 0
+  for c = 1, ncol do maxlen[c] = 0; sumlen[c] = 0; maxchunk[c] = 0; maxpiece[c] = 0 end
   local function scan(rows)
     for _, row in ipairs(rows) do
       count = count + 1
       for c, cell in ipairs(row.cells) do
         if c <= ncol then
-          local n, chunk = len_of(cell)
+          local n, chunk, piece = len_of(cell)
+          if piece > maxpiece[c] then maxpiece[c] = piece end
           if chunk > maxchunk[c] then maxchunk[c] = chunk end
           if n > maxlen[c] then maxlen[c] = n end
           sumlen[c] = sumlen[c] + n
@@ -87,6 +104,25 @@ function Table(tbl)
       if w < 14 then w = 14 end
       ws[c] = w
       tot = tot + w
+    end
+    if ncol >= 7 then
+      -- Script size, 3 pt padding: a column needs its longest unbreakable piece (about 4.6 pt
+      -- per character) plus 6 pt; the rest of the 460 pt line is shared by the cell lengths.
+      local need, sumneed, extra, sumextra = {}, 0, {}, 0
+      for c = 1, ncol do
+        local full = math.max(bodymax[c], headword[c])
+        local piece = math.min(math.max(maxpiece[c], headword[c]), full)
+        need[c] = 4.6 * piece + 6
+        extra[c] = full - piece
+        sumneed = sumneed + need[c]
+        sumextra = sumextra + extra[c]
+      end
+      local slack = math.max(460 - sumneed, 0)
+      for c = 1, ncol do
+        ws[c] = need[c] + (sumextra > 0 and slack * extra[c] / sumextra or slack / ncol)
+      end
+      tot = 0
+      for c = 1, ncol do tot = tot + ws[c] end
     end
     for c = 1, ncol do specs[c][2] = ws[c] / tot end
     tbl.colspecs = specs
