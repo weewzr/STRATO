@@ -182,7 +182,7 @@ local function Table(tbl)
   local res = TableCore(tbl) or tbl
   if not FINAL then return res end
   local out = pandoc.Blocks({})
-  out:insert(pandoc.RawBlock("latex", "\\begingroup\\renewcommand{\\tablestretch}{1.18}"))
+  out:insert(pandoc.RawBlock("latex", "\\begingroup\\renewcommand{\\tablestretch}{1.18}\\setlength{\\normallineskiplimit}{3pt}\\setlength{\\normallineskip}{3pt}"))
   if res.t == "Table" then
     out:insert(res)
   else
