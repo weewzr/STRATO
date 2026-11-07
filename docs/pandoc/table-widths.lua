@@ -178,11 +178,35 @@ end
 -- their rows get a little more vertical room. The Full Derivation keeps the default spacing.
 local FINAL = false
 
+-- true when a cell holds tall inline math (fraction, sum, integral, floor, root)
+local function has_tall_math(tbl)
+  local tall = false
+  local function scan(rows)
+    for _, row in ipairs(rows) do
+      for _, cell in ipairs(row.cells) do
+        pandoc.Blocks(cell.contents):walk({
+          Math = function(m)
+            if m.text:find("\\[dt]?frac") or m.text:find("\\sum") or m.text:find("\\int")
+                or m.text:find("\\lfloor") or m.text:find("\\sqrt") then
+              tall = true
+            end
+          end,
+        })
+      end
+    end
+  end
+  scan(tbl.head.rows)
+  for _, body in ipairs(tbl.bodies) do scan(body.body) end
+  return tall
+end
+
 local function Table(tbl)
+  local tall = has_tall_math(tbl)
   local res = TableCore(tbl) or tbl
   if not FINAL then return res end
   local out = pandoc.Blocks({})
-  out:insert(pandoc.RawBlock("latex", "\\begingroup\\renewcommand{\\tablestretch}{1.18}\\setlength{\\normallineskiplimit}{3pt}\\setlength{\\normallineskip}{3pt}"))
+  local stretch = tall and "1.5" or "1.18"
+  out:insert(pandoc.RawBlock("latex", "\\begingroup\\renewcommand{\\tablestretch}{" .. stretch .. "}\\setlength{\\normallineskiplimit}{3pt}\\setlength{\\normallineskip}{3pt}"))
   if res.t == "Table" then
     out:insert(res)
   else
