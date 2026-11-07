@@ -52,7 +52,7 @@ The release fraction is $F(t) = M_\mathrm{rel}(t)/M_0$, the share of the initial
 
 Inventory, cumulative release and their balance are tracked at every step.
 
-The derivation of both methods is in [`docs/mathematics/phase1/`](docs/mathematics/phase1/).
+The derivation of both methods is in two documents under [`docs/mathematics/v1.0.0/`](docs/mathematics/v1.0.0/). The [Full Mathematical Derivation](docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md) ([PDF](docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.pdf)) is the detailed learning and derivation document. It builds the analytical solution (Code C) and the finite-volume scheme (Code B) one step at a time. The [Final Deliverable](docs/mathematics/v1.0.0/STRATO_Final_Deliverable.md) ([PDF](docs/mathematics/v1.0.0/STRATO_Final_Deliverable.pdf)) is the concise implementation reference. It connects each final equation to its pseudocode and to the Rust code with file and line references. The Phase 1 documents in [`docs/mathematics/phase1/`](docs/mathematics/phase1/) stay as the historical record.
 
 ## Installation
 
@@ -127,7 +127,9 @@ This is **verification**: it shows that the code solves its equations correctly.
 
 | Topic | Location |
 |---|---|
-| Phase 1 derivation and pseudocode | [`docs/mathematics/phase1/`](docs/mathematics/phase1/) |
+| Full Mathematical Derivation (detailed learning and derivation document: physics, conservation law, analytical solution, finite volume, numerical properties) | [Markdown](docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md), [PDF](docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.pdf) |
+| Final Deliverable (concise implementation reference: final equation, pseudocode and Rust code with file and line references) | [Markdown](docs/mathematics/v1.0.0/STRATO_Final_Deliverable.md), [PDF](docs/mathematics/v1.0.0/STRATO_Final_Deliverable.pdf) |
+| Phase 1 derivation and pseudocode (historical record, kept as delivered) | [`docs/mathematics/phase1/`](docs/mathematics/phase1/) |
 | Where v1.0 came from, and verification evidence | [`docs/development/provenance.md`](docs/development/provenance.md) |
 | Version history | [`CHANGELOG.md`](CHANGELOG.md) |
 

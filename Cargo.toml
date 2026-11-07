@@ -1,6 +1,6 @@
 [package]
 name = "strato"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 description = "STRATO: Spherical TRISO Analysis and Transport Operations. Fission-product diffusion in multilayer TRISO fuel particles, solved by finite volume and by Sturm-Liouville eigenfunction expansion."
 license = "MIT"
