@@ -7,7 +7,7 @@ All notable changes to STRATO are recorded here. The format follows [Keep a Chan
 Work toward v2.0 (Phase 2). The order is mathematics first, then pseudocode, then a review, then code.
 
 - Planned: radioactive decay, fission-product generation, inventory accounting, Arrhenius diffusivity and temperature histories.
-- A full list of v1.0 to v2.0 changes will be kept in `docs/development/v1_to_v2_changes.md`.
+- The list of v1.0 to v2.0 changes (design only, no Phase 2 code yet) is kept in [docs/development/v1_to_v2_changes.md](docs/development/v1_to_v2_changes.md).
 
 ## [1.0.1] - 2026-11-06
 
