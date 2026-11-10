@@ -9,6 +9,9 @@ Work toward v2.0 (Phase 2). The order is mathematics first, then pseudocode, the
 - Planned: radioactive decay, fission-product generation, inventory accounting, Arrhenius diffusivity and temperature histories.
 - The list of v1.0 to v2.0 changes (design only, no Phase 2 code yet) is kept in [docs/development/v1_to_v2_changes.md](docs/development/v1_to_v2_changes.md).
 
+### Changed
+- Licence changed from MIT to AGPL-3.0-only, the licence of the Outram Park project that the planned web demo builds on. Releases v1.0.0 and v1.0.1 remain available under MIT.
+
 ## [1.0.1] - 2026-11-06
 
 Documentation release. There is no change to the code or to any numerical result: the Rust sources, tests and golden outputs are identical to v1.0.0.

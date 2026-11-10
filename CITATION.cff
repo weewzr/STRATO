@@ -6,7 +6,7 @@ authors:
   - alias: weewzr
 version: 1.0.1
 date-released: 2026-11-06
-license: MIT
+license: AGPL-3.0-only
 repository-code: "https://github.com/weewzr/STRATO"
 abstract: >-
   STRATO models fission-product diffusion through the five layers of a

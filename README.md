@@ -145,4 +145,6 @@ If you use STRATO, please cite it with the metadata in [`CITATION.cff`](CITATION
 
 ## License
 
-MIT. See [`LICENSE`](LICENSE).
+GNU Affero General Public License v3.0 only (AGPL-3.0-only). See [`LICENSE`](LICENSE).
+
+Releases v1.0.0 and v1.0.1 were published under the MIT licence and remain available under it. Later versions are AGPL-3.0-only, matching the [Outram Park](https://github.com/theodoreOnzGit/outram-park-backend) project whose interface the STRATO web demo builds on.
