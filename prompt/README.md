@@ -19,6 +19,7 @@ To start a session, give it this instruction: **"Read prompt/MASTER_PROMPT.md an
 | `COMMIT_AND_DEPLOYMENT.md` | Branches, commit identity, milestone messages, pre-commit checklist, pull request, GitHub Pages, releases. |
 | `GITHUB_REFERENCES.md` | Every reference repository with licence and verdict, the Outram Park section, a do-not-install list and the research notes. |
 | `RAYSTORAGE_INTEGRATION.md` | Engineering practices taken from NUS-H2 and the raystorage archive, with file paths, priorities, risks and the scientific independence rules. |
+| `RAYSTORAGE_REQUEST.md` | The owner's brief for the raystorage and NUS-H2 cross-project review, verbatim. |
 | `ORIGINAL_REQUEST.md` | The owner's original brief for this package, verbatim. Later owner decisions in these files take precedence. |
 
 ## Owner decisions

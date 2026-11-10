@@ -29,6 +29,7 @@ P0 -> P1 -> P2 ----------------------\
 - **Files**: `prompt/PROGRESS.md` (audit notes, tool versions, corrections); fix any wrong fact in `prompt/` in the same commit.
 - **Dependencies**: none.
 - **Tasks**: run `cargo test --all-targets` and `cargo run --release --example verify`; run `cargo check --lib --target wasm32-unknown-unknown`; list public API in `src/` and confirm the signatures in `prompt/TECHNICAL_ARCHITECTURE.md` Section 3; read `docs/development/phase2_review_package.md`; read Outram Park and NUS-H2 files named in `prompt/GITHUB_REFERENCES.md` and `prompt/RAYSTORAGE_INTEGRATION.md` at their pinned commits.
+- **Cross-project review (time-bounded, at most about one working session)**: read the NUS-H2 and raystorage files listed in `prompt/RAYSTORAGE_INTEGRATION.md` Section 4 at their pinned commits, in this priority order: Rust/WebAssembly patterns, numerical verification, browser testing, scientific provenance, documentation workflows. Correct that file where needed and note findings in `prompt/PROGRESS.md`. Open questions become notes, not blockers; Phase 1 starts when the time is up.
 - **Acceptance**: tests pass on the untouched tree; wasm check passes; every discrepancy found is fixed in `prompt/` or listed as NOT VERIFIED.
 - **Scientific checks**: the verified numbers in `prompt/SCIENTIFIC_REQUIREMENTS.md` Section 2 match `tests/golden/v1.0/` and the v1.0.0 documents.
 - **Commit**: `docs(prompt): phase 0 - audit and architecture confirmation`.

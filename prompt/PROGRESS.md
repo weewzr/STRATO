@@ -50,7 +50,7 @@ All phases 0 to 8.
 
 ## Next actions
 
-1. Phase 0: create the work branch, run the v1.0 suite and the wasm check, confirm the facts in `prompt/`.
+1. Phase 0: create the work branch, run the v1.0 suite and the wasm check, confirm the facts in `prompt/`, and do the time-bounded cross-project review of `prompt/RAYSTORAGE_INTEGRATION.md` Section 8.
 2. Phase 1.
 
 ## Owner decisions

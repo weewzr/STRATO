@@ -10,7 +10,7 @@ Three options were evaluated for running STRATO in the browser.
 | B. Backend API | **Reject** | Needs hosting, secrets and uptime. GitHub Pages cannot run a server. Adds a second deployment to verify. |
 | C. Precomputed verified simulations | **Adopt** for heavy or reference results | The convergence study (`src/postprocessing/comparison.rs`, `convergence_study`) runs many refined meshes and is too slow for an interactive page. Reference cases are also better shown exactly as the native binary produced them. |
 
-Decision: **hybrid A + C**. The browser runs the v1.0 solver in a worker for interactive parameter changes, and loads precomputed native results (with provenance) for the convergence study, golden reference cases and, after Phase 6, any long Phase 2 runs. The Rust solver stays authoritative in both paths. No scientific equation is written in JavaScript.
+Decision: **hybrid A + C**. The browser runs the v1.0 solver in a worker for interactive parameter changes, and loads precomputed native results (with provenance) for the convergence study, golden reference cases and, after Phase 6, any long Phase 2 runs. The Rust solver stays authoritative in both paths. No scientific equation is written in JavaScript. NUS-H2 runs a comparable Rust engine as a zero-import wasm module in a worker with JSON requests and replies; the patterns STRATO takes from it (status values, validation, size check, parity tests, commit stamping) are listed in `prompt/RAYSTORAGE_INTEGRATION.md` Section 5.
 
 ## 2 Repository layout to add
 
@@ -72,6 +72,7 @@ Inside `run_v1`:
 ```json
 {
   "schema": 1,
+  "status": "ok",
   "label": "COMPUTED v1.0",
   "engine": {"strato_version": "1.0.1", "commit": "<stamped>", "abi": 1},
   "inputs": {"...": "echo of the validated config"},

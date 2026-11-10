@@ -56,6 +56,7 @@ CI writes `verification_report.json` (check, quantity, value, tolerance, pass or
 - Predictions: only COMPUTED v2.0 runs with matching nuclide, geometry (`data/geometry/geometry.csv`) and temperature history (`data/temperature/temperature_histories.csv`).
 - Metrics: predicted/measured ratio per point, its geometric mean and spread, log-ratio RMS, number of points. No fitting unless the owner asks, and then disclosed on screen.
 - Verification and validation appear in separate sections.
+- Status words per validation row (from the NUS-H2 validation matrix practice): `pass` or `fail` only against a stated limit, `reported` when no limit exists, `not_run` with a reason. Each row records `data_use`: `independent` (the measurement played no part in choosing parameters) or `calibration` (it did, so agreement proves only the fit). Tolerances are frozen when a row is added; a changed tolerance is a new row with its reason. A failed row stays failed.
 
 ## 8 On failure
 
