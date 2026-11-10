@@ -12,6 +12,9 @@ Work toward v2.0 (Phase 2). The order is mathematics first, then pseudocode, the
 ### Changed
 - Licence changed from MIT to AGPL-3.0-only, the licence of the Outram Park project that the planned web demo builds on. Releases v1.0.0 and v1.0.1 remain available under MIT.
 
+### Added
+- `prompt/`: the instruction package for building the interactive STRATO web demo, including cross-project engineering references from NUS-H2.
+
 ## [1.0.1] - 2026-11-06
 
 Documentation release. There is no change to the code or to any numerical result: the Rust sources, tests and golden outputs are identical to v1.0.0.
