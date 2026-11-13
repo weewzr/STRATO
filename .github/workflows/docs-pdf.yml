@@ -34,7 +34,9 @@ jobs:
           set -e
           mkdir -p pdf-out
           for md in docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md \
-                    docs/mathematics/v1.0.0/STRATO_Final_Deliverable.md; do
+                    docs/mathematics/v1.0.0/STRATO_Final_Deliverable.md \
+                    docs/mathematics/STRATO_Phase2_Derivations.md \
+                    docs/mathematics/STRATO_Phase2_Pseudocode.md; do
             [ -f "$md" ] || continue
             dir=$(dirname "$md"); base=$(basename "$md" .md)
             (cd "$dir" && pandoc "$base.md" \

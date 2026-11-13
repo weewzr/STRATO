@@ -24,7 +24,7 @@ Class column: IMPLEMENTED (v1.0, file and lines), DERIVED NOT IMPLEMENTED (mathe
 | 1.14 | Gas constant | Not applicable | SI value by default; $8.3143$ selectable for the CRP-6 comparison | (P22.5) | DERIVED NOT IMPLEMENTED |
 | 1.15 | Semi-analytical reference | Series $F=1-\sum_nw_ne^{-\Lambda_nt}$ ([sturm_liouville.rs, lines 382 to 393](https://github.com/weewzr/STRATO/blob/v1.0.0/src/analytical/sturm_liouville.rs#L382-L393)) | Modal ODE with decay and source; kernel-uniform source and start profile only | (P21.28) to (P21.39) | DERIVED NOT IMPLEMENTED |
 | 1.16 | Reference for $T(t)$ | Not applicable | Effective time when all layers share one scaling factor; ordered projection when $T$ is piecewise constant | (P22.24) to (P22.37), (P22.40) to (P22.43) | DERIVED NOT IMPLEMENTED |
-| 1.17 | Staircase of a ramp | Not applicable | Verification tool for ramps, order 1 for the left rule, order 2 for the midpoint and average rules | (P22.53) to (P22.57) | DERIVED NOT IMPLEMENTED |
+| 1.17 | Staircase of a ramp | Not applicable | Verification tool for ramps, order 1 for the left rule; order 2 for the midpoint and average rules proved for shared scaling, and up to a factor $1+\ln(T/h)$ on a fixed mesh for layer-specific $Q$ (Theorem D); $V$-norm order about 1.75 for layer-specific $Q$ in the stiff regime (DEMONSTRATED NUMERICALLY, Section 5.4.6) | (P22.53) to (P22.57) | DERIVED NOT IMPLEMENTED |
 | 1.18 | Fluence factor on one SiC branch | Not applicable | Formula approved; conversion of the fluence cutoff open | (P22.9) | DERIVED NOT IMPLEMENTED |
 | 1.19 | Activation products | Not applicable | Capture source with burn-out; data not verified | (P21.13) to (P21.16) | FUTURE |
 | 1.20 | Parent and daughter chains | Not applicable | Overlap matrix for a daughter with a different diffusivity | (P21.17) to (P21.22) | FUTURE |
@@ -94,9 +94,9 @@ Status words: REMOVED means the design has no such limit any more, REDUCED means
 | 3.10 | Backward Euler is first order in time | UNCHANGED | the joined scheme (decay, source and $D(T)$ together) has not been convergence-tested; accuracy near complete release needs $\Lambda_1\Delta t\lesssim10^{-3}$ |
 | 3.11 | exactly five regions | UNCHANGED | relaxed only if decision 1 is taken |
 | 3.12 | verification only, no validation | UNCHANGED | agreement between two methods does not test the physics or the inputs |
-| 3.13 | the exact series has a round-off floor and a validity time | UNCHANGED | the modal block R1 keeps the v1.0 mode rule and validity time; no rigorous truncation bound exists for a layered particle (O4) |
-| 3.14 | not applicable (no step planner) | NEW | the step limit (P21.78) is derived for constant $D$ and serves as a warning only for a history |
-| 3.15 | not applicable (no parent-daughter physics) | NEW | a parent and daughter with different diffusivities have no effective-time form |
+| 3.13 | the exact series has a round-off floor and a validity time | UNCHANGED | the modal block R1 keeps the v1.0 mode rule and validity time; updated 2026-11-13: rigorous truncation bounds for a layered particle with a kernel-uniform start and source now exist (Bound A (P21.106) and Bound B (P21.112) of Section 3.5.3 of the derivation, PROVED under completeness and the classical min-max and Sturm oscillation theorems, so they rest on O14), but the steps of block R1 do not use them yet (proposal R1.0 of pseudocode Section 9.5); a bound that uses the sign changes of the weights is OPEN (O4) |
+| 3.14 | not applicable (no step planner) | NEW | the step limit (P21.78) is derived for constant $D$; updated 2026-11-13: for a history its F3 value with $\Lambda_1$ at the highest temperature is a PROVED sufficient cap under shared scaling for option A (Section 5.2.5 of the derivation; for option E the lag $L_1$ enters and $\varepsilon_1$ is not proved for that value), while for layer-specific $Q$ the non-adiabatic remainder has no proved bound (OPEN, O12), so there it serves as a warning only; hard cap or warning is decision 6 |
+| 3.15 | not applicable (no parent-daughter physics) | NEW | updated 2026-11-13 (Section 5.3.8 of the derivation): a parent and daughter with different diffusivities have a joint effective time only under N1 and N2 (Theorem 1, PROVED within the class (P22.101)); an exact two-clock cascade (P22.113), (P22.114) exists when each species passes R2.1, but its truncation bound is OPEN (O11); the finite-volume path remains the only route in the pseudocode steps |
 
 Table: 3.1 Limitations of v1.0 and their v2.0 status.
 
@@ -148,7 +148,7 @@ Notation: $\mathbf V$ is the diagonal matrix of cell volumes $V_j$. $G_W$ and $G
 | 4.40 | Solution in effective time | $F(t)=F_{v1}(t)$ | $c(r,t)=e^{-\lambda t}\hat c(r,\tau(t))$ with $\hat S=e^{\lambda t}S/\alpha$; for $\lambda=0$, $S=0$: $F(t)=F_{v1}(\tau(t))$ | (P22.27), (P22.30), (P22.33) | DERIVED NOT IMPLEMENTED |
 | 4.41 | Modal solution with $\alpha(t)$ | $a_n=a_n(0)e^{-\Lambda_nt}$ | $a_n=a_n(0)e^{-\lambda t-\Lambda_n^\ast\tau(t)}+\int_0^te^{-\lambda(t-s)-\Lambda_n^\ast[\tau(t)-\tau(s)]}s_n\,ds$ | (P22.36) | DERIVED NOT IMPLEMENTED |
 | 4.42 | Projection at a temperature switch | none | $a_m^{(k)}(t_k)=\sum_nP_{mn}^{(k)}a_n^{(k-1)}(t_k)$, $P_{mn}^{(k)}=\frac{1}{N_m^{(k)}}\int_0^Rr^2\phi_m^{(k)}\phi_n^{(k-1)}dr$ | (P22.42), (P22.43) | DERIVED NOT IMPLEMENTED |
-| 4.43 | Staircase errors for a ramp | none | $e\approx C_\mathrm{L}N_T^{-1}$ (left), $e\approx C_\mathrm{M}N_T^{-2}$ (midpoint and average) | (P22.56) | DERIVED NOT IMPLEMENTED |
+| 4.43 | Staircase errors for a ramp | none | $e\approx C_\mathrm{L}N_T^{-1}$ (left), $e\approx C_\mathrm{M}N_T^{-2}$ (midpoint and average) for small $h\lVert B\rVert$; corrected in Section 5.4.6: in the stiff regime with layer-specific $Q$ order 2 is not uniform in the stiffness ($V$-norm order about 1.75, DEMONSTRATED NUMERICALLY) | (P22.56) | DERIVED NOT IMPLEMENTED |
 
 Table: 4.1 Mathematics of v1.0 and v2.0 side by side.
 
@@ -162,7 +162,7 @@ The effective-time forms in rows 4.38 to 4.41 hold only when all five layers sha
 | 4.P4 | Order in space | Second order | DEMONSTRATED NUMERICALLY | Observed orders 1.97 to 2.00 |
 | 4.P5 | Order in time, joined scheme | First order | CLAIMED ONLY | Each part was shown separately; the joined run was checked for closure and positivity only |
 | 4.P6 | Effective-time solution | Exact under the shared-$\alpha$ conditions | PROVED (symbolic); DEMONSTRATED NUMERICALLY | Eqs. (P22.24) to (P22.33) |
-| 4.P7 | Staircase orders 1, 2, 2 | Left rule order 1; midpoint and average rules order 2 | DEMONSTRATED NUMERICALLY in two cases; PROVED only for small $h\lVert B\rVert$; CLAIMED ONLY in the stiff regime | Eqs. (P22.54) to (P22.56) |
+| 4.P7 | Staircase orders 1, 2, 2 | Left rule order 1; midpoint and average rules order 2 | updated 2026-11-13: order 1 PROVED uniformly in the stiffness; order 2 PROVED for shared scaling (uniformly) and, up to a factor $1+\ln(T/h)$, on a fixed mesh (constant grows like $N^{1/2}$, DEMONSTRATED NUMERICALLY); orders near 2 for $F$ DEMONSTRATED NUMERICALLY; $V$-norm order 7/4 CLAIMED ONLY; an order above 1 uniform in the mesh stiffness for layer-specific $Q$ OPEN | Eqs. (P22.54) to (P22.56), (P22.130), (P22.140); Section 5.4.6 of the derivation |
 | 4.P8 | Bit-identical regression with v1.0 | Adding exactly 0.0 leaves every float unchanged | DEMONSTRATED NUMERICALLY in Python; CLAIMED ONLY for Rust | Pseudocode check VI4 |
 
 Table: 4.2 Numerical properties tied to the equations of Table 4.1.
@@ -425,27 +425,27 @@ Table: 8.2 Limits of the present evidence.
 
 ## 9 Documentation
 
-Documents that v2.0 must carry, what they hold and where they stand today. "In tree" means a file in the working tree of the repository. Git reports `data/`, `scripts/`, `docs/pandoc/`, `.github/workflows/docs-pdf.yml`, `docs/mathematics/v1.0.0/` and the Phase 2 documents as untracked, and the `CHANGELOG.md` edit as uncommitted, so none of them is committed yet.
+Documents that v2.0 must carry, what they hold and where they stand today. "In tree" means a file in the working tree of the repository. Update 2026-11-13: `data/`, `scripts/`, `docs/pandoc/`, `.github/workflows/docs-pdf.yml`, `docs/mathematics/v1.0.0/`, the `CHANGELOG.md` edit and the Phase 2 documents, including the reconciled derivation `docs/mathematics/STRATO_Phase2_Derivations.md`, are committed to the repository. The earlier statement that they were untracked described the working tree before those commits. The six check scripts of the open-item work in `scripts/derivation_checks/`, the open-item edits of the four Phase 2 documents listed here (rows 9.4, 9.5, 9.18 and this change list) and the Phase 2 entries of `.github/workflows/docs-pdf.yml` were added on 2026-11-13, after those commits.
 
 | No. | Document | Location | Content | Status |
 |---|---|---|---|---|
 | 9.1 | README | `README.md` | status banner, assumptions table, outputs, verification table, known limitations | v1.0 text; to be rewritten at release (its development-status table already lists v2.0 as "In development") |
 | 9.2 | Changelog | `CHANGELOG.md` | added, changed and removed items per version | `[Unreleased]` entry exists; to be filled at release |
 | 9.3 | Change list v1.0 to v2.0 | `docs/development/v1_to_v2_changes.md` | numbered tables of changes, assumptions, limitations, verification | this file |
-| 9.4 | Phase 2 derivation | `docs/mathematics/STRATO_Phase2_Derivations.md` | Sections 3 to 5: decay, source, modal solution, FV scheme, Arrhenius, effective time; appendices A (check scripts) and B (independent verification record) | in tree, untracked; DRAFT FOR REVIEW; the v1.0 line reference of Section 4.3 was clarified in the final review of the pseudocode (open item O6 of the pseudocode, resolved) |
-| 9.5 | Phase 2 pseudocode | `docs/mathematics/STRATO_Phase2_Pseudocode.md` | blocks A to M and R1 to R4, tables of status, 14 decisions | in tree, untracked; DRAFT FOR REVIEW |
+| 9.4 | Phase 2 derivation | `docs/mathematics/STRATO_Phase2_Derivations.md` | Sections 3 to 5: decay, source, modal solution, FV scheme, Arrhenius, effective time; appendices A (check scripts) and B (independent verification record) | in the repository (earlier version committed on 2026-11-07); DRAFT FOR REVIEW; the v1.0 line reference of Section 4.3 was clarified in the final review of the pseudocode (open item O6 of the pseudocode, resolved); open-item results added 2026-11-13 (Sections 3.5.3, 4.6.1, 5.2.5, 5.3.7, 5.3.8 and 5.4.6, Appendices A.2 and B.5) |
+| 9.5 | Phase 2 pseudocode | `docs/mathematics/STRATO_Phase2_Pseudocode.md` | blocks A to M and R1 to R4, tables of status, 16 decisions, proposed step changes (Section 9.5) | in the repository (earlier version committed on 2026-11-07); DRAFT FOR REVIEW; updated 2026-11-13 |
 | 9.6 | Phase 1 derivation | `docs/mathematics/phase1/` | v1.0 derivation and pseudocode as delivered | kept unchanged as the historical record |
-| 9.7 | Parameter register | `data/reference/STRATO_Parameter_Register.md` and `data/*/*.csv` | literature parameters with source, page and status; gap list | in tree, untracked; draft; gaps listed in Section 9.3 of the pseudocode |
-| 9.8 | Derivation check scripts | `scripts/derivation_checks/` | sympy and numeric checks of Sections 3 to 5 and the pseudocode | in tree, untracked; pinned environment `requirements.lock.txt` |
+| 9.7 | Parameter register | `data/reference/STRATO_Parameter_Register.md` and `data/*/*.csv` | literature parameters with source, page and status; gap list | in the repository (committed); draft; gaps listed in Section 9.3 of the pseudocode |
+| 9.8 | Derivation check scripts | `scripts/derivation_checks/` | sympy and numeric checks of Sections 3 to 5 and the pseudocode | in the repository; the six open-item scripts (`sec3_o4_*`, `sec4_p2_*`, `sec5_o10_*`, `sec5_o11_*`, `sec5_o12_*`, `sec5_r24_*`) were added on 2026-11-13; pinned environment `requirements.lock.txt` |
 | 9.9 | Input reference | to be written | new TOML fields for decay, source, Arrhenius laws and histories, with units | PLANNED after the decisions of Section 9.4 of the pseudocode |
 | 9.10 | Output reference | to be written | new columns for generated, decayed and outside amounts, two residuals, $T$ and $D$ | PLANNED |
 | 9.11 | Input template | `inputs/literature/literature_inputs.template.toml` | placeholders for literature runs | v1.0 content; must gain the new fields |
 | 9.12 | Provenance | `docs/development/provenance.md` | origin of each file and the evidence | v1.0 only; needs a v2.0 section for new files |
 | 9.13 | Verification report | output of `examples/verify.rs` and Table 8.1 | observed values in Rust beside the tolerances | PLANNED; no Rust result exists |
-| 9.14 | Open items and decisions | Sections 9.3 and 9.4 of the pseudocode | O1 to O15 and decisions 1 to 14 | open; the work stops for the user's review |
-| 9.15 | Version metadata | `Cargo.toml`, `CITATION.cff` | version 1.0.0 in both | change at release only |
-| 9.16 | PDF build | `docs/pandoc/`, `.github/workflows/docs-pdf.yml` | pandoc and XeLaTeX with a table-caption filter | in tree, untracked; the Markdown rules (tags, "Table:" captions, no raw pipes in math) serve this build |
-| 9.17 | Full v1.0.0 derivation | `docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md` | every v1.0 equation with the code lines that compute it | in tree, untracked; describes v1.0 only |
-| 9.18 | Phase 2 review package | `docs/development/phase2_review_package.md` | reading order, status and the list of what the user must decide | in tree, untracked; READY FOR THE USER'S REVIEW |
+| 9.14 | Open items and decisions | Sections 9.3 and 9.4 of the pseudocode | O1 to O17 and decisions 1 to 16 | open; the work stops for the user's review; O4, O10 to O14 updated on 2026-11-13 |
+| 9.15 | Version metadata | `Cargo.toml`, `CITATION.cff` | version 1.0.1 in both (v1.0.1 release, licence AGPL-3.0-only) | change again at the v2.0 release |
+| 9.16 | PDF build | `docs/pandoc/`, `.github/workflows/docs-pdf.yml` | pandoc and XeLaTeX with a table-caption filter | in the repository (committed); the Markdown rules (tags, "Table:" captions, no raw pipes in math) serve this build; the Phase 2 derivation and pseudocode were added to the workflow's list on 2026-11-13, and their PDF build has not been run |
+| 9.17 | Full v1.0.0 derivation | `docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md` | every v1.0 equation with the code lines that compute it | in the repository (committed); describes v1.0 only |
+| 9.18 | Phase 2 review package | `docs/development/phase2_review_package.md` | reading order, status and the list of what the user must decide | in the repository (earlier version committed on 2026-11-07; updated 2026-11-13); READY FOR THE USER'S REVIEW |
 
 Table: 9.1 Documentation for v2.0.

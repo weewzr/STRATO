@@ -1,8 +1,8 @@
 # STRATO v2.0 Phase 2 pseudocode: decay, source, inventory, Arrhenius diffusivity and temperature histories
 
-Date: 2026-11-06. Status: DRAFT FOR REVIEW.
+Date: 2026-11-06; open items updated 2026-11-13 (Sections 9.2, 9.3 and 9.5). Status: DRAFT FOR REVIEW.
 
-**Not implemented yet: Rust follows after review.** No Rust has been written for Phase 2. No file of STRATO v1.0.0 under `src/`, `tests/` or `examples/` has been changed. This page is the plain-language pseudocode that comes after the mathematics (Sections 3 to 5 of the derivation, equations (P21.1) to (P21.92) and (P22.1) to (P22.59)) and before any code. Work stops here until the review is finished.
+**Not implemented yet: Rust follows after review.** No Rust has been written for Phase 2. No file of STRATO v1.0.0 under `src/`, `tests/` or `examples/` has been changed. This page is the plain-language pseudocode that comes after the mathematics (Sections 3 to 5 of the derivation, equations (P21.1) to (P21.92) and (P22.1) to (P22.59)) and before any code. Work stops here until the review is finished. The open-item work of 2026-11-13 added the derivation equations (P21.93) to (P21.142) and (P22.60) to (P22.142); this page cites them in notes and in the proposals of Section 9.5, and no algorithm step uses them yet.
 
 ## 1 Reading guide
 
@@ -616,8 +616,16 @@ F2  IF decay_constant > 0 THEN
 F3  IF Lambda_1 is given THEN
         dt_diff = 2 * eps_1 / ((Lambda_1 + decay_constant)^2 * t_end).           (P21.78, solved for dt)
     ELSE dt_diff = infinity.
-    [OPEN for a temperature history: (P21.78) was derived for constant diffusivities. With a history,
-     Lambda_1 changes with T; use Lambda_1 at the highest temperature as a warning only.]
+    [Temperature history, note updated 2026-11-13 from Section 5.2.5 of the derivation; the step itself is
+     unchanged. Use Lambda_1 at the highest temperature. With a shared scaling factor and option A this
+     dt_diff is then a sufficient cap: the slow-mode error stays below eps_1 (PROVED, the F3 paragraph
+     under (P22.72)), at about [(Lambda_max + decay_constant) * t_end / Theta_end]^2 times the fewest
+     steps (1.11 in the ramp-and-hold test). For option E the lag L_1 enters ((P22.65), (P22.73)), so
+     eps_1 is not proved for this value. Lambda_1 at the lowest temperature gives no bound. With
+     layer-specific activation energies only the frozen-coefficient part of the error is bounded (P22.78;
+     option A for any history, option E on heating only) and the remainder is OPEN, so there the value
+     stays a warning. The cheaper rule (P22.69) with the step (P22.72) is proposed in
+     Section 9.5 and is not applied here. Hard cap or warning: decision 6.]
     why: the slowest diffusion mode carries the largest time error; quantities near complete release
          (for example 1 - F) are the most sensitive.
 F4  dt_cap = smallest of dt_max, dt_decay, dt_diff.
@@ -1038,7 +1046,7 @@ R1.5  Diagnostics, never used for the release totals:
 **Truncation.** The mode count follows two checks.
 
 1. The v1.0 rule keeps modes up to $\Lambda_\mathrm{max}$ and trusts times $t\ge40/\Lambda_\mathrm{max}$ for the series of $M$ (`min_valid_time`, [line 377](https://github.com/weewzr/STRATO/blob/v1.0.0/src/analytical/sturm_liouville.rs#L377)). This controls only the inventory series. The release series needs the balance form of step R1.4.
-2. For a homogeneous sphere the weights are positive and the balance form converges like $N^{-3}$, the direct flux series like $N^{-1}$ (Section 3.5.2 of the derivation). The check script finds order 2.94 for the balance form between 10 and 100 modes. For the layered particle the weights change sign (152 negative weights among the first 300 modes in the check case), so the rigorous tail bound by $(1-\sum w_n)/\Lambda_{N+1}$ is lost. A rigorous truncation bound for the layered case is OPEN (O4); the completeness defect of step R1.5 is a diagnostic and gives no bound. Section 3.9 of the derivation observed orders of 2.1 and 4.0 for the two-layer case.
+2. For a homogeneous sphere the weights are positive and the balance form converges like $N^{-3}$, the direct flux series like $N^{-1}$ (Section 3.5.2 of the derivation). The check script finds order 2.94 for the balance form between 10 and 100 modes. For the layered particle the weights change sign (152 negative weights among the first 300 modes in the check case), so the rigorous tail bound by $(1-\sum w_n)/\Lambda_{N+1}$ is lost. Update 2026-11-13: Section 3.5.3 of the derivation gives explicit bounds that need no sign information, Bound A (P21.106) with the mode-count rule (P21.110) and Bound B (P21.112) (PROVED under completeness (O14) and the classical min-max and Sturm oscillation theorems; DEMONSTRATED NUMERICALLY; conservative); the steps of this block do not use them yet, and the diagnostic and mode-count steps that would are proposed in Section 9.5. The completeness defect of step R1.5 is a diagnostic and gives no bound. Section 3.9 of the derivation observed orders of 2.1 and 4.0 for the two-layer case.
 
 **Limits.** R1 assumes constant diffusivities, so it covers a constant-temperature run. Temperature-dependent cases use R2 or R3. R1 also stops at a kernel-uniform source: the activation source of step E5 is spread over all layers and needs the general projection.
 
@@ -1154,14 +1162,24 @@ R2.4  Evaluate the solution when R2.1 returned Exact
             the integral by Gauss-Legendre on each piece between breakpoints, using tau_at at the nodes.
             why: with decay the release depends on the whole path tau(s), s <= t, so one quadrature is
                  unavoidable; it uses inventories only, which converge faster than the flux series.
-            [OPEN: accuracy note from the B7 review] The quadrature also needs Mhat_rel(tau(s)) for s earlier
-                 than the validity time of step 5, where the truncated series misses up to M0 * sum_{n>N} |w_n|,
-                 and for a bare kernel with a uniform start Mhat_rel grows like sqrt(tau) near s = 0, so Gauss-Legendre converges only slowly on the
-                 first piece. The error this adds to M_rel is at most about
-                 decay_constant * t_valid * M0 * sum_{n>N} |w_n|. An equivalent route without that start problem is
-                 the balance form: M_dec = decay_constant * integral_0^t M ds with M from the inventory series
-                 (smooth integrand), then M_rel = M0 - M - M_dec.                                (P21.41, P21.42)
-                 Which route to implement is for the review; neither has been run in the transcription.
+            [Accuracy note, updated 2026-11-13 from Section 5.3.7 of the derivation; the step is unchanged.]
+                 The quadrature also needs Mhat_rel(tau(s)) for s earlier than the validity time of step 5,
+                 where the truncated series is not valid, and for a bare kernel with a uniform start Mhat_rel
+                 grows like sqrt(tau) near s = 0, so Gauss-Legendre converges only slowly on the first piece.
+                 Correction to the B7 note: the balance form M_rel = M0 - M - M_dec is the same expression
+                 as (P22.35) (exact, PROVED, (P22.81)), so it has the same start problem and is not a separate
+                 route; the earlier remark "(smooth integrand)" was wrong for the start piece.
+                 For an absorbing surface and no source the start can be bounded (all PROVED):
+                   modal start in closed form per mode on [0, t0], error at most
+                   decay_constant * M0 * min(t0 * Wbar_N, Vbar_N / alpha_0) for constant alpha    (P22.93)
+                   with the computable tail bounds Wbar_N, Vbar_N of (P22.90), (P22.91), and the bracket
+                   (P22.94) for a varying alpha and c0 >= 0; for a bare kernel with a uniform start the image
+                   form (P22.86) up to t_B, start error below 9.4e-20 M0 with 12 modes for constant alpha.
+                 Late pieces with tau(b)/tau(a) <= 2 and 8 Gauss-Legendre points obey (P22.97) for constant
+                 alpha per piece (CLAIMED ONLY on ramp pieces); the total (P22.98) is PROVED only when alpha is
+                 constant on the start piece and on every graded piece and under the coverage assumption
+                 R24-A3c (late truncation (P22.95)). A layered particle with a long cold
+                 start is OPEN (O17). The sub-steps that would apply these results are proposed in Section 9.5.
       4. With a source: each mode a_n(t) from the quadrature of Eq. (P22.36); the special case of constant
          alpha and constant source is Eq. (P22.37).                                                 (P22.36, P22.37) APPROVED
          The modal source projection comes from block R1.
@@ -1170,6 +1188,8 @@ R2.4  Evaluate the solution when R2.1 returned Exact
 ```
 
 Not covered by an approved equation (OPEN): a parent and daughter pair with different diffusivities, because the source of the daughter is then the parent field and the two fields do not share one clock. Such cases use the finite-volume path only.
+
+Update 2026-11-13 (Section 5.3.8 of the derivation; the block is unchanged). A joint effective time for the pair exists only under conditions N1 and N2 of Theorem 1 (PROVED within the class (P22.101)): equal activation energies are necessary and not sufficient, and no linear ramp with a non-zero activation energy satisfies N2 when the decay coupling is present (Corollary 2). For identical diffusivities in every layer the pair has the closed form (P22.109) in $\tau$, and whenever each species passes R2.1 on its own the daughter has an exact two-clock cascade (P22.113), (P22.114) whose truncation bound is OPEN. A chain mode of R2.1, a step 6 of R2.4 and a new block R2.5 that would use these results are proposed in Section 9.5; until the review accepts them, the finite-volume path stays the only route for such pairs.
 
 ### 5.3 Block R3: piecewise-constant temperature with eigenfunction projection
 
@@ -1265,7 +1285,7 @@ To test the finite-volume solver on a ramp with layer-specific activation energi
 |---|---|---|---|
 | (P22.53) | left, midpoint and per-layer average rules for the interval temperature | APPROVED | DERIVED NOT IMPLEMENTED |
 | (P22.54), (P22.55) | Magnus terms and the defects of the three rules | APPROVED for small $h\lVert B\rVert$ | DERIVED NOT IMPLEMENTED |
-| (P22.56) | error orders 1, 2 and 2; observed order $p=\log_2(e_{N_T}/e_{2N_T})$ | numerically shown; proof for the stiff regime OPEN | DERIVED NOT IMPLEMENTED |
+| (P22.56) | error orders 1, 2 and 2; observed order $p=\log_2(e_{N_T}/e_{2N_T})$ | updated 2026-11-13 (Section 5.4.6 of the derivation): order 1 PROVED uniformly in the stiffness (P22.130); order 2 PROVED for shared scaling (P22.135) and, up to a factor $1+\ln(T/h)$, on a fixed mesh (P22.140); with layer-specific $Q$ and $h\lVert A\rVert\gg1$ the $V$-norm order is about 1.75 in the test case and 1.51 to 1.96 in a second case (DEMONSTRATED NUMERICALLY); an order above 1 uniform in the mesh stiffness is OPEN | DERIVED NOT IMPLEMENTED |
 | (P22.57) | with a shared scaling the average rule is exact at the interval ends | APPROVED | DERIVED NOT IMPLEMENTED |
 
 Table: 5.6 Equations of block R4.
@@ -1274,14 +1294,16 @@ Table: 5.6 Equations of block R4.
 R4.1  staircase(linear segment [t_a, t_b], N_T, rule)       h = (t_b - t_a) / N_T
       FOR k = 0..N_T-1:
          rule LEFT:        T_k  = T(t_a + k h)                       -- error order 1
-         rule MIDPOINT:    T_k  = T(t_a + (k + 1/2) h)               -- order 2
-         rule AVERAGE:     Dbar_i,k = (1/h) * int D_i(T(t)) dt (per layer, as in step H1.4) -- order 2      (P22.53) APPROVED
+         rule MIDPOINT:    T_k  = T(t_a + (k + 1/2) h)               -- order 2 for F; on a fixed mesh up to 1+ln(T/h) (note below)
+         rule AVERAGE:     Dbar_i,k = (1/h) * int D_i(T(t)) dt (per layer, as in step H1.4) -- order 2 as MIDPOINT      (P22.53) APPROVED
       -- the AVERAGE rule hands layer diffusivities, not a temperature, to block R3; so R3 must accept a list D[1..5] directly.
       Return a HistoryConstant (or a list of D vectors).
 R4.2  observed order  p = log2( e(N_T) / e(2 N_T) )                                              (P22.56)
 ```
 
 The orders 1, 2 and 2 are shown numerically for one stiff test problem (ramp 1600 to 1800 $^\circ$C in 4 h and then a 2 h hold, synthetic layer-specific $Q$; last-pair orders 1.00, 2.03 and 1.95; B3 found 1.00, 2.01 and 2.04). A proof for the stiff regime ($h\lVert B\rVert$ of order $10^2$ to $10^3$) is OPEN; the Magnus argument holds for small $h\lVert B\rVert$. With a shared scaling factor the AVERAGE rule is exact at the interval ends (Eq. (P22.57)).
+
+Update 2026-11-13 (Section 5.4.6 of the derivation; the steps above are unchanged). Order 1 of all three rules is PROVED uniformly in the stiffness, the mesh and $\lambda$ (Theorem A, (P22.130)), and the LEFT rule cannot do better. Temperature jumps on the interval ends are exact and a jump inside an interval costs order 1 (Theorem B). With shared scaling MIDPOINT has order 2 uniformly and AVERAGE is exact (Theorem C). With layer-specific $Q$ order 2, up to a factor $1+\ln(T/h)$, is PROVED only on a fixed mesh, with a constant that grows under mesh refinement (Theorem D, (P22.140)); in the $V$-norm of the concentration vector the observed order is 1.76 to 1.81 in the test case (1.75 on the finest mesh) and 1.51 to 1.96 in a second synthetic case, while the release fraction $F$ keeps orders 1.98 to 2.13 (DEMONSTRATED NUMERICALLY). Consequence for step R4.2 and case VT18: measure the observed order on a smooth functional such as $F$, as VT18 does; a $V$-norm acceptance test can only require an order of at least 1, and a fixed band such as $1.75\pm0.1$ is not safe. A sub-step R4.0 that places interval ends on every kink and jump of $T(t)$ is proposed in Section 9.5; for a linear segment, as in R4.1, the segment ends already are the kinks.
 
 ### 5.5 Methods that are not planned
 
@@ -1344,7 +1366,7 @@ Table: 6.2 Geometry and mesh.
 | `fission_rate_i` | $\dot F$ | $\mathrm{fissions\ m^{-3}\ s^{-1}}$ | fission rate density in the kernel on interval $i$ | E |
 | `yield` | $y$ | atoms per fission | cumulative yield used for the source | E |
 | `f_q`, `y_q` | $f_q$, $y_q$ | 1, atoms per fission | fraction of fissile nuclide $q$ and its yield | E |
-| `N_A` | $N_A$ | $\mathrm{mol^{-1}}$ | Avogadro constant, $6.02214076\times10^{23}$ | E |
+| `N_A` | $N_A$ | $\mathrm{mol^{-1}}$ | Avogadro constant, $6.02214076\times10^{23}$; BIPM, 2019, Table 1, p. 124 | E |
 | `source_kernel_i` | $S_K$ | $\mathrm{mol\ m^{-3}\ s^{-1}}$ | source in the kernel on interval $i$ | E |
 | `source_step` | $\bar S$ | $\mathrm{mol\ m^{-3}\ s^{-1}}$ | kernel source averaged over one step | H |
 | `source_cell[j]` | $\bar S_j$ | $\mathrm{mol\ m^{-3}\ s^{-1}}$ | cell-average source over one step | H |
@@ -1542,7 +1564,7 @@ No equation was changed. Each row below names a place where the drafts disagreed
 | X4 | decay part D4 against temperature part T4.5 | D4 defined $G_R$ as the east conductance of the last cell without saying that it must be the one of the current step; v1.0 line 210 reads the fixed mesh constant, which is wrong once $D_5$ changes | J1.2 states that $G_R$ is the one used in the matrix of the same step; negative test VI3 |
 | X5 | decay part Table 6A.11 | the relation $4\pi s_nI_n=G\,w_n$ was attributed to (P21.46), (P21.47); (P21.47) is the $R/B$ series | cited as (P21.30) with (P21.46) in Table 5.1 |
 | X6 | temperature part T5.1 step 8 | $\alpha(T)=D_1(T)/D_1(T_\mathrm{ref})$ was cited to (P22.24), (P22.25); (P22.25) holds only for one branch with a shared $Q$, and the general statement is in the text of Section 5.3.1 | cited to (P22.24), with (P22.25) named as the single-branch case (R2.1 step 8) |
-| X7 | decay part C1.3 | (P21.78) is derived for constant diffusivities, yet the step was written without a restriction | marked OPEN for a temperature history in F3 (use $\Lambda_1$ at the highest temperature as a warning only) |
+| X7 | decay part C1.3 | (P21.78) is derived for constant diffusivities, yet the step was written without a restriction | marked OPEN for a temperature history in F3 (use $\Lambda_1$ at the highest temperature as a warning only); update 2026-11-13: with shared scaling and option A that value is a PROVED sufficient cap (not proved for option E, whose lag $L_1$ enters), see the F3 note and (P22.69) to (P22.72) |
 | X8 | both parts | symbols used twice: $G$ (generation and conductance), $\kappa$ (mode rate and layer ratio), $R$ (gas constant and radius), $e$ (event and pivot), $x$ (three arguments), $B$ (birth rate and step matrix) | renamed (Table 1.3); $B$ appears only in cited derivation text |
 | X9 | temperature part equations (6.1) and (6.2) | numbered locally and not in the reconciled sections | renamed (H22.1) and (H22.2), status DESIGN; the helpers (H21.1) to (H21.3) are HELPER |
 | X10 | both parts, verification | two ID series (V and VT) and an overlap between V9 and VT13 | kept as two series; the overlap is noted in Table 7.2; new series VI for the joined run |
@@ -1564,7 +1586,7 @@ P22.5 P22.9 P22.10 P22.13 P22.14 P22.15 P22.16 P22.17 P22.18 P22.19 P22.20 P22.2
 P22.23 P22.33 P22.37 P22.38 P22.39 P22.47 P22.51 P22.52 P22.53 P22.57 P22.58 P22.59
 ```
 
-Steps that rest on OPEN items are marked in the text: E1 (precursor warning factor), E5 (activation products), C1.4 (fluence cutoff), D2.4 and D2.5 (ramp shape, row 8a), F3 (variable temperature), R3.2 (access to eigenfunctions), R4 (stiff regime), R2.4 (parent and daughter with different diffusivities) and R2.4 step 3 (start of the release quadrature, added in the B7 review).
+Steps that rest on OPEN items are marked in the text: E1 (precursor warning factor), E5 (activation products), C1.4 (fluence cutoff), D2.4 and D2.5 (ramp shape, row 8a), F3 (variable temperature), R3.2 (access to eigenfunctions), R4 (stiff regime), R2.4 (parent and daughter with different diffusivities) and R2.4 step 3 (start of the release quadrature, added in the B7 review). Update 2026-11-13: F3 rests on an unproved bound for layer-specific $Q$ (O12) and, under shared scaling, for option E; R4 only for an order above 1 that is uniform in the mesh stiffness (O10); the parent-daughter note after R2.4 for the truncation of the cascade and for transformations outside the class (P22.101) (O11); and R2.4 step 3 for a layered particle with a long cold start and for ramp pieces ((P22.87), (P22.97); O17).
 
 **B7 final review (2026-11-06).** Changes to this page: the solution-path row for a ramp now says that no general closed form is available (Section 5.4.2 of the derivation); the worked scalar example of block H now calls its difference a one-step local error of order $z^2$; R2.4 step 3 carries the accuracy note on the start of the release quadrature; the remark under Table 7.1 and items X11 and O6 record the corrections made to Section 4 of the derivation; the closing sentence of Section 9.4 lists every new non-Rust file. No equation, step or verification result was changed.
 
@@ -1598,8 +1620,13 @@ Steps that rest on OPEN items are marked in the text: E1 (precursor warning fact
 | projection of an arbitrary start profile onto the modes | FUTURE | (P21.27), (P21.29) |
 | precursors as separate species | FUTURE | Section 3.3.4 of the derivation |
 | Galerkin on a fixed basis, POD, Robin surface | FUTURE (not planned) | (P22.47) to (P22.52), (P22.38) |
+| truncation bounds and mode count for R1 (proposed steps R1.0 and R1.5) | DERIVED NOT IMPLEMENTED; proposed in Section 9.5, not yet a step | (P21.105) to (P21.112) |
+| diffusion step rule with a temperature history (proposed change of F3 to F5) | DERIVED NOT IMPLEMENTED; proposed in Section 9.5, not yet a step | (P22.69) to (P22.74) |
+| bounded start of the release quadrature (proposed R2.4 sub-steps 3a to 3e) | DERIVED NOT IMPLEMENTED; proposed in Section 9.5, not yet a step | (P22.81) to (P22.99) |
+| parent-daughter closed form and two-clock cascade (proposed R2.1 chain mode, R2.4 step 6, block R2.5) | DERIVED NOT IMPLEMENTED; proposed in Section 9.5, not yet a step | (P22.105) to (P22.114) |
+| second-order or exponential integrator (proposed step H4b, decision 15) | DERIVED NOT IMPLEMENTED; proposed in Section 9.5, not yet a step | (P21.113) to (P21.142) |
 
-Table: 9.1 Classification of the operations.
+Table: 9.1 Classification of the operations. The last five rows were added on 2026-11-13; they classify results of the open-item work that no step uses yet.
 
 ### 9.2 Status of the numerical properties
 
@@ -1617,10 +1644,14 @@ Table: 9.1 Classification of the operations.
 | Effective-time solution exact | under E1 to E5 | PROVED (symbolic, B3); DEMONSTRATED NUMERICALLY | Eqs. (P22.24) to (P22.33); VT10, VT15 |
 | Modal recursion exact in time | piecewise-constant source, no time error | PROVED | Eq. (P21.33); V18 |
 | Projection at a temperature switch | exact for the untruncated series | PROVED (completeness by the Green-function argument of B3); DEMONSTRATED NUMERICALLY | Eqs. (P22.40) to (P22.43); VT17 |
-| Staircase orders 1, 2, 2 | left, midpoint, average | DEMONSTRATED NUMERICALLY in two cases; PROVED only for small $h\lVert B\rVert$; CLAIMED ONLY in the stiff regime | Eqs. (P22.54) to (P22.56); VT18 |
+| Staircase orders 1, 2, 2 | left, midpoint, average | updated 2026-11-13: order 1 PROVED uniformly in the stiffness; order 2 PROVED for shared scaling (uniformly) and, up to a factor $1+\ln(T/h)$, on a fixed mesh (constant grows like $N^{1/2}$, DEMONSTRATED NUMERICALLY); orders near 2 for $F$ DEMONSTRATED NUMERICALLY; $V$-norm order 7/4 CLAIMED ONLY; an order above 1 uniform in the mesh stiffness for layer-specific $Q$ OPEN | Eqs. (P22.54) to (P22.56), (P22.130), (P22.140); Section 5.4.6 of the derivation; VT18; `sec5_o10_stiff_staircase.py` |
 | Gauss-Legendre average with 8 points | relative error below $10^{-15}$ while the change of $\ln D$ is at most 2 | DEMONSTRATED NUMERICALLY | `b4_gl8_range.py`; VT9 |
-| Truncation of the balance form | $N^{-3}$ worst case for sign-definite weights | PROVED asymptotically for the homogeneous sphere; DEMONSTRATED NUMERICALLY otherwise | Section 3.5.2 of the derivation; layered weights change sign |
-| Rigorous truncation bound for the layered particle | not available | CLAIMED ONLY | open item O4 |
+| Truncation of the balance form | $N^{-3}$ worst case for sign-definite weights; updated 2026-11-13: a rigorous bound for the layered particle whose source and decay part falls like $(N-J)^{-3}$, and for $S=0$ and an absorbing surface a computable a posteriori tail bound | PROVED asymptotically for the homogeneous sphere; DEMONSTRATED NUMERICALLY otherwise; layered bound PROVED under completeness (O14) and the classical min-max and Sturm oscillation theorems; tail bound for $S=0$ and an absorbing surface PROVED | Section 3.5.2 of the derivation; layered weights change sign; (P21.106); (P22.90), (P22.91) |
+| Rigorous truncation bound for the layered particle | updated 2026-11-13: Bound A (P21.106) with corollaries (P21.107) to (P21.110), Bound B (P21.112), for a kernel-uniform start and source | PROVED (conditional on completeness, O14, and on the classical min-max and Sturm oscillation theorems); DEMONSTRATED NUMERICALLY; conservative | Section 3.5.3 of the derivation; `sec3_o4_layered_truncation_bound.py` |
+| Diffusion step limit with a temperature history | rule (P22.69) with step (P22.72) keeps the slow-mode error below $\varepsilon_1$ for option A; for option E the rule (P22.74) with $\zeta_E$ bounds it by $\varepsilon_1+\tfrac12\zeta_E^2\,\mathrm{TV}(\ln\Lambda_1)$; the F3 value with $\Lambda_1$ at the highest temperature is a sufficient cap for option A | PROVED for shared scaling (option A by (P22.69) with (P22.72), option E by (P22.74); the F3 cap for option A only); frozen-coefficient part PROVED for layer-specific $Q$ (option A for any history, option E on heating only); remainder CLAIMED ONLY | Section 5.2.5 of the derivation; `sec5_o12_variable_D_step_limit.py` |
+| Start of the release quadrature with decay | start bound (P22.93), bracket (P22.94) and total (P22.98), absorbing surface, $S=0$ | (P22.93) PROVED for constant $\alpha$; bracket (P22.94) PROVED for varying $\alpha$ and $c_0\ge0$; total (P22.98) PROVED for constant $\alpha$ on the start piece and on every graded piece and under the coverage assumption R24-A3c (late truncation (P22.95)); CLAIMED ONLY on ramp pieces; layered cold start OPEN | Section 5.3.7 of the derivation; `sec5_r24_quadrature_start.py` |
+| Joint effective time of a parent and daughter | exists only under N1 and N2; otherwise a two-clock cascade when each species passes R2.1 (E1), and the surrogate or the finite-volume path when a species fails it | PROVED within the class (P22.101); cascade DEMONSTRATED NUMERICALLY; cascade truncation OPEN | Section 5.3.8 of the derivation; `sec5_o11_parent_daughter_tau.py` |
+| Positivity of second-order integrators | no rational order-2 scheme is positive for every step over $\mathcal S$; TR-BDF2 for $h\beta_B\le1+\sqrt2$, CN for $h\le h^*_{CN}$ (P21.125); exponential integrator for every step | PROVED; per-matrix TR-BDF2 threshold DEMONSTRATED NUMERICALLY; a fixed matrix size $N\ge3$ OPEN | Section 4.6.1 of the derivation; `sec4_p2_positive_second_order.py` |
 | Modal against finite volume agreement | difference falls by a factor of at least 1.8 per halving | DEMONSTRATED NUMERICALLY | V7 |
 | Bit-identical regression with v1.0 | adding exactly 0.0 leaves every float unchanged | DEMONSTRATED NUMERICALLY in Python; CLAIMED ONLY for Rust until V1 and VT16 run | Section 4.3 detail (ii) of the derivation; VI4 |
 | Choice of cumulative yield | adequate when the precursor delay is short | PROVED for a single precursor (Eq. (P21.12)); an approximation otherwise | Section 3.3.2 of the derivation |
@@ -1632,18 +1663,20 @@ Table: 9.2 Status of the numerical properties.
 - O1. Capture and burn-out cross sections, the Ag-110m isomeric fraction and flux histories are NOT VERIFIED, as are the daughter diffusivities, the kernel heavy-metal density $n_\mathrm{HM}$ and the energy per fission. Together these block E5, the burnup route of Eq. (P21.9) and the chains.
 - O2. The warning factor of step E1 (default 0.1) has no source; it is a design proposal.
 - O3. The tolerances of V7 and V6a come from the first run of the transcription and should be revisited when the Rust code runs.
-- O4. No rigorous truncation bound exists for the modal balance form in the layered particle.
+- O4. Resolved for a kernel-uniform start and source (2026-11-13): Bound A (P21.106) and Bound B (P21.112) of Section 3.5.3 of the derivation bound the truncation of the modal balance form in the layered particle (PROVED under completeness and the classical min-max and Sturm oscillation theorems, so the result rests on O14; DEMONSTRATED NUMERICALLY; both conservative). For $S = 0$ and an absorbing surface, with or without decay and in effective time, the computable tail bounds (P22.90) and (P22.91) of Section 5.3.7 also apply; the start bound (P22.93) is PROVED for constant $\alpha$ and holds in effective time only with $\alpha_0$ replaced by $\alpha_-$ and each $E_n$ integrated exactly; the late truncation bound (P22.95) needs the coverage assumption R24-A3c. Still OPEN: a bound that uses the cancellation between weights of opposite sign, and a bound after a projection at a temperature switch other than the general form of Bound B.
 - O5. The gas constant and the decay treatment used by the CRP-6 participants remain NOT VERIFIED. Cases V11 and V12 were run in the transcription with $R_g=8.3145$ (the value printed in IAEA, 2012, Eq. (10.5a)) and no decay. Step C2 offers the SI value and 8.3143 only; with either one both cases stay inside their tolerances (B7 review), so a third option is needed only if the review wants the printed TECDOC-1674 constant itself.
 - O6. Resolved in the B7 review. Section 4 of the derivation referred to the v1.0 step at "lines 171 to 180", which is the assembly loop inside `backward_euler_step` (lines 162 to 182 in the tag, changed lines 178 and 179). The table of Section 4.3 now names both ranges.
 - O7. The conversion between the fluence cutoffs $E>0.18\ \mathrm{MeV}$ and $E>16\ \mathrm{fJ}$ is NOT VERIFIED. Step C1.4 refuses fluence input with any other cutoff tag.
 - O8. The ramp shape of the CRP-6 lists is assumed linear, and row 8a must be re-read from the page image.
 - O9. As-run AGR-1 furnace histories are not in the corpus. The 30 $^\circ$C start of the reconstructed plan is an assumption supported only by the printed total durations.
-- O10. The staircase in the stiff regime is shown numerically in two cases and is not proved.
-- O11. A parent and daughter with different diffusivities have no approved effective-time form; the finite-volume path only.
-- O12. The diffusion limit of Eq. (P21.78) is derived for constant diffusivities. With a temperature history it is used as a warning only (step F3).
-- O13. The values of $N_A$ and $k_B$ rest on the SciPy constants table and the SI definition; no printed document was opened.
-- O14. The completeness proof for the layered eigenfunctions relies on the Hilbert-Schmidt theorem; no textbook citation was opened (B3 item 2).
+- O10. Updated 2026-11-13 (Section 5.4.6 of the derivation). Staircase: order 1 uniform in the stiffness PROVED; order 2 PROVED for shared scaling and, up to a factor $1+\ln(T/h)$ on a fixed mesh with a mesh-dependent constant, for layer-specific $Q$ (Theorem D). OPEN: an order above 1 uniform in the mesh stiffness for layer-specific $Q$ (observed 1.75 in the test case and 1.51 to 1.96 in a second synthetic case; 7/4 conjectured as the limit, CLAIMED ONLY).
+- O11. Resolved in part on 2026-11-13 (Section 5.3.8 of the derivation). Theorem 1 gives necessary and sufficient conditions for a joint effective time (N1 and N2; PROVED in the class (P22.101)); equal activation energies are necessary and not sufficient, and no linear ramp with $\theta = Q/R_g \ne 0$ qualifies when $b\lambda_P \ne 0$. Proposition 2 gives an exact two-clock cascade whenever each species passes R2.1. Still open: a truncation bound for the cascade double series; transformations outside the class; data for daughter diffusivities (O1). The steps that would use these results are proposed in Section 9.5; until then the finite-volume path is the only route.
+- O12. Resolved for shared scaling on 2026-11-13 by Section 5.2.5 of the derivation: option A by (P22.69) to (P22.72), option E by (P22.73), (P22.74) with $\zeta_E$; the present F3 value with $\Lambda_1$ at the highest temperature is a PROVED sufficient cap in that case for option A (for option E the lag $L_1$ enters and $\varepsilon_1$ is not proved for that value). For layer-specific activation energies the rule bounds the frozen-coefficient part by $\varepsilon_1$ ((P22.78); option A for any history, option E on heating only); the non-adiabatic remainder $R_\mathrm{na}$ is CLAIMED ONLY to be $O(\varepsilon_D)$, supported numerically on one history, and has no proved bound. With decay the release-fraction error is $O(\zeta)$ with no sharp a priori bound. A source term is not covered.
+- O13. Resolved. The values of $N_A$ and $k_B$ were read in the SI Brochure (BIPM, 2019, Section 2.2 and Table 1, p. 124, version 4.01 of June 2026).
+- O14. Partly resolved. The spectral theorem used for completeness was read in Melrose (2009, Lecture 20, Theorem 15, p. 116). A citation for the compactness of an operator with a square-integrable kernel is still NOT VERIFIED (B3 item 2). O14 now also carries the truncation bounds of O4.
 - O15. The helper relations (H21.1) to (H21.3) and (H22.1), (H22.2) are not rows of the B3 reconciliation. (H21.x) were proved in the check script and re-derived by substitution here; (H22.1) is a design guard; (H22.2) is a sufficient structural test.
+- O16. New 2026-11-13 (Section 4.6.1 of the derivation). No second-order integrator is chosen (decision 15). OPEN: positivity of an order-2 scheme over all matrices of one fixed size $N\ge3$, which matters because one run has a fixed mesh; for the frozen-matrix exponential integrator with $D(T(t))$, which is the staircase of block R4, the part of its stiff-regime order left open by Section 5.4.6, namely an order above 1 uniform in the mesh stiffness for layer-specific $Q$ (O10); the variable-step BDF2 closure; second-order stages with $D(T(t))$.
+- O17. New 2026-11-13 (Section 5.3.7 of the derivation). Start of the release quadrature in R2.4 step 3: a layered particle with a long cold start (large $\lambda t_c$) has no proved bound (OPEN); the graded Gauss-Legendre bound (P22.97) on ramp pieces is CLAIMED ONLY; a Robin surface and a source are not treated.
 
 ### 9.4 Decisions requested before any Rust is written
 
@@ -1661,8 +1694,45 @@ Table: 9.2 Status of the numerical properties.
 12. **Decision 12, access to eigenfunctions.** Block R3 needs the layer states of the shooting solution, which are private in `sturm_liouville.rs`. Add public accessors to that file, or copy the shooting code into the new module?
 13. **Decision 13, reference temperature of the effective time.** The highest temperature of the history (proposed) or the temperature at the end of the main hold?
 14. **Decision 14, staircase code.** Keep block R4 in the library behind a test-only switch, or only as a test helper?
+15. **Decision 15, integrator (added 2026-11-13).** Backward Euler only, Backward Euler with TR-BDF2 as an option (with or without the positivity cap $h\beta_B\le1+\sqrt2$), or Backward Euler with the exponential integrator for constant-temperature segments (Section 4.6.1 of the derivation)?
+16. **Decision 16, proposals of Section 9.5 (added 2026-11-13).** Which of the proposed step changes of Section 9.5 should enter the pseudocode before any Rust is written?
 
 The work stops here for the user's review. No Rust or test file of the repository has been touched. The other new repository files are documentation, data and Python only: the check scripts of Section 10 and `scripts/derivation_checks/`, the parameter register under `data/` with its scripts in `scripts/data_register/`, and the change list `docs/development/v1_to_v2_changes.md`.
+
+### 9.5 Proposed step changes from the open-item work (2026-11-13, not applied)
+
+The open-item work of 2026-11-13 (Sections 3.5.3, 4.6.1, 5.2.5, 5.3.7, 5.3.8 and 5.4.6 of the derivation) suggests the step changes below. None of them is applied to the blocks above: every verified result left the existing steps valid, so no algorithm was changed, and only notes, status rows and open items were updated. The two notes that corrected a statement are the F3 note, which now records that the existing value is a proved sufficient cap for shared scaling with option A, and the R2.4 step 3 note, whose remark that the balance form avoids the start problem was wrong ((P22.81)). A third correction is a comment only: the order annotations of the MIDPOINT and AVERAGE lines in step R4.1 now read "order 2 for F; on a fixed mesh up to 1+ln(T/h)" and "order 2 as MIDPOINT" in place of "order 2", and the steps themselves are unchanged. Each proposal below is DERIVED NOT IMPLEMENTED and waits for decision 16.
+
+**Block R1 (from O4, Section 3.5.3).**
+
+- New step R1.0, mode count, before R1.1: from the radii and diffusivities compute $\tau$, $a$, $c$, $J$ and $\Lambda^*$; with $K=$ `gen_max + decay_constant * (inv0 + gen_total_max)` and the user tolerance choose `n_modes` by (P21.110), which needs $N>J$ and $\ell_{N+1}>\Lambda^*$, together with the start-inventory condition $C_w(\ell_{N+1})M_0X_N(t_1)\le\varepsilon$ at the first output time $t_1$; pass `lambda_max` $\ge\min\big(D_\mathrm{max}(N\pi/R)^2,\ a(N+J)^2\big)$ to `ModalRelease::new` so that the first $N$ modes are all included. The condition $\ell_{N+1}>\Lambda^*$ can force a large $N$ (2020 modes in one verification case).
+- Step R1.5, diagnostics: add `trunc_bound_rel` from (P21.106) at each output time, with $X_N$ from (P21.105) and $\Lambda_\mathrm{cut}=$ `lambda_covered`, and `trunc_bound_FB`, `trunc_bound_RB` from (P21.107) and (P21.108). Bound B (P21.112) needs $\alpha_n$ and $\beta_n$ separately and stays FUTURE while v1.0 keeps only $w_n$.
+- Step R3.5: note that Bound A does not apply after a switch; the general Bound B is the FUTURE route there.
+
+**Block F (from O12, Section 5.2.5, and P2, Section 4.6.1).**
+
+- Step F3: compute $\Theta_\mathrm{end}=\int_0^{t_\mathrm{end}}(\Lambda_1+\lambda)\,dt$ (shared scaling: $\Lambda_1^\mathrm{ref}\tau(t_\mathrm{end})+\lambda t_\mathrm{end}$ from (P22.22); otherwise composite Gauss-Legendre over each history segment with $\Lambda_1(T)$ from the tridiagonal eigenvalue problem or with the upper bound $\hat\Lambda_1$), then $\zeta=2\varepsilon_1/\Theta_\mathrm{end}$ for option A or $\zeta_E$ of (P22.74) for option E, citing (P22.69). For constant $T$ this gives the present `dt_diff`, and grid mode FIXED leaves the block before F3, so cases V1 and VT16 are unchanged.
+- Step F4: take `dt_diff` out of `dt_cap`, because it changes from step to step, and add the estimate $\Theta_\mathrm{end}^2/(2\varepsilon_1)$ of (P22.71) to the `step_limit` test.
+- Step F5: a new sub-step after F5.3 computes `dt_diff` by (P22.72) with two evaluations of $\Lambda_1$; in F5.4 the step becomes the minimum of `dt_cap`, `grow_cap`, `dt_T` and `dt_diff`. Keep `dt_T` of (P22.20) for layer-specific $Q$, since it controls the remainder $R_\mathrm{na}$. With two nuclides on the finite-volume path, $\zeta$ is the minimum over the nuclides.
+- If a second-order integrator is chosen (decision 15): F3 uses (P21.142) with the error constant $c_r$ of that scheme (and the BDF2 start term); F4 gains an optional positivity cap $h\le M_r/\beta_B$ ($M_r=2$ for CN, $1+\sqrt2$ for TR-BDF2) or $h\le h^*_{CN}$ from (P21.125), hard cap or warning as in decision 6.
+
+**Blocks H and J (from P2, Section 4.6.1; only if decision 15 adds an integrator).**
+
+- New step H4b: reuse the subtraction-free elimination of H4.3 with $\tau=h/2$ (CN) or $\tau=\beta h$ (TR-BDF2, two solves with one matrix), or the exponential step (P21.137). The property line of H4.4 holds for H4b only in the exponential case, and there only with (P21.139).
+- Steps J1.3 to J1.5: the increments of $M_\mathrm{dec}$, $M_\mathrm{rel}$ and the outside inventory use the quadrature of the chosen scheme: trapezoid (P21.126), stage weights (P21.134), modified inventory (P21.130) or exact integrals (P21.140). Step J1.6: the exact test "minimum below 0.0 is a failure" holds only for BE and the uniformised exponential; other schemes need a tolerance or the step cap.
+
+**Block R2 (from R24, Section 5.3.7, and O11, Section 5.3.8).**
+
+- R2.4 step 3, sub-steps: (3a) compute $M_\mathrm{rel}$ by (P22.82); the balance form is the same number by (P22.81) and is not a separate option. (3b) Start piece: for a bare kernel with a uniform start the image form (P22.86) or (P22.87) on $[0,t_0]$ with $t_0=\min(t_B,t)$ (the 16-point quadrature of (P22.87) on a ramp has no proved error bound); otherwise the modal start (P22.83) with $t_0=\min(t_1,t)$ and the bracket (P22.94) (needs $c_0\ge0$) when $\alpha$ varies on $[0,t_0]$. (3c) Late pieces: breakpoints refined to $\tau(b)/\tau(a)\le2$, 8-point Gauss-Legendre, bound (P22.97) (PROVED for constant $\alpha$ per piece, CLAIMED ONLY on ramp pieces). (3d) Mode count and $t_0$ by the rule of Step 7 of Section 5.3.7, with $\bar W_N$, $\bar V_N$ from (P22.90), (P22.91). (3e) Return the bound (P22.98) with the value; warn when it exceeds the tolerance, and warn when the cold-start term $\lambda t_0\bar W_N$ dominates in a layered particle (O17). Step 5 stays as it is for the reported times; the start piece no longer needs the series to be valid on $[0,t_0]$. All of this assumes an absorbing surface and no source.
+- R2.1 chain mode `check_chain(laws_P, laws_D, history)`: run R2.1 on each species and return `Identical` when (H22.2) holds across the two species with ratio 1 in every layer, `SharedClock` when it holds with another ratio (a closed form then exists for $b\lambda_P=0$ by two copies of (P22.27), on isothermal intervals by (P21.21) and on histories that obey (P22.106) by (P22.108); by Corollary 2 no linear ramp with $Q\ne0$ qualifies when $b\lambda_P\ne0$), `TwoClocks` when each species passes alone, and `NotExact` otherwise.
+- R2.4 step 6 for `Identical`: $M_P=e^{-\lambda_Pt}\hat M_P(\tau)$ and $M_D=e^{-\lambda_Dt}\hat M_D(\tau)+b\lambda_P\frac{e^{-\lambda_Pt}-e^{-\lambda_Dt}}{\lambda_D-\lambda_P}\hat M_P(\tau)$, both $\hat M$ from the v1.0 series at the same $\tau$ ((P22.109)).
+- New block R2.5, two-clock cascade: eigenpairs of both species at their own reference temperature; overlap $O$ by (P21.19), once; $\tau_P$ and $\tau_D$ by R2.2 and R2.3; the double integrals $J_{nm}$ by Gauss-Legendre on the pieces between breakpoints, graded towards both ends of each piece; inventory by (P22.114) and release by the daughter balance of Section 5.3.8. Its truncation rule is OPEN (O11). Routing: identical diffusivities with E1 for the pair go to R2.4 step 6; each species passing R2.1 goes to R2.5; otherwise the finite-volume path, with the surrogate of Theorem 3 ((P22.118) to (P22.120)) as a diagnostic only.
+
+**Block R4 (from O10, Section 5.4.6).**
+
+- New sub-step R4.0: place interval ends on every kink and jump of $T(t)$ (Theorem B: exact for piecewise-constant histories, order 1 for a misaligned jump).
+- Step R4.2: measure the observed order on a smooth functional such as $F$; as in the R4 note, a $V$-norm acceptance test requires an order of at least 1 only, and order 2 of MIDPOINT and AVERAGE is tested on $F$ (an order above 1 in the $V$-norm rests on numerical evidence only, and its uniform proof is OPEN, O10). Table 5.6, row (P22.54), (P22.55): add a pointer to (P22.139) for the interface defect. An optional case VT18b can test (P22.130).
+- With the exponential integrator of decision 15, the frozen-matrix exponential on the finite-volume matrix is itself a positive staircase; whether R4 then becomes a production path is part of decision 15.
 
 ## 10 Evidence
 
@@ -1675,6 +1745,7 @@ All commands use `.venv/Scripts/python.exe -I -X utf8`.
 | `b4_arrhenius_checks.py` | working folder, not in the repository | 41 of 41 PASS (re-run) |
 | `sec5_arrhenius.py`, `sec5_effective_time.py`, `sec5_fv_shared_alpha.py`, `sec5_projection_step.py`, `sec5_staircase.py`, `sec5_schedules.py` | `scripts/derivation_checks/` | 25, 16, 10, 9, 9 and 17 checks PASS (B3 re-run, not repeated here) |
 | `sec6_pseudocode_checks.py` | `scripts/derivation_checks/` | 30 of 30 PASS in the part draft; not reviewed line by line |
+| `sec3_o4_layered_truncation_bound.py`, `sec4_p2_positive_second_order.py`, `sec5_o12_variable_D_step_limit.py`, `sec5_r24_quadrature_start.py`, `sec5_o11_parent_daughter_tau.py`, `sec5_o10_stiff_staircase.py` (open items, 2026-11-13) | `scripts/derivation_checks/` | 91, 41, 38, 25, 24 and 22 PASS, 0 FAIL, each ending with ALL PASS (run of 2026-11-13; output in Appendix A.2 of the derivation) |
 
 Table: 10.1 Check scripts.
 
@@ -1710,6 +1781,8 @@ Basu, S. K., & McCutchan, E. A. (2020). Nuclear data sheets for A = 90. *Nuclear
 
 Browne, E., & Tuli, J. K. (2007). Nuclear data sheets for A = 137. *Nuclear Data Sheets, 108*, 2173-2318. https://doi.org/10.1016/j.nds.2007.09.002
 
+Bureau International des Poids et Mesures. (2019). *The International System of Units (SI)* (9th ed., version 4.01, June 2026). BIPM. https://doi.org/10.59161/AUEZ1291 (Section 2.2, pp. 123-124, and Table 1, p. 124; kelvin, p. 129, and mole, p. 130, both in Section 2.3.1; English text PDF opened from https://www.bipm.org/en/publications/si-brochure)
+
 Gürdal, G., & Kondev, F. G. (2012). Nuclear data sheets for A = 110. *Nuclear Data Sheets, 113*, 1315-1561. https://doi.org/10.1016/j.nds.2012.05.002
 
 idaholab. (2026). *moose* [Computer software]. GitHub. https://github.com/idaholab/moose (`force_step_every_function_point`, via audit 08)
@@ -1720,6 +1793,8 @@ International Atomic Energy Agency. (2012). *Advances in high temperature gas co
 
 International Atomic Energy Agency, Nuclear Data Section. (n.d.). *LiveChart of Nuclides, data download API v1* [Data set]. Retrieved November 5, 2026, from https://www-nds.iaea.org/relnsd/vcharthtml/api_v0_guide.html (source of the ENSDF half-lives and of the JEFF-3.1.1 fission yields quoted here)
 
+Melrose, R. (2009). *Lecture notes for 18.102 Introduction to functional analysis, Spring 2009* (Lecture 20, Theorem 15, p. 116) [Course notes]. MIT OpenCourseWare. https://ocw.mit.edu/courses/18-102-introduction-to-functional-analysis-spring-2009/ (instructor named on the course page; the lecture PDF prints no author)
+
 STRATO project. (2026). *STRATO v1.0.0* [Computer software]. https://github.com/weewzr/STRATO/tree/v1.0.0 (files `src/numerical/finite_volume.rs`, `src/analytical/sturm_liouville.rs` and `src/config.rs`, quoted by line number).
 
-The equations (P21.1) to (P21.92) and (P22.1) to (P22.59) are those of Sections 3 to 5 of this document set and carry their own references there.
+The equations (P21.1) to (P21.142) and (P22.1) to (P22.142) are those of Sections 3 to 5 of the derivation (`docs/mathematics/STRATO_Phase2_Derivations.md`) and carry their own references there; (P21.93) to (P21.142) and (P22.60) to (P22.142) were added on 2026-11-13.

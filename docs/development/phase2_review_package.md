@@ -4,6 +4,8 @@ Date: 2026-11-06. Status: READY FOR THE USER'S REVIEW. Work stops here.
 
 **Nothing in Phase 2 is implemented.** No Rust has been written, and no file under `src/`, `tests/` or `examples/` differs from the tag v1.0.0. Nothing has been committed. Every Phase 2 equation is DERIVED NOT IMPLEMENTED or FUTURE. Implementation starts only after the decisions of Section 7 are made.
 
+**Note of 2026-11-13: open mathematics items worked on.** The open items O4, O10, O11 and O12, the start of the release quadrature in block R2.4 step 3 (R24) and open issue 5 of Section 4.10 of the derivation (second-order integrators, P2) were worked on 2026-11-13. Each was derived with its own check script and then checked by an independent adversarial verification; every verdict was CONFIRMED WITH FIXES. The results are now Sections 3.5.3, 4.6.1, 5.2.5, 5.3.7, 5.3.8 and 5.4.6 of the derivation, with the new equations (P21.93) to (P21.142) and (P22.60) to (P22.142), the script output in its Appendix A.2 and the verification records in its Appendix B.5. The citations for O13 and the spectral-theorem citation of O14 were read on the same day; the compactness citation of O14 is still NOT VERIFIED. The pseudocode gained notes, status rows, open items O16 and O17, decisions 15 and 16 and the list of proposed step changes in its Section 9.5; no algorithm step was changed. Since the status line above was written, the 2026-11-06 versions of the Phase 2 documents have been committed to the repository; the open-item edits listed here were added on 2026-11-13, after that commit; no file under `src/`, `tests/` or `examples/` has changed. Sections 8 and 9, row 47 of Table 3.1, row 2 of Table 2.1 (16 decisions) and items D15 and D16 of Section 7 below are updated; the other sections keep their 2026-11-06 text.
+
 ## 1 What this package covers
 
 Phase 2.1 adds radioactive decay, a fission-product source and a full inventory account to the v1.0 finite-volume solver (Code B) and the modal series (Code C). Phase 2.2 adds Arrhenius diffusivities $D_i(T)$ and prescribed temperature histories $T(t)$. The mathematics was derived, checked independently, reconciled (B3), turned into pseudocode (B4 to B6) and reviewed as a whole (B7). This page tells you what to read, lists the final equations and their status, summarises the evidence behind the parameters, and collects the decisions that only you can make.
@@ -13,7 +15,7 @@ Phase 2.1 adds radioactive decay, a fission-product source and a full inventory 
 | Order | Document | Path | Read first | Purpose of the reading |
 |---|---|---|---|---|
 | 1 | Phase 2 derivations | `docs/mathematics/STRATO_Phase2_Derivations.md` | Sections 1 and 2; 3.1, 3.3.2, 3.6; 4.3, 4.4, 4.5; 5.1, 5.2.3, 5.3.6, 5.4.5; open issues 3.10, 4.10, 5.7 | check the physics, the one change to the v1.0 step, the inventory closure and the limits of the effective time |
-| 2 | Phase 2 pseudocode | `docs/mathematics/STRATO_Phase2_Pseudocode.md` | Sections 2 and 3 (one run, one step side by side with v1.0), then Section 9 (classification, open items, the 14 decisions) | check that the plain-language steps match the equations and that the defaults are acceptable |
+| 2 | Phase 2 pseudocode | `docs/mathematics/STRATO_Phase2_Pseudocode.md` | Sections 2 and 3 (one run, one step side by side with v1.0), then Section 9 (classification, open items, the 16 decisions) | check that the plain-language steps match the equations and that the defaults are acceptable |
 | 3 | Change document | `docs/development/v1_to_v2_changes.md` | Sections 1 to 3 (physics, assumptions, limitations), 6 and 7 (modules, inputs, outputs) | see every v1.0 to v2.0 difference in one table per topic |
 | 4 | Parameter register | `data/reference/STRATO_Parameter_Register.md` and `data/*/*.csv` | Section 0 (status vocabulary), 5 (Arrhenius), 6 (decay), 7 (yields), 8 (temperature histories), 11 (gaps) | choose the data sets of decisions D1, D4 and D5 |
 | 5 | Verification record | Appendices A and B of the derivations | only where a result needs its evidence | script output, check logs, B3 reconciliation, B7 notes |
@@ -72,7 +74,7 @@ The table lists the equations that the implementation would use or test, with th
 | 44 | projection at a temperature switch, $P_{mn}$ | (P22.42), (P22.43) | exact for the untruncated series |
 | 45 | mode-count rule after a switch | (P22.44) | approximate (design criterion) |
 | 46 | Galerkin system on a fixed basis | (P22.48), (P22.49) | numerical; not planned |
-| 47 | staircase error orders 1 and 2 | (P22.56) | numerical; proved only for small $h\lVert B\rVert$ |
+| 47 | staircase error orders 1 and 2 | (P22.56) | numerical; updated 2026-11-13: order 1 proved uniformly; order 2 uniform only with shared scaling; $V$-norm order about 1.75 observed with layer-specific $Q$ in the test case, and down to 1.51 in a second case (Section 5.4.6) |
 | 48 | option A equals BE in $\tau$ for a shared $\alpha$ | (P22.57) | exact |
 | 49 | AGR-1 and CRP-6 schedule definitions | (P22.58), (P22.59) | exact as input definitions; AGR-1 start temperature assumed |
 
@@ -153,15 +155,22 @@ Each decision lists the options and what the documents propose, so that the choi
 12. **D12, step limits.** Make the decay limit (P21.77) and the diffusion limit (P21.78) hard caps, or warnings only [6]?
 13. **D13, scope of the modal block R1.** Kernel-uniform source and start profile only for v2.0, with the general projection as FUTURE [7]?
 14. **D14, step planner.** Accept the merged planner of pseudocode block F (growth 2.0, restart after a switch or jump, landing by halving, $\varepsilon_D=0.1$, a FIXED mode that reproduces the v1.0 grid) [10]?
+15. **D15, integrator (added 2026-11-13).** PENDING, the owner decides. Backward Euler only, Backward Euler with TR-BDF2 as an option (with or without the positivity cap $h\beta_B\le1+\sqrt2$), or Backward Euler with the exponential integrator for constant-temperature segments (Section 4.6.1 of the derivation; open item O16 of the pseudocode) [15]?
+16. **D16, proposed step changes (added 2026-11-13).** PENDING, the owner decides. Which of the proposed step changes of Section 9.5 of the pseudocode (from O4, O10, O11, O12, P2 and R24) should enter the pseudocode before any Rust is written [16]?
 
 ## 8 Unresolved questions
 
 - Data: items O1, O7, O8 and O9 of the pseudocode (cross sections, isomeric fraction, flux histories, heavy-metal density, fluence cutoff conversion, CRP-6 ramp shape and row 8a, as-run AGR-1 histories).
 - CRP-6: the gas constant and the decay treatment used by the participants (O5).
-- Mathematics: no stiff-regime proof for the staircase orders (O10); no rigorous truncation bound for the layered modal balance form (O4); completeness rests on the Hilbert-Schmidt theorem with no textbook citation opened (O14); a parent and daughter with different diffusivities have no effective-time form (O11).
-- Accuracy: block R2.4 computes $M_\mathrm{rel}$ either by quadrature of the (P22.35) release rate or by the balance form; the choice is open. The $\sqrt\tau$ start of the quadrature is covered only for a bare kernel with a uniform start. The joined scheme (decay, source and changing $D(T)$ together) has closure and positivity checks; its convergence is CLAIMED ONLY.
+- Mathematics (updated 2026-11-13; labels as in the derivation):
+  - Staircase (O10): order 1 proved uniformly; order 2 uniform only with shared scaling; $V$-norm order about 1.75 observed with layer-specific $Q$ in the test case, and down to 1.51 in a second case. An order above 1 that is uniform in the mesh stiffness is OPEN.
+  - Truncation of the layered modal balance form (O4): rigorous bounds now exist for a kernel-uniform start and source (Bound A and Bound B, Section 3.5.3, PROVED under completeness and the classical min-max and Sturm oscillation theorems, and conservative). A bound that uses the sign changes of the weights is OPEN.
+  - Completeness rests on the spectral theorem for compact self-adjoint operators (cited: Melrose, 2009, Lecture 20, Theorem 15) and on the compactness of the Green operator, for which no citation has been opened (O14).
+  - Parent and daughter (O11): they share a joint effective time only under N1 and N2 of Section 5.3.8 (Theorem 1, PROVED within the class (P22.101); transformations outside the class OPEN), which real histories rarely meet; an exact two-clock cascade exists when each species passes R2.1, and its truncation bound is open.
+  - Diffusion step limit with $D(T(t))$ (O12): proved only for shared scaling: below $\varepsilon_1$ for option A, below $\varepsilon_1+\tfrac12\zeta_E^2\,\mathrm{TV}(\ln\Lambda_1)$ for option E with $\zeta_E$; the present F3 value is a proved cap for option A only; with layer-specific $Q$ the non-adiabatic remainder has no proved bound.
+- Accuracy (updated 2026-11-13): in block R2.4 the two routes coincide ((P22.81)); for $S = 0$ and an absorbing surface the start of the quadrature is bounded by (P22.93) or, for a bare kernel with a uniform start, by the image form (P22.86), both PROVED for constant $\alpha$ on the start piece; for varying $\alpha$ the bracket (P22.94) is PROVED when $c_0\ge0$; the image route on a ramp (P22.87) adds a 16-point Gauss-Legendre error with no proved bound (DEMONSTRATED NUMERICALLY); the layered cold start is OPEN (O17). Second-order integration was analysed (Section 4.6.1): no rational second-order scheme keeps positivity for every step over the structural class $\mathcal S$ that contains every STRATO matrix (barrier P2.T1, PROVED; for one fixed size $N\ge3$ OPEN, O16), the exponential integrator is positive for every step (PROVED), and the integrator choice is open (decision 15 of the pseudocode, O16). The proposed step changes of Section 9.5 of the pseudocode need a decision (decision 16). The joined scheme (decay, source and changing $D(T)$ together) has closure and positivity checks; its convergence is CLAIMED ONLY.
 - Physics left out: temperature-dependent partition coefficients, radial temperature gradients in pile, recoil and precursor migration.
-- Documentation: the documentation PDF workflow `.github/workflows/docs-pdf.yml` (untracked) builds only `docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md` and `docs/mathematics/v1.0.0/STRATO_Final_Deliverable.md`. The second file does not exist in the tree, and the Phase 2 documents are not listed. The workflow was not changed in B8.
+- Documentation: in the state of 2026-11-06 the documentation PDF workflow `.github/workflows/docs-pdf.yml` was untracked and built only `docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md` and `docs/mathematics/v1.0.0/STRATO_Final_Deliverable.md`; the Phase 2 documents were not listed, and the workflow was not changed in B8. Update 2026-11-13: the workflow file and both v1.0.0 documents are in the repository, and `docs/mathematics/STRATO_Phase2_Derivations.md` and `docs/mathematics/STRATO_Phase2_Pseudocode.md` were added to the workflow's list on 2026-11-13; its `[ -f "$md" ]` guard skips any listed file that is missing. The PDF build of the two Phase 2 documents has not been run.
 - Rust-level claims stay open until Rust exists: bit identity with v1.0 (cases V1, VT16, VI4) is shown in Python only.
 
 ## 9 Evidence for this package
@@ -170,13 +179,17 @@ All commands were run from the repository root with `.venv/Scripts/python.exe -I
 
 | Check | Result |
 |---|---|
-| 17 derivation scripts `scripts/derivation_checks/sec3_*`, `sec4_*`, `sec5_*` | all exit 0; 251 PASS lines, 0 FAIL lines; output byte-identical to the run quoted in Appendix A |
+| 17 derivation scripts `scripts/derivation_checks/sec3_*`, `sec4_*`, `sec5_*` | all exit 0; 251 PASS lines, 0 FAIL lines; output byte-identical to the run quoted in Appendix A; re-run on 2026-11-13 with the same 251 PASS and 0 FAIL, and PASS, FAIL, SUMMARY and ALL PASS lines equal to Appendix A.1 |
+| 6 open-item scripts of 2026-11-13: `sec3_o4_layered_truncation_bound.py`, `sec4_p2_positive_second_order.py`, `sec5_o12_variable_D_step_limit.py`, `sec5_r24_quadrature_start.py`, `sec5_o11_parent_daughter_tau.py`, `sec5_o10_stiff_staircase.py` | all exit 0; 91, 41, 38, 25, 24 and 22 PASS lines (241 in total), 0 FAIL, each ending with ALL PASS; output line for line equal to the output quoted in the drafts and reproduced in Appendix A.2 of the derivations |
+| independent verification of the six open items (2026-11-13) | verdict CONFIRMED WITH FIXES for each; verifier scripts in the work folder (227, 41, 28, 69, 26 and 40 PASS lines, each ALL PASS); records in Appendix B.5 of the derivations |
 | `b4_decay_source_pseudocode.py`, `b4_phase2_pseudocode_integration.py`, `sec6_pseudocode_checks.py`, `D5_parameter_register.py` | 55, 32, 30 and 91 PASS lines, 0 FAIL; output byte-identical to the earlier B8 run |
 | fresh assembly of the derivations from the reconciled drafts | byte-identical to `docs/mathematics/STRATO_Phase2_Derivations.md`; 151 tagged display equations, (P21.1) to (P21.92) and (P22.1) to (P22.59) |
+| open-item integration of 2026-11-13 | 284 tagged display equations: the 151 earlier ones byte-identical and with unchanged numbers, plus (P21.93) to (P21.142) and (P22.60) to (P22.142); every tag unique |
 | equation numbers of Table 3.1 | all 49 rows name tags that exist in the derivations |
 | CRP-6 cases 1a and 1b for three gas constants, independent series in mpmath | 0.467337, 0.467404, 0.467419 and $4.0936\times10^{-7}$, $4.0746\times10^{-7}$, $4.0703\times10^{-7}$, as in Section 5 |
 | house-style lint of both documents | 0 problems (no em dash, no forbidden construct, display math on separate lines, every table captioned, every code link pinned to v1.0.0 and inside the file) |
-| Rust source against the tag | `git diff --quiet v1.0.0 -- src tests examples Cargo.toml` succeeds |
+| Rust source against the tag | `git diff --quiet v1.0.0 -- src tests examples Cargo.toml` succeeds; on 2026-11-13 `git diff --quiet v1.0.0 -- src tests examples` succeeds, and `Cargo.toml` differs from v1.0.0 only by the committed v1.0.1 release (version and licence lines) |
+| house-style lint of the four edited documents (2026-11-13) | no em dash, no local absolute path, no display maths sharing a line with text |
 | register counts of Table 5.1 | read from the CSV `status` column and re-counted |
 
 Table: 9.1 Checks run for this package.
