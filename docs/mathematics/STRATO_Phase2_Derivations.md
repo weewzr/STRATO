@@ -1968,7 +1968,7 @@ with $e$ a volume-weighted $L_2$ or scalar error against the exact reference, an
 ### 4.8 (f) Verification matrix
 
 | No. | Test | Exact reference | Quantity | Expected behaviour / order | Tolerance |
-|----|----------------------|------------------------|--------------------|------------------|------------|
+|---|-------------------|---------------------|-------------------|------------------|--------------------|
 | 1 | Phase 1 regression, $\lambda=0$, $S=0$ | v1.0 `backward_euler_step` and `run` | all $C_j^n$, $M$, $M_{rel}$ | bit-identical (Sec. 4.3 detail ii) | array equality, 0 ulp |
 | 2 | Decay only, no diffusion (all $G=0$) | $c=c_0e^{-\lambda t}$; discrete $(1+z)^{-n}c_0$ | $C_j^n$, $M^n$ | discrete identity to round-off; order 1, error $\tfrac12\lambda^2t\Delta t$ (P21.77) | $10^{-14}$ (discrete); error/prediction within 2 % |
 | 3 | Decay plus diffusion, no source | (P21.80), (P21.81): Phase 1 series times $e^{-\lambda t}$; discrete (P21.63), semi-discrete (P21.67) | $M$, $M_{rel}$, $M_{dec}$, $F_{corr}$ | (P21.63), (P21.67) to round-off; FV vs series $O(h^2)+O(\Delta t)$, order 1 in time | $10^{-13}$ for identities; series: Phase 1 tolerance above the reported accuracy floor |
