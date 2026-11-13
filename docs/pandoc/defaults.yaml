@@ -34,7 +34,7 @@ variables:
     - \newcommand{\tablestretch}{1}
     - \AtBeginEnvironment{longtable}{\tablefont\renewcommand{\arraystretch}{\tablestretch}}
     - \usepackage{fvextra}
-    - \fvset{breaklines=true,breakautoindent=true}
+    - \fvset{breaklines=true,breakautoindent=true,breakindent=3em}
     - \RecustomVerbatimEnvironment{verbatim}{Verbatim}{breaklines=true,breakanywhere=true,breakautoindent=true,breakindent=4em}
     - \pretocmd{\section}{\Needspace{6\baselineskip}}{}{}
     - \pretocmd{\subsection}{\Needspace{6\baselineskip}}{}{}
