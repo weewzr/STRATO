@@ -238,7 +238,7 @@ where $\bar t$ is the mean life. In (P21.1) the same law appears per unit volume
 ENSDF adopted values (via the IAEA LiveChart API, 1 y = 31 556 925.97 s; audit 07, Section 2):
 
 | Nuclide | $t_{1/2}$ (ENSDF) | $t_{1/2}$ (s) | $\lambda$ ($\mathrm{s^{-1}}$) | Evaluation |
-|---|---|---|---|---|
+|----------|---------------|----------------------|-----------------------|------------------------------|
 | Cs-137 | 30.08(9) y | $9.492323\times10^{8}$ | $7.302187\times10^{-10}$ | Browne and Tuli (2007) |
 | Sr-90 | 28.91(3) y | $9.123107\times10^{8}$ | $7.597709\times10^{-10}$ | Basu and McCutchan (2020) |
 | Ag-110m | 249.83(4) d | $2.158531\times10^{7}$ | $3.211198\times10^{-8}$ | Gürdal and Kondev (2012) |
@@ -827,7 +827,7 @@ $$
 Q_{\beta\beta} &= \sum_n\frac{\beta_n^2}{\Lambda_n} = \frac{1}{45}\sum_{i=1}^L\frac{R_i^5 - R_{i-1}^5}{D_i},\\
 Q_{\alpha\alpha} &= \sum_n\frac{\alpha_n^2}{\Lambda_n} = \frac{R_1^5}{45D_1} + \frac{R_1^6}{9}\sum_{i=2}^L\frac{1}{D_i}\Big(\frac{1}{R_{i-1}} - \frac{1}{R_i}\Big)\\
 Q_{\alpha\beta} &= \sum_n\frac{\alpha_n\beta_n}{\Lambda_n} = \frac{R_1^5}{45D_1} + \frac{R_1^3}{18}\sum_{i=2}^L\frac{R_i^2 - R_{i-1}^2}{D_i},\\
-\sum_n\alpha_n^2 &= V,\qquad \sum_n\beta_n^2 = \frac{R^3}{3}
+&\sum_n\alpha_n^2 = V,\qquad \sum_n\beta_n^2 = \frac{R^3}{3}
 \end{aligned}
 \tag{P21.111}
 $$
@@ -852,10 +852,10 @@ Bound B extends to any start profile $c_0(r)$ or source shape: replace $\chi_1$ 
 
 The check script transcribes the layered shooting method (exact transfer in each layer, bisection on $\psi(R) = n\pi$ inside the min-max bracket (P21.99), closed-form layer integrals) and reproduces the v1.0 golden value $F(2\times10^5\ \mathrm{s}) = 0.4325556390928$ to $3\times10^{-13}$ with 40000 modes (E8), the 60-digit mpmath roots to $1.6\times10^{-15}$ (E5), and the flux identity (P21.36) to $1.2\times10^{-12}$ (E3). The reference for each truncation error is the same series with $N_\mathrm{ref} = 40000$ modes (20000 for the check case), whose own uncertainty is Bound A at $N_\mathrm{ref}$; for $\lambda = 0$ the steady inventory has the exact reference $Q_{\alpha\beta}/V$ of (P21.111). Every comparison holds in both cases (91 PASS lines).
 
-Synthetic case (`inputs/synthetic/synthetic_five_layer.toml`): $R_i = 200, 300, 350, 400, 450\ \mathrm{\mu m}$, $D_i = 10^{-12}, 4\times10^{-10}, 8\times10^{-13}, 2\times10^{-14}, 7\times10^{-13}\ \mathrm{m^2\ s^{-1}}$. Constants: $\tau = 674.217\ \mathrm{s^{1/2}}$, $a = 2.17121\times10^{-5}\ \mathrm{s^{-1}}$, $c = 9.74776\times10^{-7}\ \mathrm{s^{-1}}$, $\Lambda^* = 7.0\times10^{-5}\ \mathrm{s^{-1}}$, $C_w(\infty) = 2.8237\times10^{-4}\ \mathrm{s^{-1}}$, $C_w(\ell_{11}) = 3.4478\times10^{-4}\ \mathrm{s^{-1}}$, $\Lambda_1 = 3.27326\times10^{-6}\ \mathrm{s^{-1}}$; 151 negative weights among the first 300 modes. Scenarios: S1 no source, no decay, $M_0 = 1\ \mathrm{mol}$; S2 steady $R/B$ for a kernel source; S3 $M_0 = 1\ \mathrm{mol}$, $G = \Lambda_1\ \mathrm{mol\ s^{-1}}$ on $[0, 1/\Lambda_1)$, then post-irradiation; S4 $\lambda = 0$ steady inventory per unit source.
+Synthetic case (`inputs/synthetic/synthetic_five_layer.toml`): $R_i = 200, 300, 350, 400, 450\ \mu\mathrm{m}$, $D_i = 10^{-12}, 4\times10^{-10}, 8\times10^{-13}, 2\times10^{-14}, 7\times10^{-13}\ \mathrm{m^2\ s^{-1}}$. Constants: $\tau = 674.217\ \mathrm{s^{1/2}}$, $a = 2.17121\times10^{-5}\ \mathrm{s^{-1}}$, $c = 9.74776\times10^{-7}\ \mathrm{s^{-1}}$, $\Lambda^* = 7.0\times10^{-5}\ \mathrm{s^{-1}}$, $C_w(\infty) = 2.8237\times10^{-4}\ \mathrm{s^{-1}}$, $C_w(\ell_{11}) = 3.4478\times10^{-4}\ \mathrm{s^{-1}}$, $\Lambda_1 = 3.27326\times10^{-6}\ \mathrm{s^{-1}}$; 151 negative weights among the first 300 modes. Scenarios: S1 no source, no decay, $M_0 = 1\ \mathrm{mol}$; S2 steady $R/B$ for a kernel source; S3 $M_0 = 1\ \mathrm{mol}$, $G = \Lambda_1\ \mathrm{mol\ s^{-1}}$ on $[0, 1/\Lambda_1)$, then post-irradiation; S4 $\lambda = 0$ steady inventory per unit source.
 
 | Quantity | $N$ | True error | Bound A | Bound B | error / A |
-|---|---|---|---|---|---|
+|------------------------------|-------|-----------------|----------------|----------------|--------------|
 | S4, $\sum_{n>N}w_n/\Lambda_n$ ($\mathrm{s}$) | 10 | $2.24$ | $1.13\times10^{3}$ | $5.65\times10^{1}$ | $2.0\times10^{-3}$ |
 | | 50 | $2.38\times10^{-2}$ | $2.10$ | $5.22\times10^{-1}$ | $1.1\times10^{-2}$ |
 | | 100 | $3.40\times10^{-4}$ | $2.28\times10^{-1}$ | $6.17\times10^{-2}$ | $1.5\times10^{-3}$ |
@@ -872,7 +872,7 @@ Synthetic case (`inputs/synthetic/synthetic_five_layer.toml`): $R_i = 200, 300, 
 
 Table: 3.7 Synthetic five-layer case. (i) below the reference uncertainty $3.1\times10^{-9}\ \mathrm{s}$, indicative only. Bound B is not used above $N = 300$ (round-off, Section 3.5.3.7).
 
-Over all tested $N$ (5 to 5000) and times ($10^{-4}/\Lambda_1$ to $3/\Lambda_1$, and $2\times10^5\ \mathrm{s}$), the largest ratio error/Bound A is $1.8\times10^{-2}$ (S1), $1.1\times10^{-2}$ (S2, S3, S4); the largest ratio error/Bound B is 0.26. The check case of the decay-part script ($R_i = 250, 350, 390, 425, 465\ \mathrm{\mu m}$, $D_i = 4\times10^{-14}, 4\times10^{-13}, 2\times10^{-14}, 5\times10^{-15}, 2\times10^{-14}\ \mathrm{m^2\ s^{-1}}$, 152 negative weights in 300 modes, confirmed) gives largest ratios $3.0\times10^{-2}$ (A) and 0.29 (B). The observed decay of the true S4 error over $50 \le N \le 300$ is irregular (fitted slopes 5.3 and 2.8 in the two cases) because of the sign changes, while Bound A falls with slope 3.1.
+Over all tested $N$ (5 to 5000) and times ($10^{-4}/\Lambda_1$ to $3/\Lambda_1$, and $2\times10^5\ \mathrm{s}$), the largest ratio error/Bound A is $1.8\times10^{-2}$ (S1), $1.1\times10^{-2}$ (S2, S3, S4); the largest ratio error/Bound B is 0.26. The check case of the decay-part script ($R_i = 250, 350, 390, 425, 465\ \mu\mathrm{m}$, $D_i = 4\times10^{-14}, 4\times10^{-13}, 2\times10^{-14}, 5\times10^{-15}, 2\times10^{-14}\ \mathrm{m^2\ s^{-1}}$, 152 negative weights in 300 modes, confirmed) gives largest ratios $3.0\times10^{-2}$ (A) and 0.29 (B). The observed decay of the true S4 error over $50 \le N \le 300$ is irregular (fitted slopes 5.3 and 2.8 in the two cases) because of the sign changes, while Bound A falls with slope 3.1.
 
 **What the demonstration shows.** The bound always holds in the tested range and has the predicted $N^{-3}$ slope. Bound A is pessimistic by a factor of at least 33, with median ratios error/Bound A between $5\times10^{-5}$ and $3\times10^{-3}$ over the scenarios of both cases, because the absolute values in (P21.98) discard the cancellation between weights of opposite sign and because $C_w$ assumes the worst phase in every mode (median $\lvert w_n\rvert\Lambda_n/C_w = 0.034$).
 
@@ -1142,7 +1142,7 @@ Status labels used: **exact** (an identity, no truncation), **semi-analytical** 
 
 | Symbol | Meaning | Units |
 |---|---|---|
-| $r,\ t$ | radius, time | $\mathrm{m}$, $\mathrm{s}$ |
+| $r$, $t$ | radius, time | $\mathrm{m}$, $\mathrm{s}$ |
 | $i=1,\dots,5$ | layer index: kernel, buffer, IPyC, SiC, OPyC | 1 |
 | $R_i$ | outer radius of layer $i$; $R_0=0$, $R_5=R$ | $\mathrm{m}$ |
 | $D_i$ | diffusivity of layer $i$ (constant in this section) | $\mathrm{m^2\ s^{-1}}$ |
@@ -1151,27 +1151,27 @@ Status labels used: **exact** (an identity, no truncation), **semi-analytical** 
 | $S(r,t)$ | volumetric source | $\mathrm{mol\ m^{-3}\ s^{-1}}$ |
 | $S_K(t)$ | uniform kernel source value | $\mathrm{mol\ m^{-3}\ s^{-1}}$ |
 | $\dot F$ | fission rate density | $\mathrm{fissions\ m^{-3}\ s^{-1}}$ |
-| $y^I,\ y^C$ | independent and cumulative fission yield | $\mathrm{per\ fission}$ |
+| $y^I$, $y^C$ | independent and cumulative fission yield | $\mathrm{per\ fission}$ |
 | $N_A$ | Avogadro constant | $\mathrm{mol^{-1}}$ |
 | $j=1,\dots,N$ | cell index, cell $j$ spans $[r_{j-1/2},r_{j+1/2}]$ | 1 |
 | $r_j$ | volume centroid of cell $j$, $\tfrac34(r_{j+1/2}^4-r_{j-1/2}^4)/(r_{j+1/2}^3-r_{j-1/2}^3)$ (`volume_centroid` in v1.0) | $\mathrm{m}$ |
 | $V_K$ | kernel volume $\tfrac{4\pi}{3}R_1^3$ | $\mathrm{m^3}$ |
 | $V_j$ | shell volume $\tfrac{4\pi}{3}(r_{j+1/2}^3-r_{j-1/2}^3)$ | $\mathrm{m^3}$ |
 | $A_f$ | face area $4\pi r_f^2$ | $\mathrm{m^2}$ |
-| $G_f$; $G_W,\ G_E$ | face conductance (TRISO-FV-140); west and east face of a cell | $\mathrm{m^3\ s^{-1}}$ |
+| $G_f$; $G_W$, $G_E$ | face conductance (TRISO-FV-140); west and east face of a cell | $\mathrm{m^3\ s^{-1}}$ |
 | $G_R$ | surface conductance $4\pi R^2D_5/(R-r_N)$ (TRISO-DEL-030) | $\mathrm{m^3\ s^{-1}}$ |
-| $g^W_j,\ g^E_j$ | $G_W,\ G_E$ of cell $j$; $g^W_1=0$, $g^E_N=G_R$, $g^E_j=g^W_{j+1}$ | $\mathrm{m^3\ s^{-1}}$ |
+| $g^W_j$, $g^E_j$ | $G_W,\ G_E$ of cell $j$; $g^W_1=0$, $g^E_N=G_R$, $g^E_j=g^W_{j+1}$ | $\mathrm{m^3\ s^{-1}}$ |
 | $C_j^n$ | cell-average concentration at $t^n$ | $\mathrm{mol\ m^{-3}}$ |
 | $\bar S_j(t)$, $\bar S_j^{n+1}$ | cell-averaged source; its value used in step $n\to n+1$ | $\mathrm{mol\ m^{-3}\ s^{-1}}$ |
 | $\Delta t$, $z=\lambda\Delta t$ | time step; dimensionless decay per step | $\mathrm{s}$, 1 |
 | $v_j$ | diagonal excess of row $j$ (Section 4.3) | $\mathrm{m^3\ s^{-1}}$ |
-| $\mathbf V,\ \mathbf K$ | $\mathrm{diag}(V_j)$; conductance (stiffness) matrix with row sums $0$ except $G_R$ in row $N$ | $\mathrm{m^3}$, $\mathrm{m^3\ s^{-1}}$ |
-| $M,\ M_0$ | inventory inside the particle, initial inventory | $\mathrm{mol}$ |
-| $M_{gen},\ M_{rel},\ M_{dec},\ M_{out}$ | generated, released through $r=R$, decayed inside, released and not yet decayed outside (cumulative) | $\mathrm{mol}$ |
+| $\mathbf V$, $\mathbf K$ | $\mathrm{diag}(V_j)$; conductance (stiffness) matrix with row sums $0$ except $G_R$ in row $N$ | $\mathrm{m^3}$, $\mathrm{m^3\ s^{-1}}$ |
+| $M$, $M_0$ | inventory inside the particle, initial inventory | $\mathrm{mol}$ |
+| $M_{gen}$, $M_{rel}$, $M_{dec}$, $M_{out}$ | generated, released through $r=R$, decayed inside, released and not yet decayed outside (cumulative) | $\mathrm{mol}$ |
 | $M_{dec,out}$ | released atoms that decayed outside | $\mathrm{mol}$ |
 | $\mathrm{Gen}(t)$ | generation rate $\int S\,dV$ | $\mathrm{mol\ s^{-1}}$ |
 | $J_R(t)$ | release rate $-4\pi R^2D_5\,\partial_rc\vert_{R}$ | $\mathrm{mol\ s^{-1}}$ |
-| $\Lambda_n,\ \phi_n,\ N_n,\ w_n$ | Phase 1 eigenvalues, eigenfunctions, norms $\int_0^Rr^2\phi_n^2dr$, release weights (TRISO-DEL-021) | $\mathrm{s^{-1}}$, $\mathrm{mol\ m^{-3}}$, $\mathrm{m^3\,(mol\ m^{-3})^2}$, 1 |
+| $\Lambda_n$, $\phi_n$, $N_n$, $w_n$ | Phase 1 eigenvalues, eigenfunctions, norms $\int_0^Rr^2\phi_n^2dr$, release weights (TRISO-DEL-021) | $\mathrm{s^{-1}}$, $\mathrm{mol\ m^{-3}}$, $\mathrm{m^3\,(mol\ m^{-3})^2}$, 1 |
 | $u=rc$ | transformed concentration | $\mathrm{mol\ m^{-2}}$ |
 | $k_i=\sqrt{\lambda/D_i}$ | decay length inverse in layer $i$ | $\mathrm{m^{-1}}$ |
 | $D'=D/R^2$ | reduced diffusivity (Booth) | $\mathrm{s^{-1}}$ |
@@ -1771,7 +1771,7 @@ S5c confirms (P21.141) with sign at $n=3200$ (observed over predicted 1.0000, 1.
 Five-layer TECDOC-1674 Table 10.2 geometry, synthetic $D=(4\times10^{-14},\,4\times10^{-13},\,2\times10^{-14},\,5\times10^{-15},\,2\times10^{-14})\ \mathrm{m^2\ s^{-1}}$, cells $(20,8,4,4,4)$, kernel loaded with $1\ \mathrm{mol\ m^{-3}}$, $\Lambda_1=7.166\times10^{-7}\ \mathrm{s^{-1}}$, $\lambda=0.1\Lambda_1$, $S=0$, $t_{end}=14/\Lambda_1$, reference $M(t_{end})/M_0=2.4276\times10^{-7}$ (double eigen route, equal to a 30-digit mpmath value to $5\times10^{-12}$, S5a). Relative error of $M(t_{end})$:
 
 | $n$ | BE | CN | TR-BDF2 | Richardson | BDF2 | ETD |
-|---|---|---|---|---|---|---|
+|---------------------|------------------------------|-----------------------------|------------------------------|------------------------------|-----------------------------|-------------------------------|
 | 50 | $+6.2$ | $-23.2$ | $-5.9\times10^{-2}$ | $+1.8\times10^{-1}$ | $-4.5\times10^{-1}$ | $-2.0\times10^{-14}$ |
 | 200 | $+7.6\times10^{-1}$ | $-7.6\times10^{-3}$ | $-3.7\times10^{-3}$ | $+1.4\times10^{-2}$ | $-2.7\times10^{-2}$ | $-1.0\times10^{-13}$ |
 | 800 | $+1.6\times10^{-1}$ | $-4.8\times10^{-4}$ | $-2.3\times10^{-4}$ | $+9.3\times10^{-4}$ | $-1.7\times10^{-3}$ | $-3.2\times10^{-13}$ |
@@ -2160,7 +2160,7 @@ Status labels used throughout: **exact** (no approximation beyond the stated mod
 | $q_i$, $\rho_i$ | interface flux density of the old field, diffusivity ratio new/old (Section 5.4.1) | $\mathrm{mol\ m^{-2}\ s^{-1}}$, - |
 | $P_{mn}$ | projection matrix between two eigenbases | - |
 | $K_{mn}(t)$ | Galerkin stiffness on a fixed basis | $\mathrm{s^{-1}}$ |
-| $M, M_0, M_{\mathrm{gen}}, M_{\mathrm{rel}}, M_{\mathrm{dec}}, M_{\mathrm{out}}$ | inventories (Section 5.3.3) | $\mathrm{mol}$ |
+| $M$, $M_0$, $M_{\mathrm{gen}}$, $M_{\mathrm{rel}}$, $M_{\mathrm{dec}}$, $M_{\mathrm{out}}$ | inventories (Section 5.3.3) | $\mathrm{mol}$ |
 | $F(t)$ | released fraction $M_{\mathrm{rel}}/M_0$ ($\lambda = 0$, $S = 0$) | - |
 | $\dot T$, $\theta = Q/R_g$ | ramp rate of one linear segment, activation temperature (Section 5.2.4) | $\mathrm{K\ s^{-1}}$, $\mathrm{K}$ |
 | $H(t)$ | surface mass-transfer coefficient of a Robin condition (Section 5.3.5 only) | $\mathrm{m\ s^{-1}}$ |
@@ -2619,7 +2619,7 @@ where $L_1=\sum_k(Z_k-z_k^E)$ satisfies (P22.73) also without shared scaling, be
 Numerical evidence (N3, synthetic layer-specific $Q$ of 209, 50, 222, 514 and 222 $\mathrm{kJ\ mol^{-1}}$, ramp 1250 to 1600 $^\circ$C at 50 $\mathrm{K\ h^{-1}}$ then hold to 100 h, $\Theta_{\mathrm{end}}=6.555$, Radau reference validated against the exact shared-scaling solution to $3\times10^{-10}$):
 
 | $\varepsilon_1$ | $\varepsilon_D$ (P22.20) | option | observed | (P22.77) with $R_{\mathrm{na}}=0$ | $R_{\mathrm{na}}$ |
-|---|---|---|---|---|---|
+|------------|--------------|----------|----------------------|----------------------|--------------------|
 | $10^{-2}$ | none | A | $1.053\times10^{-2}$ | $1.001\times10^{-2}$ | $5.2\times10^{-4}$ |
 | $10^{-2}$ | none | E | $6.41\times10^{-3}$ | $5.71\times10^{-3}$ | $7.0\times10^{-4}$ |
 | $10^{-2}$ | 0.1 | A | $1.021\times10^{-2}$ | $1.000\times10^{-2}$ | $2.1\times10^{-4}$ |
@@ -3151,9 +3151,9 @@ $$
 D_{i,k}\big(T(t)\big) = \alpha(t)\,D^*_{i,k}\qquad\text{for all layers } i \text{ and } k \in \{P, D\}, \tag{P22.105}
 $$
 - **N2** (constant coupling in that clock): at least one of the following holds:
-  - (i) $b\lambda_P = 0$;
-  - (ii) the two species have identical diffusivities, $D^*_{i,P} = D^*_{i,D}$ in every layer;
-  - (iii) with $\tau = \int_0^t\alpha\,ds$ there are constants $C > 0$ and $\delta$ such that
+  - \(i) $b\lambda_P = 0$;
+  - \(ii) the two species have identical diffusivities, $D^*_{i,P} = D^*_{i,D}$ in every layer;
+  - \(iii) with $\tau = \int_0^t\alpha\,ds$ there are constants $C > 0$ and $\delta$ such that
 $$
 \alpha(t) = C\exp\big(\delta\,\tau(t) - \Delta\lambda\,t\big),\qquad\text{equivalently}\qquad \alpha' = \delta\alpha^2 - \Delta\lambda\,\alpha. \tag{P22.106}
 $$
@@ -3583,14 +3583,14 @@ Assumptions, used as named below:
 - (H0) $D_i(t)$ positive and bounded away from zero and infinity; $\lambda\ge0$; $S = 0$.
 - (H1) $\ln D_i(T(t))$ is Lipschitz in $t$: $\lvert \tfrac{d}{dt}\ln D_i\rvert\le L$ almost everywhere. A continuous piecewise-linear history (ramps and holds with kinks) satisfies (H1). For one Arrhenius branch, $\tfrac{d}{dt}\ln D_i = Q_i\dot T/(R_gT^2)$, so
 
-$$
-L = \max_i\frac{Q_i\,\sup_t\lvert\dot T\rvert}{R_g\,T_{\min}^2}, \tag{P22.123}
-$$
+  $$
+  L = \max_i\frac{Q_i\,\sup_t\lvert\dot T\rvert}{R_g\,T_{\min}^2}, \tag{P22.123}
+  $$
 
   and for several parallel branches the logarithmic derivative is a weighted mean of the branch values, so $\max_b Q_b$ replaces $Q_i$.
 - (H2) $\ln D_i\in C^2$ on $[0,T]$ (or on each $I_k$), with $\lvert\tfrac{d^2}{dt^2}\ln D_i\rvert\le L_2$.
 - (H3) operator-relative bound, Eq. (P22.136) below.
-- (J) $T(t)$ piecewise constant with finitely many jumps.
+- \(J) $T(t)$ piecewise constant with finitely many jumps.
 
 In the test problem ($Q_{\max} = 514\ \mathrm{kJ\,mol^{-1}}$, $\dot T = 200\ \mathrm{K}/4\ \mathrm{h}$, $T_{\min} = 1873.15\ \mathrm{K}$), $L = 2.45\times10^{-4}\ \mathrm{s^{-1}}$ and $LT = 3.52$ over the 4 h ramp (script output, Appendix A.2).
 
@@ -3885,7 +3885,7 @@ All scripts are in `scripts/derivation_checks/`, run with `.venv/Scripts/python.
 
 | Script | Content | Result |
 |---|---|---|
-| `sec5_arrhenius.py` | (P22.3) to (P22.8), (P22.19), (P22.22), (P22.23); R_g; CRP-6 1a/1b; crossovers; fluence factor; step bounds; validator | 25/25 PASS |
+| `sec5_arrhenius.py` | (P22.3) to (P22.8), (P22.19), (P22.22), (P22.23); $R_g$; CRP-6 1a/1b; crossovers; fluence factor; step bounds; validator | 25/25 PASS |
 | `sec5_effective_time.py` | SymPy proof of (P22.27) to (P22.38), closure, (P22.50) for a single sphere, (P22.18) | 16/16 PASS |
 | `sec5_fv_shared_alpha.py` | independent FV vs independent series at $\tau(t)$; BE options; decay factorisation and (P22.35) | 10/10 PASS |
 | `sec5_projection_step.py` | projection (P22.42) to (P22.45) vs extrapolated FV; Galerkin diagonal test (P22.50); coefficient decay rate implied by (P22.46) (the identity itself is tested only by the checker script `sec5chk_numeric.py`) | 9/9 PASS |

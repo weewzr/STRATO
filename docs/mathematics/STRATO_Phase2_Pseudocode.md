@@ -1076,7 +1076,7 @@ Table: 5.2 Equations of block R2.
 The conditions E1 to E5 of Section 5.3.6 of the derivation decide whether the shortcut is exact (they are conditions of the model and are not the steps E1 to E5 of block E). Only condition E1 depends on the data.
 
 | Condition | Meaning | How the program decides | Outcome for the planned input |
-|---|---|---|---|
+|-------------|---------------------------|------------------------------|------------------------------|
 | E1 | one factor $\alpha(t)$ multiplies every layer | structural test of the laws, Eq. (H22.2) | depends on the data |
 | E2 | temperature uniform in $r$ | the history is one scalar function of $t$ | true by construction |
 | E3 | one decay constant for the nuclide | one nuclide per solve | true by construction; a source of any shape is allowed |
@@ -1238,7 +1238,7 @@ R3.2  basis(D_k)            -- eigenpairs of one interval
       2. FOR each Lambda[n]: shoot from the centre to get u = r*phi in each layer as a cosine and sine pair,
          then N[n], I[n], I1[n] by the v1.0 panel rule (about one panel per quarter wavelength, 16-point Gauss-Legendre).
       NEEDS A DECISION (decision 12): the routine 'shoot' and the layer states are private in v1.0
-         ([line 132](https://github.com/weewzr/STRATO/blob/v1.0.0/src/analytical/sturm_liouville.rs#L132)). Either new
+         (line 132 of src/analytical/sturm_liouville.rs at tag v1.0.0). Either new
          public accessors are added to sturm_liouville.rs, or the shooting is copied into thermal_intervals.rs.
 R3.3  start (k = 1)
       a[n] = c0 * I1[n] / N[n]   for a uniform kernel concentration c0.               (P21.29, P21.30)
@@ -1403,7 +1403,7 @@ Table: 6.4 Temperature and diffusivity.
 ### 6.5 Bookkeeping and fractions
 
 | Name | Symbol | Unit | Meaning | Block |
-|---|---|---|---|---|
+|------------------|-------------|---------|----------------------------------------------------|--------|
 | `inv`, `inv0` | $M$, $M_0$ | $\mathrm{mol}$ | inventory inside the particle now and at the start | J |
 | `gen_total` | $M_\mathrm{gen}$ | $\mathrm{mol}$ | cumulative generated | J |
 | `dec_total` | $M_\mathrm{dec}$ | $\mathrm{mol}$ | cumulative decayed inside | J |
@@ -1468,7 +1468,7 @@ Table: 6.7 Input fields, solver internals and temporaries.
 
 ## 7 Verification cases and pass criteria
 
-The cases below use the v1.0 five-layer particle of the check scripts (radii 250, 350, 390, 425 and 465 $\mathrm{\mu m}$; synthetic diffusivities $4\times10^{-14}$, $4\times10^{-13}$, $2\times10^{-14}$, $5\times10^{-15}$ and $2\times10^{-14}\ \mathrm{m^2\ s^{-1}}$; cells (20, 8, 4, 4, 4)) unless stated. The last column states what a Python transcription of the pseudocode showed. A value in that column belongs to the transcription and not to Rust; each case must be repeated on the Rust code. The prefix V marks the decay, source and inventory cases, VT the temperature cases and VI the cases that need the joined run.
+The cases below use the v1.0 five-layer particle of the check scripts (radii 250, 350, 390, 425 and 465 $\mu\mathrm{m}$; synthetic diffusivities $4\times10^{-14}$, $4\times10^{-13}$, $2\times10^{-14}$, $5\times10^{-15}$ and $2\times10^{-14}\ \mathrm{m^2\ s^{-1}}$; cells (20, 8, 4, 4, 4)) unless stated. The last column states what a Python transcription of the pseudocode showed. A value in that column belongs to the transcription and not to Rust; each case must be repeated on the Rust code. The prefix V marks the decay, source and inventory cases, VT the temperature cases and VI the cases that need the joined run.
 
 ### 7.1 Decay, source and inventory
 
