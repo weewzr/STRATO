@@ -34,6 +34,7 @@ variables:
     - \AtBeginEnvironment{longtable}{\tablefont\renewcommand{\arraystretch}{\tablestretch}}
     - \usepackage{fvextra}
     - \fvset{breaklines=true,breakautoindent=true}
+    - \RecustomVerbatimEnvironment{verbatim}{Verbatim}{breaklines=true,breakanywhere=true}
     - \AtBeginEnvironment{Shaded}{\scriptsize}
     - \setlength{\emergencystretch}{8em}
     - \allowdisplaybreaks

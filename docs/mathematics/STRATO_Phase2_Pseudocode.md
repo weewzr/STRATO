@@ -984,7 +984,10 @@ $$
 For the modal inventory $m_n=4\pi I_na_n$ with the kernel source $\mathrm{Gen}$ constant on an interval of length $\Delta$, Eqs. (P21.33) and (P21.38) can be written
 
 $$
-m_n(t_j)=m_n(t_{j-1})e^{-\kappa_n\Delta}+\mathrm{Gen}\,w_n\Delta\,\varphi_1(\kappa_n\Delta),\qquad \int_{t_{j-1}}^{t_j}m_n\,ds=\Delta\Big[m_n(t_{j-1})\varphi_1(\kappa_n\Delta)+\mathrm{Gen}\,w_n\Delta\,\varphi_2(\kappa_n\Delta)\Big]
+\begin{aligned}
+m_n(t_j)&=m_n(t_{j-1})e^{-\kappa_n\Delta}+\mathrm{Gen}\,w_n\Delta\,\varphi_1(\kappa_n\Delta),\\
+\int_{t_{j-1}}^{t_j}m_n\,ds&=\Delta\Big[m_n(t_{j-1})\varphi_1(\kappa_n\Delta)+\mathrm{Gen}\,w_n\Delta\,\varphi_2(\kappa_n\Delta)\Big]
+\end{aligned}
 \tag{H21.2}
 $$
 

@@ -292,7 +292,10 @@ $$
 With $N_p(0) = 0$ and constant $\dot F$, $N_p = y_p\dot F(1-e^{-\lambda_p t})/\lambda_p$. Integrating the birth rate from 0 to $t$ and using $y^C = y^I + y_p$:
 
 $$
-B(t) = y^C\dot F\,t - \frac{y_p\dot F}{\lambda_p}\left(1 - e^{-\lambda_p t}\right)\ \xrightarrow{t\gg 1/\lambda_p}\ y^C\dot F\left(t - \frac{y_p/y^C}{\lambda_p}\right),\qquad t_{99} = \frac{\ln 100}{\lambda_p} = 6.644\,t_{1/2,p}
+\begin{aligned}
+B(t) &= y^C\dot F\,t - \frac{y_p\dot F}{\lambda_p}\left(1 - e^{-\lambda_p t}\right)\ \xrightarrow{t\gg 1/\lambda_p}\ y^C\dot F\left(t - \frac{y_p/y^C}{\lambda_p}\right),\\
+t_{99} &= \frac{\ln 100}{\lambda_p} = 6.644\,t_{1/2,p}
+\end{aligned}
 \tag{P21.12}
 $$
 
@@ -333,7 +336,10 @@ Two features follow from the physics.
 2. Target and product are isotopes of the same element (Ag, Cs, Eu). Assuming isotope effects on diffusion are negligible next to the scatter of the Arrhenius data (assumption, not quantified here), $D_{i,A} = D_{i,P}$ in every layer. Then both species share the eigenfunctions $\phi_n$ (Section 3.4), and with a spatially uniform $\phi$ (a particle of under $1\ \mathrm{mm}$ sees a flat flux; assumption) the projection of $S_A$ is diagonal:
 
 $$
-\frac{da^P_n}{dt} = -\kappa^P_n a^P_n + s^P_n,\qquad \frac{da^A_n}{dt} = -\kappa^A_n a^A_n + f_m\sigma_P\phi\,a^P_n,\qquad \kappa^{P}_n = \Lambda_n + \lambda_P + \sigma_P\phi,\ \ \kappa^{A}_n = \Lambda_n + \lambda_A + \sigma_A\phi
+\begin{aligned}
+&\frac{da^P_n}{dt} = -\kappa^P_n a^P_n + s^P_n,\qquad \frac{da^A_n}{dt} = -\kappa^A_n a^A_n + f_m\sigma_P\phi\,a^P_n,\\
+&\kappa^{P}_n = \Lambda_n + \lambda_P + \sigma_P\phi,\ \ \kappa^{A}_n = \Lambda_n + \lambda_A + \sigma_A\phi
+\end{aligned}
 \tag{P21.15}
 $$
 
@@ -421,7 +427,10 @@ The heating phase starts from the end-of-irradiation profile, which is not unifo
 The eigenproblem is the Phase 1 problem (TRISO-ML-432 to TRISO-ML-446, TRISO-DEL-010 to TRISO-DEL-012):
 
 $$
-\frac{1}{r^2}\frac{d}{dr}\left(r^2D_i\frac{d\phi_n}{dr}\right) + \Lambda_n\phi_n = 0,\quad \phi_n,\ D_i\phi_n'\ \text{continuous at } R_i,\quad \phi_n \text{ regular at } 0,\quad \phi_n(R) = 0
+\begin{aligned}
+&\frac{1}{r^2}\frac{d}{dr}\left(r^2D_i\frac{d\phi_n}{dr}\right) + \Lambda_n\phi_n = 0,\quad \phi_n,\ D_i\phi_n'\ \text{continuous at } R_i,\\
+&\phi_n \text{ regular at } 0,\quad \phi_n(R) = 0
+\end{aligned}
 \tag{P21.24}
 $$
 
@@ -543,7 +552,11 @@ $$
 and, integrating in time,
 
 $$
-M_\mathrm{rel}(t) = 4\pi\sum_n \Lambda_nI_n\int_0^t a_n\,ds,\qquad \int_0^t a_n\,ds = a_n(0)\frac{1-e^{-\kappa_nt}}{\kappa_n} + \frac{s_n}{\kappa_n}\left(t - \frac{1-e^{-\kappa_nt}}{\kappa_n}\right)\ (\text{constant } s_n)
+\begin{aligned}
+M_\mathrm{rel}(t) &= 4\pi\sum_n \Lambda_nI_n\int_0^t a_n\,ds,\\
+\int_0^t a_n\,ds &= a_n(0)\frac{1-e^{-\kappa_nt}}{\kappa_n}\\
+&\quad + \frac{s_n}{\kappa_n}\left(t - \frac{1-e^{-\kappa_nt}}{\kappa_n}\right)\ (\text{constant } s_n)
+\end{aligned}
 \tag{P21.38}
 $$
 
@@ -560,7 +573,10 @@ $$
 The two slow sums are truncated completeness sums whose limits are known exactly ($M_0$ from $c_0$, $M_\mathrm{gen}$ from $S$). Replacing them by those limits gives the **balance form** (the steady $R/B$ expression assumes the kernel-uniform source, for which $4\pi s_nI_n/G = w_n$, Section 3.7.2; for another source shape replace $w_n$ by $4\pi s_nI_n/G$):
 
 $$
-M_\mathrm{rel}(t) = M_0 + M_\mathrm{gen}(t) - M^{(N)}(t) - M^{(N)}_\mathrm{dec}(t),\qquad \frac{J_R}{G}\Big|_{\text{steady}} = 1 - \lambda\sum_n\frac{w_n}{\kappa_n}
+\begin{aligned}
+&M_\mathrm{rel}(t) = M_0 + M_\mathrm{gen}(t) - M^{(N)}(t) - M^{(N)}_\mathrm{dec}(t),\\
+&\frac{J_R}{G}\Big|_{\text{steady}} = 1 - \lambda\sum_n\frac{w_n}{\kappa_n}
+\end{aligned}
 \tag{P21.39}
 $$
 
@@ -704,15 +720,20 @@ $$
 by the Cauchy-Schwarz inequality in $\mathbb R^2$. The flux identity (P21.36) with $\phi_n'(R) = u_n'(R)/R$ (because $u_n(R) = 0$) gives $\beta_n = -RD_Lu_n'(R)/\Lambda_n = RD_LBk_L/\Lambda_n$. The normalisation $\int_0^Ru_n^2 = 1$ over the two disjoint layers gives $A^2a_1 + B^2b_L \le 1$ with
 
 $$
-a_1 = \int_0^{R_1}\sin^2(k_1r)\,dr \ge a_1^- := \frac{R_1}{2} - \frac{1}{4k_1},\qquad b_L = \int_{R_{L-1}}^R\sin^2(k_L(R-r))\,dr \ge b_L^- := \frac{L_L}{2} - \frac{1}{4k_L}
+\begin{aligned}
+a_1 &= \int_0^{R_1}\sin^2(k_1r)\,dr \ge a_1^- := \frac{R_1}{2} - \frac{1}{4k_1},\\
+b_L &= \int_{R_{L-1}}^R\sin^2(k_L(R-r))\,dr \ge b_L^- := \frac{L_L}{2} - \frac{1}{4k_L}
+\end{aligned}
 $$
 
 so $\lvert A\rvert \le 1/\sqrt{a_1^-}$, $\lvert B\rvert \le 1/\sqrt{b_L^-}$, and by $2\sqrt{a_1b_L}\,\lvert AB\rvert \le A^2a_1 + B^2b_L$ also $\lvert AB\rvert \le 1/(2\sqrt{a_1^-b_L^-})$. For $\Lambda_n > \Lambda^*$:
 
 $$
 \begin{aligned}
-&\lvert\alpha_n\rvert \le \frac{C_\alpha(\Lambda_n)}{\sqrt{\Lambda_n}},\qquad C_\alpha(\Lambda) = \frac{\sqrt{D_1}\sqrt{R_1^2 + D_1/\Lambda}}{\sqrt{a_1^-}},\qquad \lvert\beta_n\rvert \le \frac{C_\beta(\Lambda_n)}{\sqrt{\Lambda_n}},\qquad C_\beta(\Lambda) = \frac{R\sqrt{D_L}}{\sqrt{b_L^-}}\\
-&\lvert w_n\rvert \le \frac{C_w(\Lambda_n)}{\Lambda_n},\qquad C_w(\Lambda) = \frac{R\sqrt{D_1D_L}\,\sqrt{R_1^2 + D_1/\Lambda}}{2V\sqrt{a_1^-\,b_L^-}},\qquad \Lambda^* = \max\Big(\frac{D_1}{4R_1^2},\ \frac{D_L}{4L_L^2}\Big)
+&\lvert\alpha_n\rvert \le \frac{C_\alpha(\Lambda_n)}{\sqrt{\Lambda_n}},\qquad C_\alpha(\Lambda) = \frac{\sqrt{D_1}\sqrt{R_1^2 + D_1/\Lambda}}{\sqrt{a_1^-}},\\
+&\lvert\beta_n\rvert \le \frac{C_\beta(\Lambda_n)}{\sqrt{\Lambda_n}},\qquad C_\beta(\Lambda) = \frac{R\sqrt{D_L}}{\sqrt{b_L^-}}\\
+&\lvert w_n\rvert \le \frac{C_w(\Lambda_n)}{\Lambda_n},\qquad C_w(\Lambda) = \frac{R\sqrt{D_1D_L}\,\sqrt{R_1^2 + D_1/\Lambda}}{2V\sqrt{a_1^-\,b_L^-}},\\
+&\Lambda^* = \max\Big(\frac{D_1}{4R_1^2},\ \frac{D_L}{4L_L^2}\Big)
 \end{aligned}
 \tag{P21.102}
 $$
@@ -731,7 +752,10 @@ S^{(p)}_N = \min\Big(\frac{1}{(2p-1)\,c^p\,N^{2p-1}},\ \frac{1}{(2p-1)\,a^p\,(N-
 $$
 
 $$
-Y_N(s) = \min\Big(\frac{\Phi(cs,N)}{c},\ \frac{\Phi(as,N-J)}{a}\Big) \ge \sum_{n>N}\frac{e^{-\ell_ns}}{\ell_n},\qquad \Phi(b,M) = \int_M^\infty\frac{e^{-bx^2}}{x^2}\,dx = \frac{e^{-bM^2}}{M} - \sqrt{\pi b}\,\operatorname{erfc}(\sqrt b\,M)
+\begin{aligned}
+&Y_N(s) = \min\Big(\frac{\Phi(cs,N)}{c},\ \frac{\Phi(as,N-J)}{a}\Big) \ge \sum_{n>N}\frac{e^{-\ell_ns}}{\ell_n},\\
+&\Phi(b,M) = \int_M^\infty\frac{e^{-bx^2}}{x^2}\,dx = \frac{e^{-bM^2}}{M} - \sqrt{\pi b}\,\operatorname{erfc}(\sqrt b\,M)
+\end{aligned}
 \tag{P21.104}
 $$
 
@@ -797,8 +821,10 @@ where the first equality uses T3. With $F_1 = x^3/3$ and $F_{\chi_1} = \min(x,R_
 
 $$
 \begin{aligned}
-Q_{\beta\beta} &= \sum_n\frac{\beta_n^2}{\Lambda_n} = \frac{1}{45}\sum_{i=1}^L\frac{R_i^5 - R_{i-1}^5}{D_i},\qquad Q_{\alpha\alpha} = \sum_n\frac{\alpha_n^2}{\Lambda_n} = \frac{R_1^5}{45D_1} + \frac{R_1^6}{9}\sum_{i=2}^L\frac{1}{D_i}\Big(\frac{1}{R_{i-1}} - \frac{1}{R_i}\Big)\\
-Q_{\alpha\beta} &= \sum_n\frac{\alpha_n\beta_n}{\Lambda_n} = \frac{R_1^5}{45D_1} + \frac{R_1^3}{18}\sum_{i=2}^L\frac{R_i^2 - R_{i-1}^2}{D_i},\qquad \sum_n\alpha_n^2 = V,\qquad \sum_n\beta_n^2 = \frac{R^3}{3}
+Q_{\beta\beta} &= \sum_n\frac{\beta_n^2}{\Lambda_n} = \frac{1}{45}\sum_{i=1}^L\frac{R_i^5 - R_{i-1}^5}{D_i},\\
+Q_{\alpha\alpha} &= \sum_n\frac{\alpha_n^2}{\Lambda_n} = \frac{R_1^5}{45D_1} + \frac{R_1^6}{9}\sum_{i=2}^L\frac{1}{D_i}\Big(\frac{1}{R_{i-1}} - \frac{1}{R_i}\Big)\\
+Q_{\alpha\beta} &= \sum_n\frac{\alpha_n\beta_n}{\Lambda_n} = \frac{R_1^5}{45D_1} + \frac{R_1^3}{18}\sum_{i=2}^L\frac{R_i^2 - R_{i-1}^2}{D_i},\\
+\sum_n\alpha_n^2 &= V,\qquad \sum_n\beta_n^2 = \frac{R^3}{3}
 \end{aligned}
 \tag{P21.111}
 $$
@@ -807,7 +833,9 @@ $$
 
 $$
 \begin{aligned}
-&T_1 \le \frac{\sqrt{A_NB_N}}{V},\qquad T_0 \le \frac{1}{V}\min\Big(e^{-\Lambda_{N+1}t}\sqrt{a_Nb_N},\ \sigma(\Lambda_{N+1},t)\sqrt{A_NB_N}\Big),\qquad \sigma(\Lambda',t) = \sup_{\Lambda\ge \Lambda'}\Lambda e^{-\Lambda t}\\
+&T_1 \le \frac{\sqrt{A_NB_N}}{V},\\
+&T_0 \le \frac{1}{V}\min\Big(e^{-\Lambda_{N+1}t}\sqrt{a_Nb_N},\ \sigma(\Lambda_{N+1},t)\sqrt{A_NB_N}\Big),\\
+&\sigma(\Lambda',t) = \sup_{\Lambda\ge \Lambda'}\Lambda e^{-\Lambda t}\\
 &\big\lvert M^{(N)}_\mathrm{rel} - M_\mathrm{rel}\big\rvert \le M_0\,T_0 + K(t)\,T_1
 \end{aligned}
 \tag{P21.112}
@@ -917,9 +945,14 @@ which does not depend on any diffusivity.
 
 $$
 \begin{aligned}
-&\text{(I) source-free heating:} && F_\mathrm{rel} = \frac{M_\mathrm{rel}}{M_0},\quad F_\mathrm{corr} = \frac{e^{\lambda t}M_\mathrm{out}}{M_0} = \frac{1}{M_0}\int_0^tJ_R(s)e^{\lambda s}ds,\quad \text{and } F_\mathrm{rel}(\infty) = \sum_n w_n\frac{\Lambda_n}{\Lambda_n+\lambda}\ (\text{kernel-uniform } c_0)\\
-&\text{(II) irradiation from zero:} && F_\mathrm{gen} = \frac{M_\mathrm{rel}}{M_\mathrm{gen}},\quad \frac{R}{B}(t) = \frac{J_R(t)}{G(t)},\quad F_B = \frac{M_\mathrm{out}}{M + M_\mathrm{out}}\\
-&\text{(III) heating after irradiation:} && F_\mathrm{post}(t) = \frac{M_\mathrm{rel}(t) - M_\mathrm{rel}(t_\mathrm{irr})}{M(t_\mathrm{irr})}
+&\text{(I) source-free heating:}\\
+&\qquad F_\mathrm{rel} = \frac{M_\mathrm{rel}}{M_0},\quad F_\mathrm{corr} = \frac{e^{\lambda t}M_\mathrm{out}}{M_0}\\
+&\qquad\qquad = \frac{1}{M_0}\int_0^tJ_R(s)e^{\lambda s}ds,\\
+&\qquad \text{and } F_\mathrm{rel}(\infty) = \sum_n w_n\frac{\Lambda_n}{\Lambda_n+\lambda}\ (\text{kernel-uniform } c_0)\\
+&\text{(II) irradiation from zero:}\\
+&\qquad F_\mathrm{gen} = \frac{M_\mathrm{rel}}{M_\mathrm{gen}},\quad \frac{R}{B}(t) = \frac{J_R(t)}{G(t)},\quad F_B = \frac{M_\mathrm{out}}{M + M_\mathrm{out}}\\
+&\text{(III) heating after irradiation:}\\
+&\qquad F_\mathrm{post}(t) = \frac{M_\mathrm{rel}(t) - M_\mathrm{rel}(t_\mathrm{irr})}{M(t_\mathrm{irr})}
 \end{aligned}
 \tag{P21.45}
 $$
@@ -955,7 +988,10 @@ $$
 One layer, $R_1 = R$, $\phi_n = \sin(n\pi r/R)/r$, $\Lambda_n = n^2\pi^2D'$, $N_n = R/2$, $w_n = 6/(n^2\pi^2)$, $\Lambda_n/\kappa_n = n^2\pi^2/(n^2\pi^2 + x)$. Substituting in (P21.47) term by term gives TECDOC-1674 Eq. (7.7). For the cumulative fraction, use (P21.44) with $M_0 = 0$ and constant production $G$: $M + M_\mathrm{out} = G(1-e^{-\lambda t})/\lambda$, hence $F_B = 1 - \lambda M/[G(1 - e^{-\lambda t})]$. With $M/G = \sum_nw_n(1-e^{-\kappa_nt})/\kappa_n$ and the split $1 - e^{-\kappa_nt} = (1 - e^{-\lambda t}) + e^{-\lambda t}(1 - e^{-n^2\pi^2D't})$:
 
 $$
-\frac{R}{B}(t) = \sum_{n}\frac{6}{n^2\pi^2 + x} - 6e^{-\lambda t}\sum_{n}\frac{e^{-n^2\pi^2D't}}{n^2\pi^2 + x},\qquad F_B(t) = \sum_n\frac{6}{n^2\pi^2+x} - \frac{6}{\pi^2}\frac{x}{e^{\lambda t}-1}\sum_n\frac{1 - e^{-n^2\pi^2D't}}{n^2(n^2\pi^2 + x)}
+\begin{aligned}
+\frac{R}{B}(t) &= \sum_{n}\frac{6}{n^2\pi^2 + x} - 6e^{-\lambda t}\sum_{n}\frac{e^{-n^2\pi^2D't}}{n^2\pi^2 + x},\\
+F_B(t) &= \sum_n\frac{6}{n^2\pi^2+x} - \frac{6}{\pi^2}\frac{x}{e^{\lambda t}-1}\sum_n\frac{1 - e^{-n^2\pi^2D't}}{n^2(n^2\pi^2 + x)}
+\end{aligned}
 \tag{P21.48}
 $$
 
@@ -966,7 +1002,10 @@ These are TECDOC-1674 Eqs (7.7) and (7.8) (IAEA, 2012, p. 319) once $\sum_n 6/(n
 As $t\to\infty$ in (P21.47):
 
 $$
-\left(\frac{R}{B}\right)_\mathrm{ss} = \sum_nw_n\frac{\Lambda_n}{\Lambda_n + \lambda} = \int_0^\infty\left(-\frac{d}{dt}\sum_nw_ne^{-\Lambda_nt}\right)e^{-\lambda t}\,dt\ \xrightarrow{\text{one sphere}}\ 3\sqrt{\frac{1}{x}}\left(\coth\sqrt{x} - \sqrt{\frac{1}{x}}\right)
+\begin{aligned}
+\left(\frac{R}{B}\right)_\mathrm{ss} &= \sum_nw_n\frac{\Lambda_n}{\Lambda_n + \lambda} = \int_0^\infty\left(-\frac{d}{dt}\sum_nw_ne^{-\Lambda_nt}\right)e^{-\lambda t}\,dt\\
+&\xrightarrow{\text{one sphere}}\ 3\sqrt{\frac{1}{x}}\left(\coth\sqrt{x} - \sqrt{\frac{1}{x}}\right)
+\end{aligned}
 \tag{P21.49}
 $$
 
@@ -1039,7 +1078,10 @@ The $F_B$ differences of $2\times10^{-8}$ occur at $D't = 10^{-3}$ and equal the
 **`sec3_p21_fv_two_layer.py`** (independent FV against the modal solution, two layers). Data (synthetic): $R_1 = 175\ \mu\mathrm{m}$, $R_2 = 390\ \mu\mathrm{m}$, $D = (2\times10^{-15},\ 5\times10^{-16})\ \mathrm{m^2\ s^{-1}}$, $\lambda = 10^{-8}\ \mathrm{s^{-1}}$, $S_0 = 10^{-6}\ \mathrm{mol\ m^{-3}\ s^{-1}}$ in the kernel for $t < t_\mathrm{irr} = 10^8\ \mathrm{s}$, zero after; 400 modes. The FV check is **discretised** (cell-centred, Crank-Nicolson, $\theta = 1/2$), unlike the Rust Backward Euler solver:
 
 $$
-\frac{V_j}{\Delta t}\left(C_j^{n+1} - C_j^n\right) = -\sum_fG_f\,\Delta_fC^{n+\theta} - \lambda V_jC_j^{n+\theta} + V_jS_j^{n+1/2},\qquad C^{n+\theta} = \theta C^{n+1} + (1-\theta)C^n
+\begin{aligned}
+\frac{V_j}{\Delta t}\left(C_j^{n+1} - C_j^n\right) &= -\sum_fG_f\,\Delta_fC^{n+\theta} - \lambda V_jC_j^{n+\theta} + V_jS_j^{n+1/2},\\
+C^{n+\theta} &= \theta C^{n+1} + (1-\theta)C^n
+\end{aligned}
 $$
 
 where $\Delta_fC = C_j - C_{j'}$ is the difference between cell $j$ and its neighbour $j'$ across face $f$ (with $C = 0$ beyond $r = R$), $G_f = A_f/(\delta_-/D_- + \delta_+/D_+)$ at internal faces with $\delta_\pm$ the distances from the two nodes to the face, $G_R = A_RD_5/\delta$ at the surface with $\delta = R - r_N$ ($r_N$ the radius of the last node). The Python nodes sit at cell midpoints, while the Rust code (`finite_volume.rs`) places them at shell volume centroids; both are second order in space, and the independent check below uses centroids. The scheme also uses release increment $\Delta tG_RC_N^{n+\theta}$ and decay increment $\lambda\Delta t\sum_jV_jC_j^{n+\theta}$. Output (`SUMMARY: 14/14 PASS`):
@@ -1145,7 +1187,10 @@ $$
 $$
 
 $$
-\partial_rc_1(0,t)=0,\quad c_i(R_i,t)=c_{i+1}(R_i,t),\quad D_i\partial_rc_i\big\vert_{R_i^-}=D_{i+1}\partial_rc_{i+1}\big\vert_{R_i^+},\quad c_5(R,t)=0,\quad c(r,0)=c^0(r)\tag{P21.51}
+\begin{gathered}
+\partial_rc_1(0,t)=0,\quad c_i(R_i,t)=c_{i+1}(R_i,t),\quad D_i\partial_rc_i\big\vert_{R_i^-}=D_{i+1}\partial_rc_{i+1}\big\vert_{R_i^+},\\
+c_5(R,t)=0,\quad c(r,0)=c^0(r)
+\end{gathered}\tag{P21.51}
 $$
 
 (P21.50) is TRISO-FV-100 with the decay term added; it coincides with the particle equations of FRESCO-II (Eq. 10.3b) and NRCDIF (Eq. 10.6) in IAEA (2012, printed pp. 531, 535-536). Eq. (10.1) of the same report prints a minus sign in front of the divergence; that is a sign typo in the source (audit 04, Sec. 1).
@@ -1177,13 +1222,19 @@ $$
 **Semi-discrete equation (exact balance, approximate fluxes).** With the two-point face flows of TRISO-FV-140:
 
 $$
-V_j\frac{dC_j}{dt}=G_W(C_{j-1}-C_j)+G_E(C_{j+1}-C_j)-\lambda V_jC_j+V_j\bar S_j(t),\qquad\text{in matrix form}\quad \mathbf V\dot{\mathbf C}=-\mathbf K\mathbf C-\lambda\mathbf V\mathbf C+\mathbf V\bar{\mathbf S}(t). \tag{P21.55}
+\begin{aligned}
+&V_j\frac{dC_j}{dt}=G_W(C_{j-1}-C_j)+G_E(C_{j+1}-C_j)-\lambda V_jC_j+V_j\bar S_j(t),\\
+&\text{in matrix form}\quad \mathbf V\dot{\mathbf C}=-\mathbf K\mathbf C-\lambda\mathbf V\mathbf C+\mathbf V\bar{\mathbf S}(t).
+\end{aligned} \tag{P21.55}
 $$
 
 Integrating (P21.55) over one step is still exact:
 
 $$
-V_j\big[C_j(t^{n+1})-C_j(t^n)\big]=\int_{t^n}^{t^{n+1}}\!\Big[G_W(C_{j-1}-C_j)+G_E(C_{j+1}-C_j)-\lambda V_jC_j\Big]dt+V_j\int_{t^n}^{t^{n+1}}\bar S_j\,dt. \tag{P21.56}
+\begin{aligned}
+V_j\big[C_j(t^{n+1})-C_j(t^n)\big]&=\int_{t^n}^{t^{n+1}}\!\Big[G_W(C_{j-1}-C_j)+G_E(C_{j+1}-C_j)-\lambda V_jC_j\Big]dt\\
+&\quad+V_j\int_{t^n}^{t^{n+1}}\bar S_j\,dt.
+\end{aligned} \tag{P21.56}
 $$
 
 ### 4.3 (b) Backward Euler with implicit decay
@@ -1191,7 +1242,10 @@ $$
 **Time quadrature.** Backward Euler (BE) replaces the first integral of (P21.56) by $\Delta t$ times its value at $t^{n+1}$ (first order). For the source integral two choices exist:
 
 $$
-\text{(R) rectangle: }\ \bar S_j^{n+1}=\bar S_j(t^{n+1-}),\qquad \text{(A) exact step average: }\ \bar S_j^{n+1}=\frac{1}{\Delta t}\int_{t^n}^{t^{n+1}}\bar S_j(t)\,dt. \tag{P21.57}
+\begin{aligned}
+&\text{(R) rectangle: }\ \bar S_j^{n+1}=\bar S_j(t^{n+1-}),\\
+&\text{(A) exact step average: }\ \bar S_j^{n+1}=\frac{1}{\Delta t}\int_{t^n}^{t^{n+1}}\bar S_j(t)\,dt.
+\end{aligned} \tag{P21.57}
 $$
 
 In (R) the value is the left limit at $t^{n+1}$, so a source defined on half-open intervals $(t_a,t_b]$ is sampled inside the step. For a smooth source the generation error of (R) per step is $\int\bar S\,dt-\Delta t\,\bar S(t^{n+1})=-\tfrac12\Delta t^2\dot{\bar S}-\tfrac13\Delta t^3\ddot{\bar S}+O(\Delta t^4)$ with the derivatives taken at $t^n$ (X7; expanded about $t^{n+1}$ the cubic coefficient is $+\tfrac16$ instead), which sums to $O(\Delta t)$ over a run. (A) has no generation error at all; for a piecewise-constant or piecewise-linear $\dot F(t)$ it is a closed form. Both give a scheme of global order 1, because BE itself is first order. **Recommendation: (A).** It makes $M_{gen}$ equal to the true generated amount even when a switch falls inside a step (N9: $+1.6\times10^{-16}$ relative error against $-0.167$ for (R) in the test case), and it equals (R) when the source is constant on every step.
@@ -1205,7 +1259,10 @@ $$
 **What changes relative to v1.0.** Write $a_{jk}$ for the matrix entries and $b_j$ for the right-hand side.
 
 $$
-a_{jj}=v_j+g^W_j+g^E_j,\quad v_j=V_j\Big(\frac{1}{\Delta t}+\lambda\Big),\qquad a_{j,j-1}=-g^W_j,\quad a_{j,j+1}=-g^E_j,\qquad b_j=\frac{V_j}{\Delta t}C_j^n+V_j\bar S_j^{n+1}. \tag{P21.59}
+\begin{aligned}
+&a_{jj}=v_j+g^W_j+g^E_j,\quad v_j=V_j\Big(\frac{1}{\Delta t}+\lambda\Big),\\
+&a_{j,j-1}=-g^W_j,\quad a_{j,j+1}=-g^E_j,\qquad b_j=\frac{V_j}{\Delta t}C_j^n+V_j\bar S_j^{n+1}.
+\end{aligned} \tag{P21.59}
 $$
 
 | Item | v1.0 (`backward_euler_step`, [src/numerical/finite_volume.rs, lines 162 to 182](https://github.com/weewzr/STRATO/blob/v1.0.0/src/numerical/finite_volume.rs#L162-L182); assembly loop [src/numerical/finite_volume.rs, lines 171 to 180](https://github.com/weewzr/STRATO/blob/v1.0.0/src/numerical/finite_volume.rs#L171-L180)) | Phase 2.1 |
@@ -1245,7 +1302,10 @@ The subtraction in the middle step is carried out analytically, so the recurrenc
 **Positivity.** With $y_j=(b_j+g^W_jy_{j-1})/d_j$ and $C_j^{n+1}=y_j+(g^E_j/d_j)\,C_{j+1}^{n+1}$, $C_N^{n+1}=y_N$:
 
 $$
-C^n\ge0,\ \bar S^{n+1}\ge0\ \Longrightarrow\ b\ge0\ \Longrightarrow\ y\ge0\ \Longrightarrow\ C^{n+1}\ge0\quad\text{for every }\Delta t>0,\ \lambda\ge0. \tag{P21.62}
+\begin{aligned}
+&C^n\ge0,\ \bar S^{n+1}\ge0\ \Longrightarrow\ b\ge0\ \Longrightarrow\ y\ge0\ \Longrightarrow\ C^{n+1}\ge0\\
+&\qquad\text{for every }\Delta t>0,\ \lambda\ge0.
+\end{aligned} \tag{P21.62}
 $$
 
 (exact). Rounding a nonnegative sum, product or quotient of nonnegative floats gives a nonnegative float, so (P21.62) also holds in floating point: the minimum is $\ge0.0$ exactly, a sharper test than the v1.0 threshold of $-10^{-13}$ (N2: smallest value $1.1\times10^{-128}$ for $\Delta t=10^{-3}$ to $10^{12}\ \mathrm{s}$). A source with negative values (possible in a manufactured solution) voids (P21.62).
@@ -1253,7 +1313,11 @@ $$
 **Exact link to the v1.0 scheme.** Since $\mathbf V/\Delta t+\lambda\mathbf V=\mathbf V/\Delta t'$ with $\Delta t'=\Delta t/(1+z)$ and $\mathbf V/\Delta t=(1+z)^{-1}\mathbf V/\Delta t'$, a step of (P21.58) with $S=0$ is
 
 $$
-\mathbf C^{n+1}=(1+z)^{-1}\,\mathbf B_{\Delta t'}\mathbf C^n,\qquad \mathbf B_{h}=(\mathbf V/h+\mathbf K)^{-1}\mathbf V/h\ \ (\text{the v1.0 step}),\qquad \mathbf C^n=(1+z)^{-n}\mathbf B_{\Delta t'}^{\,n}\mathbf C^0. \tag{P21.63}
+\begin{aligned}
+\mathbf C^{n+1}&=(1+z)^{-1}\,\mathbf B_{\Delta t'}\mathbf C^n,\\
+\mathbf B_{h}&=(\mathbf V/h+\mathbf K)^{-1}\mathbf V/h\ \ (\text{the v1.0 step}),\\
+\mathbf C^n&=(1+z)^{-n}\mathbf B_{\Delta t'}^{\,n}\mathbf C^0.
+\end{aligned} \tag{P21.63}
 $$
 
 (exact discrete identity; X3 symbolic, N4 numeric to $7.6\times10^{-16}$). It is the discrete analogue of the continuous identity (P21.80) and gives a regression test that ties a decay run to a v1.0 run with a modified step.
@@ -1275,7 +1339,11 @@ $$
 Applying BE to $\tilde{\mathbf C}$ with the exact weighted source integral gives the decay-exact scheme
 
 $$
-\Big(\frac{\mathbf V}{\Delta t}+\mathbf K\Big)\tilde{\mathbf C}^{n+1}=\frac{\mathbf V}{\Delta t}\mathbf C^n+\mathbf V\bar{\mathbf S}_\varphi^{n+1},\quad \bar{\mathbf S}_\varphi^{n+1}=\frac1{\Delta t}\int_{t^n}^{t^{n+1}}e^{\lambda(t-t^n)}\bar{\mathbf S}\,dt\ \Big(=\bar{\mathbf S}\,\frac{e^z-1}{z}\ \text{if constant}\Big),\quad \mathbf C^{n+1}=e^{-z}\tilde{\mathbf C}^{n+1}. \tag{P21.66}
+\begin{aligned}
+\Big(\frac{\mathbf V}{\Delta t}+\mathbf K\Big)\tilde{\mathbf C}^{n+1}&=\frac{\mathbf V}{\Delta t}\mathbf C^n+\mathbf V\bar{\mathbf S}_\varphi^{n+1},\\
+\bar{\mathbf S}_\varphi^{n+1}&=\frac1{\Delta t}\int_{t^n}^{t^{n+1}}e^{\lambda(t-t^n)}\bar{\mathbf S}\,dt\ \Big(=\bar{\mathbf S}\,\frac{e^z-1}{z}\ \text{if constant}\Big),\\
+\mathbf C^{n+1}&=e^{-z}\tilde{\mathbf C}^{n+1}.
+\end{aligned} \tag{P21.66}
 $$
 
 With $S=0$ this is the Lie split "v1.0 diffusion step, then exact decay", and because the two operators commute the split introduces no error:
@@ -1297,7 +1365,11 @@ The decay-exact scheme therefore converges to a steady state whose diffusion is 
 **Error orders (numerical evidence N3, N6).**
 
 $$
-\text{per mode, relative: unsplit BE }\ \varepsilon_n\approx\tfrac12(\Lambda_n+\lambda)^2t\,\Delta t;\qquad \text{decay-exact split }\ \varepsilon_n\approx\tfrac12\Lambda_n^2t\,\Delta t;\qquad \text{difference }\tfrac12(2\Lambda_n\lambda+\lambda^2)\,t\,\Delta t. \tag{P21.69}
+\begin{aligned}
+&\text{per mode, relative: unsplit BE }\ \varepsilon_n\approx\tfrac12(\Lambda_n+\lambda)^2t\,\Delta t;\\
+&\text{decay-exact split }\ \varepsilon_n\approx\tfrac12\Lambda_n^2t\,\Delta t;\\
+&\text{difference }\tfrac12(2\Lambda_n\lambda+\lambda^2)\,t\,\Delta t.
+\end{aligned} \tag{P21.69}
 $$
 
 (approximate, leading order in $\Delta t$; from $n\ln[1+(\Lambda_n+\lambda)\Delta t]-(\Lambda_n+\lambda)t$ with $t=n\Delta t$, checker script S8c.) Both schemes are $O(\Delta t)$. The extra error of the unsplit scheme contains the cross term $\Lambda_n\lambda$, so it is not the pure-decay error $\tfrac12\lambda^2t\Delta t$ of (P21.77) added to the diffusion error. In N3 ($\lambda=\Lambda_1$, $t=1/\Lambda_1$) the relative error in $M(t)$ is $2.50\times10^{-3}$ (unsplit) against $6.2\times10^{-4}$ (split) at 800 steps, a ratio of 4 as (P21.69) predicts for the dominant first mode ($\tfrac12(2\Lambda_1)^2t\Delta t=2/800$ against $\tfrac12\Lambda_1^2t\Delta t=0.5/800$); both have observed order 0.999.
@@ -1319,7 +1391,11 @@ $$
 (exact for the exact solution of the linear system; it is the BE image of $dM/dt=\mathrm{Gen}-\lambda M-J_R$.) Summing over steps $k=1,\dots,n$ (step sizes may vary):
 
 $$
-M_0+M_{gen}^n=M^n+M_{dec}^n+M_{rel}^n,\qquad M_{gen}^n=\sum_{k=1}^n\Delta t_k\,\mathrm{Gen}^k,\quad M_{dec}^n=\sum_{k=1}^n\Delta t_k\,\lambda M^k,\quad M_{rel}^n=\sum_{k=1}^n\Delta t_k\,G_RC_N^k. \tag{P21.72}
+\begin{aligned}
+&M_0+M_{gen}^n=M^n+M_{dec}^n+M_{rel}^n,\qquad M_{gen}^n=\sum_{k=1}^n\Delta t_k\,\mathrm{Gen}^k,\\
+&M_{dec}^n=\sum_{k=1}^n\Delta t_k\,\lambda M^k,\quad M_{rel}^n=\sum_{k=1}^n\Delta t_k\,G_RC_N^k.
+\end{aligned}
+\tag{P21.72}
 $$
 
 In floating point the residual of (P21.72) is the accumulated linear-solver residual plus summation rounding; compensated (Kahan) summation, already used in v1.0 for $M_{rel}$, should be used for all three sums. N1 gives $1.7\times10^{-15}$ per step and $1.2\times10^{-16}$ cumulative relative residual over 71 variable steps with a switching source. The residual tests assembly and solver; it stays at round-off for any $\Delta t$, so it says nothing about time accuracy.
@@ -1339,7 +1415,10 @@ $$
 With (P21.73), $M_{out}^{n+1}-M_{out}^n=\Delta t\,(J_R^{n+1}-\lambda M_{out}^{n+1})$, and summation gives
 
 $$
-M_{rel}^n=M_{out}^n+M_{dec,out}^n,\quad M_{dec,out}^n=\sum_k\Delta t_k\,\lambda M_{out}^k,\qquad M_0+M_{gen}^n=M^n+M_{out}^n+M_{dec}^n+M_{dec,out}^n. \tag{P21.75}
+\begin{aligned}
+&M_{rel}^n=M_{out}^n+M_{dec,out}^n,\quad M_{dec,out}^n=\sum_k\Delta t_k\,\lambda M_{out}^k,\\
+&M_0+M_{gen}^n=M^n+M_{out}^n+M_{dec}^n+M_{dec,out}^n.
+\end{aligned} \tag{P21.75}
 $$
 
 (exact; N7: $1.3\times10^{-14}$ and $8.5\times10^{-15}$.) Both updates have the fixed point
@@ -1371,7 +1450,10 @@ with $\Lambda_1$ the first Phase 1 eigenvalue (or the smallest semi-discrete one
 **Source switching times.** The rectangle rule misplaces (adds or loses) up to $\lvert\Delta S_K\rvert V_K\Delta t$ of generated inventory at a switch inside a step, with $V_K=\tfrac{4\pi}{3}R_1^3$ the kernel volume; the step average (A) is exact in amount but smears the switch over one step, an $O(\Delta t)$ timing error in $M$ and $J_R$:
 
 $$
-\int_{t^n}^{t^{n+1}}\bar S\,dt-\Delta t\,\bar S(t^{n+1})=-\tfrac12\Delta t^2\dot{\bar S}+O(\Delta t^3)\ (\text{smooth}),\qquad \lvert\text{error}\rvert\le\lvert\Delta S_K\rvert V_K\Delta t\ (\text{jump in the step}). \tag{P21.79}
+\begin{aligned}
+&\int_{t^n}^{t^{n+1}}\bar S\,dt-\Delta t\,\bar S(t^{n+1})=-\tfrac12\Delta t^2\dot{\bar S}+O(\Delta t^3)\ (\text{smooth}),\\
+&\lvert\text{error}\rvert\le\lvert\Delta S_K\rvert V_K\Delta t\ (\text{jump in the step}).
+\end{aligned} \tag{P21.79}
 $$
 
 Rules: (1) place a step boundary on every switch time of $S_K(t)$, on every output time and (Phase 2.2) on every temperature-history knot, as MOOSE does with `force_step_every_function_point` (idaholab, 2026; audit 08, Sec. 3); (2) after each switch restart from a small step and grow it geometrically (factor 1.5 in N1) because time derivatives jump there; BE is L-stable, so no oscillation follows; (3) choose $\Delta t_n=\min\{$(P21.77) limit, (P21.78) limit, time to the next switch or output, growth limit$\}$. There is no stability limit. The explicit bound TRISO-FV-300, used only for checks, becomes $\Delta t\le\min_jV_j/(G_W+G_E+\lambda V_j)$ with decay (non-negativity of the forward-Euler update). A step-doubling estimate of $\varepsilon$ is a cheap a-posteriori alternative.
@@ -1417,7 +1499,10 @@ $$
 $r$ is **totally monotone** on an interval $I\subset[0,\infty)$ if
 
 $$
-(-1)^k\,r^{(k)}(x)\ge0\quad\text{for all }x\in I,\ k=0,1,2,\dots;\qquad M_r=\sup\{M:\ r\ \text{totally monotone on}\ [0,M]\}. \tag{P21.115}
+\begin{aligned}
+&(-1)^k\,r^{(k)}(x)\ge0\quad\text{for all }x\in I,\ k=0,1,2,\dots;\\
+&M_r=\sup\{M:\ r\ \text{totally monotone on}\ {}[0,M]\}.
+\end{aligned} \tag{P21.115}
 $$
 
 A scheme has order $p$ if $r(x)=e^{-x}+O(x^{p+1})$. Assumptions: constant $\mathbf B$ within a step (Phase 2.1; Phase 2.2 is discussed in 4.6.1.6); a source that is constant on each step, which the planner rule of placing a step end on every switch guarantees for the piecewise-constant histories of block E; exact arithmetic unless floating point is stated.
@@ -1431,7 +1516,10 @@ A scheme has order $p$ if $r(x)=e^{-x}+O(x^{p+1})$. Assumptions: constant $\math
 *Proof.* Fix $0<\varepsilon<x<M'$ and $\delta\in(0,1)$, and take $V_j=\delta^{-(j-1)}$, $g_j=\varepsilon V_j$, $G_R=\varepsilon V_N$, $\lambda=x-\varepsilon$. Then $\mathbf K$ is symmetric with zero row sums except row $N$, so $\mathbf B_\delta\in\mathcal S$, and
 
 $$
-(\mathbf B_\delta)_{j,j+1}=-\varepsilon,\quad (\mathbf B_\delta)_{j+1,j}=-\varepsilon\delta,\quad (\mathbf B_\delta)_{11}=x,\quad (\mathbf B_\delta)_{jj}=x+\varepsilon\delta\ (j\ge2),\qquad \mathbf B_\delta\to x\mathbf I-\varepsilon\mathbf N\ \ (\delta\to0), \tag{P21.116}
+\begin{aligned}
+&(\mathbf B_\delta)_{j,j+1}=-\varepsilon,\quad (\mathbf B_\delta)_{j+1,j}=-\varepsilon\delta,\quad (\mathbf B_\delta)_{11}=x,\\
+&(\mathbf B_\delta)_{jj}=x+\varepsilon\delta\ (j\ge2),\qquad \mathbf B_\delta\to x\mathbf I-\varepsilon\mathbf N\ \ (\delta\to0),
+\end{aligned} \tag{P21.116}
 $$
 
 with $\mathbf N$ the nilpotent upper shift. For $\delta$ small, $\beta_B=x+\varepsilon\delta\le M'$. The matrix $q(x\mathbf I-\varepsilon\mathbf N)$ is upper triangular with diagonal $q(x)\ne0$, so it is invertible, and $r(\mathbf B_\delta)=p(\mathbf B_\delta)q(\mathbf B_\delta)^{-1}$ is continuous at $\delta=0$. Taylor's formula is exact on a nilpotent perturbation:
@@ -1513,7 +1601,11 @@ $$
 Off-diagonal entries are $2(\mathbf Q_{h/2})_{jk}\ge0$ for every $h$, and the source term $h\mathbf Q_{h/2}\bar{\mathbf s}$ is nonnegative. So CN is positive at step $h$ exactly when $(\mathbf Q_{h/2})_{jj}\ge\frac12$ for every $j$. With $\mathbf W=\mathbf V^{1/2}\mathbf Q_\tau\mathbf V^{-1/2}=(\mathbf I+\tau\mathbf V^{1/2}\mathbf B\mathbf V^{-1/2})^{-1}$ symmetric, $(\mathbf Q_\tau)_{jj}=W_{jj}=\sum_ku_{jk}^2/(1+\tau\mu_k)$ is continuous and strictly decreasing from 1 to 0, so CN is positive exactly for $0<h\le h^*_{CN}=\min_jh_j$, with $h_j$ the root of $(\mathbf Q_{h_j/2})_{jj}=\frac12$. A closed criterion follows from the Schur complement of the symmetric tridiagonal matrix $\tilde{\mathbf P}=\mathbf V+\tau(\mathbf K+\lambda\mathbf V)$, $\tau=h/2$, whose inverse gives $\mathbf Q_\tau=\tilde{\mathbf P}^{-1}\mathbf V$: with $H(a,b)=ab/(a+b)$, $v'_j=V_j(1+\tau\lambda)$, the forward excesses $e_1=v'_1$, $e_j=v'_j+H(e_{j-1},\tau g^W_j)$ of (P21.61) and the backward excesses $f_N=v'_N+\tau G_R$, $f_j=v'_j+H(f_{j+1},\tau g^E_j)$, the pivots of the leading and trailing blocks are $e_{j-1}+\tau g^W_j$ and $f_{j+1}+\tau g^E_j$, and
 
 $$
-\text{CN positive at step }h\iff \tau\lambda V_j+\tau G_R\,[j=N]+H\big(e_{j-1},\tau g^W_j\big)+H\big(f_{j+1},\tau g^E_j\big)\le V_j\quad\text{for every }j,\qquad\tau=\frac h2. \tag{P21.125}
+\begin{aligned}
+&\text{CN positive at step }h\iff{}\\
+&\qquad\tau\lambda V_j+\tau G_R\,[j=N]+H\big(e_{j-1},\tau g^W_j\big)+H\big(f_{j+1},\tau g^E_j\big)\le V_j\quad\text{for every }j,\\
+&\qquad\tau=\frac h2.
+\end{aligned} \tag{P21.125}
 $$
 
 (PROVED; S4a checks the formula against the solver to $2.7\times10^{-16}$, S4b checks (P21.124), S4c the threshold.) Reading: over half a step, decay plus the two series conductances "half-step conductance in series with the neighbour's storage" must not remove more than the cell's own volume. Because $H(a,b)<b$, $h\beta_B\le2$ is sufficient; because $H$ increases in $a$ and $e_{j-1}\ge v'_{j-1}$, $f_{j+1}\ge v'_{j+1}$, replacing $e,f$ by $v'$ gives a necessary condition. Synthetic case ($N=40$, $\beta_B/\Lambda_1=7150$): $h^*_{CN}=586\ \mathrm{s}$, $h^*_{CN}\beta_B=3.003$, $\Lambda_1h^*_{CN}=4.2\times10^{-4}$, binding cell in the buffer (S4c).
@@ -1531,7 +1623,10 @@ so (P21.72) holds with trapezoidal increments of $M_{dec}$ and $M_{rel}$ (PROVED
 **Scheme (constant step, BE start).**
 
 $$
-\Big(\tfrac32\mathbf I+h\mathbf B\Big)\mathbf C^{n+1}=2\mathbf C^n-\tfrac12\mathbf C^{n-1}+h\bar{\mathbf s}^{n+1}\quad\Longleftrightarrow\quad \mathbf C^{n+1}=\mathbf Q_{2h/3}\Big[\tfrac13\big(4\mathbf C^n-\mathbf C^{n-1}\big)+\tfrac{2h}3\bar{\mathbf s}^{n+1}\Big]. \tag{P21.127}
+\begin{aligned}
+&\Big(\tfrac32\mathbf I+h\mathbf B\Big)\mathbf C^{n+1}=2\mathbf C^n-\tfrac12\mathbf C^{n-1}+h\bar{\mathbf s}^{n+1}\\
+&\quad\Longleftrightarrow\quad \mathbf C^{n+1}=\mathbf Q_{2h/3}\Big[\tfrac13\big(4\mathbf C^n-\mathbf C^{n-1}\big)+\tfrac{2h}3\bar{\mathbf s}^{n+1}\Big].
+\end{aligned} \tag{P21.127}
 $$
 
 **No positivity for any step (PROVED).** With $\mathbf C^n=0$, $\mathbf C^{n-1}=\mathbf e_j$, $\mathbf s=0$,
@@ -1567,7 +1662,10 @@ $$
 $\beta=1-1/\sqrt2=\gamma/2$, $a=(\sqrt2+1)/2$, $b=(\sqrt2-1)/2$, $a-b=1$ (S1b). Both stages use the one matrix $\mathbf I+\beta h\mathbf B$, which is the BE matrix of a step $\beta h$. Writing $\mathbf Q=\mathbf Q_{\beta h}$,
 
 $$
-r_{TR}(x)=-\frac{\sqrt2}{1+\beta x}+\frac{1+\sqrt2}{(1+\beta x)^2},\qquad \mathbf C^{n+1}=\big[(1+\sqrt2)\mathbf Q^2-\sqrt2\,\mathbf Q\big]\mathbf C^n+\beta h\big[(1+\sqrt2)\mathbf Q^2+\mathbf Q\big]\bar{\mathbf s}. \tag{P21.132}
+\begin{aligned}
+&r_{TR}(x)=-\frac{\sqrt2}{1+\beta x}+\frac{1+\sqrt2}{(1+\beta x)^2},\\
+&\mathbf C^{n+1}=\big[(1+\sqrt2)\mathbf Q^2-\sqrt2\,\mathbf Q\big]\mathbf C^n+\beta h\big[(1+\sqrt2)\mathbf Q^2+\mathbf Q\big]\bar{\mathbf s}.
+\end{aligned} \tag{P21.132}
 $$
 
 (exact; S1c.) Order 2, $c_{TR}=\frac23-\frac{\sqrt2}2=-0.0404$, the smallest of the second-order candidates; $r_{TR}(\infty)=0$; $r_{TR}(1+\sqrt2)=0$ and $\min r_{TR}=-(\sqrt2-1)/2=-0.207$ at $x=4+3\sqrt2$ (S1f). The source part is always nonnegative.
@@ -1741,7 +1839,11 @@ Proof: $\partial_tc_\lambda=-\lambda c_\lambda+e^{-\lambda t}\partial_tc_0=-\lam
 **Inventory partition (series).** With the Phase 1 weights $w_n$ (TRISO-DEL-021), $M_{v1}(t)=M_0\sum_nw_ne^{-\Lambda_nt}$ and $J_{R,v1}=-dM_{v1}/dt$. By (P21.80), $J_R=e^{-\lambda t}J_{R,v1}$ and
 
 $$
-\frac{M(t)}{M_0}=\sum_nw_ne^{-(\Lambda_n+\lambda)t},\quad \frac{M_{rel}(t)}{M_0}=\sum_nw_n\frac{\Lambda_n}{\Lambda_n+\lambda}\big(1-e^{-(\Lambda_n+\lambda)t}\big),\quad \frac{M_{dec}(t)}{M_0}=\sum_nw_n\frac{\lambda}{\Lambda_n+\lambda}\big(1-e^{-(\Lambda_n+\lambda)t}\big). \tag{P21.81}
+\begin{aligned}
+\frac{M(t)}{M_0}&=\sum_nw_ne^{-(\Lambda_n+\lambda)t},\\
+\frac{M_{rel}(t)}{M_0}&=\sum_nw_n\frac{\Lambda_n}{\Lambda_n+\lambda}\big(1-e^{-(\Lambda_n+\lambda)t}\big),\\
+\frac{M_{dec}(t)}{M_0}&=\sum_nw_n\frac{\lambda}{\Lambda_n+\lambda}\big(1-e^{-(\Lambda_n+\lambda)t}\big).
+\end{aligned} \tag{P21.81}
 $$
 
 (series; $M+M_{rel}+M_{dec}=M_0$ term by term, D3; $\lambda\to0$ returns Phase 1.) Truncation needs care. The Phase 1 rule ($t\ge40/\Lambda_{max}$, `min_valid_time`) controls only the series for $M$, whose omitted terms carry $e^{-40}$. The $M_{rel}$ series as written converges like the weight tail $\sum_{n>n_{max}}w_n$, which is $O(1/n_{max})$ for a uniformly loaded sphere ($w_n=6/(n^2\pi^2)$): with the 13 modes that satisfy the rule in CRP-6 case 1a, a term-by-term $M_{rel}/M_0$ is low by $0.045$ (checker N11). Evaluate instead $M_{rel}=M_0-M-M_{dec}$, using $\sum_nw_n=1$ exactly; the omitted part of $M_{dec}/M_0$ is then at most $\lambda t\sum_{n>n_{max}}w_n/(\Lambda_nt)$ ($1.7\times10^{-7}$ in case 1a with Cs-137 decay), so add modes until this bound is below the target accuracy. Two consequences for comparisons: $M_{rel}/M_0$ depends on $\lambda$, while the decay-corrected fraction $F_{corr}=1-e^{\lambda t}M(t)/M_0$ equals the decay-free $F$ exactly. For a uniformly loaded sphere at long times $M_{rel}(\infty)/M_0=\sum w_n\Lambda_n/(\Lambda_n+\lambda)\approx1-\lambda\tau_{res}$ with $\sum_nw_n/\Lambda_n=R^2/(15D)$.
@@ -1751,7 +1853,10 @@ $$
 Steady flux from the integrated balance: $r^2J=S_Kr^3/3$ for $r<R_1$ and $r^2J=S_KR_1^3/3$ for $r>R_1$. Integrating $-D_ic'=J$ inward from $c(R)=0$ with continuity of $c$:
 
 $$
-c(r)=\frac{S_K R_1^3}{3}\left[\frac{1}{D_i}\Big(\frac1r-\frac1{R_i}\Big)+\Phi_i\right]\ (R_{i-1}\le r\le R_i,\ i\ge2),\qquad c(r)=\frac{S_K(R_1^2-r^2)}{6D_1}+\frac{S_KR_1^3}{3}\Phi_1\ (r\le R_1),
+\begin{aligned}
+c(r)&=\frac{S_K R_1^3}{3}\left[\frac{1}{D_i}\Big(\frac1r-\frac1{R_i}\Big)+\Phi_i\right]\ (R_{i-1}\le r\le R_i,\ i\ge2),\\
+c(r)&=\frac{S_K(R_1^2-r^2)}{6D_1}+\frac{S_KR_1^3}{3}\Phi_1\ (r\le R_1),
+\end{aligned}
 $$
 
 $$
@@ -1765,7 +1870,10 @@ $$
 Integrating by parts, $M_{ss}=-\int_0^R\tfrac{4\pi r^3}{3}c'\,dr$, gives
 
 $$
-M_{ss}=\frac{4\pi S_K}{9}\left[\frac{R_1^5}{5D_1}+R_1^3\sum_{i=2}^{5}\frac{R_i^2-R_{i-1}^2}{2D_i}\right],\qquad \tau_{res}=\frac{M_{ss}}{\mathrm{Gen}}=\frac{R_1^2}{15D_1}+\sum_{i=2}^{5}\frac{R_i^2-R_{i-1}^2}{6D_i}. \tag{P21.84}
+\begin{aligned}
+M_{ss}&=\frac{4\pi S_K}{9}\left[\frac{R_1^5}{5D_1}+R_1^3\sum_{i=2}^{5}\frac{R_i^2-R_{i-1}^2}{2D_i}\right],\\
+\tau_{res}&=\frac{M_{ss}}{\mathrm{Gen}}=\frac{R_1^2}{15D_1}+\sum_{i=2}^{5}\frac{R_i^2-R_{i-1}^2}{6D_i}.
+\end{aligned} \tag{P21.84}
 $$
 
 (exact; A1 to A9.) Each layer adds a series "residence resistance" $(R_i^2-R_{i-1}^2)/(6D_i)$. For zero initial inventory and constant source, $M_{rel}=\mathrm{Gen}\,t-M(t)$, so $F=M_{rel}/(\mathrm{Gen}\,t)=1-\tau_{res}/t$ plus exponentially decaying terms (approximate at finite $t$, exact as an asymptote). For one material with $R_1=R$, $\tau_{res}=R^2/(15D)$ reproduces the Booth asymptote $F\approx1-1/(15D't)$ of IAEA (2012, Eq. 7.3, printed p. 317) (A9). In the discrete scheme with $\lambda=0$, (P21.70) at a fixed point gives $G_RC_N=\mathrm{Gen}$ exactly, so $J_R/\mathrm{Gen}=1$ is a round-off test while the profile converges at order 2.
@@ -1775,7 +1883,10 @@ $$
 With $u=rc$, (P21.50) at steady state reads $D_iu''-\lambda u+S_Kr\,H(R_1-r)=0$. With $s=r-R_{i-1}$:
 
 $$
-u_1=\frac{S_K}{\lambda}r+A_1\sinh(k_1r),\qquad u_i=A_i\sinh(k_is)+B_i\cosh(k_is)\ (i\ge2),\qquad k_i=\sqrt{\lambda/D_i}, \tag{P21.85}
+\begin{aligned}
+u_1&=\frac{S_K}{\lambda}r+A_1\sinh(k_1r),\\
+u_i&=A_i\sinh(k_is)+B_i\cosh(k_is)\ (i\ge2),\qquad k_i=\sqrt{\lambda/D_i},
+\end{aligned} \tag{P21.85}
 $$
 
 with $u_i(R_i)=u_{i+1}(R_i)$, $D_i(u_i'-u_i/r)=D_{i+1}(u_{i+1}'-u_{i+1}/r)$ at $R_i$ (TRISO-ML-439, TRISO-ML-446) and $u_5(R)=0$: nine linear equations for nine coefficients. This is the Phase 1 transfer walk with $\Lambda\to-\lambda$ (cos, sin replaced by cosh, sinh) plus the particular solution in the kernel. Checked at 60 digits for the Table 10.2 geometry with synthetic $D_i=(4\times10^{-14},4\times10^{-13},2\times10^{-14},5\times10^{-15},2\times10^{-14})\ \mathrm{m^2\ s^{-1}}$ and $\lambda=2\times10^{-8}\ \mathrm{s^{-1}}$: conditions to $10^{-54}$, $\mathrm{Gen}=\lambda M_{ss}+J_R$ to $10^{-55}$, $R/B=0.9684291531$, and $\lambda\to0$ approaches (P21.82) with an $O(\lambda)$ error (C1 to C4). The FV fixed point on a 40-cell mesh with (20, 8, 4, 4, 4) cells per layer gives $R/B=0.968429$ for the same data (N8a; numerical, spatial error included). With 8 cells per layer the FV value is $0.968413$ (checker N2), so the agreement to six digits depends on that mesh.
@@ -1785,13 +1896,19 @@ with $u_i(R_i)=u_{i+1}(R_i)$, $D_i(u_i'-u_i/r)=D_{i+1}(u_{i+1}'-u_{i+1}/r)$ at $
 For one material of radius $R$ with uniform source $S$ (IAEA, 2012, Eq. 7.5, printed p. 319):
 
 $$
-c(r)=\frac{S}{\lambda}\left[1-\frac{R\sinh(kr)}{r\sinh(kR)}\right],\qquad \frac{R}{B}=\frac{3}{\sqrt x}\Big(\coth\sqrt x-\frac1{\sqrt x}\Big)=\sum_{n\ge1}\frac{6}{n^2\pi^2+x},\qquad x=(kR)^2=\frac{\lambda}{D'}, \tag{P21.86}
+\begin{aligned}
+c(r)&=\frac{S}{\lambda}\left[1-\frac{R\sinh(kr)}{r\sinh(kR)}\right],\\
+\frac{R}{B}&=\frac{3}{\sqrt x}\Big(\coth\sqrt x-\frac1{\sqrt x}\Big)=\sum_{n\ge1}\frac{6}{n^2\pi^2+x},\qquad x=(kR)^2=\frac{\lambda}{D'},
+\end{aligned} \tag{P21.86}
 $$
 
 which is Eq. (7.6) of the report (B1 to B5). The symbol $x=\lambda/D'$ is the one of Section 3, Eqs. (P21.48) and (P21.49). From the modal equations $\dot m_n=-(\Lambda_n+\lambda)m_n+Bw_n$ with $\Lambda_n=n^2\pi^2D'$, $w_n=6/(n^2\pi^2)$, zero initial inventory and birth rate $B=\mathrm{Gen}$:
 
 $$
-\frac{R}{B}(t)=\sum_n\frac{6}{n^2\pi^2+x}\Big(1-e^{-(n^2\pi^2D'+\lambda)t}\Big),\qquad F_{(7.8)}(t)=\frac{M_{out}(t)}{M(t)+M_{out}(t)},\qquad M+M_{out}=\frac{B(1-e^{-\lambda t})}{\lambda}. \tag{P21.87}
+\begin{aligned}
+&\frac{R}{B}(t)=\sum_n\frac{6}{n^2\pi^2+x}\Big(1-e^{-(n^2\pi^2D'+\lambda)t}\Big),\\
+&F_{(7.8)}(t)=\frac{M_{out}(t)}{M(t)+M_{out}(t)},\qquad M+M_{out}=\frac{B(1-e^{-\lambda t})}{\lambda}.
+\end{aligned} \tag{P21.87}
 $$
 
 The first expression is Eq. (7.7) term by term (D4a). As a sum it converges slowly (tail about $6/(\pi^2n_{max})$); compute it in the form of Eq. (7.7), the closed form (P21.86) minus $6e^{-\lambda t}\sum_n e^{-n^2\pi^2D't}/(n^2\pi^2+x)$, whose sum converges like the Phase 1 series. The second result is derived here: the "cumulative fractional release" of Eq. (7.8) equals the released atoms still present outside divided by all surviving atoms, inside and outside (symbolic per mode D4b, D4c; summed to $10^{-31}$ in D4d; $\lambda\to0$ gives Eq. 7.1, the in-reactor constant-production Booth formula of IAEA (2012, printed p. 317), D5). It does not equal $M_{rel}/M_{gen}$ when $\lambda>0$. The report does not state this definition in words: on printed p. 319 it introduces Eq. (7.8) only as the cumulative fractional release (checked in the PDF during the B3 reconciliation), so the identification is derived here and the algebra is exact. FV comparison quantities: $(R/B)^n=G_RC_N^n/\mathrm{Gen}^n$ and $F^n=M_{out}^n/(M^n+M_{out}^n)$ with (P21.73).
@@ -1813,7 +1930,10 @@ $$
 The diffusion part $D_{ref}Q$ is the same in both layers, $S$ is continuous at $R_1$, finite at $r=0$ ($Q(0)=3\pi^2/4R^2$) and nonnegative (M2, M3; since $P\ge P(R_1)$ on $[0,R_1]$, $\psi_1\ge0$). The source must enter as exact cell and step averages, or quadrature error contaminates the observed order:
 
 $$
-\bar S_j^{n+1}=\frac{1}{V_j\Delta t}\int_{t^n}^{t^{n+1}}\Big[\mathcal S_i(r_{j+1/2},t)-\mathcal S_i(r_{j-1/2},t)\Big]dt=\frac{\mathcal S_i(r_{j+1/2},t^{n+1/2})-\mathcal S_i(r_{j-1/2},t^{n+1/2})}{V_j},\quad \mathcal S_i'=4\pi r^2S_i, \tag{P21.90}
+\begin{aligned}
+\bar S_j^{n+1}&=\frac{1}{V_j\Delta t}\int_{t^n}^{t^{n+1}}\Big[\mathcal S_i(r_{j+1/2},t)-\mathcal S_i(r_{j-1/2},t)\Big]dt\\
+&=\frac{\mathcal S_i(r_{j+1/2},t^{n+1/2})-\mathcal S_i(r_{j-1/2},t^{n+1/2})}{V_j},\quad \mathcal S_i'=4\pi r^2S_i,
+\end{aligned} \tag{P21.90}
 $$
 
 where the step average equals the midpoint value because $S$ is linear in $t$ (exact). The closed-form antiderivative $\mathcal S_i$ is generated by SymPy (M4). A steady variant ($g=1$, no $\psi/\tau$ term) isolates the spatial order; the transient variant on a fine mesh isolates the temporal order.
@@ -1823,7 +1943,10 @@ where the step average equals the midpoint value because $S$ is linear in $t$ (e
 Bare UO2 kernel, $r_k=250\ \mu\mathrm{m}$, uniform initial Cs-137, no source, absorbing surface, $200\ \mathrm{h}=720\,000\ \mathrm{s}$ at $1200\ ^\circ\mathrm{C}$ (1a) and $1600\ ^\circ\mathrm{C}$ (1b) (IAEA, 2012, Table 10.5, printed p. 543; Table 10.2, printed p. 541). The benchmark diffusivity is the two-branch FRG Cs-in-UO2 law of IAEA (1997, Table A-1, printed p. 439), and Booth gives
 
 $$
-D(T)=5.6\times10^{-8}e^{-209\,000/(R_gT)}+5.2\times10^{-4}e^{-362\,000/(R_gT)}\ \mathrm{m^2\ s^{-1}},\qquad F=1-\frac{6}{\pi^2}\sum_{n\ge1}\frac{e^{-n^2\pi^2D't}}{n^2},\quad D'=D/r_k^2 \tag{P21.91}
+\begin{aligned}
+&D(T)=5.6\times10^{-8}e^{-209\,000/(R_gT)}+5.2\times10^{-4}e^{-362\,000/(R_gT)}\ \mathrm{m^2\ s^{-1}},\\
+&F=1-\frac{6}{\pi^2}\sum_{n\ge1}\frac{e^{-n^2\pi^2D't}}{n^2},\quad D'=D/r_k^2
+\end{aligned} \tag{P21.91}
 $$
 
 (IAEA, 2012, Eq. 10.7, printed p. 544). Results (numerical, B3): with $R_g=8.3145$ (Eq. 10.5a), 1a: $D't=0.02594$, $F=0.46742$; with $R_g=8.314$, $F=0.46721$; the printed analytical value 0.4673 (Table 10.6, printed p. 544) lies inside this bracket. With the TECDOC-978 constant $R_g=8.3143$ (IAEA, 1997, p. 435) $F=0.467337$, which is the only one of these values that rounds to 0.4673 (B3 check `b3_sec4.py`, X11a; `b3_sec5.py`, T1f). 1b: $D't=1.4405$, $F=0.99999959$, equal to the printed value. The single-branch TECDOC-1674 Table 7.1 law ($D'_0=0.90\ \mathrm{s^{-1}}$, $Q=209\ \mathrm{kJ\ mol^{-1}}$) gives 0.46163 and 0.99995461 and does not reproduce the table, as found in audit 04 (Sec. 4.3). FV with $N=150$: 1a $F=0.46737$ ($\Delta t=360\ \mathrm{s}$) and $0.46740$ ($36\ \mathrm{s}$); 1b $1-F=4.28\times10^{-7}$ and $4.09\times10^{-7}$; closure $\le1.7\times10^{-14}$. The benchmark analytical values are decay-free. If Cs-137 decay is switched on, $M_{rel}/M_0$ drops by $7.5\times10^{-5}$ (1a) and $2.4\times10^{-5}$ (1b); the 1b shift equals $\lambda\tau_{res}=2.43\times10^{-5}$ of Section 4.7.1, which is 60 times the 1b target $1-F$. Compare decay runs through $F_{corr}$ of (P21.81), or run 1a/1b with $\lambda=0$.
@@ -2309,7 +2432,10 @@ and Backward Euler is (P22.15). The analysis uses the following assumptions.
 Notation. $\langle x,y\rangle_V=x^{\mathsf T}Vy$. $K(t)$ is self-adjoint in this inner product with eigenvalues $0<\Lambda_1(t)\le\Lambda_2(t)\le\dots$ and $V$-orthonormal eigenvectors $\varphi_m(t)$. The quantities that carry the result are
 
 $$
-\Theta(t)=\int_0^t\big(\Lambda_1(s)+\lambda\big)\,ds,\qquad Z_k=\int_{t_k}^{t_{k+1}}\big(\Lambda_1(t)+\lambda\big)\,dt,\qquad z_k=\Delta t_k\big(\Lambda_1^{(k)}+\lambda\big),\qquad g(z)=z-\ln(1+z),
+\begin{aligned}
+&\Theta(t)=\int_0^t\big(\Lambda_1(s)+\lambda\big)\,ds,\qquad Z_k=\int_{t_k}^{t_{k+1}}\big(\Lambda_1(t)+\lambda\big)\,dt,\\
+&z_k=\Delta t_k\big(\Lambda_1^{(k)}+\lambda\big),\qquad g(z)=z-\ln(1+z),
+\end{aligned}
 $$
 
 where $\Lambda_1^{(k)}$ is the smallest eigenvalue of $V^{-1}A^{(k)}$, the step matrix of (P22.15). $\Theta$ is the modal effective time of the slowest mode (dimensionless); for constant $T$ it is $(\Lambda_1+\lambda)t$.
@@ -2369,7 +2495,10 @@ $L_m$ is the coefficient lag of option E; its local term is (P22.18). Status: ex
 *Release fraction for $\lambda=0$.* By O12-e, $1-F^n=M^n/M_0$ for the scheme and for the exact semi-discrete solution. With $M=\langle\mathbf 1,C\rangle_V$,
 
 $$
-1-F(t)=\sum_mw_m\,a_m(t),\quad a_m=e^{-\Lambda_m^*\tau(t)},\quad w_m=\frac{\langle\mathbf 1,\varphi_m^*\rangle_V\langle\varphi_m^*,C_0\rangle_V}{M_0},\qquad F_h-F=-\sum_mw_m\,a_m^{h}\big(1-e^{-\delta_m}\big). \tag{P22.66}
+\begin{aligned}
+&1-F(t)=\sum_mw_m\,a_m(t),\quad a_m=e^{-\Lambda_m^*\tau(t)},\quad w_m=\frac{\langle\mathbf 1,\varphi_m^*\rangle_V\langle\varphi_m^*,C_0\rangle_V}{M_0},\\
+&F_h-F=-\sum_mw_m\,a_m^{h}\big(1-e^{-\delta_m}\big).
+\end{aligned} \tag{P22.66}
 $$
 
 Completeness of the finite basis gives $\sum_mw_m=1$, and Cauchy-Schwarz gives
@@ -2415,7 +2544,10 @@ with equality for equal $Z_k=\zeta$. Rule (P22.69) therefore equidistributes the
 **Implementation (exact).** On a linear segment $\Lambda_1(t)$ is monotone (Lemma 2), so two eigenvalue evaluations give a step that satisfies (P22.69):
 
 $$
-\Delta t^{0}=\frac{\zeta}{\Lambda_1(t_k)+\lambda},\qquad \Delta t_k=\min\left\{\frac{\zeta}{\max\big(\Lambda_1(t_k),\Lambda_1(t_k+\Delta t^0)\big)+\lambda},\ \text{time to the next event}\right\}. \tag{P22.72}
+\begin{aligned}
+&\Delta t^{0}=\frac{\zeta}{\Lambda_1(t_k)+\lambda},\\
+&\Delta t_k=\min\left\{\frac{\zeta}{\max\big(\Lambda_1(t_k),\Lambda_1(t_k+\Delta t^0)\big)+\lambda},\ \text{time to the next event}\right\}.
+\end{aligned} \tag{P22.72}
 $$
 
 Here $t_k+\Delta t^0$ is clipped to the end of the segment. On heating $\Delta t_k\le\Delta t^0$ and $\Lambda_1\le\Lambda_1(t_k+\Delta t^0)$ on the step; on cooling the maximum is at $t_k$; either way $Z_k\le\zeta$. Any further cap (P22.20, growth, events) only shortens the step and keeps the guarantee. The same step also gives $z_k\le\zeta$ for option E.
@@ -2427,7 +2559,10 @@ Here $t_k+\Delta t^0$ is clipped to the end of the segment. On heating $\Delta t
 **Option E (shared scaling, exact bound).** For a monotone step the mean of $\Lambda_1$ lies between the end values, so $\lvert Z_k-z_k\rvert \le\Delta t_k\lvert \Lambda_1(t_{k+1})-\Lambda_1(t_k)\rvert$. With $\Delta t_k\le\zeta/\Lambda_{1,\max,k}$ from (P22.72) and $1-x\le-\ln x$ for $0<x\le1$,
 
 $$
-\lvert L_1\rvert \le\sum_k\Delta t_k\,\lvert \Delta\Lambda_{1,k}\rvert \le\zeta\,\mathrm{TV}_{[0,t]}(\ln\Lambda_1),\qquad L_1\approx-\tfrac12\zeta\ln\frac{\Lambda_1(t_b)}{\Lambda_1(t_a)}\ \text{on a monotone segment}, \tag{P22.73}
+\begin{aligned}
+&\lvert L_1\rvert \le\sum_k\Delta t_k\,\lvert \Delta\Lambda_{1,k}\rvert \le\zeta\,\mathrm{TV}_{[0,t]}(\ln\Lambda_1),\\
+&L_1\approx-\tfrac12\zeta\ln\frac{\Lambda_1(t_b)}{\Lambda_1(t_a)}\ \text{on a monotone segment},
+\end{aligned} \tag{P22.73}
 $$
 
 where TV is the total variation, bounded segment by segment by (P22.62). The leading-order form follows from $Z_k-z_k=-\tfrac12\Delta t_k^2\dot\Lambda_1+O(\Delta t_k^3)$ and $\Delta t_k\approx\zeta/\Lambda_1$ (approximate). Since $\sum z_k=\Theta-L_1$, (P22.65) gives $\lvert \delta_1^E\rvert \le\tfrac12\zeta(\Theta+\lvert L_1\rvert )+\lvert L_1\rvert$, and the option E rule
@@ -2467,7 +2602,10 @@ with $z_k=z_k^A$ (option A, where $Z_k-z_k^A\le0$ by (P22.63) and is third order
 Under the step (P22.72) with the instantaneous $\Lambda_1(t)$, the frozen-coefficient exponent $E=\sum_kg(z_k)+\sum_k(Z_k-z_k)=\sum_k\big[Z_k-\ln(1+z_k)\big]$ obeys exact bounds. Both options have $z_k\le\zeta$: for option E as stated under (P22.72), and for option A because $\bar D^{(k)}$ is componentwise at most $D$ at the hotter end of the step, so $\Lambda_1^{(k)}\le\max_{\mathrm{step}}\Lambda_1$ by Lemma 2. With $g(z)\le\tfrac12z^2\le\tfrac12\zeta z$ for $0\le z\le\zeta$, $\sum_kZ_k=\Theta\le\Theta_{\mathrm{end}}$ and $\zeta\le2$ (that is, $\varepsilon_1\le\Theta_{\mathrm{end}}$):
 
 $$
-E^A\le\tfrac12\zeta\Theta+\big(\tfrac12\zeta-1\big)\sum_k\big(z_k^A-Z_k\big)\le\varepsilon_1,\qquad E^E\le\varepsilon_1+\big(1-\tfrac12\zeta\big)L_1,\qquad \sum_kg(z_k)\le\varepsilon_1+\tfrac12\zeta^2\,\mathrm{TV}(\ln\Lambda_1), \tag{P22.78}
+\begin{aligned}
+&E^A\le\tfrac12\zeta\Theta+\big(\tfrac12\zeta-1\big)\sum_k\big(z_k^A-Z_k\big)\le\varepsilon_1,\qquad E^E\le\varepsilon_1+\big(1-\tfrac12\zeta\big)L_1,\\
+&\sum_kg(z_k)\le\varepsilon_1+\tfrac12\zeta^2\,\mathrm{TV}(\ln\Lambda_1),
+\end{aligned} \tag{P22.78}
 $$
 
 where $L_1=\sum_k(Z_k-z_k^E)$ satisfies (P22.73) also without shared scaling, because the option E step matrix has $\Lambda_1^{(k)}=\Lambda_1(t_{k+1})$; the last inequality uses $0\le\sum_k(z_k^A-Z_k)\le\zeta\,\mathrm{TV}(\ln\Lambda_1)$ for option A and $\sum_kz_k^E=\Theta-L_1$ for option E. So for option A the frozen-coefficient exponent stays below $\varepsilon_1$ for every history, for option E it does on heating only ($L_1\le0$), and with cooling option E needs $\zeta_E$ of (P22.74). Status of (P22.78): PROVED (bounds on the frozen-coefficient exponent, which is itself only the leading-order model of the error). The first sum alone can exceed $\varepsilon_1$ by at most $\tfrac12\zeta^2\mathrm{TV}(\ln\Lambda_1)$; no case above $\varepsilon_1$ was found (largest $0.975\,\varepsilon_1$ in 15 option E histories, verification record in Appendix B.5.4, B5b). $R_{\mathrm{na}}$ is the non-adiabatic remainder: errors of the fast-mode amplitudes carried into the slow mode by the rotation of $\varphi_1$. It vanishes on holds and in the shared case, and its expected size is first order in the steps taken where $\varphi_1$ rotates, hence $O(\varepsilon_D)$ under (P22.20). Status of (P22.77): approximate, leading order; the structure of $R_{\mathrm{na}}$ is CLAIMED ONLY, and no bound for it is derived here (OPEN).
@@ -2505,7 +2643,11 @@ With $\lambda>0$ (shared scaling, option A), (P22.64) holds with $Z_{m,k}=\Lambd
 The release fraction behaves differently. Per mode, $F_m+D_m+a_m=1$ holds for the exact solution and for the scheme ($D_m$ the decayed fraction), so
 
 $$
-F_h-F=-\sum_mw_m\big(e_{a,m}+e_{D,m}\big),\qquad e_{D,m}=\underbrace{\lambda\sum_n\Delta t_n\big(a_m^{h,n+1}-a_m^{n+1}\big)}_{\in[0,\ \lambda\sum_n\Delta t_na_m^{h,n+1}\min(1,\delta_m^{n+1})]}+\underbrace{\lambda\Big(\sum_n\Delta t_na_m^{n+1}-\int_0^ta_m\,dt\Big)}_{\in[-\zeta(1-a_m(t)),\ 0]}, \tag{P22.80}
+\begin{aligned}
+F_h-F&=-\sum_mw_m\big(e_{a,m}+e_{D,m}\big),\\
+e_{D,m}&=\underbrace{\lambda\sum_n\Delta t_n\big(a_m^{h,n+1}-a_m^{n+1}\big)}_{\in[0,\ \lambda\sum_n\Delta t_na_m^{h,n+1}\min(1,\delta_m^{n+1})]}\\
+&\quad+\underbrace{\lambda\Big(\sum_n\Delta t_na_m^{n+1}-\int_0^ta_m\,dt\Big)}_{\in[-\zeta(1-a_m(t)),\ 0]},
+\end{aligned} \tag{P22.80}
 $$
 
 where $e_{a,m}=a_m^h-a_m\in[0,a_m^h\min(1,\delta_m)]$. The rectangle bound uses that $a_m$ decreases and that $\lambda\Delta t_n\le Z_{1,n}\le\zeta$ under the rule. Status: identity and the three bounds PROVED (N4c). For constant coefficients the two parts of $e_D$ cancel to leading order, and exactly $F_h-F=-p\,(a_h-a)$ with $p=\Lambda/(\Lambda+\lambda)$ (S5). On the ramp this cancellation does not carry over: with a synthetic half-life of 30 h the observed $F_h-F$ is $5.89\times10^{-5}$ and $5.91\times10^{-6}$ for $\varepsilon_1=10^{-2}$ and $10^{-3}$, about $-50$ times the constant-coefficient value $-p_1w_1a_1(e^{\delta_1}-1)$, first order in $\zeta$ (ratio 9.97, N4d), and below the a-posteriori bound from (P22.80), which equals $\zeta W$ to three digits here. The cause of the imbalance was not isolated. An a-priori bound of the release-fraction error with decay that is sharper than $O(\zeta W)$ is OPEN; the absolute error stays far below $\varepsilon_1$ in the test.
@@ -2692,7 +2834,10 @@ This subsection answers the accuracy note left open by the B7 review in block R2
 With $S = 0$ and no decay in $\tau$-space, $\hat M_\mathrm{rel}(\tau) = M_0 - \hat M(\tau)$. Insert this in (P22.35) and use $M(s) = e^{-\lambda s}\hat M(\tau(s))$ from (P22.33):
 
 $$
-e^{-\lambda t}\hat M_\mathrm{rel}(\tau(t)) + \lambda\int_0^te^{-\lambda s}\hat M_\mathrm{rel}(\tau(s))\,ds = M_0 - M(t) - \lambda\int_0^tM(s)\,ds = M_0 - M(t) - M_\mathrm{dec}(t). \tag{P22.81}
+\begin{aligned}
+e^{-\lambda t}\hat M_\mathrm{rel}(\tau(t)) + \lambda\int_0^te^{-\lambda s}\hat M_\mathrm{rel}(\tau(s))\,ds &= M_0 - M(t) - \lambda\int_0^tM(s)\,ds\\
+&= M_0 - M(t) - M_\mathrm{dec}(t).
+\end{aligned} \tag{P22.81}
 $$
 
 The middle step uses $e^{-\lambda t}M_0 + \lambda M_0\int_0^te^{-\lambda s}ds = M_0$. Status: exact, PROVED (SymPy, check C1). Consequence: when both routes use the same truncated $\hat M^{(N)}$ and the same quadrature they give the same number up to rounding. The balance integrand $M(s) = M_0e^{-\lambda s} - e^{-\lambda s}\hat M_\mathrm{rel}(\tau(s))$ differs from the release integrand by the smooth term $M_0e^{-\lambda s}$ only, so it has the same $\sqrt s$ start: for a bare kernel with $\alpha = 1$, $(M_0e^{-\lambda s} - M)/(M_0\sqrt s) \to 6/\sqrt\pi$ (check C1: 3.385108 at $s = 10^{-10}$ against 3.385138). The phrase "smooth integrand" in the B7 note of block R2.4 is therefore CORRECTED. The choice between the routes is therefore immaterial for accuracy, and the remaining steps treat the start of the quadrature for both.
@@ -2702,7 +2847,10 @@ The middle step uses $e^{-\lambda t}M_0 + \lambda M_0\int_0^te^{-\lambda s}ds = 
 For $0 < t_0 \le t$:
 
 $$
-M_\mathrm{rel}(t) = e^{-\lambda t}\hat M_\mathrm{rel}(\tau(t)) + I_0 + I_1,\qquad I_0 = \lambda\int_0^{t_0}e^{-\lambda s}\hat M_\mathrm{rel}(\tau(s))\,ds,\qquad I_1 = \lambda\int_{t_0}^te^{-\lambda s}\hat M_\mathrm{rel}(\tau(s))\,ds. \tag{P22.82}
+\begin{aligned}
+M_\mathrm{rel}(t) &= e^{-\lambda t}\hat M_\mathrm{rel}(\tau(t)) + I_0 + I_1,\\
+I_0 &= \lambda\int_0^{t_0}e^{-\lambda s}\hat M_\mathrm{rel}(\tau(s))\,ds,\qquad I_1 = \lambda\int_{t_0}^te^{-\lambda s}\hat M_\mathrm{rel}(\tau(s))\,ds.
+\end{aligned} \tag{P22.82}
 $$
 
 The start piece $I_0$ carries a method error (truncation, image remainder or bracket width); the boundary term and $I_1$ carry series truncation, and $I_1$ also carries quadrature error. Steps 3 to 6 bound these separately and Step 7 adds them.
@@ -2712,7 +2860,10 @@ The start piece $I_0$ carries a method error (truncation, image remainder or bra
 Insert $\hat M_\mathrm{rel}(\tau) = M_0\bigl(1 - \sum_nw_ne^{-\Lambda_n^*\tau}\bigr)$ (v1.0 series; the leading 1 is $\sum_nw_n$, which rests on the completeness proof of Section 3.10) and integrate each mode:
 
 $$
-I_0 = M_0\Bigl[(1 - e^{-\lambda t_0}) - \lambda\sum_nw_nE_n(t_0)\Bigr],\qquad E_n(t_0) = \int_0^{t_0}e^{-\lambda s - \Lambda_n^*\tau(s)}\,ds,\qquad \alpha = \alpha_0:\ E_n = \frac{1 - e^{-\kappa_nt_0}}{\kappa_n},\ \kappa_n = \lambda + \alpha_0\Lambda_n^*. \tag{P22.83}
+\begin{aligned}
+&I_0 = M_0\Bigl[(1 - e^{-\lambda t_0}) - \lambda\sum_nw_nE_n(t_0)\Bigr],\qquad E_n(t_0) = \int_0^{t_0}e^{-\lambda s - \Lambda_n^*\tau(s)}\,ds,\\
+&\alpha = \alpha_0:\ E_n = \frac{1 - e^{-\kappa_nt_0}}{\kappa_n},\ \kappa_n = \lambda + \alpha_0\Lambda_n^*.
+\end{aligned} \tag{P22.83}
 $$
 
 Status: exact for each mode. The modal sum of $E_n$ converges like $\sum\lvert w_n\rvert/\Lambda_n^*$, which is the reason the integrated start converges fast while the pointwise series at $\tau \to 0$ does not.
@@ -2722,7 +2873,10 @@ Status: exact for each mode. The modal sum of $E_n$ converges like $\sum\lvert w
 For one homogeneous region with a uniform start, $u = D^*\tau/R^2$, $F = \hat M_\mathrm{rel}/M_0$, the image form of the sphere release is
 
 $$
-F(u) = 6\sqrt u\Bigl[\pi^{-1/2} + 2\sum_{k\ge1}\mathrm{ierfc}\bigl(k/\sqrt u\bigr)\Bigr] - 3u,\qquad \mathrm{ierfc}(x) = \int_x^\infty\mathrm{erfc}(y)\,dy = \frac{e^{-x^2}}{\sqrt\pi} - x\,\mathrm{erfc}(x). \tag{P22.84}
+\begin{aligned}
+F(u) &= 6\sqrt u\Bigl[\pi^{-1/2} + 2\sum_{k\ge1}\mathrm{ierfc}\bigl(k/\sqrt u\bigr)\Bigr] - 3u,\\
+\mathrm{ierfc}(x) &= \int_x^\infty\mathrm{erfc}(y)\,dy = \frac{e^{-x^2}}{\sqrt\pi} - x\,\mathrm{erfc}(x).
+\end{aligned} \tag{P22.84}
 $$
 
 Status: exact, PROVED (Laplace-transform argument in the verification record in Appendix B.5.5, F3; independent check V2). It equals the modal series $1 - (6/\pi^2)\sum n^{-2}e^{-n^2\pi^2u}$ to $2.7\times10^{-37}$ for $u \in [0.002, 1]$ (check C2) and to $2.7\times10^{-45}$ for $u \in [10^{-4}, 3]$ (check V2f). No printed source was opened for it.
@@ -2738,7 +2892,10 @@ Status: PROVED (with (P22.84)); check C2 finds the ratio remainder/bound at most
 Start-piece integral. Choose $t_B$ with $u(t_B) = u_B$. For constant $\alpha = \alpha_0$ on $[0, t_B]$, $u(s) = u_0s$ with $u_0 = \alpha_0D^*/R^2$, and
 
 $$
-I_0^B = M_0\Bigl[6\sqrt{\frac{u_0}{\pi\lambda}}\,\gamma\bigl(\tfrac32, \lambda t_B\bigr) - \frac{3u_0}{\lambda}\bigl(1 - e^{-\lambda t_B}(1 + \lambda t_B)\bigr)\Bigr],\qquad \lvert I_0 - I_0^B\rvert \le (1 - e^{-\lambda t_B})\,\pi^{3/2}u_B^{3/2}e^{-1/u_B}M_0, \tag{P22.86}
+\begin{aligned}
+I_0^B &= M_0\Bigl[6\sqrt{\frac{u_0}{\pi\lambda}}\,\gamma\bigl(\tfrac32, \lambda t_B\bigr) - \frac{3u_0}{\lambda}\bigl(1 - e^{-\lambda t_B}(1 + \lambda t_B)\bigr)\Bigr],\\
+\lvert I_0 - I_0^B\rvert &\le (1 - e^{-\lambda t_B})\,\pi^{3/2}u_B^{3/2}e^{-1/u_B}M_0,
+\end{aligned} \tag{P22.86}
 $$
 
 with $\gamma$ the lower incomplete gamma function. The closed form is exact; the error bound is PROVED. For variable $\alpha$ on $[0, t_B]$ substitute $s = v^2$:
@@ -2760,7 +2917,10 @@ $$
 Energy identity. Let $u = (-L^*)^{-1}f$, that is $-r^{-2}(r^2D^*u')' = f$ with $u(R) = 0$, a regular centre and continuity of $u$ and $D^*u'$ at interfaces. With $Q_f(r) = \int_0^r\rho^2f\,d\rho$ one integration gives $r^2D^*u' = -Q_f$, and one integration by parts ($Q_f(0) = 0$, $u(R) = 0$) gives
 
 $$
-\langle f, (-L^*)^{-1}f\rangle = \int_0^R\frac{Q_f(r)^2}{r^2D^*(r)}\,dr \ \ge\ \sum_{\text{all }n}\frac{f_n^2}{\Lambda_n^*},\qquad H_N(f) := \int_0^R\frac{Q_f^2}{r^2D^*}\,dr - \sum_{\mathcal N}\frac{f_n^2}{\Lambda_n^*} \ \ge\ \sum_{\mathcal N^c}\frac{f_n^2}{\Lambda_n^*}. \tag{P22.89}
+\begin{aligned}
+\langle f, (-L^*)^{-1}f\rangle &= \int_0^R\frac{Q_f(r)^2}{r^2D^*(r)}\,dr \ \ge\ \sum_{\text{all }n}\frac{f_n^2}{\Lambda_n^*},\\
+H_N(f) &:= \int_0^R\frac{Q_f^2}{r^2D^*}\,dr - \sum_{\mathcal N}\frac{f_n^2}{\Lambda_n^*} \ \ge\ \sum_{\mathcal N^c}\frac{f_n^2}{\Lambda_n^*}.
+\end{aligned} \tag{P22.89}
 $$
 
 Proof of the inequality: with the energy product $a(v, g) = \int_0^Rr^2D^*v'g'\,dr$, the functions $\phi_n/\sqrt{\Lambda_n^*}$ are orthonormal ($a(\phi_n, \phi_m) = \Lambda_n^*\delta_{nm}$) and $a(u, \phi_n/\sqrt{\Lambda_n^*}) = \langle f, \phi_n\rangle/\sqrt{\Lambda_n^*}$; Bessel's inequality in the energy product gives $\sum f_n^2/\Lambda_n^* \le a(u, u) = \langle f, u\rangle$. Status: PROVED; equality holds when the set is complete, but the bound does not need completeness. SymPy confirms the identity for two layers (check C3: $25/288$ for $f = 1$ and $11/1440$ for the kernel indicator, $R_1 = 1/2$, $D^* = (1, 1/4)$).
@@ -2768,13 +2928,21 @@ Proof of the inequality: with the energy product $a(v, g) = \int_0^Rr^2D^*v'g'\,
 Cauchy-Schwarz on $\lvert w_n\rvert = (4\pi/M_0)\lvert c_ne_n\rvert$ then bounds the two tails that matter:
 
 $$
-W_N \le \bar W_N := \frac{4\pi}{M_0}\sqrt{P_N(c_0)\,P_N(1)},\qquad V_N \le \bar V_N := \frac{4\pi}{M_0}\sqrt{H_N(c_0)\,H_N(1)},\qquad W \le \frac{4\pi}{M_0}\sqrt{\langle c_0, c_0\rangle\langle1, 1\rangle}. \tag{P22.90}
+\begin{aligned}
+W_N &\le \bar W_N := \frac{4\pi}{M_0}\sqrt{P_N(c_0)\,P_N(1)},\\
+V_N &\le \bar V_N := \frac{4\pi}{M_0}\sqrt{H_N(c_0)\,H_N(1)},\\
+W &\le \frac{4\pi}{M_0}\sqrt{\langle c_0, c_0\rangle\langle1, 1\rangle}.
+\end{aligned} \tag{P22.90}
 $$
 
 For a kernel-only unit start ($M_0 = 4\pi R_1^3/3$) in layers $R_0 = 0 < R_1 < \dots < R_5 = R$ the totals are closed form:
 
 $$
-\langle c_0, c_0\rangle = \frac{R_1^3}{3},\quad \langle1, 1\rangle = \frac{R^3}{3},\quad \int\frac{Q_{c_0}^2}{r^2D^*} = \frac{R_1^5}{45D_1^*} + \frac{R_1^6}{9}\sum_{i=2}^5\frac{R_{i-1}^{-1} - R_i^{-1}}{D_i^*},\quad \int\frac{Q_1^2}{r^2D^*} = \sum_{i=1}^5\frac{R_i^5 - R_{i-1}^5}{45D_i^*},\quad W \le \Bigl(\frac{R}{R_1}\Bigr)^{3/2}. \tag{P22.91}
+\begin{aligned}
+\langle c_0, c_0\rangle &= \frac{R_1^3}{3},\quad \langle1, 1\rangle = \frac{R^3}{3},\\
+\int\frac{Q_{c_0}^2}{r^2D^*} &= \frac{R_1^5}{45D_1^*} + \frac{R_1^6}{9}\sum_{i=2}^5\frac{R_{i-1}^{-1} - R_i^{-1}}{D_i^*},\\
+\int\frac{Q_1^2}{r^2D^*} &= \sum_{i=1}^5\frac{R_i^5 - R_{i-1}^5}{45D_i^*},\quad W \le \Bigl(\frac{R}{R_1}\Bigr)^{3/2}.
+\end{aligned} \tag{P22.91}
 $$
 
 Status: exact. A missed root inflates $P_N$ and $H_N$, so the bounds stay valid and the size of $H_N$ doubles as a missed-root test. In floating point the subtraction in $H_N$ loses about $2.2\times10^{-16}$ times the total, which limits the usable bound to roughly $10^{-14}$ relative to $\int Q^2/(r^2D^*)$.
@@ -2808,7 +2976,10 @@ Status: PROVED under R24-A4. Check C6 (bare kernel, $\alpha = e^{5s}$, $N = 200$
 **Late pieces, truncation.** Under R24-A3c every omitted mode has $\Lambda_n^* \ge \Lambda_\mathrm{cov}$. For $s \ge t_0$ the pointwise error of $\hat M_\mathrm{rel}^{(N)}$ is at most $M_0e^{-\Lambda_\mathrm{cov}\tau(t_0)}W_N$. The boundary term carries the factor $e^{-\lambda t}$ and $I_1$ carries $\lambda\int_{t_0}^te^{-\lambda s}ds = e^{-\lambda t_0} - e^{-\lambda t}$, so together
 
 $$
-\bigl\lvert\text{truncation of }e^{-\lambda t}\hat M_\mathrm{rel}(\tau(t)) + I_1\bigr\rvert \le e^{-\lambda t_0}e^{-\Lambda_\mathrm{cov}\tau(t_0)}\,\bar W_NM_0 \le e^{-40}\bar W_NM_0\quad\text{when }\Lambda_\mathrm{cov}\tau(t_0) \ge 40. \tag{P22.95}
+\begin{aligned}
+\bigl\lvert\text{truncation of }e^{-\lambda t}\hat M_\mathrm{rel}(\tau(t)) + I_1\bigr\rvert &\le e^{-\lambda t_0}e^{-\Lambda_\mathrm{cov}\tau(t_0)}\,\bar W_NM_0\\
+&\le e^{-40}\bar W_NM_0\quad\text{when }\Lambda_\mathrm{cov}\tau(t_0) \ge 40.
+\end{aligned} \tag{P22.95}
 $$
 
 Status: PROVED under R24-A3c ($e^{-40} = 4.2\times10^{-18}$).
@@ -2957,8 +3128,10 @@ $$
 For diagonal $G = \mathrm{diag}(g_P, g_D)$, and using that $\mathcal L_k$ commutes with the scalar $g_k(t)$, the two components are
 
 $$
-\partial_\tau\hat c_P = \frac{\mathcal L_P}{\tau'}\hat c_P - \frac{\lambda_P + g_P'/g_P}{\tau'}\hat c_P + \frac{S_P}{g_P\tau'},\qquad
-\partial_\tau\hat c_D = \frac{\mathcal L_D}{\tau'}\hat c_D - \frac{\lambda_D + g_D'/g_D}{\tau'}\hat c_D + \frac{b\lambda_P\,g_P}{g_D\,\tau'}\hat c_P + \frac{S_D}{g_D\tau'}. \tag{P22.104}
+\begin{aligned}
+\partial_\tau\hat c_P &= \frac{\mathcal L_P}{\tau'}\hat c_P - \frac{\lambda_P + g_P'/g_P}{\tau'}\hat c_P + \frac{S_P}{g_P\tau'},\\
+\partial_\tau\hat c_D &= \frac{\mathcal L_D}{\tau'}\hat c_D - \frac{\lambda_D + g_D'/g_D}{\tau'}\hat c_D + \frac{b\lambda_P\,g_P}{g_D\,\tau'}\hat c_P + \frac{S_D}{g_D\tau'}.
+\end{aligned} \tag{P22.104}
 $$
 
 Check S1 of the script confirms (P22.104) by substitution.
@@ -3002,8 +3175,10 @@ $$
 **Step 3 (case (a): the scalar parts give N2).** With diagonal $G$ and $\tau' = \alpha$, (P22.104) has the operator part $\mathcal L^*_k$, which is constant. The zero-order coefficient of $\hat c_k$ in its own equation, $-(\lambda_k + g_k'/g_k)/\alpha$, must be a constant, written $-\mu_k$. Then $g_k'/g_k = \mu_k\alpha - \lambda_k$, so
 
 $$
-g_k(t) = g_k(0)\exp\big(\mu_k\tau(t) - \lambda_kt\big),\qquad
-\beta(t) = \frac{b\lambda_P\,g_P}{g_D\,\alpha} = b\lambda_P\frac{g_P(0)}{g_D(0)}\,\frac{\exp\big((\mu_P - \mu_D)\tau - \Delta\lambda\,t\big)}{\alpha(t)}. \tag{P22.107}
+\begin{aligned}
+g_k(t) &= g_k(0)\exp\big(\mu_k\tau(t) - \lambda_kt\big),\\
+\beta(t) &= \frac{b\lambda_P\,g_P}{g_D\,\alpha} = b\lambda_P\frac{g_P(0)}{g_D(0)}\,\frac{\exp\big((\mu_P - \mu_D)\tau - \Delta\lambda\,t\big)}{\alpha(t)}.
+\end{aligned} \tag{P22.107}
 $$
 
 If $b\lambda_P = 0$ then $\beta = 0$ and nothing more is required (N2 (i)). If $b\lambda_P \ne 0$, the coupling $\beta$ must be a constant $\beta_0 \ne 0$; since $g_P$ and $g_D$ are continuous and never zero, $g_P/g_D$ keeps the sign of $g_P(0)/g_D(0)$, $\beta_0$ has that sign too and $\alpha > 0$, which is (P22.106) with $\delta = \mu_P - \mu_D$ and $C = b\lambda_P g_P(0)/(g_D(0)\beta_0) > 0$ (N2 (iii)). Differentiating $\ln\alpha = \ln C + \delta\tau - \Delta\lambda t$ with $\tau' = \alpha$ gives the Bernoulli form; its solution with $\alpha(0) = \alpha_0$ is
@@ -3017,8 +3192,11 @@ with the limits $\alpha = \alpha_0e^{-\Delta\lambda t}$ for $\delta = 0$ and $\a
 **Step 4 (sufficiency).** Case (a) under N2 (iii): take $g_P = e^{\delta\tau - \lambda_Pt}$ and $g_D = e^{-\lambda_Dt}$. Then (P22.104) reads $\partial_\tau\hat c_P = (\mathcal L^*_P - \delta)\hat c_P$ and $\partial_\tau\hat c_D = \mathcal L^*_D\hat c_D + (b\lambda_P/C)\hat c_P$, which is autonomous. In the eigenbases of $\mathcal L^*_P$ and $\mathcal L^*_D$ (time independent under N1), with the overlap matrix $O$ of (P21.19), the modal solution for a source-free interval is
 
 $$
-a^P_m(t) = a^P_m(0)\,e^{-\lambda_Pt - \Lambda^P_m\tau},\qquad
-a^D_n(t) = e^{-\lambda_Dt}\Big[a^D_n(0)e^{-\Lambda^D_n\tau} + \frac{b\lambda_P}{C}\sum_m O_{nm}\,a^P_m(0)\,\frac{e^{-(\Lambda^P_m + \delta)\tau} - e^{-\Lambda^D_n\tau}}{\Lambda^D_n - \Lambda^P_m - \delta}\Big], \tag{P22.108}
+\begin{aligned}
+a^P_m(t) &= a^P_m(0)\,e^{-\lambda_Pt - \Lambda^P_m\tau},\\
+a^D_n(t) &= e^{-\lambda_Dt}\Big[a^D_n(0)e^{-\Lambda^D_n\tau}\\
+&\qquad + \frac{b\lambda_P}{C}\sum_m O_{nm}\,a^P_m(0)\,\frac{e^{-(\Lambda^P_m + \delta)\tau} - e^{-\Lambda^D_n\tau}}{\Lambda^D_n - \Lambda^P_m - \delta}\Big],
+\end{aligned} \tag{P22.108}
 $$
 
 with $\tau = \tau(t)$, and the fraction replaced by $\tau e^{-\Lambda^D_n\tau}$ when its denominator vanishes. For constant $\alpha = \alpha_0$ (so $\tau = \alpha_0t$, $\delta = \Delta\lambda/\alpha_0$, $C = \alpha_0$), multiplying numerator and denominator by $\alpha_0$ turns (P22.108) into (P21.21), as it must. Case (b): with $\mathcal L_P = \mathcal L_D = \alpha(t)\mathcal L^*$, take $G = e^{Mt}$. Because $M$ is a constant matrix that acts on the species index only, and $\mathcal L^*$ acts identically on both species, the two commute, so (P22.103) gives $\partial_\tau\hat c = \mathcal L^*\hat c$ for any $\alpha$:
@@ -3064,13 +3242,20 @@ $$
 with $\alpha_P$ and $\alpha_D$ allowed to differ. Then the parent modes follow (P22.36) in the clock $\tau_P$, and the daughter modes are
 
 $$
-a^D_n(t) = a^D_n(0)\,e^{-\lambda_Dt - \Lambda^D_n\tau_D(t)} + \int_0^t e^{-\lambda_D(t-s) - \Lambda^D_n[\tau_D(t) - \tau_D(s)]}\Big[b\lambda_P\sum_mO_{nm}\,a^P_m(s) + s^D_n(s)\Big]\,ds, \tag{P22.113}
+\begin{aligned}
+a^D_n(t) &= a^D_n(0)\,e^{-\lambda_Dt - \Lambda^D_n\tau_D(t)}\\
+&\quad + \int_0^t e^{-\lambda_D(t-s) - \Lambda^D_n[\tau_D(t) - \tau_D(s)]}\Big[b\lambda_P\sum_mO_{nm}\,a^P_m(s) + s^D_n(s)\Big]\,ds,
+\end{aligned} \tag{P22.113}
 $$
 
 where $s^D_n$ is the projection of $S_D$ on $\phi^D_n$ and $O$ is the time-independent overlap matrix (P21.19) of the eigenbases of $\mathcal L^*_D$ and $\mathcal L^*_P$. For a source-free parent and $a^D_n(0) = 0$:
 
 $$
-a^D_n(t) = b\lambda_P\sum_mO_{nm}\,a^P_m(0)\,J_{nm}(t),\quad J_{nm}(t) = \int_0^t\exp\!\big(-\lambda_D(t-s) - \Lambda^D_n[\tau_D(t) - \tau_D(s)] - \lambda_Ps - \Lambda^P_m\tau_P(s)\big)\,ds,\quad M_D(t) = 4\pi\sum_nI^D_na^D_n(t). \tag{P22.114}
+\begin{aligned}
+a^D_n(t) &= b\lambda_P\sum_mO_{nm}\,a^P_m(0)\,J_{nm}(t),\\
+J_{nm}(t) &= \int_0^t\exp\!\big(-\lambda_D(t-s) - \Lambda^D_n[\tau_D(t) - \tau_D(s)] - \lambda_Ps - \Lambda^P_m\tau_P(s)\big)\,ds,\\
+M_D(t) &= 4\pi\sum_nI^D_na^D_n(t).
+\end{aligned} \tag{P22.114}
 $$
 
 *Proof.* Under (P22.112) the daughter equation is the single-species problem (P22.11) with diffusivities $\alpha_D D^*_{i,D}$ and the source $S_D + b\lambda_Pc_P(r,t)$, a known function once the parent is solved. Section 5.3.4 allows a source of any shape, and the projection of $b\lambda_Pc_P = b\lambda_P\sum_ma^P_m\phi^P_m$ on $\phi^D_n$ (weight $r^2$, divided by $N^D_n$) is $b\lambda_P\sum_mO_{nm}a^P_m$. Inserting this modal source into (P22.36) with $\Lambda^*_n = \Lambda^D_n$ and $\tau = \tau_D$ gives (P22.113); check S6 verifies that it solves $da^D_n/dt = -(\lambda_D + \alpha_D\Lambda^D_n)a^D_n + b\lambda_P\sum_mO_{nm}a^P_m + s^D_n$. $\square$
@@ -3096,7 +3281,10 @@ $$
 $$
 
 $$
-\rho_{i,k}(t) = \frac{\tilde D_{i,k}}{D_{i,k}},\qquad h(\rho) = \frac{(1-\rho)^2}{\rho},\qquad m_k(t) = \max_{i,\ s\le t}h\big(\rho_{i,k}(s)\big),\qquad \frac{(D - \tilde D)^2}{D} = \tilde D\,h(\rho), \tag{P22.116}
+\begin{aligned}
+\rho_{i,k}(t) &= \frac{\tilde D_{i,k}}{D_{i,k}},\qquad h(\rho) = \frac{(1-\rho)^2}{\rho},\\
+m_k(t) &= \max_{i,\ s\le t}h\big(\rho_{i,k}(s)\big),\qquad \frac{(D - \tilde D)^2}{D} = \tilde D\,h(\rho),
+\end{aligned} \tag{P22.116}
 $$
 
 $$
@@ -3179,7 +3367,10 @@ $$
 On interval $k$ the operator $L^{(k)}$ has constant coefficients $D_i(T_k)$ and eigenpairs $(\Lambda_n^{(k)}, \phi_n^{(k)})$ found by the v1.0 shooting and Sturm-count machinery, so
 
 $$
-c(r,t) = \sum_n a_n^{(k)}(t)\phi_n^{(k)}(r),\qquad a_n^{(k)}(t) = e^{-(\Lambda_n^{(k)} + \lambda)(t - t_k)}a_n^{(k)}(t_k) + \int_{t_k}^t e^{-(\Lambda_n^{(k)} + \lambda)(t - s)}s_n^{(k)}(s)\,ds. \tag{P22.40}
+\begin{aligned}
+c(r,t) &= \sum_n a_n^{(k)}(t)\phi_n^{(k)}(r),\\
+a_n^{(k)}(t) &= e^{-(\Lambda_n^{(k)} + \lambda)(t - t_k)}a_n^{(k)}(t_k) + \int_{t_k}^t e^{-(\Lambda_n^{(k)} + \lambda)(t - s)}s_n^{(k)}(s)\,ds.
+\end{aligned} \tag{P22.40}
 $$
 
 At a switch the field is continuous in time,
@@ -3243,7 +3434,10 @@ $$
 $$
 
 $$
-K_{mn}(t) = \frac{1}{N_m}\int_0^R r^2D(r,T(t))\,\psi_m'\psi_n'\,dr = \sum_{i=1}^5 D_i(T(t))\,K^{(i)}_{mn},\qquad K^{(i)}_{mn} = \frac{1}{N_m}\int_{R_{i-1}}^{R_i}r^2\psi_m'\psi_n'\,dr. \tag{P22.49}
+\begin{aligned}
+K_{mn}(t) &= \frac{1}{N_m}\int_0^R r^2D(r,T(t))\,\psi_m'\psi_n'\,dr = \sum_{i=1}^5 D_i(T(t))\,K^{(i)}_{mn},\\
+K^{(i)}_{mn} &= \frac{1}{N_m}\int_{R_{i-1}}^{R_i}r^2\psi_m'\psi_n'\,dr.
+\end{aligned} \tag{P22.49}
 $$
 
 The affine split in (P22.49) lets the five layer matrices $K^{(i)}$ be computed once; each step only forms a weighted sum. $N^{1/2}KN^{-1/2}$ is symmetric positive definite. If $\psi = \phi^*$ and $D = \alpha D^*$, integration by parts with the eigen-equation gives
@@ -3255,7 +3449,11 @@ $$
 and (P22.48) decouples into (P22.36). In general
 
 $$
-\mathbf a(t) = U(t,0)\,\mathbf a(0) + \int_0^tU(t,s)\,\mathbf s(s)\,ds,\quad U(t,s) = \mathcal T\exp\!\left(-\int_s^t[K(\sigma) + \lambda I]\,d\sigma\right),\quad [K(t_1),K(t_2)] = \sum_{i,j}D_i(t_1)D_j(t_2)\,[K^{(i)},K^{(j)}], \tag{P22.51}
+\begin{aligned}
+\mathbf a(t) &= U(t,0)\,\mathbf a(0) + \int_0^tU(t,s)\,\mathbf s(s)\,ds,\\
+U(t,s) &= \mathcal T\exp\!\left(-\int_s^t[K(\sigma) + \lambda I]\,d\sigma\right),\\
+{}[K(t_1),K(t_2)] &= \sum_{i,j}D_i(t_1)D_j(t_2)\,[K^{(i)},K^{(j)}],
+\end{aligned} \tag{P22.51}
 $$
 
 where $\mathcal T$ denotes time ordering and $U$ is the propagator of (P22.48). It reduces to the ordinary exponential of $\int K$ only when all $K(t)$ commute, which holds when the $D_i$ keep fixed ratios. Otherwise no general closed form is available. The solution is not even a function of the layer integrals $\int D_i\,dt$: two histories with the same $\int D_i\,dt$ in every layer, two 2 h plateaus at 1600 and 1800 $^\circ$C taken in opposite order, give $F = 0.011413$ and $0.009919$ for synthetic layer-specific $Q$ (B3 check `b3_sec5.py`, T3c; with a shared $Q$ the two orders agree to $8.2\times10^{-15}$), so no effective time can exist (numerical demonstration). The Magnus series ($\Omega_1 = \int K$, $\Omega_2 = \tfrac12\iint[K(s_1),K(s_2)]$, ...) is itself an approximation scheme. Equation (P22.48) is therefore a numerical method in two senses: the time integration needs a stiff integrator (backward Euler, or an exponential step with frozen $K$), and the fixed basis has the wrong interface derivative ratio for every other temperature, so convergence in the number of modes is algebraic, as in (P22.46). Script evidence: in its own basis $K(T_2)$ is diagonal to $2\times10^{-13}$ relative; in the $T_1$ basis its largest off-diagonal entry over the first 10 modes reaches 20.4 times the corresponding diagonal entry, $\max_{m\ne n}|K_{mn}|/K_{mm}$ (strong coupling).
@@ -3293,7 +3491,10 @@ $$
 The left-point staircase has local error $O(h^2)$ and global error $O(h) = O(N_T^{-1})$. The midpoint staircase has local error $O(h^3)$ (both the $\Omega_1$ defect and the neglected $\Omega_2$) and global error $O(N_T^{-2})$. For an operator that is affine in the $D_i$, such as the continuous operator and the Galerkin matrix (P22.49), the per-layer average reproduces $\Omega_1$ exactly; only $\Omega_2$ remains, so it is also $O(N_T^{-2})$. On the FV matrix the two interface faces use the harmonic conductance (P22.14), which is not affine in $D_i$: forming $G_f$ from $\bar D_{i,k}$ differs from the interval average of $G_f$ by $O(h^2)$, a local defect of $O(h^3)$ (checker, `sec5chk_extra.py`, observed order 2.05), so the global order stays 2:
 
 $$
-e_{N_T} \approx C_{\mathrm L}N_T^{-1}\ \ (\text{left}),\qquad e_{N_T} \approx C_{\mathrm M}N_T^{-2}\ \ (\text{midpoint, average}),\qquad p_{\mathrm{obs}} = \log_2(e_{N_T}/e_{2N_T}). \tag{P22.56}
+\begin{aligned}
+&e_{N_T} \approx C_{\mathrm L}N_T^{-1}\ \ (\text{left}),\qquad e_{N_T} \approx C_{\mathrm M}N_T^{-2}\ \ (\text{midpoint, average}),\\
+&p_{\mathrm{obs}} = \log_2(e_{N_T}/e_{2N_T}).
+\end{aligned} \tag{P22.56}
 $$
 
 Caveat: the Magnus expansion assumes $h\lVert B\rVert$ small. For the stiff FV matrices of the test $h\lVert B\rVert$ is of order $10^2$ to $10^3$, where the argument is heuristic (a fourth-order Magnus step was tried as a reference and failed for this reason). The observed orders below confirm (P22.56) for $F(6\ \mathrm{h})$ in the test problem; at the end of the ramp, $F(4\ \mathrm{h})$, the observed midpoint orders scatter between 1.80 and 2.11 over the last pairs (script output). A proof for the stiff regime is not given here (update 2026-11-13: Section 5.4.6 proves order 1 uniformly in the stiffness, order 2 for shared scaling and, for layer-specific activation energies, a bound $h^2(1+\ln(T/h))$ on a fixed mesh with a constant proportional to $\Lambda$, and shows numerically that order 2 in the $V$-norm is not uniform under mesh refinement when the layers have different activation energies). With shared scaling, all three choices have $\Omega_2 = 0$ and the per-layer average is exact at the interval ends:
@@ -3363,7 +3564,10 @@ $\hat K(D)$ is symmetric positive definite for every $D>0$ (absorbing outer face
 The FV matrix is a sum over faces,
 
 $$
-K(D) = \sum_f G_f(D)\,\mathbf a_f\mathbf a_f^{\mathsf T},\qquad \mathbf a_f = \mathbf u_j - \mathbf u_{j+1}\ \text{(face between cells } j, j+1\text{)},\qquad \mathbf a_{\mathrm{out}} = \mathbf u_N, \tag{P22.122}
+\begin{aligned}
+K(D) &= \sum_f G_f(D)\,\mathbf a_f\mathbf a_f^{\mathsf T},\qquad \mathbf a_f = \mathbf u_j - \mathbf u_{j+1}\ \text{(face between cells } j, j+1\text{)},\\
+\mathbf a_{\mathrm{out}} &= \mathbf u_N,
+\end{aligned} \tag{P22.122}
 $$
 
 with $G_f$ from (P22.14): $G_f = A_f/(\delta_f^-/D_- + \delta_f^+/D_+)$ at a face between layers, $G_f = A_fD_i/(\delta_f^- + \delta_f^+)$ inside layer $i$, and $G_{\mathrm{out}} = 4\pi R^2D_5/(R-\bar r_N)$.
@@ -3445,7 +3649,10 @@ No norm of $A$ appears, so the bound holds for $h\lVert A\rVert$ of any size. Th
 **Corollary A1 (the three rules).** Under (H1), $r_i(s) = D_i(s)/\tilde D_{i,k}\in[e^{-L\delta},e^{L\delta}]$ with $\delta = h$ for the left rule, $\delta = h/2$ for the midpoint rule, and $\delta = h$ for the per-layer average (the average lies between the extreme values on $I_k$). Since $\lvert r - 1\rvert$ and $\lvert r^{-1} - 1\rvert$ are both at most $e^{L\delta} - 1$,
 
 $$
-\lVert\mathbf e(T)\rVert_V\le\tfrac12\big(e^{Lh} - 1\big)\lVert C_0\rVert_V\ \ (\text{left, average}),\qquad \lVert\mathbf e(T)\rVert_V\le\tfrac12\big(e^{Lh/2} - 1\big)\lVert C_0\rVert_V\ \ (\text{midpoint}). \tag{P22.130}
+\begin{aligned}
+\lVert\mathbf e(T)\rVert_V&\le\tfrac12\big(e^{Lh} - 1\big)\lVert C_0\rVert_V\ \ (\text{left, average}),\\
+\lVert\mathbf e(T)\rVert_V&\le\tfrac12\big(e^{Lh/2} - 1\big)\lVert C_0\rVert_V\ \ (\text{midpoint}).
+\end{aligned} \tag{P22.130}
 $$
 
 Order 1 therefore needs only a Lipschitz temperature history (kinks allowed anywhere) and holds uniformly in the stiffness, the mesh, the layer data and $\lambda$. Check S3: the bound holds for all three rules on meshes of 20 and 40 cells per layer with $h\lVert A\rVert$ from 71 to $4.6\times10^3$; the largest observed ratio error/bound is 0.086, so the bound is safe but not tight for this smooth ramp (the worst case over the stiffness is (P22.131)).
@@ -3453,7 +3660,10 @@ Order 1 therefore needs only a Lipschitz temperature history (kinks allowed anyw
 **Sharpness (left rule).** Take $\hat K(t) = e^{Lt}\hat K^*$ (shared scaling, $\lvert\tfrac{d}{dt}\ln\alpha\rvert = L$) and an eigenvector of $\hat K^*$ with eigenvalue $\mu$ as initial datum. The exact and left-staircase exponents are $X = \mu(e^{LT} - 1)/L$ and $X/\beta$ with $\beta = (e^{Lh} - 1)/(Lh) > 1$, so the error is $e^{-X/\beta} - e^{-X}$. Its maximum over $X>0$ (that is, over the stiffness $\mu$) is exact:
 
 $$
-\sup_{\mu>0}\lVert\mathbf e(T)\rVert = \beta^{-1/(\beta-1)}\big(1 - \beta^{-1}\big) = \frac{Lh}{2e}\big(1 + O(Lh)\big),\qquad \text{midpoint: } \beta = \frac{\sinh(Lh/2)}{Lh/2},\ \ \sup_{\mu>0}\lVert\mathbf e(T)\rVert = \frac{(Lh)^2}{24e}\big(1 + O(Lh)\big). \tag{P22.131}
+\begin{aligned}
+&\sup_{\mu>0}\lVert\mathbf e(T)\rVert = \beta^{-1/(\beta-1)}\big(1 - \beta^{-1}\big) = \frac{Lh}{2e}\big(1 + O(Lh)\big),\\
+&\text{midpoint: } \beta = \frac{\sinh(Lh/2)}{Lh/2},\ \ \sup_{\mu>0}\lVert\mathbf e(T)\rVert = \frac{(Lh)^2}{24e}\big(1 + O(Lh)\big).
+\end{aligned} \tag{P22.131}
 $$
 
 (SymPy checks S0.4 and S0.5.) No bound of the form $o(h)$ uniform in the stiffness exists for the left rule, and the constant $\tfrac12$ of (P22.130) is within a factor $e$ of the best possible one.
@@ -3463,7 +3673,10 @@ $$
 **Lemma 4 (energy smoothing).** (a) Under (H1), $\lVert\mathbf z(t)\rVert^2_{\hat K(D(t))}\le\dfrac{e^{Lt}}{2t}\lVert\mathbf z_0\rVert^2$. If $D$ is piecewise constant with jumps $D^-\to D^+$ at times before $t$, and $\rho_j = \max\big(1, \max_iD_i^+/D_i^-\big)\ge 1$ for jump $j$, then $\lVert\mathbf z(t)\rVert^2_{\hat K(D(t))}\le\dfrac{\prod_j\rho_j}{2t}\lVert\mathbf z_0\rVert^2$. The floor at 1 is needed: with a cooling jump and $\rho_j<1$ the product form is false (counterexample V4.1 of the verification record in Appendix B.5.7). (b) For the backward staircase solution, with $q$ the product, over the switch times $t_j\in(s, T)$, of $\max\big(1, \max_i\tilde D_{i,j-1}/\tilde D_{i,j}\big)$ (the value on the earlier interval in real time over the value on the later one; in reversed time this is the new value over the old one, because the energy $\lVert\mathbf w\rVert^2_{\hat K}$ is multiplied by at most this ratio at the switch, Lemma 1),
 
 $$
-\lVert\mathbf z(t)\rVert^2_{\hat K(D(t))}\le\frac{e^{Lt}}{2t}\lVert\mathbf z_0\rVert^2,\qquad \lVert\mathbf w(s)\rVert^2_{\hat K(\tilde D(s))}\le\frac{q}{2(T-s)}\lVert\boldsymbol\phi\rVert^2,\quad q\le e^{2L(T-s)}\ \text{under (H1)}. \tag{P22.132}
+\begin{aligned}
+&\lVert\mathbf z(t)\rVert^2_{\hat K(D(t))}\le\frac{e^{Lt}}{2t}\lVert\mathbf z_0\rVert^2,\\
+&\lVert\mathbf w(s)\rVert^2_{\hat K(\tilde D(s))}\le\frac{q}{2(T-s)}\lVert\boldsymbol\phi\rVert^2,\quad q\le e^{2L(T-s)}\ \text{under (H1)}.
+\end{aligned} \tag{P22.132}
 $$
 
 Proof. Let $E = \mathbf z^{\mathsf T}\hat K\mathbf z$ and $m_0 = \lVert\mathbf z_0\rVert^2\ge\lVert\mathbf z(t)\rVert^2$. Then $\dot E = \mathbf z^{\mathsf T}\dot{\hat K}\mathbf z - 2\lVert\hat K\mathbf z\rVert^2 - 2\lambda E\le LE - 2E^2/m_0$, using $\pm\dot{\hat K}\preceq L\hat K$ and $E\le\lVert\mathbf z\rVert\,\lVert\hat K\mathbf z\rVert$. For $u = 1/E$, $\dot u\ge -Lu + 2/m_0$, so $u(t)\ge\tfrac{2}{m_0}(1 - e^{-Lt})/L\ge 2te^{-Lt}/m_0$. At a jump $E$ is multiplied by at most $\rho_j$ (Lemma 1), so $u$ is divided by at most $\rho_j$, and between jumps $u$ grows at least at the rate $2/m_0$ when $L = 0$; by induction over the jumps, using $\rho_j\ge1$, $u(t)\ge 2t/(m_0\prod_j\rho_j)$. Part (b) is the same argument in reversed time $\sigma = T - s$ with $L = 0$ inside each interval, the factor $\max(1,\max_i\tilde D_{i,j-1}/\tilde D_{i,j})$ at the switch $t_j$ (the orientation matters: with the inverse ratio the statement is false, counterexample V11.1 of the verification record in Appendix B.5.7), and, under (H1), a factor of at most $e^{2Lh}$ at each of the at most $\sigma/h$ switches (consecutive staircase values differ by at most $2Lh$ in $\ln D_i$). $\square$ (Check S6 for part (a).)
@@ -3493,7 +3706,10 @@ $$
 With the quadrature errors of the three rules and $\min(\tau,\tilde\tau)\ge T\inf\alpha$:
 
 $$
-\lVert\mathbf e(T)\rVert_V\le\frac{h^2}{24e}\,\frac{\sup\lvert\ddot\alpha\rvert}{\inf\alpha}\,\lVert C_0\rVert_V\ \ (\text{midpoint}),\qquad \le\frac{h}{2e}\,\frac{\sup\lvert\dot\alpha\rvert}{\inf\alpha}\,\lVert C_0\rVert_V\ \ (\text{left}),\qquad \mathbf e(T) = 0\ \ (\text{average}). \tag{P22.135}
+\begin{aligned}
+\lVert\mathbf e(T)\rVert_V&\le\frac{h^2}{24e}\,\frac{\sup\lvert\ddot\alpha\rvert}{\inf\alpha}\,\lVert C_0\rVert_V\ \ (\text{midpoint}),\\
+&\le\frac{h}{2e}\,\frac{\sup\lvert\dot\alpha\rvert}{\inf\alpha}\,\lVert C_0\rVert_V\ \ (\text{left}),\qquad \mathbf e(T) = 0\ \ (\text{average}).
+\end{aligned} \tag{P22.135}
 $$
 
 (The last statement is (P22.57).) Order 2 of the midpoint rule is therefore uniform in the stiffness whenever the matrices commute, which for the FV matrix means shared scaling (or a single layer). Check S4: bound holds, observed order 2.00 at $h\lVert A\rVert$ up to $4.5\times10^3$, average rule exact up to round-off ($1.3\times10^{-12}$).
@@ -3511,7 +3727,10 @@ $$
 **Lemma 5 (operator smoothing).** Under (H1) and (H3),
 
 $$
-\lVert\hat K(D(t))\,\mathbf z(t)\rVert\le\frac{c_z}{t}\lVert\mathbf z_0\rVert,\quad c_z = \tfrac{1}{\sqrt2}e^{(\Lambda L + L/2)T};\qquad \lVert\hat K(\tilde D(s))\,\mathbf w(s)\rVert\le\frac{c_w}{T-s}\lVert\boldsymbol\phi\rVert,\quad c_w = \tfrac{1}{\sqrt2}e^{(2\Lambda L + L)T}. \tag{P22.137}
+\begin{aligned}
+&\lVert\hat K(D(t))\,\mathbf z(t)\rVert\le\frac{c_z}{t}\lVert\mathbf z_0\rVert,\quad c_z = \tfrac{1}{\sqrt2}e^{(\Lambda L + L/2)T};\\
+&\lVert\hat K(\tilde D(s))\,\mathbf w(s)\rVert\le\frac{c_w}{T-s}\lVert\boldsymbol\phi\rVert,\quad c_w = \tfrac{1}{\sqrt2}e^{(2\Lambda L + L)T}.
+\end{aligned} \tag{P22.137}
 $$
 
 Proof. Let $F = \lVert\hat K\mathbf z\rVert^2$. Then $\dot F = 2(\hat K\mathbf z)^{\mathsf T}(\dot{\hat K}\hat K^{-1})(\hat K\mathbf z) - 2\lVert\hat K^{3/2}\mathbf z\rVert^2 - 2\lambda F\le 2\Lambda LF - 2F^2/E$, because $F^2\le E\,\lVert\hat K^{3/2}\mathbf z\rVert^2$. With Lemma 4, $F^2/E\ge 2te^{-Lt}F^2/m_0$. For $u = 1/F$, $\tfrac{d}{dt}(e^{2\Lambda Lt}u)\ge 4te^{-Lt}/m_0$, so $u(t)\ge e^{-(2\Lambda L + L)t}\,2t^2/m_0$. For $\mathbf w$ use reversed time, Lemma 4 (b), and at each switch the factor $(1 + 2\Lambda Lh)^2\le e^{4\Lambda Lh}$ on $F$. $\square$
@@ -3525,7 +3744,10 @@ $$
 The midpoint bound is the midpoint quadrature remainder with $\lvert\ddot G_f\rvert\le(L_2 + 2L^2)G_f$ from (P22.126). For the per-layer average only the interface faces contribute (all other $G_f$ are linear in one $D_i$), and with $D_\pm(s) = \bar D_\pm(1 + u_\pm(s))$, $\int_{I_k}u_\pm\,ds = 0$, $\hat u = \theta_fu_+ + (1-\theta_f)u_-$, the exact identity (SymPy check S0.1)
 
 $$
-\frac{G_f(D)}{G_f(\bar D)} = 1 + \theta_fu_- + (1-\theta_f)u_+ - \frac{\theta_f(1-\theta_f)(u_- - u_+)^2}{1 + \hat u}\ \Longrightarrow\ \gamma_k\le e^{Lh}\sinh^2(Lh)\ \ (\text{average, every } h) \tag{P22.139}
+\begin{aligned}
+&\frac{G_f(D)}{G_f(\bar D)} = 1 + \theta_fu_- + (1-\theta_f)u_+ - \frac{\theta_f(1-\theta_f)(u_- - u_+)^2}{1 + \hat u}\\
+&\qquad\ \Longrightarrow\ \gamma_k\le e^{Lh}\sinh^2(Lh)\ \ (\text{average, every } h)
+\end{aligned} \tag{P22.139}
 $$
 
 shows a defect of order $h^2$ that is always of one sign (the harmonic conductance is concave). The bound uses $\theta_f(1-\theta_f)\le\tfrac14$, $u_\pm\in[e^{-Lh}-1,\,e^{Lh}-1]$ (both $D_\pm(s)$ and $\bar D_\pm$ lie in the range of $D_\pm$ on $I_k$), hence $\lvert u_- - u_+\rvert\le 2\sinh(Lh)$ and $1 + \hat u\ge e^{-Lh}$. (An earlier form, $\gamma_k\le(e^{Lh}-1)^2/(2 - e^{Lh})$, needs $e^{Lh}<2$; in the test problem $e^{LT/4} = 2.41$, so it did not cover $N_T = 4$ in Theorem D. The form above holds for every $h$ and has the same leading term $(Lh)^2$.) This is the rigorous form of the "local defect $O(h^3)$" statement after (P22.55).
@@ -3533,7 +3755,11 @@ shows a defect of order $h^2$ that is always of one sign (the harmonic conductan
 **Theorem D.** Under (H0) to (H3) and $N_T\ge 4$, for the midpoint rule ($\bar\rho = Lh/2$) and the per-layer average rule ($\bar\rho = Lh$), with $\bar\gamma = \max_k\gamma_k$,
 
 $$
-\lVert\mathbf e(T)\rVert_V\le\Big[\Lambda\bar\rho\,\frac{h}{T-h}\,(c_w + c_z) + \frac{\pi}{2}\,e^{L(T + h/2)}\,\bar\gamma + \frac{4\Lambda\bar\rho\,c_wc_z}{T}\,h\,\ln\frac{T}{h}\Big]\lVert C_0\rVert_V\ \le\ C_D\,h^2\Big(1 + \ln\frac{T}{h}\Big)\lVert C_0\rVert_V, \tag{P22.140}
+\begin{aligned}
+\lVert\mathbf e(T)\rVert_V&\le\Big[\Lambda\bar\rho\,\frac{h}{T-h}\,(c_w + c_z) + \frac{\pi}{2}\,e^{L(T + h/2)}\,\bar\gamma\\
+&\qquad + \frac{4\Lambda\bar\rho\,c_wc_z}{T}\,h\,\ln\frac{T}{h}\Big]\lVert C_0\rVert_V\\
+&\ \le\ C_D\,h^2\Big(1 + \ln\frac{T}{h}\Big)\lVert C_0\rVert_V,
+\end{aligned} \tag{P22.140}
 $$
 
 where $C_D$ depends on $\Lambda$, $L$, $L_2$ and $T$ only, not on $\lVert A\rVert$.
