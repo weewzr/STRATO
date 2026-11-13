@@ -7,6 +7,7 @@ filters:
   - ${.}/table-widths.lua
   - ${.}/break-long-tokens.lua
   - ${.}/keep-code-together.lua
+  - ${.}/keep-with-next.lua
 variables:
   documentclass: article
   papersize: a4
@@ -34,7 +35,7 @@ variables:
     - \AtBeginEnvironment{longtable}{\tablefont\renewcommand{\arraystretch}{\tablestretch}}
     - \usepackage{fvextra}
     - \fvset{breaklines=true,breakautoindent=true}
-    - \RecustomVerbatimEnvironment{verbatim}{Verbatim}{breaklines=true,breakanywhere=true,breakautoindent=true}
+    - \RecustomVerbatimEnvironment{verbatim}{Verbatim}{breaklines=true,breakanywhere=true,breakautoindent=true,breakindent=4em}
     - \pretocmd{\section}{\Needspace{6\baselineskip}}{}{}
     - \pretocmd{\subsection}{\Needspace{6\baselineskip}}{}{}
     - \pretocmd{\subsubsection}{\Needspace{5\baselineskip}}{}{}
