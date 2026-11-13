@@ -567,7 +567,10 @@ For a steady kernel source, $a_n \approx s_n/\kappa_n$ and the terms of (P21.37)
 The cure is algebraic. From (P21.28), $\kappa_n\int_0^ta_n\,ds = a_n(0) - a_n(t) + \int_0^ts_n\,ds$. Write $\Lambda_n = \kappa_n - \lambda$ in (P21.38):
 
 $$
-4\pi\sum_n^N\Lambda_nI_n\!\int_0^t\!a_n = \underbrace{4\pi\sum_n^NI_na_n(0)}_{\to M_0} + \underbrace{4\pi\sum_n^NI_n\!\int_0^t\!s_n}_{\to M_\mathrm{gen}} - \underbrace{4\pi\sum_n^NI_na_n(t)}_{M^{(N)}} - \underbrace{4\pi\lambda\sum_n^NI_n\!\int_0^t\!a_n}_{M_\mathrm{dec}^{(N)}}
+\begin{aligned}
+4\pi\sum_n^N\Lambda_nI_n\!\int_0^t\!a_n &= \underbrace{4\pi\sum_n^NI_na_n(0)}_{\to M_0} + \underbrace{4\pi\sum_n^NI_n\!\int_0^t\!s_n}_{\to M_\mathrm{gen}}\\
+&\quad - \underbrace{4\pi\sum_n^NI_na_n(t)}_{M^{(N)}} - \underbrace{4\pi\lambda\sum_n^NI_n\!\int_0^t\!a_n}_{M_\mathrm{dec}^{(N)}}
+\end{aligned}
 $$
 
 The two slow sums are truncated completeness sums whose limits are known exactly ($M_0$ from $c_0$, $M_\mathrm{gen}$ from $S$). Replacing them by those limits gives the **balance form** (the steady $R/B$ expression assumes the kernel-uniform source, for which $4\pi s_nI_n/G = w_n$, Section 3.7.2; for another source shape replace $w_n$ by $4\pi s_nI_n/G$):
@@ -1294,7 +1297,10 @@ $$
 Proof by induction. If $d_{j-1}=e_{j-1}+g^E_{j-1}=e_{j-1}+g^W_j$, then
 
 $$
-d_j=v_j+g^W_j+g^E_j-\frac{(g^W_j)^2}{e_{j-1}+g^W_j}=v_j+g^E_j+g^W_j\,\frac{(e_{j-1}+g^W_j)-g^W_j}{e_{j-1}+g^W_j}=v_j+g^E_j+\frac{g^W_j\,e_{j-1}}{e_{j-1}+g^W_j}.
+\begin{aligned}
+d_j&=v_j+g^W_j+g^E_j-\frac{(g^W_j)^2}{e_{j-1}+g^W_j}=v_j+g^E_j+g^W_j\,\frac{(e_{j-1}+g^W_j)-g^W_j}{e_{j-1}+g^W_j}\\
+&=v_j+g^E_j+\frac{g^W_j\,e_{j-1}}{e_{j-1}+g^W_j}.
+\end{aligned}
 $$
 
 The subtraction in the middle step is carried out analytically, so the recurrence that the code evaluates contains only sums, products and quotients of nonnegative numbers (exact; X1 checks the induction step and $N=5$ explicitly). Nothing in the proof uses the value of $v_j$ beyond $v_j>0$, so the v1.0 routine `solve_diffusion_system` applies unchanged with the new $v_j$. Moreover $e_j\ge v_j$ and $d_j\ge v_j+g^E_j>0$: decay can only make the pivots larger.
