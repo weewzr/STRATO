@@ -147,6 +147,8 @@ The spatial orders, temporal orders against the series, balance residuals and th
 
 This is **verification**: it shows that the code solves its equations correctly. Two methods can agree with each other and both still rest on the wrong physics or the wrong inputs. An internal comparison of the five-layer model against experimental release data was conducted at SNRSI. The early release curve agreed within 2%, with increasing deviation at later stages. These results are not yet public, and the public v1.0 release contains numerical verification only. Publication of experimental comparison results is planned for v2.0, with AGR-1 release data as a public-validation objective. See [`docs/development/provenance.md`](docs/development/provenance.md) for the evidence and the claims that remain unverified.
 
+Comparison with a published release curve. At SNRSI, the five-layer model reproduced the early stage of a published experimental fission-product release curve ([source]) with less than 1% error, but deviated progressively at later stages. This comparison is not part of the public v1.0 release and is not a validation of the model. The later-stage deviation motivates the Phase 2 physics (radioactive decay, fission-product generation and temperature-dependent diffusivity).
+
 ## Development status
 
 | Version | Stage | Scope | Status |
