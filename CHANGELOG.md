@@ -46,7 +46,7 @@ Phase 1 baseline. It was developed from June to October 2026 in earlier reposito
 ### Known limitations
 - Constant temperature and constant diffusivity in each layer. No decay and no generation.
 - Perfect interface contact, perfect-sink outer surface, kernel-only initial inventory.
-- Synthetic inputs only, so there is no physical validation.
+- The bundled inputs are synthetic, so the public release contains numerical verification only. An internal experimental comparison conducted at SNRSI is not yet public.
 
 [Unreleased]: https://github.com/weewzr/STRATO/compare/v1.0.1...HEAD
 [1.0.1]: https://github.com/weewzr/STRATO/compare/v1.0.0...v1.0.1

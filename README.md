@@ -145,7 +145,7 @@ The first command runs the unit, cross-method and Phase 1 regression tests. The 
 
 The spatial orders, temporal orders against the series, balance residuals and the series value of $F$ are in [`tests/golden/v1.0/verify_stdout.txt`](tests/golden/v1.0/verify_stdout.txt). The same-mesh temporal order and the three-way agreement of the Rust series, a 50-digit Python series and the extrapolated finite volume are recorded in [`docs/development/provenance.md`](docs/development/provenance.md).
 
-This is **verification**: it shows that the code solves its equations correctly. **Validation** against measured release data has not been done. Two methods can agree with each other and both still rest on the wrong physics or the wrong inputs. Comparison with measured AGR-1 release data is planned for v2.0. See [`docs/development/provenance.md`](docs/development/provenance.md) for the evidence and the claims that remain unverified.
+This is **verification**: it shows that the code solves its equations correctly. Two methods can agree with each other and both still rest on the wrong physics or the wrong inputs. An internal comparison of the five-layer model against experimental release data was conducted at SNRSI. The early release curve agreed within 2%, with increasing deviation at later stages. These results are not yet public, and the public v1.0 release contains numerical verification only. Publication of experimental comparison results is planned for v2.0, with AGR-1 release data as a public-validation objective. See [`docs/development/provenance.md`](docs/development/provenance.md) for the evidence and the claims that remain unverified.
 
 ## Development status
 
@@ -157,7 +157,7 @@ This is **verification**: it shows that the code solves its equations correctly.
 
 ## Known limitations of v1.0
 
-- The only bundled input is synthetic. Literature parameters for Phase 2 are collected in [`data/`](data/reference/README.md), but v1.0 does not read them and no literature input file is bundled.
+- The only bundled input is synthetic, so the public example is not an experimental validation case. Literature parameters for Phase 2 are collected in [`data/`](data/reference/README.md), but v1.0 does not read them and no literature input file is bundled.
 - Temperature is constant, and each layer's diffusivity does not depend on temperature.
 - There is no radioactive decay and no fission-product generation. All inventory starts in the kernel.
 - Interfaces are in perfect contact, with no partition coefficients.
