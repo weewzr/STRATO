@@ -55,7 +55,7 @@ These checks were run locally on 2026-11-06 with rustc 1.96.0 on Windows 11. The
 
 ## 4. Verification status inherited from Phase 1
 
-The following was checked independently during the move. All inputs are synthetic, so none of this is physical validation.
+The following was checked independently during the move. All inputs are synthetic, so none of this is experimental validation. The internal comparison conducted at SNRSI is not yet public.
 
 | No. | Claim | Status |
 |---|---|---|
