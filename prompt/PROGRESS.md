@@ -54,7 +54,7 @@ Phases 1 to 8.
 
 1. Phase 1 (frontend foundation) under `prompt/IMPLEMENTATION_ROADMAP.md`, with the visual identity of `prompt/DESIGN_SPECIFICATION.md` Section 4.1 (owner decision M6). `tokens.core.css` is to be copied from the owner's portfolio repository once it exists there; on 2026-11-24 it was not yet on that repository's `main`, so Phase 1 records the version it copies, or writes the file to the written specification and records that.
 2. Phase 1 also starts the browser self-test skeleton and the Playwright checks (`prompt/RAYSTORAGE_INTEGRATION.md` Section 8).
-3. Phase 3: follow the wrapper facts table and the panic rule added to `prompt/TECHNICAL_ARCHITECTURE.md` Section 3 in Phase 0.
+3. Phase 3: follow the wrapper facts table and the panic rule added to `prompt/TECHNICAL_ARCHITECTURE.md` Section 3 in Phase 0 (corrected after review, see "Corrections after the Phase 0 review"), and set and record `MAX_TOTAL_CELLS` and `MAX_STEPS`.
 
 ## Phase 0 audit (2026-11-24)
 
@@ -71,14 +71,14 @@ Windows 11, PowerShell 5.1, per-user installs, no administrator rights. rustc 1.
 | `cargo test --locked --all-targets` | 14 + 0 + 3 + 3 + 0 = 20 passed, 0 failed, 0 ignored |
 | `cargo doc --locked --no-deps` with `RUSTDOCFLAGS=-D warnings` | exit 0 |
 | `cargo build --locked --release` | exit 0 |
-| `cargo run --locked --release --example verify` | `FV_VERIFICATION PASS`; standard output equal to `tests/golden/v1.0/verify_stdout.txt` line for line (33 lines) apart from `VERIFY_RUNTIME_S` (0.218527 here) |
+| `cargo run --locked --release --example verify` | `FV_VERIFICATION PASS`; standard output equal to `tests/golden/v1.0/verify_stdout.txt` line for line (34 lines, all equal apart from `VERIFY_RUNTIME_S`; an earlier version of this row said 33 lines in error) apart from `VERIFY_RUNTIME_S` (0.218527 here) |
 | `cargo run --locked --release -- inputs/synthetic/synthetic_five_layer.toml` | standard output equal to `main_run_stdout.txt` after normalising path separators (23 lines, 0 differing); the four CSV files byte-identical to the golden copies (SHA-256 equal) |
 | `cargo check --locked --lib --target wasm32-unknown-unknown` | exit 0 |
 | `git diff v1.0.1..HEAD -- src tests examples inputs` and the same against the working tree | empty |
 
 ### Public API confirmed against `prompt/TECHNICAL_ARCHITECTURE.md` Section 3
 
-Every item the wrapper needs is public in `src/` at `v1.0.1`: `config::Config` with `RegionConfig`, `InitialConfig`, `TimeConfig`, `OutputConfig` (all fields public, `Deserialize` only), `Config::validate` at `src/config.rs` line 79, `config::PLACEHOLDER`; `numerical::finite_volume::{build_mesh, initial_concentration, inventory, backward_euler_step, run, explicit_dt_bound, Mesh, Cell, StepDiagnostics, TimeSeries}` with `Mesh.cells`, `Cell.volume` and `Cell.material` public; `postprocessing::comparison::{compare_release, convergence_study, layers_from_config, exact_release_at, MAX_MODES, ReleaseComparison, ConvergenceStudy}`; `analytical::sturm_liouville::{ModalRelease, exact_release, eigenvalues, Layer}`. Private as stated: `unfilled_placeholders` and the shooting layer states (D7 later adds read-only accessors). The step rule, the Kahan release sum and the balance residual of `finite_volume::run` are as Section 3 step 3 describes. Added to Section 3: a table of the facts the wrapper must respect (no `Serialize`, the required `output.directory`, the exact `validate` rules, `Cell.material` as region index, the Code C truncation `45 / t_min`) and a correction of the panic rule: `wasm32-unknown-unknown` uses `panic="abort"`, so `catch_unwind` cannot catch a panic in the browser; the wrapper must validate first and the worker must recover a trapped instance.
+Every item the wrapper needs is public in `src/` at `v1.0.1`: `config::Config` with `RegionConfig`, `InitialConfig`, `TimeConfig`, `OutputConfig` (all fields public, `Deserialize` only), `Config::validate` at `src/config.rs` line 79, `config::PLACEHOLDER`; `numerical::finite_volume::{build_mesh, initial_concentration, inventory, backward_euler_step, run, explicit_dt_bound, Mesh, Cell, StepDiagnostics, TimeSeries}` with `Mesh.cells`, `Cell.volume` and `Cell.material` public; `postprocessing::comparison::{compare_release, convergence_study, layers_from_config, exact_release_at, MAX_MODES, ReleaseComparison, ConvergenceStudy}`; `analytical::sturm_liouville::{ModalRelease, exact_release, eigenvalues, Layer}`. Private as stated: `unfilled_placeholders` and the shooting layer states (D7 later adds read-only accessors). The step rule, the Kahan release sum and the balance residual of `finite_volume::run` are as Section 3 step 3 describes. Added to Section 3: a table of the facts the wrapper must respect (no `Serialize`, the required `output.directory`, the `validate` rules (first version incomplete, corrected after review below), `Cell.material` as region index, the Code C truncation `45 / t_min`) and a correction of the panic rule: `wasm32-unknown-unknown` uses `panic="abort"`, so `catch_unwind` cannot catch a panic in the browser; the wrapper must validate first and the worker must recover a trapped instance.
 
 ### Scientific check of `prompt/SCIENTIFIC_REQUIREMENTS.md` Section 2
 
@@ -104,6 +104,15 @@ Noted, not changed (outside `prompt/`):
 
 - `docs/development/phase2_review_package.md` Section 3 still says the full set is (P21.1) to (P21.92) and (P22.1) to (P22.59); since `9802b2d` it runs to (P21.142) and (P22.142). Its Section 7 still shows D15 and D16 as PENDING; the owner's choices in this file rank above it.
 - The four golden files that no test asserts (`convergence_study.csv`, both stdout files) are compared only by hand; automating that comparison in `web.yml` stays open work (`prompt/TESTING_AND_VALIDATION.md` Section 1).
+
+### Corrections after the Phase 0 review (2026-11-24)
+
+An independent review of the Phase 0 commit found errors in text that Phase 0 itself added. Corrected:
+
+- `prompt/TECHNICAL_ARCHITECTURE.md` Section 3, wrapper facts table. It listed the `Config::validate` rules as exact and called them "the only rejection rules". That was wrong: `validate` also rejects a blank `species` (`src/config.rs` line 83) and a non-finite or non-positive `temperature_k` (line 86), and it accepts a start concentration of 0, which `finite_volume::run` then rejects (`initial inventory must be positive`, `src/numerical/finite_volume.rs` line 187). The table now lists every rejection path a wrapper call can meet: serde parse errors (every field required, `temperature_k` included), each `validate` rule with its line, `build_mesh` (fewer than two cells), the run-time positive-inventory check (which the wrapper applies itself before stepping, because it steps with `backward_euler_step`; the UI requires `c0 > 0`), the step and solve checks, the Code C rejections (FV result kept, `analytical` set to `null` with the message), and the wrapper limits. It was rebuilt from a search of `src/` for `bail!`, `expect(`, `unwrap(`, `panic!` and `assert!`.
+- `prompt/TECHNICAL_ARCHITECTURE.md` Section 3, panic paragraph. The list of library `expect` calls missed `src/postprocessing/comparison.rs` line 147, and the text claimed that every panic path was unreachable although `validate` sets no upper bound on cells or steps (a failed allocation also traps the wasm instance; a very large `end_time_s / dt_s` gives an unbounded loop). The paragraph now names all four library `expect` calls, adds the wrapper constants `MAX_TOTAL_CELLS` and `MAX_STEPS` (values to be set in web Phase 3 from measured browser run times and memory, and recorded here), and describes the worker time-out and instance recreation as the containment for whatever the guards miss.
+- This file, Phase 0 check table: the `verify` standard output has 34 lines, not 33 (all equal apart from `VERIFY_RUNTIME_S`).
+- `prompt/SCIENTIFIC_REQUIREMENTS.md` Section 2: the observed orders are recorded in `main_run_stdout.txt` and `verify_stdout.txt`; `convergence_study.csv` holds only the errors from which they follow.
 
 NOT VERIFIED after Phase 0: the exact commit behind the live Outram Park site; the performance numbers of `prompt/TECHNICAL_ARCHITECTURE.md` Section 6 (no build exists); the docs-PDF build of the two Phase 2 documents (no TeX here).
 
