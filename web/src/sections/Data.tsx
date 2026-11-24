@@ -137,6 +137,14 @@ export function Data() {
             <Badge label="PRECOMPUTED" />: {f.text}
           </li>
         ))}
+        <li>
+          <a href={`${import.meta.env.BASE_URL}data/agr1_reference_geometry.csv`} download data-testid="download-agr1-geometry">
+            AGR-1 reference-particle geometry (CSV)
+          </a>
+          : the registered kernel diameter and coating thicknesses of each AGR-1 set with row ids, status and source, and the outer
+          radii drawn by the reference view; written from <code>data/geometry/geometry.csv</code> by{' '}
+          <code>scripts/web/generate_data.py geometry</code>. Registered geometry, not a simulation.
+        </li>
         <li>Downloads of a live run, with the same header, come with the graphs in web phase 5.</li>
       </ul>
       <p>

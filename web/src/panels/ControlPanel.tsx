@@ -205,6 +205,7 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
         <NumberField
           label="Output every"
           unit="steps"
+          testId="output-every-field"
           value={config.time.output_every_steps}
           integer
           issue={issueAt('time.output_every_steps')}

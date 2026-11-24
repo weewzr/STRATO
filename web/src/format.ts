@@ -39,6 +39,20 @@ export function count(n: number): string {
   return Number.isInteger(n) ? n.toLocaleString('en-GB').replace(/,/g, ' ') : String(n);
 }
 
+/**
+ * A time in seconds restated in a unit that is easier to read (minutes, hours or days), to three
+ * significant digits. A change of unit for reading only (prompt/DESIGN_SPECIFICATION.md Section 4.2
+ * asks for the time "in seconds and in a readable unit"); the value in seconds is shown beside it.
+ */
+export function readableDuration(seconds: number): string {
+  if (!Number.isFinite(seconds)) return String(seconds);
+  const a = Math.abs(seconds);
+  if (a < 60) return `${String(Number(seconds.toPrecision(3)))} s`;
+  if (a < 3600) return `${(seconds / 60).toPrecision(3)} min`;
+  if (a < 2 * 86400) return `${(seconds / 3600).toPrecision(3)} h`;
+  return `${(seconds / 86400).toPrecision(3)} d`;
+}
+
 /** Clamp for a slider position (display only). */
 export function clamp(v: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, v));

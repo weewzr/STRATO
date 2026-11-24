@@ -1,0 +1,46 @@
+# label: REGISTER
+# kind: reference_geometry
+# generator: scripts/web/generate_data.py v1
+# strato_version: 1.0.1
+# commit: 48b5357eaad4c7d92bcec93fb9bfaac66fadf942
+# input_file: data/geometry/geometry.csv
+# input_sha256: 8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f
+# command: python -I -X utf8 scripts/web/generate_data.py geometry
+# created_utc: 2026-11-24T20:11:17Z
+# note: Registered geometry of the AGR-1 UCO TRISO particle (rule E2): geometry only, not a simulation and never combined with the diffusivities of the synthetic case. REGISTER marks register data; it is not a result label. Outer radii are sums of the registered diameter and thicknesses.
+set_id,layer,row_id,design_id,quantity,value_um,outer_radius_um,outer_radius_source,evidence_class,status,source,source_location
+AGR1-B-M16,kernel,G-01,AGR1-B-M16,diameter,350,175,register,measured,verified,Morris et al. (2016),5.pdf Table 2; printed p. 27; idx 3
+AGR1-B-M16,buffer,G-02,AGR1-B-M16,thickness,103.5,278.5,register,measured,verified,Morris et al. (2016),5.pdf Table 2; printed p. 27; idx 3
+AGR1-B-M16,IPyC,G-03,AGR1-B-M16,thickness,39.4,317.9,register,measured,verified,Morris et al. (2016),5.pdf Table 2; printed p. 27; idx 3
+AGR1-B-M16,SiC,G-04,AGR1-B-M16,thickness,35.3,353.2,register,measured,verified,Morris et al. (2016),5.pdf Table 2; printed p. 27; idx 3
+AGR1-B-M16,OPyC,G-05,AGR1-B-M16,thickness,41.0,394.2,register,measured,verified,Morris et al. (2016),5.pdf Table 2; printed p. 27; idx 3
+AGR1-NOM-C16,kernel,G-10,AGR1-NOM-C16,diameter,350,175,register,specification,verified,Collin et al. (2016),6.pdf Sec. 3.1; printed p. 380; idx 2
+AGR1-NOM-C16,buffer,G-11,AGR1-NOM-C16,thickness,100,275,register,specification,verified,Collin et al. (2016),6.pdf Sec. 3.1; printed p. 380; idx 2
+AGR1-NOM-C16,IPyC,G-12,AGR1-NOM-C16,thickness,40,315,register,specification,verified,Collin et al. (2016),6.pdf Sec. 3.1; printed p. 380; idx 2
+AGR1-NOM-C16,SiC,G-13,AGR1-NOM-C16,thickness,35,350,register,specification,verified,Collin et al. (2016),6.pdf Sec. 3.1; printed p. 380; idx 2
+AGR1-NOM-C16,OPyC,G-14,AGR1-NOM-C16,thickness,40,390,register,specification,verified,Collin et al. (2016),6.pdf Sec. 3.1; printed p. 380; idx 2
+AGR1-SPEC,kernel,G-54,AGR1-SPEC,diameter (specified),350,175,generator,specification,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-SPEC,buffer,G-55,AGR1-SPEC,thickness (specified),100,275,generator,specification,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-SPEC,IPyC,G-56,AGR1-SPEC,thickness (specified),40,315,generator,specification,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-SPEC,SiC,G-57,AGR1-SPEC,thickness (specified),35,350,generator,specification,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-SPEC,OPyC,G-58,AGR1-SPEC,thickness (specified),40,390,generator,specification,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-B,kernel,G-20,AGR1-T714,diameter,349.7,174.85,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-B,buffer,G-22,AGR1-T714-B,thickness,103.5,278.35,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-B,IPyC,G-26,AGR1-T714-B,thickness,39.4,317.75,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-B,SiC,G-30,AGR1-T714-B,thickness,35.3,353.05,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-B,OPyC,G-34,AGR1-T714-B,thickness,41.0,394.05,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-V1,kernel,G-20,AGR1-T714,diameter,349.7,174.85,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-V1,buffer,G-23,AGR1-T714-V1,thickness,102.5,277.35,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-V1,IPyC,G-27,AGR1-T714-V1,thickness,40.5,317.85,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-V1,SiC,G-31,AGR1-T714-V1,thickness,35.7,353.55,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-V1,OPyC,G-35,AGR1-T714-V1,thickness,41.1,394.65,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-V2,kernel,G-20,AGR1-T714,diameter,349.7,174.85,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-V2,buffer,G-24,AGR1-T714-V2,thickness,102.9,277.75,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-V2,IPyC,G-28,AGR1-T714-V2,thickness,40.1,317.85,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-V2,SiC,G-32,AGR1-T714-V2,thickness,35.0,352.85,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-V2,OPyC,G-36,AGR1-T714-V2,thickness,39.8,392.65,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-V3,kernel,G-20,AGR1-T714,diameter,349.7,174.85,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-V3,buffer,G-25,AGR1-T714-V3,thickness,104.2,279.05,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-V3,IPyC,G-29,AGR1-T714-V3,thickness,38.8,317.85,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-V3,SiC,G-33,AGR1-T714-V3,thickness,35.9,353.75,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410
+AGR1-T714-V3,OPyC,G-37,AGR1-T714-V3,thickness,39.3,393.05,generator,measured,verified,IAEA (2012),3.pdf Table 7.14; printed p. 397; idx 410

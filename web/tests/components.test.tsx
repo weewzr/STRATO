@@ -145,8 +145,9 @@ describe('Explore page (owner decision M7)', () => {
     render(<App />);
     const ph = Array.from(document.querySelectorAll<HTMLElement>('[data-placeholder-phase]'));
     // Web phase 2 filled the two phase-2 placeholders (equation builder in A, terms in D); web
-    // phase 3 filled the two phase-3 placeholders (inventory balance and diagnostics in B).
-    expect(ph.map((p) => p.dataset.placeholderPhase)).toEqual(['5', '5', '4', '5.5']);
+    // phase 3 filled the two phase-3 placeholders (inventory balance and diagnostics in B); web
+    // phase 4 filled the phase-4 placeholder (the AGR-1 reference particle).
+    expect(ph.map((p) => p.dataset.placeholderPhase)).toEqual(['5', '5', '5.5']);
     for (const p of ph) {
       expect(p.textContent).toMatch(/^Placeholder/);
       expect(p.querySelector('.badge')).toBeNull();

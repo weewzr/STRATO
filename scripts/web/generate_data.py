@@ -34,6 +34,21 @@ precomputed
          Values are copied from the program outputs; nothing is computed
          here. scripts/web/precompute.sh calls this subcommand.
 
+colormaps
+         Read the cividis and viridis tables in data/colormaps/ (copied from
+         matplotlib, see data/colormaps/README.md) and write
+         web/src/generated/colormaps.json, the colour tables of the particle
+         colouring. Display data only.
+
+geometry
+         Read the AGR-1 rows of data/geometry/geometry.csv and write
+         web/src/generated/agr1_reference.json and
+         web/public/data/agr1_reference_geometry.csv: the kernel diameter and
+         coating thicknesses of each AGR-1 set with row ids, register status and
+         source, and each layer's outer radius (sums of the registered values,
+         checked against the register's own radius column where it has one).
+         The reference particle is geometry only (rule E2).
+
 Options
 -------
 --check  Regenerate in memory and compare with the committed files. Exit 1
@@ -62,6 +77,7 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as _dt
+import decimal
 import hashlib
 import io
 import json
@@ -637,6 +653,252 @@ def cmd_precomputed(args: argparse.Namespace) -> int:
     return 0
 
 
+# ---------------------------------------------------------------------------
+# Colour maps of the particle colouring (web phase 4)
+# ---------------------------------------------------------------------------
+
+COLORMAP_DIR = "data/colormaps"
+COLORMAP_NAMES = ("cividis", "viridis")
+COLORMAP_JSON = "web/src/generated/colormaps.json"
+VOLATILE = ("created_utc", "commit")
+
+
+def _head_commit(root: pathlib.Path = ROOT) -> str:
+    try:
+        return _git("rev-parse", "HEAD", cwd=root) if (root / ".git").exists() else "unknown"
+    except (OSError, subprocess.CalledProcessError):
+        return "unknown"
+
+
+def _now() -> str:
+    return _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _comparable(text: str, is_json: bool) -> str:
+    """Text of a generated file without the fields that record when and where it was written."""
+    if is_json:
+        d = json.loads(text)
+        for k in VOLATILE:
+            d.pop(k, None)
+        return json.dumps(d, sort_keys=True)
+    return "\n".join(
+        l for l in text.splitlines()
+        if not any(l.startswith(f"# {k}:") for k in VOLATILE)
+    )
+
+
+def _write_or_check(targets: list[tuple[pathlib.Path, str, bool]], check: bool) -> int:
+    if check:
+        bad = 0
+        for path, text, is_json in targets:
+            rel = path.relative_to(ROOT).as_posix()
+            if not path.exists():
+                print(f"MISSING {rel}")
+                bad += 1
+            elif _comparable(path.read_text(encoding="utf-8"), is_json) != _comparable(text, is_json):
+                print(f"DIFFERS {rel}")
+                bad += 1
+            else:
+                print(f"SAME    {rel}")
+        return 1 if bad else 0
+    for path, text, _ in targets:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8", newline="\n")
+        print(f"WROTE   {path.relative_to(ROOT).as_posix()}")
+    return 0
+
+
+def build_colormaps() -> dict:
+    """Copy the 256-entry tables of data/colormaps/ and add their 8-bit form.
+
+    The 8-bit form is matplotlib's own conversion (``Colormap.__call__`` with
+    ``bytes=True``: ``(lut * 255).astype(uint8)``, which truncates), so a colour
+    on the page equals ``matplotlib.colormaps[name](i, bytes=True)``.
+    """
+    inputs = []
+    maps: dict = {}
+    for name in COLORMAP_NAMES:
+        rel = f"{COLORMAP_DIR}/{name}.csv"
+        raw = (ROOT / rel).read_bytes()
+        inputs.append({"path": rel, "sha256": hashlib.sha256(raw).hexdigest()})
+        rows = list(csv.reader(io.StringIO(raw.decode("utf-8"), newline="")))
+        if rows[0] != ["index", "r", "g", "b"]:
+            raise SystemExit(f"{rel}: unexpected header {rows[0]}")
+        body = [r for r in rows[1:] if r]
+        if [int(r[0]) for r in body] != list(range(256)):
+            raise SystemExit(f"{rel}: expected the indices 0 to 255 in order")
+        rgb = [[float(r[1]), float(r[2]), float(r[3])] for r in body]
+        for triple in rgb:
+            if not all(0.0 <= v <= 1.0 for v in triple):
+                raise SystemExit(f"{rel}: component outside [0, 1]")
+        maps[name] = {
+            "entries": len(rgb),
+            "rgb": rgb,
+            "rgb8": [[int(v * 255) for v in t] for t in rgb],
+        }
+    readme = f"{COLORMAP_DIR}/README.md"
+    inputs.append({"path": readme, "sha256": hashlib.sha256((ROOT / readme).read_bytes()).hexdigest()})
+    header = {
+        "schema": SCHEMA,
+        "label": "DISPLAY",
+        "kind": "colormaps",
+        "generator": f"{GENERATOR} v{GENERATOR_VERSION}",
+        "strato_version": _strato_version(),
+        "commit": _head_commit(),
+        "command": f"python -I -X utf8 {GENERATOR} colormaps",
+        "created_utc": _now(),
+        "note": (
+            "Colour tables for displaying solver values; not data and not a result label. "
+            "Copied from matplotlib 3.11.2 lib/matplotlib/_cm_listed.py (see data/colormaps/README.md). "
+            "rgb8 = int(255 * rgb), matplotlib's bytes conversion."
+        ),
+        "inputs": inputs,
+    }
+    return {**header, "data": maps}
+
+
+def cmd_colormaps(args: argparse.Namespace) -> int:
+    doc = build_colormaps()
+    return _write_or_check([(ROOT / COLORMAP_JSON, _json_text(doc), True)], args.check)
+
+
+# ---------------------------------------------------------------------------
+# AGR-1 reference particle (rule E2; prompt/DESIGN_SPECIFICATION.md 4.1 and 7.7)
+# ---------------------------------------------------------------------------
+
+GEOMETRY_CSV = "data/geometry/geometry.csv"
+GEOMETRY_JSON = "web/src/generated/agr1_reference.json"
+GEOMETRY_OUT_CSV = "web/public/data/agr1_reference_geometry.csv"
+GEOMETRY_DEFAULT = "AGR1-B-M16"
+LAYERS = ("kernel", "buffer", "IPyC", "SiC", "OPyC")
+# The AGR-1 sets drawn as the reference particle, in display order: (set id, the
+# design_id of each of the five layer rows). Every set gives the kernel diameter
+# and four coating thicknesses of one register design. The IAEA (2012) Table 7.14
+# variants take the kernel from design AGR1-T714 (row G-20, whose register note
+# reads "single kernel value printed for all variants").
+GEOMETRY_SETS = (
+    ("AGR1-B-M16", ("AGR1-B-M16",) * 5),
+    ("AGR1-NOM-C16", ("AGR1-NOM-C16",) * 5),
+    ("AGR1-SPEC", ("AGR1-SPEC",) * 5),
+    ("AGR1-T714-B", ("AGR1-T714",) + ("AGR1-T714-B",) * 4),
+    ("AGR1-T714-V1", ("AGR1-T714",) + ("AGR1-T714-V1",) * 4),
+    ("AGR1-T714-V2", ("AGR1-T714",) + ("AGR1-T714-V2",) * 4),
+    ("AGR1-T714-V3", ("AGR1-T714",) + ("AGR1-T714-V3",) * 4),
+)
+
+
+def _geometry_row(rows: list[dict], design: str, layer: str) -> dict:
+    want = ("diameter", "diameter (specified)") if layer == "kernel" else ("thickness", "thickness (specified)")
+    hits = [r for r in rows if r["design_id"] == design and r["layer"] == layer and r["quantity"] in want]
+    if len(hits) != 1:
+        raise SystemExit(f"{GEOMETRY_CSV}: expected one {want[0]} row for {design} {layer}, found {len(hits)}")
+    r = hits[0]
+    if r["unit"] != "um" or not r["value"]:
+        raise SystemExit(f"{GEOMETRY_CSV}: row {r['id']} has no value in um")
+    return r
+
+
+def _reader_location(text: str) -> str:
+    """The register's source location without its local file name and text-extract index."""
+    parts = [p.strip() for p in text.split(";")]
+    parts = [re.sub(r"^\d+\.pdf\s*", "", p) for p in parts if not p.startswith("idx")]
+    return "; ".join(p for p in parts if p)
+
+
+def build_geometry() -> tuple[dict, str]:
+    """The AGR-1 layer dimensions of the register, with each layer's outer radius.
+
+    Outer radii: kernel diameter / 2, then the previous radius plus the layer
+    thickness (sums of register values, in micrometres). Where the register
+    itself gives the radius (column outer_radius_um_calc) the two must agree to
+    exactly (decimal arithmetic on the register text), or the generator stops. This is geometry bookkeeping for a drawing;
+    no transport quantity is computed.
+    """
+    raw = (ROOT / GEOMETRY_CSV).read_bytes()
+    rows = list(csv.DictReader(io.StringIO(raw.decode("utf-8"), newline="")))
+    sets = []
+    for set_id, designs in GEOMETRY_SETS:
+        layers = []
+        outer = decimal.Decimal(0)
+        for layer, design in zip(LAYERS, designs):
+            r = _geometry_row(rows, design, layer)
+            value = decimal.Decimal(r["value"])
+            outer = value / 2 if layer == "kernel" else outer + value
+            registered = r["outer_radius_um_calc"].strip()
+            if registered and decimal.Decimal(registered) != outer:
+                raise SystemExit(f"{GEOMETRY_CSV}: row {r['id']} outer radius {registered} um, summed {outer!r} um")
+            layers.append({
+                "row_id": r["id"],
+                "design_id": r["design_id"],
+                "layer": layer,
+                "material": r["material"],
+                "quantity": r["quantity"],
+                "value_um": float(value),
+                "value_text": r["value"],
+                "outer_radius_um": float(outer),
+                "outer_radius_text": str(outer),
+                "outer_radius_source": "register" if registered else "generator",
+                "data_class": r["data_class"],
+                "evidence_class": r["evidence_class"],
+                "status": r["status"],
+                "source": r["source"],
+                "source_location": r["source_location"],
+                "location": _reader_location(r["source_location"]),
+                "link": r["link"],
+                "notes": r["notes"],
+            })
+        main = next(r for r in rows if r["design_id"] == designs[-1])
+        sets.append({
+            "set_id": set_id,
+            "design": main["design"],
+            "source": main["source"],
+            "link": main["link"],
+            "evidence_class": main["evidence_class"],
+            "statuses": sorted({l["status"] for l in layers}),
+            "layers": layers,
+        })
+    header = {
+        "schema": SCHEMA,
+        "label": "REGISTER",
+        "kind": "reference_geometry",
+        "generator": f"{GENERATOR} v{GENERATOR_VERSION}",
+        "strato_version": _strato_version(),
+        "commit": _head_commit(),
+        "input_file": GEOMETRY_CSV,
+        "input_sha256": hashlib.sha256(raw).hexdigest(),
+        "command": f"python -I -X utf8 {GENERATOR} geometry",
+        "created_utc": _now(),
+        "note": (
+            "Registered geometry of the AGR-1 UCO TRISO particle (rule E2): geometry only, not a simulation and "
+            "never combined with the diffusivities of the synthetic case. REGISTER marks register data; it is not "
+            "a result label. Outer radii are sums of the registered diameter and thicknesses."
+        ),
+    }
+    doc = {**header, "data": {"default_set": GEOMETRY_DEFAULT, "sets": sets}}
+
+    buf = io.StringIO()
+    for key in ("label", "kind", "generator", "strato_version", "commit", "input_file", "input_sha256", "command", "created_utc"):
+        buf.write(f"# {key}: {header[key]}\n")
+    buf.write(f"# note: {header['note']}\n")
+    w = csv.writer(buf, lineterminator="\n")
+    w.writerow(["set_id", "layer", "row_id", "design_id", "quantity", "value_um", "outer_radius_um",
+                "outer_radius_source", "evidence_class", "status", "source", "source_location"])
+    for s in sets:
+        for l in s["layers"]:
+            w.writerow([s["set_id"], l["layer"], l["row_id"], l["design_id"], l["quantity"], l["value_text"],
+                        l["outer_radius_text"], l["outer_radius_source"], l["evidence_class"], l["status"],
+                        l["source"], l["source_location"]])
+    return doc, buf.getvalue()
+
+
+def cmd_geometry(args: argparse.Namespace) -> int:
+    doc, csv_text = build_geometry()
+    return _write_or_check(
+        [(ROOT / GEOMETRY_JSON, _json_text(doc), True), (ROOT / GEOMETRY_OUT_CSV, csv_text, False)],
+        args.check,
+    )
+
+
 def main(argv: list[str]) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -651,6 +913,12 @@ def main(argv: list[str]) -> int:
     k.add_argument("--check", action="store_true")
     k.add_argument("--root", default="")
     k.set_defaults(func=cmd_catalogue)
+    cm = sub.add_parser("colormaps", help="write the colour tables of the particle colouring")
+    cm.add_argument("--check", action="store_true")
+    cm.set_defaults(func=cmd_colormaps)
+    g = sub.add_parser("geometry", help="write the AGR-1 reference-particle geometry from the register")
+    g.add_argument("--check", action="store_true")
+    g.set_defaults(func=cmd_geometry)
     args = p.parse_args(argv)
     return args.func(args)
 

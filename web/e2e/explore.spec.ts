@@ -71,7 +71,8 @@ for (const colorScheme of ['light', 'dark'] as const) {
           expect(box.y + box.height, `${id} bottom above the status line`).toBeLessThanOrEqual(footerTop + 0.5);
         }
         // Each of the two simulation elements carries its result label, inside the measured box.
-        await expect(page.getByTestId('particle').locator('.badge')).toHaveText('ILLUSTRATIVE');
+        // Web phase 4: with the run in place the particle is coloured by the solver's concentration.
+        await expect(page.getByTestId('particle').locator('.badge')).toHaveText('COMPUTED v1.0');
         await expect(page.getByTestId('release-readout').locator('.badge')).toHaveText('COMPUTED v1.0');
         await expectOrder(page);
       });
@@ -88,10 +89,12 @@ test.describe('placeholders', () => {
     const phases = await page.locator('[data-placeholder-phase]').evaluateAll((els) => els.map((e) => e.getAttribute('data-placeholder-phase')));
     // Web phase 2 replaced the two phase-2 placeholders with the equation builder and the term
     // explanations; web phase 3 replaced the two phase-3 placeholders with the solver's inventory
-    // balance and diagnostics.
-    expect(phases.length).toBeGreaterThanOrEqual(4);
+    // balance and diagnostics; web phase 4 replaced the AGR-1 reference placeholder with the
+    // registered-geometry view.
+    expect(phases.length).toBeGreaterThanOrEqual(3);
     expect(phases).not.toContain('2');
     expect(phases).not.toContain('3');
+    expect(phases).not.toContain('4');
     for (const p of phases) expect(p).toMatch(/^\d(\.\d)?$/);
     await expect(page.locator('[data-placeholder-phase] .badge')).toHaveCount(0);
     await expect(page.getByTestId('simulation-case')).toContainText('Synthetic five-layer verification case, not AGR-1 data');

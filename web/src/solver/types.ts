@@ -32,6 +32,16 @@ export interface BuildInfo {
   limits: WrapperLimits;
 }
 
+/** Echo of the validated configuration in a RunResponse (crates/strato-wasm/src/lib.rs `echo`). */
+export interface RunInputs {
+  case_name: string;
+  species: string;
+  temperature_k: number;
+  regions: { name: string; outer_radius_m: number; diffusivity_m2_s: number; cells: number }[];
+  initial: { kernel_concentration_mol_m3: number };
+  time: { dt_s: number; end_time_s: number; output_every_steps: number };
+}
+
 export interface RunProfile {
   t_s: number;
   c_mol_per_m3: number[];
@@ -92,7 +102,8 @@ export interface RunOk {
   label: ResultLabel;
   engine: EngineStamp;
   mechanisms: string[];
-  inputs: unknown;
+  /** The validated configuration the wrapper ran, echoed back (output.directory left out). */
+  inputs: RunInputs;
   mesh: { cell_centroids_m: number[]; cell_faces_m: number[]; region_of_cell: number[]; region_names: string[] };
   times_s: number[];
   release_fraction: number[];

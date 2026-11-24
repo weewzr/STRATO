@@ -2,7 +2,7 @@
   "name": "strato-web",
   "private": true,
   "version": "0.1.0",
-  "description": "Interactive web demonstration of STRATO (web phase 3: verified v1.0 solver in WebAssembly)",
+  "description": "Interactive web demonstration of STRATO (web phase 4: verified v1.0 solver in WebAssembly, particle visualisation)",
   "license": "AGPL-3.0-only",
   "type": "module",
   "engines": {
@@ -23,9 +23,11 @@
     "@fontsource/ibm-plex-mono": "5.3.0",
     "@fontsource/ibm-plex-sans": "5.3.0",
     "@fontsource/literata": "5.3.0",
+    "@react-three/fiber": "9.8.2",
     "katex": "0.19.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
+    "three": "0.187.0",
     "zustand": "5.1.0"
   },
   "devDependencies": {
@@ -37,6 +39,7 @@
     "@types/node": "26.6.6",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "@types/three": "0.187.0",
     "@vitejs/plugin-react": "6.3.0",
     "eslint": "10.15.0",
     "eslint-plugin-react-hooks": "7.1.1",

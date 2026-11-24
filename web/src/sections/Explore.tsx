@@ -6,7 +6,9 @@ import { EquationBuilder } from '../equation/EquationBuilder';
 import { BalancePanel, DiagnosticsPanel, ReleaseReadout, RunProblemNote } from '../panels/SimResults';
 import { TermExplanations } from '../equation/TermExplanations';
 import { ControlPanel } from '../panels/ControlPanel';
-import { ParticleSchematic } from '../panels/ParticleSchematic';
+import { Playback } from '../panels/Playback';
+import { ParticleView } from '../particle/ParticleView';
+import { ReferenceParticle } from '../particle/ReferenceParticle';
 import { Placeholder } from '../panels/Placeholder';
 import { hrefFor } from '../route';
 import { configDifferences, inputKey, useStrato } from '../state/store';
@@ -17,7 +19,9 @@ import { useHeadingFocus } from './common';
  * The equation-first Explore page (owner decision M7; prompt/DESIGN_SPECIFICATION.md Section 2.1):
  * A governing equation, B live simulation, C controls, D explanation, E future research, in this
  * order at every width. Web phase 1 built the frame; web phase 3 connects the Rust solver in block B
- * (release readout, inventory balance, diagnostics); each remaining placeholder names its phase.
+ * (release readout, inventory balance, diagnostics); web phase 4 colours the particle from the
+ * solver's profiles, adds playback, the 3D cutaway and the AGR-1 reference particle (geometry only);
+ * each remaining placeholder names its phase.
  */
 export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenControls: () => void }) {
   const config = useStrato((s) => s.config);
@@ -82,7 +86,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           </button>
           <span className="strip__item" id={`${ids.b}-solver`} data-testid="strip-solver" data-state={solver.state}>
             {solver.state === 'ready' && solver.build
-              ? `Solver: STRATO ${solver.build.strato_version}, WebAssembly, ${status === 'running' ? 'running' : 'ready'}`
+              ? `Solver: WebAssembly, ${status === 'running' ? 'running' : 'ready'}`
               : solver.state === 'failed'
                 ? 'Solver: not available'
                 : 'Solver: loading'}
@@ -90,7 +94,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           <span className="strip__item" data-testid="strip-stage">
             Equation shown: stage {stage}; simulation: stage {solved > 0 ? solved : 1}
           </span>
-          <span className="strip__item strip__item--muted">Playback: web phase 4</span>
+          <Playback />
           {compact ? (
             <button type="button" className="btn btn--small strip__controls" onClick={onOpenControls} data-testid="strip-open-controls">
               Controls
@@ -98,7 +102,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           ) : null}
         </div>
         <div className="sim">
-          <div className="sim__particle">{entry ? <ParticleSchematic config={config} provenance={entry.provenance} /> : null}</div>
+          <div className="sim__particle">{entry ? <ParticleView config={config} provenance={entry.provenance} /> : null}</div>
           <div className="sim__side">
             <ReleaseReadout />
             <RunProblemNote />
@@ -110,16 +114,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
                 <p>F(t) from the finite-volume solution and the eigenfunction series on the same axes, with a playback cursor.</p>
               </Placeholder>
             </div>
-            <Placeholder phase="4" title="Reference fuel: AGR-1 UCO TRISO" testId="reference-fuel-placeholder" className="placeholder--compact">
-              <p>
-                The AGR-1 particle drawn from its registered geometry in{' '}
-                <a href={repoFile('data/geometry/geometry.csv')}>
-                  <code>data/geometry/geometry.csv</code>
-                </a>
-                , with the row ids and register status of its values. Geometry only: it is never combined with the diffusivities of the
-                synthetic case.
-              </p>
-            </Placeholder>
+            <ReferenceParticle />
           </div>
         </div>
         <div className="results" role="group" aria-label="Inventory balance and numerical diagnostics of the run">

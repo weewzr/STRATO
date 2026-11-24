@@ -14,6 +14,19 @@ export type { Stage };
 export type RunStatus = 'idle' | 'running' | 'ok' | 'rejected' | 'error';
 export type RegionField = 'outer_radius_m' | 'diffusivity_m2_s' | 'cells';
 export type TimeField = 'dt_s' | 'end_time_s' | 'output_every_steps';
+/** Colour map of the particle colouring (prompt/DESIGN_SPECIFICATION.md Section 9: cividis default, viridis option). */
+export type ColormapName = 'cividis' | 'viridis';
+/** View of the simulated particle in block B: the 2D cross-section (default) or the 3D cutaway. */
+export type ParticleView = '2d' | '3d';
+/** Playback speeds offered (prompt/DESIGN_SPECIFICATION.md Section 4.2: 0.25x to 8x). */
+export const PLAYBACK_SPEEDS = [0.25, 0.5, 1, 2, 4, 8] as const;
+
+export interface PlaybackState {
+  /** Index of the output row shown (run.profiles[tIndex]); the solver's recorded rows, never interpolated. */
+  tIndex: number;
+  playing: boolean;
+  speed: number;
+}
 
 export interface MechanismState {
   enabled: boolean;
@@ -61,12 +74,14 @@ export interface StratoState {
   solver: SolverState;
   runInfo: RunInfo | null;
   problem: RunProblem | null;
-  playback: { tIndex: number; playing: boolean; speed: number };
+  playback: PlaybackState;
   view: {
     showComparison: boolean;
     showDifference: boolean;
     showValidation: boolean;
     logColour: boolean;
+    colormap: ColormapName;
+    particleView: ParticleView;
     selectedLayer: number | null;
   };
 
@@ -82,6 +97,11 @@ export interface StratoState {
   /** Records build_info().capabilities of the wasm wrapper and recomputes availability (web phase 3 calls it). */
   setCapabilities: (capabilities: string[]) => void;
   selectLayer: (index: number | null) => void;
+  /** Display options of the particle (colour scale, colour map, 2D or 3D); they change no input and no result. */
+  setView: (patch: Partial<Pick<StratoState['view'], 'logColour' | 'colormap' | 'particleView'>>) => void;
+  /** Playback over the recorded output rows of the current run (web phase 4). */
+  setPlayback: (patch: Partial<PlaybackState>) => void;
+  stepPlayback: (delta: number) => void;
   setSolver: (patch: Partial<SolverState>) => void;
   /** Records a solver reply: a result, rejected inputs or a failure (called by solver/session.ts). */
   setRunOutcome: (outcome: { run: RunResponse; info: RunInfo } | { problem: RunProblem; info: RunInfo | null }) => void;
@@ -129,7 +149,17 @@ export function initialState() {
     runInfo: null as RunInfo | null,
     problem: null as RunProblem | null,
     playback: { tIndex: 0, playing: false, speed: 1 },
-    view: { showComparison: false, showDifference: false, showValidation: false, logColour: false, selectedLayer: null },
+    view: {
+      showComparison: false,
+      showDifference: false,
+      showValidation: false,
+      // Logarithmic by default: at most output times most of the particle is far below c0, and a
+      // linear scale would show it as one colour.
+      logColour: true,
+      colormap: 'cividis' as ColormapName,
+      particleView: '2d' as ParticleView,
+      selectedLayer: null as number | null,
+    },
   };
 }
 
@@ -176,7 +206,14 @@ export const useStrato = create<StratoState>()((set, get) => ({
     set({ config: next });
   },
 
-  resetToBaseline: () => set({ config: cloneConfig(get().baselineConfig), run: get().baselineRun }),
+  resetToBaseline: () => {
+    const run = get().baselineRun;
+    set({
+      config: cloneConfig(get().baselineConfig),
+      run,
+      playback: { tIndex: Math.max(0, (run?.profiles.length ?? 1) - 1), playing: false, speed: get().playback.speed },
+    });
+  },
 
   setCurrentAsBaseline: () => set({ baselineConfig: cloneConfig(get().config), baselineRun: get().run }),
 
@@ -193,11 +230,35 @@ export const useStrato = create<StratoState>()((set, get) => ({
 
   selectLayer: (index) => set({ view: { ...get().view, selectedLayer: index } }),
 
+  setView: (patch) => set({ view: { ...get().view, ...patch } }),
+
+  setPlayback: (patch) => {
+    const rows = get().run?.profiles.length ?? 0;
+    const next = { ...get().playback, ...patch };
+    next.tIndex = rows > 0 ? Math.min(rows - 1, Math.max(0, Math.trunc(next.tIndex))) : 0;
+    if (rows === 0) next.playing = false;
+    set({ playback: next });
+  },
+
+  stepPlayback: (delta) => {
+    const p = get().playback;
+    get().setPlayback({ tIndex: p.tIndex + delta, playing: false });
+  },
+
   setSolver: (patch) => set({ solver: { ...get().solver, ...patch } }),
 
   setRunOutcome: (outcome) => {
-    if ('run' in outcome) set({ run: outcome.run, runInfo: outcome.info, problem: null, status: 'ok' });
-    else set({ run: null, runInfo: outcome.info, problem: outcome.problem, status: outcome.problem.kind });
+    // A new result is shown at its last output row (t_end, the time of the release readout); playback stops.
+    const speed = get().playback.speed;
+    if ('run' in outcome)
+      set({
+        run: outcome.run,
+        runInfo: outcome.info,
+        problem: null,
+        status: 'ok',
+        playback: { tIndex: Math.max(0, outcome.run.profiles.length - 1), playing: false, speed },
+      });
+    else set({ run: null, runInfo: outcome.info, problem: outcome.problem, status: outcome.problem.kind, playback: { tIndex: 0, playing: false, speed } });
   },
 
   setRunning: () => set({ status: 'running' }),

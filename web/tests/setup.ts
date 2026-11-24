@@ -17,6 +17,12 @@ if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
     }) as MediaQueryList;
 }
 
+// jsdom has no canvas: getContext returns null (as a browser without the context would), so the
+// particle drawing code takes its no-context path instead of jsdom printing "not implemented".
+if (typeof HTMLCanvasElement !== 'undefined') {
+  HTMLCanvasElement.prototype.getContext = (() => null) as unknown as HTMLCanvasElement['getContext'];
+}
+
 beforeEach(() => {
   useStrato.setState(initialState());
   if (typeof window !== 'undefined') window.location.hash = '';

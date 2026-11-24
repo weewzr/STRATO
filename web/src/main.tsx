@@ -11,6 +11,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { installCapture, runSelftest } from './selftest/selftest';
+import { installPlaybackClock } from './particle/playback';
 import { startSolver } from './solver/session';
 
 const selftest = new URLSearchParams(window.location.search).get('selftest') === '1';
@@ -18,6 +19,8 @@ if (selftest) installCapture();
 
 // The Rust solver in a Web Worker (web phase 3); the page runs the inputs once it reports ready.
 startSolver();
+// Playback over the solver's recorded output rows (web phase 4), outside React's render path.
+installPlaybackClock();
 
 const root = document.getElementById('root');
 if (!root) throw new Error('missing #root');
