@@ -238,7 +238,7 @@ The authoritative list, with the same wording, is `data/research/gallery.csv`; t
 
 - **Item:** `ms-noble-gas-sic` (Pending placeholder; no image)
 - **Caption:** Planned krypton, xenon and iodine atoms at vacancy sites and small cavities of 3C-SiC. An intact SiC layer keeps the particle gas-tight; the calculation would examine where these atoms sit, not predict a release. This calculation has not been performed. It is planned for a future phase of the project.
-- **Plain-language explanation:** A planned picture of large gas atoms trapped in gaps of the silicon carbide crystal, the layer that keeps fission gases inside the particle. This calculation has not been performed. It is planned for a future phase of the project.
+- **Plain-language explanation:** A planned picture of large krypton, xenon and iodine atoms trapped in gaps of the silicon carbide crystal, the layer that keeps fission gases inside the particle. This calculation has not been performed. It is planned for a future phase of the project.
 - **Material:** 3C-SiC supercell with vacancies
 - **Species:** Kr;Xe;I
 - **Intended method:** Planned: density-functional incorporation energies at vacancy sites (CASTEP module).
