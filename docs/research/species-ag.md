@@ -39,7 +39,7 @@ Catalogue entries for silver:
 | [Silver trapping and detrapping](ag_trapping_detrapping.md) | A (traps from irradiation damage link it to B) | 4 |
 | [Silver grain-boundary transport](ag_grain_boundary_transport.md) | A | 5 |
 | [Palladium-assisted degradation, Ag-Pd interaction](pd_assisted_degradation.md) | B, C | 6 |
-| Microcracking, coating failure, failed-particle release | C | 8 (not written in this entry; see [Regime C](regime-c.md)) |
+| Microcracking, coating failure, failed-particle release ([entry](coating_degradation_failure.md); see also [Regime C](regime-c.md)) | C | 8 |
 
 ## Current evidence
 

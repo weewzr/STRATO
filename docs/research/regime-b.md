@@ -8,10 +8,10 @@ Regime B covers transport through layers that are still continuous but whose bar
 |---|---|---|
 | Palladium-assisted migration | silver (and other species) moving through SiC together with palladium | [Palladium-assisted degradation](pd_assisted_degradation.md) (brick 6) |
 | Pd-SiC chemical interactions | reaction of palladium with SiC, forming silicides and carbon, thinning the layer | same entry |
-| Irradiation defects | vacancies, interstitials and their clusters created by neutron damage | brick 8 (not written in this entry); effects on silver noted below |
-| Microstructural degradation | changes of grain structure and boundaries in service | brick 8 (not written in this entry) |
-| Defect-assisted diffusion | faster diffusion through irradiation-created defects | brick 8; silver evidence below |
-| Relevant chemical interactions | other fission product-SiC reactions | brick 8 (not written in this entry) |
+| Irradiation defects | vacancies, interstitials and their clusters created by neutron damage | [Irradiation and coating degradation](coating_degradation_failure.md) (brick 8); effects on silver noted below |
+| Microstructural degradation | changes of grain structure and boundaries in service | [brick 8](coating_degradation_failure.md) |
+| Defect-assisted diffusion | faster diffusion through irradiation-created defects | [brick 8](coating_degradation_failure.md); silver evidence below |
+| Relevant chemical interactions | other fission product-SiC reactions | [brick 8](coating_degradation_failure.md) |
 
 ## Evidence by mechanism (silver and palladium)
 

@@ -14,7 +14,7 @@ Note on names: Harrison's kinetic types A, B and C for grain-boundary diffusion,
 | Grain-boundary diffusion | faster movement along boundaries between grains of polycrystalline SiC | [Silver grain-boundary transport](ag_grain_boundary_transport.md) (brick 5) |
 | Segregation | enrichment of a species at boundaries because it is more stable there | discussed in the grain-boundary entry |
 | Trapping and detrapping | capture at sites where the atom is more strongly bound, and thermal release | [Silver trapping and detrapping](ag_trapping_detrapping.md) (brick 4) |
-| Species-specific retention | different species are retained to very different degrees by the same intact layers | species entries; caesium retention is brick 7 (not written in this entry) |
+| Species-specific retention | different species are retained to very different degrees by the same intact layers | species entries; [Caesium retention and barrier integrity](cs_retention_barrier_integrity.md) (brick 7); other species in [brick 9](additional_species_downstream_transport.md) |
 
 ## Evidence by mechanism (silver and palladium)
 
