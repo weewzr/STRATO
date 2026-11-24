@@ -147,7 +147,7 @@ Install `wasm-bindgen-cli` at exactly the `wasm-bindgen` version in `crates/stra
 |---|---|---|
 | Framework and build | React 19 (stay within the range `@react-three/fiber` accepts), Vite, TypeScript strict | static build to `web/dist` with `base: '/STRATO/'` |
 | 3D particle | `three` + `@react-three/fiber` | `@react-three/drei` only if a phase needs it; record the reason |
-| Plots | `plotly.js` partial bundle (cartesian) via a thin React wrapper | avoid the full bundle |
+| Plots | `plotly.js` partial bundle via a thin React wrapper, loaded lazily: `plotly.js-basic-dist-min`, or `plotly.js-cartesian-dist-min` if Phase 5 finds that error bars or log axes need it or a phase records a need for heat maps (`docs/development/visualisation_library_comparison.md`) | avoid the full bundle |
 | Maths | KaTeX, synchronous render, `\htmlClass` / `\textcolor` for term highlighting | MathJax rejected |
 | State | `zustand` | playback clock kept outside React re-render paths |
 | UI primitives | hand-written CSS tokens and native controls; shadcn components optional (switch, slider, tabs, tooltip only) | must pass keyboard and screen-reader checks |
