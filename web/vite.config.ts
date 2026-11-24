@@ -54,6 +54,14 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     sourcemap: false,
+    // KaTeX (web phase 2) in its own chunk, so the application chunk stays small and cacheable.
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [{ name: 'katex', test: /node_modules[\\/]katex/ }],
+        },
+      },
+    },
   },
   test: {
     environment: 'jsdom',

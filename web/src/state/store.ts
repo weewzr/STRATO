@@ -2,20 +2,22 @@
 // Defaults come from the generated case JSON (scripts/web/generate_data.py), never from literals.
 import { create } from 'zustand';
 import { cloneConfig, DEFAULT_CASE, findCase, type RegionConfig, type V1Config } from '../data/case';
+import { isAvailable } from '../equation/availability';
+import { SWITCH_MECHANISM, type Stage } from '../equation/terms';
 import type { RunResponse } from '../solver/types';
 
-// Mechanism switches; the ids map to mechanism_id rows of data/research/mechanisms.csv from web
-// phase 2: decay -> decay, source -> generation, arrhenius -> diffusivity_temperature.
+// Mechanism switches; the ids map to mechanism_id rows of data/research/mechanisms.csv through
+// SWITCH_MECHANISM (equation/terms.ts): decay -> decay, source -> generation, arrhenius -> diffusivity_temperature.
 export type Mechanism = 'decay' | 'source' | 'arrhenius';
 /** Builder stage shown in block A (prompt/DESIGN_SPECIFICATION.md Section 3.1). */
-export type Stage = 1 | 2 | 3 | 4 | 5 | 6;
+export type { Stage };
 export type RunStatus = 'idle' | 'running' | 'ok' | 'rejected' | 'error';
 export type RegionField = 'outer_radius_m' | 'diffusivity_m2_s' | 'cells';
 export type TimeField = 'dt_s' | 'end_time_s' | 'output_every_steps';
 
 export interface MechanismState {
   enabled: boolean;
-  /** False until web phase 6 delivers a reviewed implementation; from web phase 2 set only by isAvailable(). */
+  /** Set only from isAvailable() (equation/availability.ts): reported by the wrapper and at the live status. */
   available: boolean;
 }
 
@@ -23,7 +25,7 @@ export interface StratoState {
   caseId: string;
   config: V1Config;
   baselineConfig: V1Config;
-  /** Displayed builder stage; the stage picker arrives in web phase 2. */
+  /** Displayed builder stage. Selecting a stage changes the display only, never the inputs or a run. */
   stage: Stage;
   /** Mechanism ids the wasm wrapper reports from build_info(); empty until the module has loaded (web phase 3). */
   capabilities: string[];
@@ -48,14 +50,24 @@ export interface StratoState {
   resetToBaseline: () => void;
   setCurrentAsBaseline: () => void;
   setMechanism: (m: Mechanism, enabled: boolean) => void;
+  setStage: (stage: Stage) => void;
+  /** Records build_info().capabilities of the wasm wrapper and recomputes availability (web phase 3 calls it). */
+  setCapabilities: (capabilities: string[]) => void;
   selectLayer: (index: number | null) => void;
 }
 
-const initialMechanisms = (): Record<Mechanism, MechanismState> => ({
-  decay: { enabled: false, available: false },
-  source: { enabled: false, available: false },
-  arrhenius: { enabled: false, available: false },
-});
+const MECHANISM_KEYS: Mechanism[] = ['decay', 'source', 'arrhenius'];
+
+function mechanismsFor(capabilities: readonly string[], prev?: Record<Mechanism, MechanismState>): Record<Mechanism, MechanismState> {
+  const out = {} as Record<Mechanism, MechanismState>;
+  for (const m of MECHANISM_KEYS) {
+    const available = isAvailable(SWITCH_MECHANISM[m], capabilities);
+    out[m] = { enabled: available && (prev?.[m].enabled ?? false), available };
+  }
+  return out;
+}
+
+const initialMechanisms = (): Record<Mechanism, MechanismState> => mechanismsFor([]);
 
 export function initialState() {
   return {
@@ -122,9 +134,14 @@ export const useStrato = create<StratoState>()((set, get) => ({
 
   setMechanism: (m, enabled) => {
     const cur = get().mechanisms[m];
-    if (!cur.available) return; // A mechanism without a reviewed implementation cannot be switched on (web phase 6 at the earliest).
+    // Only a mechanism that the wrapper reports and whose catalogue status is the live one can be switched on.
+    if (!cur.available || !isAvailable(SWITCH_MECHANISM[m], get().capabilities)) return;
     set({ mechanisms: { ...get().mechanisms, [m]: { ...cur, enabled } } });
   },
+
+  setStage: (stage) => set({ stage }),
+
+  setCapabilities: (capabilities) => set({ capabilities: [...capabilities], mechanisms: mechanismsFor(capabilities, get().mechanisms) }),
 
   selectLayer: (index) => set({ view: { ...get().view, selectedLayer: index } }),
 }));

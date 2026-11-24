@@ -1,0 +1,16 @@
+{
+  "about": "an entry path whose file does not exist",
+  "patches": [
+    {
+      "file": "data/research/species.csv",
+      "find": "Fixture row for the catalogue check.,fixture2025,",
+      "replace": "Fixture row for the catalogue check.,fixture2025,docs/research/species-ag.md"
+    }
+  ],
+  "fail_rules": [
+    4
+  ],
+  "messages": [
+    "entry file 'docs/research/species-ag.md' does not exist"
+  ]
+}

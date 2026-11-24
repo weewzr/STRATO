@@ -2,8 +2,13 @@ import { useId, useMemo, useState, type ReactNode } from 'react';
 import { repoFile } from '../build';
 import { CASES, type RegionConfig } from '../data/case';
 import { layerColour } from '../design/layers';
+import { isAvailable } from '../equation/availability';
+import { SWITCH_MECHANISM, SWITCHES, switchIntroducedBy, TERMS } from '../equation/terms';
+import { Tex } from '../equation/Tex';
 import { clamp, sciText } from '../format';
-import { configDifferences, useStrato, type Mechanism } from '../state/store';
+import { statusOf, useCatalogue } from '../research/catalogue';
+import { StatusChip } from '../research/StatusChip';
+import { configDifferences, useStrato } from '../state/store';
 import { validateInputs } from '../state/validation';
 import { Sci } from './Badge';
 import { NumberField } from './NumberField';
@@ -12,15 +17,6 @@ import { NumberField } from './NumberField';
 // any positive finite value, which is the only rule Config::validate applies to D_i.
 const LOG_D_MIN = -18;
 const LOG_D_MAX = -8;
-
-// Switch labels in the order of the builder stages (generation, decay, temperature; rule E8).
-// From web phase 2 each switch also shows the mechanism's research status, read from the
-// generated research catalogue; no status is written here.
-const MECHANISMS: { id: Mechanism; name: string; term: string; style: string }[] = [
-  { id: 'source', name: 'Fission-product generation', term: '+S(r,t)', style: 'dashed' },
-  { id: 'decay', name: 'Radioactive decay', term: '−λc', style: 'solid' },
-  { id: 'arrhenius', name: 'Temperature-dependent diffusivity', term: 'Dᵢ → Dᵢ(T(t))', style: 'dotted' },
-];
 
 export type ControlLayout = 'inline' | 'sheet';
 
@@ -100,7 +96,12 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
   const baseline = useStrato((s) => s.baselineConfig);
   const caseId = useStrato((s) => s.caseId);
   const mechanisms = useStrato((s) => s.mechanisms);
-  const { loadCase, setTimeField, setKernelConcentration, setTemperature, resetToBaseline, setCurrentAsBaseline } = useStrato.getState();
+  const capabilities = useStrato((s) => s.capabilities);
+  const stage = useStrato((s) => s.stage);
+  const catalogue = useCatalogue();
+  const introduced = switchIntroducedBy(stage);
+  const { loadCase, setTimeField, setKernelConcentration, setTemperature, resetToBaseline, setCurrentAsBaseline, setMechanism } =
+    useStrato.getState();
 
   const issues = useMemo(() => validateInputs(config), [config]);
   const issueAt = (path: string) => issues.find((i) => i.path === path)?.message;
@@ -214,37 +215,64 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
     </>
   );
 
+  // Labels come from the term table (equation/terms.ts) and every status from the generated
+  // catalogue; availability only from isAvailable(). The switch that the selected builder stage
+  // introduces is marked, so the stage picker and the switches stay in step.
   const mechanismSwitches = (
     <fieldset className="group group--mechs">
       <legend className="group__legend">Mechanism switches</legend>
       <ul className="mechs" role="list">
-        {MECHANISMS.map((m) => (
-          <li key={m.id} className="mech">
-            <button
-              type="button"
-              role="switch"
-              className={`mech__switch mech__switch--${m.id}`}
-              aria-checked={mechanisms[m.id].enabled}
-              aria-disabled={!mechanisms[m.id].available}
-              aria-describedby={ids.mech}
-              data-testid={`mech-${m.id}`}
-              onClick={() => {
-                if (!mechanisms[m.id].available) setAnnounce(`${m.name}: not available; awaiting reviewed implementation.`);
-              }}
-            >
-              <span className={`mech__swatch mech__swatch--${m.style}`} aria-hidden="true" />
-              <span className="mech__name">{m.name}</span>
-              <span className="mech__term">{m.term}</span>
-              <span className="mech__state">{mechanisms[m.id].enabled ? 'On' : 'Off'}</span>
-            </button>
-          </li>
-        ))}
+        {SWITCHES.map((sw) => {
+          const term = TERMS[sw.term];
+          const mechId = SWITCH_MECHANISM[sw.id];
+          const status = statusOf(catalogue, mechId);
+          const live = isAvailable(mechId, capabilities, catalogue) && mechanisms[sw.id].available;
+          const current = introduced === sw.id;
+          const why = `${ids.mech}-${sw.id}`;
+          return (
+            <li key={sw.id} className={`mech${current ? ' is-stage' : ''}`}>
+              <button
+                type="button"
+                role="switch"
+                className={`mech__switch mech__switch--${sw.id}`}
+                aria-checked={live && mechanisms[sw.id].enabled}
+                aria-disabled={!live}
+                aria-describedby={why}
+                data-testid={`mech-${sw.id}`}
+                data-stage-current={current ? 'true' : undefined}
+                onClick={() => {
+                  if (!live) setAnnounce(`${term.name}: not available; status ${status ?? 'unknown'}; awaiting reviewed implementation.`);
+                  else setMechanism(sw.id, !mechanisms[sw.id].enabled);
+                }}
+              >
+                <span className={`mech__swatch mech__swatch--${sw.line}`} aria-hidden="true" />
+                <span className="mech__name">{term.name}</span>
+                <span className="mech__term">
+                  <Tex latex={sw.latex} />
+                </span>
+                <span className="mech__state">{live && mechanisms[sw.id].enabled ? 'On' : 'Off'}</span>
+              </button>
+              <p id={why} className="mech__why">
+                {live ? (
+                  <>
+                    {status ? <StatusChip status={status} mechanism={mechId} compact /> : null} Available: implemented in the solver at the live
+                    status.
+                  </>
+                ) : (
+                  <>
+                    Not available: status {status ?? 'unknown'}; awaiting reviewed implementation (see the{' '}
+                    <a href={repoFile('docs/development/phase2_review_package.md')}>Phase 2 review package</a>).
+                  </>
+                )}
+                {current ? <span className="mech__stage"> Introduced by stage {stage}.</span> : null}
+              </p>
+            </li>
+          );
+        })}
       </ul>
       <p id={ids.mech} className="field__hint">
-        Not available: awaiting reviewed implementation (see the{' '}
-        <a href={repoFile('docs/development/phase2_review_package.md')}>Phase 2 review package</a>). Operating a switch changes no result and
-        sends no solver request. Layer-specific temperature laws come with the temperature switch; species-specific mechanisms are research
-        catalogue entries.
+        Operating a switch that is not available changes no result and sends no solver request. Layer-specific temperature laws come with
+        the temperature switch; species-specific mechanisms are research catalogue entries.
       </p>
     </fieldset>
   );

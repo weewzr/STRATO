@@ -1,0 +1,312 @@
+{
+  "schema": 1,
+  "label": "CATALOGUE",
+  "kind": "research_catalogue",
+  "generator": "scripts/web/generate_data.py v1",
+  "strato_version": "1.0.1",
+  "commit": "b96a05c79a77d7e719a7a111ae31d1470d5a1753",
+  "command": "python -I -X utf8 scripts/web/generate_data.py catalogue",
+  "created_utc": "2026-11-24T13:54:16Z",
+  "note": "CATALOGUE marks a data file of research statuses and references; it is not a result label.",
+  "inputs": [
+    {
+      "path": "data/research/mechanisms.csv",
+      "sha256": "6293e297820ae9808427740e1f85359d882c0682f221690c32f4eadd2752b1d5"
+    },
+    {
+      "path": "data/research/references.csv",
+      "sha256": "a7371e1bc64e3c5724a3e405aae162488f466d37c9257edadb9babc9319fbfd0"
+    }
+  ],
+  "tables_absent": [
+    "species.csv",
+    "gallery.csv"
+  ],
+  "data": {
+    "mechanisms": [
+      {
+        "mechanism_id": "diffusion_layered",
+        "name": "Five-layer diffusion, constant diffusivity per layer",
+        "regime": [
+          "baseline"
+        ],
+        "brick": 1,
+        "builder_stage": 1,
+        "species": "all",
+        "material_domain": "synthetic_five_layer",
+        "status": "VERIFIED",
+        "status_basis": "STRATO v1.0 solves the layered equation by finite volume (Code B) and by an eigenfunction series (Code C); the tests show second-order convergence in space, first-order convergence in time, a balance residual at round-off level and agreement of the two codes on the synthetic five-layer case. Verification only: no comparison with measurements exists.",
+        "evidence": [
+          "tests/phase1_regression.rs",
+          "tests/finite_volume_vs_analytical.rs",
+          "examples/verify.rs",
+          "tests/golden/v1.0/verify_stdout.txt",
+          "docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md"
+        ],
+        "validation_ids": [],
+        "equation_ids": [
+          "2.6",
+          "2.7",
+          "3.1",
+          "3.2",
+          "3.3",
+          "3.4",
+          "3.5",
+          "5.9",
+          "5.14",
+          "5.15"
+        ],
+        "coupled": false,
+        "solver_capability": "diffusion_layered",
+        "required_parameters": [
+          "layer outer radii (registered: inputs/synthetic/synthetic_five_layer.toml)",
+          "layer diffusivities (registered: inputs/synthetic/synthetic_five_layer.toml)",
+          "kernel start concentration (registered: inputs/synthetic/synthetic_five_layer.toml)"
+        ],
+        "missing_work": "A comparison with measured release needs temperature-dependent diffusivity (web phase 6.2) and the validation of web phase 7.",
+        "reference_ids": [
+          "gelbard2003"
+        ],
+        "entry": "",
+        "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "generation",
+        "name": "Fission-product generation",
+        "regime": [
+          "baseline"
+        ],
+        "brick": 2,
+        "builder_stage": 2,
+        "species": "all",
+        "material_domain": "particle",
+        "status": "RESEARCHED",
+        "status_basis": "Derived in the Phase 2 derivations (P21.1, P21.8, P21.57, P21.58) and written as pseudocode; fission yields are registered. No Rust code exists.",
+        "evidence": [
+          "docs/mathematics/STRATO_Phase2_Derivations.md",
+          "docs/mathematics/STRATO_Phase2_Pseudocode.md",
+          "data/nuclear/fission_yields.csv"
+        ],
+        "validation_ids": [],
+        "equation_ids": [
+          "P21.1",
+          "P21.8",
+          "P21.57",
+          "P21.58"
+        ],
+        "coupled": false,
+        "solver_capability": "generation",
+        "required_parameters": [
+          "fission rate density (missing: register gap GAP-28)",
+          "cumulative fission yield (registered: data/nuclear/fission_yields.csv)"
+        ],
+        "missing_work": "Rust implementation of (P21.58) with the exact step-average source (owner decision D11), the verification cases of the pseudocode Section 7.1 and an independent review (web phase 6.1).",
+        "reference_ids": [
+          "iaea2012"
+        ],
+        "entry": "",
+        "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "decay",
+        "name": "Radioactive decay",
+        "regime": [
+          "baseline"
+        ],
+        "brick": 2,
+        "builder_stage": 3,
+        "species": "all",
+        "material_domain": "particle",
+        "status": "RESEARCHED",
+        "status_basis": "Derived in the Phase 2 derivations (P21.1, P21.5, P21.7, P21.58) and written as pseudocode; half-lives are registered. No Rust code exists.",
+        "evidence": [
+          "docs/mathematics/STRATO_Phase2_Derivations.md",
+          "docs/mathematics/STRATO_Phase2_Pseudocode.md",
+          "data/nuclear/decay.csv"
+        ],
+        "validation_ids": [],
+        "equation_ids": [
+          "P21.1",
+          "P21.5",
+          "P21.7",
+          "P21.58"
+        ],
+        "coupled": false,
+        "solver_capability": "decay",
+        "required_parameters": [
+          "half-life (registered: data/nuclear/decay.csv)"
+        ],
+        "missing_work": "Rust implementation of the unsplit Backward Euler step with implicit decay (P21.58, owner decision D6), the decay identity and inventory closure cases of the pseudocode Section 7.1 and an independent review (web phase 6.1).",
+        "reference_ids": [
+          "iaea2012"
+        ],
+        "entry": "",
+        "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "inventory_accounting",
+        "name": "Inventory accounting with decay and source",
+        "regime": [
+          "baseline"
+        ],
+        "brick": 2,
+        "builder_stage": 2,
+        "species": "all",
+        "material_domain": "particle",
+        "status": "RESEARCHED",
+        "status_basis": "Derived in the Phase 2 derivations (P21.41, P21.42, P21.44); the discrete closure is derived in Section 4.5. No Rust code exists.",
+        "evidence": [
+          "docs/mathematics/STRATO_Phase2_Derivations.md",
+          "docs/mathematics/STRATO_Phase2_Pseudocode.md"
+        ],
+        "validation_ids": [],
+        "equation_ids": [
+          "P21.41",
+          "P21.42",
+          "P21.44"
+        ],
+        "coupled": false,
+        "solver_capability": "",
+        "required_parameters": [
+          "start inventory (registered: inputs/synthetic/synthetic_five_layer.toml)"
+        ],
+        "missing_work": "Rust bookkeeping of the generated, decayed and released amounts with the residual of (P21.42), tested as in the pseudocode Section 7.1 (web phase 6.1).",
+        "reference_ids": [],
+        "entry": "",
+        "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "diffusivity_temperature",
+        "name": "Temperature-dependent diffusivity",
+        "regime": [
+          "baseline"
+        ],
+        "brick": 3,
+        "builder_stage": 4,
+        "species": "all",
+        "material_domain": "particle",
+        "status": "RESEARCHED",
+        "status_basis": "Derived in the Phase 2 derivations (P22.1, P22.11, P22.14, P22.15) and written as pseudocode; diffusivity rows and temperature histories are registered. No Rust code exists.",
+        "evidence": [
+          "docs/mathematics/STRATO_Phase2_Derivations.md",
+          "docs/mathematics/STRATO_Phase2_Pseudocode.md",
+          "data/diffusivity/arrhenius.csv",
+          "data/temperature/temperature_histories.csv"
+        ],
+        "validation_ids": [],
+        "equation_ids": [
+          "P22.1",
+          "P22.11",
+          "P22.14",
+          "P22.15"
+        ],
+        "coupled": false,
+        "solver_capability": "diffusivity_temperature",
+        "required_parameters": [
+          "Arrhenius coefficients per layer (registered: data/diffusivity/arrhenius.csv)",
+          "temperature history (registered: data/temperature/temperature_histories.csv)"
+        ],
+        "missing_work": "Rust implementation of (P22.15) with the step-average diffusivity of option A (owner decision D8), the Arrhenius and temperature cases of the pseudocode Section 7.2 and an independent review (web phase 6.2).",
+        "reference_ids": [
+          "iaea1997",
+          "iaea2012"
+        ],
+        "entry": "",
+        "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "diffusivity_layer_laws",
+        "name": "Layer-specific temperature laws",
+        "regime": [
+          "baseline"
+        ],
+        "brick": 3,
+        "builder_stage": 5,
+        "species": "all",
+        "material_domain": "particle",
+        "status": "RESEARCHED",
+        "status_basis": "Each layer has its own Arrhenius coefficients in (P22.1); Section 5.4 of the Phase 2 derivations derives what changes when the layers follow different laws. No Rust code exists.",
+        "evidence": [
+          "docs/mathematics/STRATO_Phase2_Derivations.md",
+          "docs/mathematics/STRATO_Phase2_Pseudocode.md",
+          "data/diffusivity/arrhenius.csv"
+        ],
+        "validation_ids": [],
+        "equation_ids": [
+          "P22.1",
+          "P22.14",
+          "P22.39",
+          "P22.40"
+        ],
+        "coupled": false,
+        "solver_capability": "diffusivity_layer_laws",
+        "required_parameters": [
+          "Arrhenius coefficients of each of the five layers (registered: data/diffusivity/arrhenius.csv)",
+          "UCO kernel coefficients (missing: the registered kernel rows are for UO2)"
+        ],
+        "missing_work": "Rust evaluation of one Arrhenius law per layer inside the conductances (P22.14), with the UO2-for-UCO kernel assumption labelled wherever it is used (rule E3) (web phase 6.2).",
+        "reference_ids": [
+          "iaea1997"
+        ],
+        "entry": "",
+        "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "interface_partition",
+        "name": "Interface partition coefficients",
+        "regime": [
+          "baseline"
+        ],
+        "brick": 3,
+        "builder_stage": 5,
+        "species": "all",
+        "material_domain": "interface",
+        "status": "PENDING",
+        "status_basis": "Not in the model: STRATO v1.0 and the Phase 2 derivations assume perfect contact with no partition coefficient (assumption A2).",
+        "evidence": [],
+        "validation_ids": [],
+        "equation_ids": [],
+        "coupled": false,
+        "solver_capability": "",
+        "required_parameters": [
+          "interface partition ratios (missing)"
+        ],
+        "missing_work": "A derivation of interface conditions with partition ratios, registered partition data with sources and a decision to add them to the model.",
+        "reference_ids": [
+          "iaea1997"
+        ],
+        "entry": "",
+        "status_date": "2026-11-24"
+      }
+    ],
+    "species": [],
+    "references": [
+      {
+        "reference_id": "gelbard2003",
+        "citation": "Gelbard, F. (2003). Analytical modeling of fission product releases by diffusion from multicoated fuel particles (Report No. SAND2002-3966). Sandia National Laboratories.",
+        "doi_or_url": "https://doi.org/10.2172/809605",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Governing equation of the layered particle without source, cited by the v1.0 derivation for Eq. (2.7)."
+      },
+      {
+        "reference_id": "iaea1997",
+        "citation": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
+        "doi_or_url": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
+        "link_checked": "2026-11-24",
+        "register_link": "IAEA (1997)",
+        "notes": "Arrhenius form of the diffusivity, Eq. (A-1), and the measured partition ratios that STRATO does not model (p. 436)."
+      },
+      {
+        "reference_id": "iaea2012",
+        "citation": "International Atomic Energy Agency. (2012). Advances in high temperature gas cooled reactor fuel technology (IAEA-TECDOC-CD-1674) [CD-ROM]. IAEA.",
+        "doi_or_url": "https://www-pub.iaea.org/MTCD/Publications/PDF/TE_1674_CD_web.pdf",
+        "link_checked": "2026-11-24",
+        "register_link": "IAEA (2012)",
+        "notes": "CRP-6 participant equations with decay and source that (P21.1) matches, and the CRP-6 benchmark cases."
+      }
+    ],
+    "gallery": [],
+    "entries": {}
+  }
+}

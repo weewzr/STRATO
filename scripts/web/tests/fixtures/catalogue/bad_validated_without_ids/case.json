@@ -1,0 +1,16 @@
+{
+  "about": "a VALIDATED row without validation_ids",
+  "patches": [
+    {
+      "file": "data/research/mechanisms.csv",
+      "find": ",VERIFIED,",
+      "replace": ",VALIDATED,"
+    }
+  ],
+  "fail_rules": [
+    7
+  ],
+  "messages": [
+    "status VALIDATED needs validation_ids"
+  ]
+}

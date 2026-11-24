@@ -1,0 +1,16 @@
+{
+  "about": "a reference_ids id that references.csv does not hold",
+  "patches": [
+    {
+      "file": "data/research/mechanisms.csv",
+      "find": "fixture2026;fixture2025",
+      "replace": "fixture2026;nosuchref"
+    }
+  ],
+  "fail_rules": [
+    3
+  ],
+  "messages": [
+    "reference 'nosuchref' is not in references.csv"
+  ]
+}

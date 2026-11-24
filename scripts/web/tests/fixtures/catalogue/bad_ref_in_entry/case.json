@@ -1,0 +1,16 @@
+{
+  "about": "a [ref:...] in an entry file that references.csv does not hold",
+  "patches": [
+    {
+      "file": "docs/research/fixture_pending.md",
+      "find": "[ref:fixture2025]",
+      "replace": "[ref:nosuchref]"
+    }
+  ],
+  "fail_rules": [
+    3
+  ],
+  "messages": [
+    "[ref:nosuchref] is not in references.csv"
+  ]
+}

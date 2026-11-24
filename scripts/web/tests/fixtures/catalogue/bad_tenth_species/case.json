@@ -1,0 +1,15 @@
+{
+  "about": "a tenth species row",
+  "patches": [
+    {
+      "file": "data/research/species.csv",
+      "append": "Te,tellurium,Te-132 (not in register),kernel,A,Fixture row for the catalogue check.,,\n"
+    }
+  ],
+  "fail_rules": [
+    5
+  ],
+  "messages": [
+    "'Te' is not one of the nine species"
+  ]
+}

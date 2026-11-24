@@ -1,0 +1,10 @@
+species,element,nuclides,layers,regimes,summary,reference_ids,entry
+Ag,silver,Ag-110m,SiC,A;B,Fixture row for the catalogue check.,fixture2025,
+Pd,palladium,Pd-107 (not in register),SiC,B,Fixture row for the catalogue check.,,
+Cs,caesium,Cs-137,kernel;SiC,A,Fixture row for the catalogue check.,,
+Sr,strontium,Sr-90,kernel;SiC,A,Fixture row for the catalogue check.,,
+Eu,europium,Eu-154,kernel,A,Fixture row for the catalogue check.,,
+I,iodine,I-131,kernel,A,Fixture row for the catalogue check.,,
+Ru,ruthenium,Ru-106 (not in register),kernel,A,Fixture row for the catalogue check.,,
+Xe,xenon,Xe-133 (not in register),kernel,C,Fixture row for the catalogue check.,,
+Kr,krypton,Kr-85,kernel,C,Fixture row for the catalogue check.,,

@@ -1,0 +1,17 @@
+{
+  "about": "a research_catalogue.json older than its inputs",
+  "regenerate_after_patch": false,
+  "patches": [
+    {
+      "file": "data/research/mechanisms.csv",
+      "find": "Fixture pending mechanism,",
+      "replace": "Fixture pending mechanism (renamed),"
+    }
+  ],
+  "fail_rules": [
+    9
+  ],
+  "messages": [
+    "differs from a fresh regeneration"
+  ]
+}

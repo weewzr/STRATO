@@ -1,0 +1,16 @@
+{
+  "about": "a placeholder row with a file",
+  "patches": [
+    {
+      "file": "data/research/gallery.csv",
+      "find": "planned fixture conditions,,,PENDING",
+      "replace": "planned fixture conditions,,docs/research/gallery/fixture-screenshot.png,PENDING"
+    }
+  ],
+  "fail_rules": [
+    8
+  ],
+  "messages": [
+    "a placeholder row must have an empty file"
+  ]
+}

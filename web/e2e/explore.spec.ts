@@ -84,7 +84,9 @@ test.describe('placeholders', () => {
     void problems;
     await gotoSection(page, 'explore');
     const phases = await page.locator('[data-placeholder-phase]').evaluateAll((els) => els.map((e) => e.getAttribute('data-placeholder-phase')));
-    expect(phases.length).toBeGreaterThanOrEqual(8);
+    // Web phase 2 replaced the two phase-2 placeholders with the equation builder and the term explanations.
+    expect(phases.length).toBeGreaterThanOrEqual(6);
+    expect(phases).not.toContain('2');
     for (const p of phases) expect(p).toMatch(/^\d(\.\d)?$/);
     await expect(page.locator('[data-placeholder-phase] .badge')).toHaveCount(0);
     await expect(page.getByTestId('simulation-case')).toContainText('Synthetic five-layer verification case, not AGR-1 data');

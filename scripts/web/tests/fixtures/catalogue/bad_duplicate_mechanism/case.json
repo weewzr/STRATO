@@ -1,0 +1,16 @@
+{
+  "about": "a duplicate (mechanism_id, species, material_domain)",
+  "patches": [
+    {
+      "file": "data/research/mechanisms.csv",
+      "find": "fixture_researched,Fixture mechanism with a derivation,baseline,2,2,all,particle,",
+      "replace": "fixture_verified,Fixture mechanism with a derivation,baseline,2,2,all,fixture_case,"
+    }
+  ],
+  "fail_rules": [
+    5
+  ],
+  "messages": [
+    "duplicate (mechanism_id, species, material_domain)"
+  ]
+}

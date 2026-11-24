@@ -1,0 +1,16 @@
+{
+  "about": "a nuclide absent from data/nuclear/decay.csv without the suffix",
+  "patches": [
+    {
+      "file": "data/research/species.csv",
+      "find": "Ru-106 (not in register)",
+      "replace": "Ru-106"
+    }
+  ],
+  "fail_rules": [
+    6
+  ],
+  "messages": [
+    "nuclide 'Ru-106' is not in data/nuclear/decay.csv"
+  ]
+}

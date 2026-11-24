@@ -1,0 +1,17 @@
+{
+  "about": "a table header that differs from Section 5.1",
+  "patches": [
+    {
+      "file": "data/research/mechanisms.csv",
+      "find": "mechanism_id,name,",
+      "replace": "id,name,"
+    }
+  ],
+  "allow_other_failures": true,
+  "fail_rules": [
+    1
+  ],
+  "messages": [
+    "header"
+  ]
+}

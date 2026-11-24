@@ -1,0 +1,16 @@
+{
+  "about": "a VERIFIED row without evidence under tests/",
+  "patches": [
+    {
+      "file": "data/research/mechanisms.csv",
+      "find": "tests/fixture_check.rs;notes/derivation.md",
+      "replace": "notes/derivation.md"
+    }
+  ],
+  "fail_rules": [
+    7
+  ],
+  "messages": [
+    "needs evidence under tests/"
+  ]
+}

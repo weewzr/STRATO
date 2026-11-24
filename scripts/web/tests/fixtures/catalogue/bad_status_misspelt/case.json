@@ -1,0 +1,16 @@
+{
+  "about": "a status written in mixed case",
+  "patches": [
+    {
+      "file": "data/research/mechanisms.csv",
+      "find": ",VERIFIED,",
+      "replace": ",Verified,"
+    }
+  ],
+  "fail_rules": [
+    2
+  ],
+  "messages": [
+    "status 'Verified' is not one of"
+  ]
+}

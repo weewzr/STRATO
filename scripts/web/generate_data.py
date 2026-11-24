@@ -13,16 +13,33 @@ case     Read a STRATO input case (TOML) and write its parameters as
          unchanged, so the floating-point values are the ones the TOML text
          denotes. No physics is computed here.
 
+catalogue
+         Read the research catalogue tables in data/research/ (mechanisms,
+         species, references, gallery; prompt/TECHNICAL_ARCHITECTURE.md
+         Section 5.1) and the entry files under docs/research/, and write
+         web/src/generated/research_catalogue.json, the only source of the
+         research statuses the web demo shows. A table that does not exist
+         yet is listed under ``tables_absent``. Values are copied; nothing is
+         computed.
+
 Options
 -------
 --check  Regenerate in memory and compare with the committed files. Exit 1
          if they differ. The field ``created_utc`` is ignored, because it
-         records when a file was written.
+         records when a file was written. For the catalogue the field
+         ``commit`` (the tree the generator ran on) is ignored as well: a
+         file cannot record the commit that contains it. The SHA-256 of every
+         input file is compared and pins the content.
+--root   (catalogue only) Repository root to read from and write to; the
+         default is this repository. Used by the fixture tests of
+         scripts/web/check_catalogue.py.
 
 Run from the repository root, with the standard library only:
 
     python -I -X utf8 scripts/web/generate_data.py case inputs/synthetic/synthetic_five_layer.toml
     python -I -X utf8 scripts/web/generate_data.py case inputs/synthetic/synthetic_five_layer.toml --check
+    python -I -X utf8 scripts/web/generate_data.py catalogue
+    python -I -X utf8 scripts/web/generate_data.py catalogue --check
 """
 
 from __future__ import annotations
@@ -34,6 +51,7 @@ import hashlib
 import io
 import json
 import pathlib
+import re
 import subprocess
 import sys
 import tomllib
@@ -59,15 +77,18 @@ UNITS = {
 }
 
 
-def _git(*args: str) -> str:
+def _git(*args: str, cwd: pathlib.Path = ROOT) -> str:
     out = subprocess.run(
-        ["git", *args], cwd=ROOT, check=True, capture_output=True, text=True
+        ["git", *args], cwd=cwd, check=True, capture_output=True, text=True
     )
     return out.stdout.strip()
 
 
-def _strato_version() -> str:
-    with open(ROOT / "Cargo.toml", "rb") as fh:
+def _strato_version(root: pathlib.Path = ROOT) -> str:
+    path = root / "Cargo.toml"
+    if not path.exists():
+        return "unknown"
+    with open(path, "rb") as fh:
         return tomllib.load(fh)["package"]["version"]
 
 
@@ -194,6 +215,188 @@ def cmd_case(args: argparse.Namespace) -> int:
     return 0
 
 
+# ---------------------------------------------------------------------------
+# Research catalogue (prompt/TECHNICAL_ARCHITECTURE.md Section 5.1)
+# ---------------------------------------------------------------------------
+
+CATALOGUE_KIND = "research_catalogue"
+RESEARCH_DIR = "data/research"
+ENTRY_DIR = "docs/research"
+GALLERY_DIR = "docs/research/gallery"
+CATALOGUE_JSON = "web/src/generated/research_catalogue.json"
+
+# Exact headers, in order (Section 5.1). check_catalogue.py imports these.
+TABLES: dict[str, list[str]] = {
+    "mechanisms.csv": [
+        "mechanism_id", "name", "regime", "brick", "builder_stage", "species",
+        "material_domain", "status", "status_basis", "evidence", "validation_ids",
+        "equation_ids", "coupled", "solver_capability", "required_parameters",
+        "missing_work", "reference_ids", "entry", "status_date",
+    ],
+    "species.csv": [
+        "species", "element", "nuclides", "layers", "regimes", "summary",
+        "reference_ids", "entry",
+    ],
+    "references.csv": [
+        "reference_id", "citation", "doi_or_url", "link_checked", "register_link",
+        "notes",
+    ],
+    "gallery.csv": [
+        "item_id", "kind", "title", "caption", "alt_text", "material", "species",
+        "method", "conditions", "provenance", "file", "status", "mechanism_ids",
+        "reference_ids",
+    ],
+}
+# The two tables a catalogue cannot do without; species and gallery arrive with
+# the catalogue content (web phase 5.5).
+REQUIRED_TABLES = ("mechanisms.csv", "references.csv")
+
+# Cells that hold ';'-separated lists.
+LIST_COLUMNS = {
+    "regime", "evidence", "validation_ids", "equation_ids", "required_parameters",
+    "reference_ids", "nuclides", "layers", "regimes", "mechanism_ids",
+}
+INT_COLUMNS = {"brick", "builder_stage"}
+
+_DISPLAY_MATH = re.compile(r"\$\$(.+?)\$\$", re.S)
+_HEADING = re.compile(r"^(#{1,6})\s+(.*?)\s*$", re.M)
+
+
+def read_table(root: pathlib.Path, name: str) -> tuple[list[str], list[list[str]], bytes] | None:
+    """Return (header, rows, raw bytes) of data/research/<name>, or None if absent."""
+    path = root / RESEARCH_DIR / name
+    if not path.exists():
+        return None
+    raw = path.read_bytes()
+    text = raw.decode("utf-8")
+    rows = list(csv.reader(io.StringIO(text, newline="")))
+    rows = [r for r in rows if r != []]
+    if not rows:
+        return [], [], raw
+    return rows[0], rows[1:], raw
+
+
+def split_list(cell: str) -> list[str]:
+    return [p.strip() for p in cell.split(";") if p.strip()]
+
+
+def _record(header: list[str], row: list[str]) -> dict:
+    out: dict = {}
+    for key, cell in zip(header, row):
+        cell = cell.strip()
+        if key in LIST_COLUMNS:
+            out[key] = split_list(cell)
+        elif key in INT_COLUMNS:
+            out[key] = int(cell) if cell else None
+        elif key == "coupled":
+            out[key] = cell == "yes"
+        else:
+            out[key] = cell
+    return out
+
+
+def _entry_info(root: pathlib.Path, rel: str) -> dict | None:
+    """Title and the research-concept equations of one entry file (display data only)."""
+    if not rel:
+        return None
+    path = root / rel
+    if not path.exists():
+        return None
+    text = path.read_text(encoding="utf-8")
+    title = ""
+    m = _HEADING.search(text)
+    if m:
+        title = m.group(2)
+    # Equations between $$ under a heading that names candidate governing equations.
+    concepts: list[str] = []
+    headings = list(_HEADING.finditer(text))
+    for i, h in enumerate(headings):
+        if "candidate governing equations" not in h.group(2).lower():
+            continue
+        end = headings[i + 1].start() if i + 1 < len(headings) else len(text)
+        concepts += [e.strip() for e in _DISPLAY_MATH.findall(text[h.end():end])]
+    return {"path": rel, "title": title, "concept_equations": concepts}
+
+
+def build_catalogue(root: pathlib.Path = ROOT) -> dict:
+    inputs: list[dict] = []
+    absent: list[str] = []
+    data: dict = {}
+    for name, header in TABLES.items():
+        table = read_table(root, name)
+        key = name.removesuffix(".csv")
+        if table is None:
+            absent.append(name)
+            data[key] = []
+            continue
+        head, rows, raw = table
+        inputs.append({"path": f"{RESEARCH_DIR}/{name}", "sha256": hashlib.sha256(raw).hexdigest()})
+        data[key] = [_record(head, r) for r in rows]
+
+    entries: dict[str, dict] = {}
+    entry_dir = root / ENTRY_DIR
+    if entry_dir.exists():
+        for md in sorted(entry_dir.glob("*.md")):
+            rel = md.relative_to(root).as_posix()
+            inputs.append({"path": rel, "sha256": hashlib.sha256(md.read_bytes()).hexdigest()})
+            info = _entry_info(root, rel)
+            if info:
+                entries[rel] = info
+    data["entries"] = entries
+
+    try:
+        commit = _git("rev-parse", "HEAD", cwd=root) if (root / ".git").exists() else "unknown"
+    except (OSError, subprocess.CalledProcessError):
+        commit = "unknown"
+    header = {
+        "schema": SCHEMA,
+        "label": "CATALOGUE",
+        "kind": CATALOGUE_KIND,
+        "generator": f"{GENERATOR} v{GENERATOR_VERSION}",
+        "strato_version": _strato_version(root),
+        "commit": commit,
+        "command": f"python -I -X utf8 {GENERATOR} catalogue",
+        "created_utc": _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "note": "CATALOGUE marks a data file of research statuses and references; it is not a result label.",
+        "inputs": sorted(inputs, key=lambda d: d["path"]),
+        "tables_absent": absent,
+    }
+    return {**header, "data": data}
+
+
+CATALOGUE_VOLATILE = ("created_utc", "commit")
+
+
+def catalogue_text(doc: dict) -> str:
+    return _json_text(doc)
+
+
+def comparable_catalogue(text: str) -> str:
+    d = json.loads(text)
+    for k in CATALOGUE_VOLATILE:
+        d.pop(k, None)
+    return json.dumps(d, sort_keys=True)
+
+
+def cmd_catalogue(args: argparse.Namespace) -> int:
+    root = pathlib.Path(args.root).resolve() if args.root else ROOT
+    doc = build_catalogue(root)
+    target = root / CATALOGUE_JSON
+    text = catalogue_text(doc)
+    rel = target.relative_to(root).as_posix()
+    if args.check:
+        if not target.exists():
+            print(f"MISSING {rel}")
+            return 1
+        same = comparable_catalogue(target.read_text(encoding="utf-8")) == comparable_catalogue(text)
+        print(f"{'SAME   ' if same else 'DIFFERS'} {rel}")
+        return 0 if same else 1
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(text, encoding="utf-8", newline="\n")
+    print(f"WROTE   {rel}")
+    return 0
+
+
 def main(argv: list[str]) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -201,6 +404,10 @@ def main(argv: list[str]) -> int:
     c.add_argument("input")
     c.add_argument("--check", action="store_true")
     c.set_defaults(func=cmd_case)
+    k = sub.add_parser("catalogue", help="write the research catalogue JSON")
+    k.add_argument("--check", action="store_true")
+    k.add_argument("--root", default="")
+    k.set_defaults(func=cmd_catalogue)
     args = p.parse_args(argv)
     return args.func(args)
 

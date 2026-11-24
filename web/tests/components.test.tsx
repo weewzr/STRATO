@@ -76,7 +76,8 @@ describe('ControlPanel', () => {
       await user.click(sw);
       expect(sw.getAttribute('aria-checked')).toBe('false');
     }
-    expect(screen.getByText(/Not available: awaiting reviewed implementation/)).toBeTruthy();
+    // From web phase 2 each switch names its research status, read from the catalogue.
+    expect(screen.getAllByText(/Not available: status RESEARCHED; awaiting reviewed implementation/)).toHaveLength(3);
     expect(useStrato.getState().mechanisms).toEqual({
       decay: { enabled: false, available: false },
       source: { enabled: false, available: false },
@@ -141,7 +142,8 @@ describe('Explore page (owner decision M7)', () => {
   it('marks every later-phase area as a placeholder with its phase and no result label', () => {
     render(<App />);
     const ph = Array.from(document.querySelectorAll<HTMLElement>('[data-placeholder-phase]'));
-    expect(ph.map((p) => p.dataset.placeholderPhase)).toEqual(['2', '5', '5', '3', '3', '4', '2', '5.5']);
+    // Web phase 2 filled the two phase-2 placeholders (equation builder in A, terms in D).
+    expect(ph.map((p) => p.dataset.placeholderPhase)).toEqual(['5', '5', '3', '3', '4', '5.5']);
     for (const p of ph) {
       expect(p.textContent).toMatch(/^Placeholder/);
       expect(p.querySelector('.badge')).toBeNull();

@@ -1,0 +1,18 @@
+{
+  "about": "a screenshot row without file and provenance",
+  "patches": [
+    {
+      "file": "data/research/gallery.csv",
+      "find": "fixture provenance,docs/research/gallery/fixture-screenshot.png",
+      "replace": ","
+    }
+  ],
+  "fail_rules": [
+    8
+  ],
+  "messages": [
+    "a screenshot row needs an existing file",
+    "a screenshot row needs a provenance",
+    "is not listed in gallery.csv"
+  ]
+}

@@ -1,6 +1,8 @@
 import { useId } from 'react';
 import { repoFile } from '../build';
 import { findCase } from '../data/case';
+import { EquationBuilder } from '../equation/EquationBuilder';
+import { TermExplanations } from '../equation/TermExplanations';
 import { ControlPanel } from '../panels/ControlPanel';
 import { ParticleSchematic } from '../panels/ParticleSchematic';
 import { Placeholder } from '../panels/Placeholder';
@@ -18,6 +20,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
   const config = useStrato((s) => s.config);
   const baseline = useStrato((s) => s.baselineConfig);
   const caseId = useStrato((s) => s.caseId);
+  const stage = useStrato((s) => s.stage);
   const entry = findCase(caseId);
   const h1 = useHeadingFocus();
   const ids = { b: useId(), c: useId(), d: useId(), e: useId() };
@@ -28,20 +31,13 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
     <article className="section explore" data-section="explore">
       {/* A: governing equation and staged builder */}
       <section className="block block--a" data-block="A" aria-labelledby="explore-title" data-testid="block-a">
-        <div className="block__head">
+        <div className="block__head block__head--a">
           <p className="block__eyebrow">Governing equation</p>
           <h1 id="explore-title" ref={h1} tabIndex={-1} className="block__title block__title--page">
             Fission-product diffusion through the five layers of a TRISO particle
           </h1>
         </div>
-        <Placeholder phase="2" title="Staged equation builder" testId="equation-placeholder" className="placeholder--equation">
-          <p>
-            The governing equation of the active stage, typeset and numbered, with a stage picker. Stage one is the layered diffusion
-            equation exactly as the verified STRATO v1.0 solver solves it; later stages add one mechanism at a time, each term with its
-            research status read from the research catalogue. Until then the derivation is in the{' '}
-            <a href={repoFile('docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md')}>v1.0 full mathematical derivation</a>.
-          </p>
-        </Placeholder>
+        <EquationBuilder compact={compact} />
       </section>
 
       {/* B: live simulation of the equation shown in A */}
@@ -60,6 +56,9 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           </button>
           <span className="strip__item" id={`${ids.b}-solver`}>
             Solver: not connected in this build (web phase 3)
+          </span>
+          <span className="strip__item" data-testid="strip-stage">
+            Equation shown: stage {stage}; simulation: stage 1
           </span>
           <span className="strip__item strip__item--muted">Playback: web phase 4</span>
           {compact ? (
@@ -142,9 +141,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           </h2>
         </div>
         <div className="prose">
-          <Placeholder phase="2" title="Each active term" testId="terms-placeholder">
-            <p>What each term of the active equation represents, its assumptions, the units of every symbol and its physical meaning.</p>
-          </Placeholder>
+          <TermExplanations />
           <h3>The case on this page</h3>
           <p>
             The simulation uses the synthetic five-layer verification case,{' '}

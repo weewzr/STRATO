@@ -1,0 +1,16 @@
+{
+  "about": "the retired two-level chip word as a status",
+  "patches": [
+    {
+      "file": "data/research/mechanisms.csv",
+      "find": ",RESEARCHED,",
+      "replace": ",PLANNED,"
+    }
+  ],
+  "fail_rules": [
+    2
+  ],
+  "messages": [
+    "status 'PLANNED' is not one of"
+  ]
+}

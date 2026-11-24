@@ -1,0 +1,16 @@
+{
+  "about": "a missing species row",
+  "patches": [
+    {
+      "file": "data/research/species.csv",
+      "find": "Kr,krypton,Kr-85,kernel,C,Fixture row for the catalogue check.,,\n",
+      "replace": ""
+    }
+  ],
+  "fail_rules": [
+    5
+  ],
+  "messages": [
+    "species 'Kr' is missing"
+  ]
+}

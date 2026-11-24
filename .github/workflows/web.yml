@@ -1,9 +1,10 @@
 name: Web demo
 
 # Web demonstration of STRATO (prompt/TECHNICAL_ARCHITECTURE.md Section 7). ci.yml and docs-pdf.yml
-# are unchanged; this workflow adds the web checks. Web phase 1: generated data check, lint, type
-# check, unit tests, build, content check, browser tests and the build artefact. The wasm wrapper
-# tests and the catalogue check are added by web phases 3 and 2; the Pages deployment by phase 8.
+# are unchanged; this workflow adds the web checks. Web phases 1 and 2: generated data checks, the
+# research catalogue check and its fixture tests, lint, type check, unit tests, build, content check,
+# browser tests and the build artefact. The wasm wrapper tests are added by web phase 3; the Pages
+# deployment by phase 8.
 
 on:
   push:
@@ -12,6 +13,11 @@ on:
       - 'web/**'
       - 'scripts/web/**'
       - 'inputs/**'
+      - 'data/research/**'
+      - 'data/nuclear/decay.csv'
+      - 'docs/research/**'
+      - 'docs/mathematics/**'
+      - 'prompt/PROGRESS.md'
       - 'Cargo.toml'
       - '.github/workflows/web.yml'
   pull_request:
@@ -46,6 +52,15 @@ jobs:
       - name: Generated data equal a fresh regeneration
         working-directory: .
         run: python3 -I -X utf8 scripts/web/generate_data.py case inputs/synthetic/synthetic_five_layer.toml --check
+      - name: Research catalogue equals a fresh regeneration
+        working-directory: .
+        run: python3 -I -X utf8 scripts/web/generate_data.py catalogue --check
+      - name: Research catalogue check (prompt/TECHNICAL_ARCHITECTURE.md Section 5.2)
+        working-directory: .
+        run: python3 -I -X utf8 scripts/web/check_catalogue.py
+      - name: Catalogue check fails on each of its bad fixtures
+        working-directory: .
+        run: python3 -I -X utf8 scripts/web/tests/test_check_catalogue.py
       - name: Install
         run: npm ci
       - name: Lint

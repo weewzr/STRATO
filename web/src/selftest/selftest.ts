@@ -3,6 +3,9 @@
 // document.body.dataset.selftest ('pass' or 'fail'). The self-test compares values only; it computes no physics.
 import { BUILD } from '../build';
 import { DEFAULT_CASE } from '../data/case';
+import { isAvailable } from '../equation/availability';
+import { SWITCH_MECHANISM, type SwitchId } from '../equation/terms';
+import { CATALOGUE, statusOf } from '../research/catalogue';
 import { SECTIONS } from '../route';
 import { useStrato } from '../state/store';
 
@@ -63,9 +66,10 @@ export async function runSelftest(): Promise<void> {
   const hashOk = /^[0-9a-f]{64}$/.test(DEFAULT_CASE.provenance.input_sha256);
   add('case_inputs', sameConfig && hashOk, `baseline equals generated case: ${sameConfig}; input SHA-256 present: ${hashOk}`);
 
-  // 3. Planned mechanisms stay unavailable.
-  const mechs = Object.values(state.mechanisms);
-  add('mechanisms_disabled', mechs.every((m) => !m.available && !m.enabled), 'decay, source and arrhenius unavailable before web phase 6');
+  // 3. Mechanisms without solver support stay unavailable (isAvailable() with the reported capabilities).
+  const mechEntries = Object.entries(state.mechanisms) as [SwitchId, { available: boolean; enabled: boolean }][];
+  const mechOk = mechEntries.every(([id, m]) => m.available === isAvailable(SWITCH_MECHANISM[id], state.capabilities) && (m.available || !m.enabled));
+  add('mechanisms_disabled', mechOk, `capabilities=[${state.capabilities.join(', ')}]; ${mechEntries.map(([id, m]) => `${id}:${m.available ? 'available' : 'unavailable'}`).join(' ')}`);
 
   // 4. Every section renders its heading.
   const startHash = window.location.hash;
@@ -85,6 +89,34 @@ export async function runSelftest(): Promise<void> {
   const tops = blocks.map((b) => b.getBoundingClientRect().top);
   const increasing = tops.every((t, i) => i === 0 || t > (tops[i - 1] ?? Number.NEGATIVE_INFINITY));
   add('explore_block_order', letters === 'ABCDE' && increasing, `order=${letters} tops_increasing=${increasing}`);
+
+  // 4c. Every research status shown equals the generated catalogue (value comparison only).
+  const chips = Array.from(document.querySelectorAll<HTMLElement>('[data-status-for]'));
+  const wrong = chips.filter((c) => c.dataset.status !== statusOf(CATALOGUE, c.dataset.statusFor ?? ''));
+  add(
+    'research_statuses',
+    chips.length > 0 && wrong.length === 0,
+    wrong.length === 0 ? `${chips.length} status chips equal the catalogue` : `differ: ${wrong.map((c) => c.dataset.statusFor).join(', ')}`,
+  );
+
+  // 4d. No mechanism switch is active outside isAvailable() (capabilities and catalogue status).
+  const caps = useStrato.getState().capabilities;
+  const switches = Array.from(document.querySelectorAll<HTMLElement>('[role="switch"]'));
+  const active = switches.filter((s) => {
+    const id = (s.dataset.testid ?? '').replace(/^mech-/, '') as SwitchId;
+    const allowed = id in SWITCH_MECHANISM && isAvailable(SWITCH_MECHANISM[id], caps);
+    return s.getAttribute('aria-disabled') !== 'true' && !allowed;
+  });
+  add(
+    'no_active_switch',
+    active.length === 0,
+    active.length === 0 ? `${switches.length} switches, none active outside the capabilities [${caps.join(', ')}]` : `active: ${active.map((s) => s.dataset.testid).join(', ')}`,
+  );
+
+  // 4e. KaTeX typeset the governing equation without an error.
+  const katexCount = document.querySelectorAll('[data-section="explore"] .katex').length;
+  const katexErrors = document.querySelectorAll('.katex-error').length;
+  add('katex_renders', katexCount > 0 && katexErrors === 0, `katex elements=${katexCount} errors=${katexErrors}`);
   window.location.hash = startHash || '#/explore';
   await nextFrame();
 

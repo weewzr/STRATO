@@ -1,0 +1,3 @@
+item_id,kind,title,caption,alt_text,material,species,method,conditions,provenance,file,status,mechanism_ids,reference_ids
+fixture_placeholder,placeholder,Fixture placeholder,Fixture row for the catalogue check.,Fixture row.,fixture material,Ag,planned fixture method,planned fixture conditions,,,PENDING,fixture_pending,fixture2025
+fixture_screenshot,screenshot,Fixture screenshot,Fixture row for the catalogue check.,Fixture row.,fixture material,Ag,fixture method,fixture conditions,fixture provenance,docs/research/gallery/fixture-screenshot.png,PENDING,fixture_pending,
