@@ -39,7 +39,7 @@ Sections (tabs or anchored scroll): **Explore** (particle, equation, playback, p
 - 3D cutaway (orbit, zoom, reset view; keyboard rotation with arrow keys) and a 2D cross-section; a switch chooses between them.
 - Layers named kernel, buffer, IPyC, SiC, OPyC, with radii from the active config. A schematic-only mode (no data) is labelled ILLUSTRATIVE.
 - Concentration colour from the current profile at the playback time, cividis by default, linear or log, legend with units and maximum.
-- Layer inspection: selecting a layer highlights it and shows its radii, $D_i$, current inventory share and provenance.
+- Layer inspection: selecting a layer highlights it and shows its radii, $D_i$, current inventory share (the `layer_share` value returned by the Rust wrapper, never computed in the browser) and provenance.
 
 ### 3.4 Playback
 
@@ -55,7 +55,7 @@ $F(t)$ from Code B (finite volume) and Code C (series) on the same axes, with th
 
 ### 3.7 Model comparison graph (toggle: Compare)
 
-- Baseline curve, modified curve and an optional difference curve (modified minus baseline) on a secondary axis.
+- Baseline curve, modified curve and an optional difference curve (modified minus baseline, as returned by the wrapper's `compare_v1`; never subtracted in the browser) on a secondary axis.
 - Before web Phase 6, "modified" means a changed v1.0 parameter set (for example a different SiC diffusivity), both COMPUTED v1.0. After Phase 6 it can include the extended physics (COMPUTED v2.0).
 - Legend states both configurations; a table lists the parameters that differ.
 
@@ -92,3 +92,5 @@ Every number, plot and particle colouring shows one of `COMPUTED v1.0`, `COMPUTE
 ## 6 Credits
 
 The About section credits Theodore's Outram Park project (https://github.com/theodoreOnzGit/outram-park-backend, AGPL-3.0-only) for the interface ideas, and lists any file copied or adapted from it with its commit.
+
+The site neither publishes nor links the `prompt/` folder (owner decision M3), and it does not repeat, quote or extend the README sentence about the internal SNRSI comparison (owner decision M5).

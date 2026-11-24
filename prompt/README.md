@@ -9,7 +9,7 @@ To start a session, give it this instruction: **"Read prompt/MASTER_PROMPT.md an
 | File | What it holds |
 |---|---|
 | `MASTER_PROMPT.md` | Mission, authority order, non-negotiables, start-of-session procedure, phase loop, end-of-session procedure. |
-| `PROGRESS.md` | Current phase, milestones, commits, tests run, blockers, next actions, the owner decisions table D1 to D14 and the session log. Read it second, every time. |
+| `PROGRESS.md` | Current phase, milestones, commits, tests run, blockers, next actions, the owner decisions table D1 to D16, the owner policy decisions and the session log. Read it second, every time. |
 | `SCIENTIFIC_REQUIREMENTS.md` | The model, implemented versus planned physics, the Phase 6 gate, parameter provenance, verification versus validation, result labels, forbidden actions. |
 | `TECHNICAL_ARCHITECTURE.md` | The hybrid architecture (client-side wasm plus precomputed native results), the wasm wrapper API, frontend stack, store, worker protocol, equation term model, performance budget, CI. |
 | `DESIGN_SPECIFICATION.md` | Page structure, every panel and its states, the growing equation explorer, the particle views, the two independently toggleable graphs, design system and accessibility. |
@@ -24,7 +24,11 @@ To start a session, give it this instruction: **"Read prompt/MASTER_PROMPT.md an
 
 ## Owner decisions
 
-Web Phase 6 (decay, source, inventory, Arrhenius, temperature histories) waits for the owner. To unblock it, the owner fills in the "Owner choice" and "Date" columns of the table in `PROGRESS.md` for every row D1 to D14 and pushes the change. The options are explained in `docs/development/phase2_review_package.md` Section 7.
+Web Phase 6 (decay, source, inventory, Arrhenius, temperature histories) is gated on the owner's choices for D1 to D16 in the table in `PROGRESS.md`. The gate is split into Phase 6.1 (decay, source, inventory; D1, D2, D3, D6 and D9 to D16) and Phase 6.2 (temperature-dependent diffusivity; also D4, D5, D7 and D8). The owner recorded all sixteen choices on 2026-11-24. The options are explained in `docs/development/phase2_review_package.md` Section 7.
+
+The same section of `PROGRESS.md` holds the owner policy decisions M1 to M5 (gated fast-forward merge, commit attribution, `prompt/` not published, browser quantities from the Rust wrapper only, the frozen README sentence on the SNRSI comparison).
+
+This folder is an instruction package for development sessions. It is not part of the published website.
 
 ## Quick reference
 
@@ -53,4 +57,4 @@ Web Phase 6 (decay, source, inventory, Arrhenius, temperature histories) waits f
 
 ## Status of this package
 
-Written on 2026-11-10 from the repository at commit `8c44fb7` and from research into the reference repositories. A full line-by-line audit of the repository is Phase 0 of the roadmap; the session doing Phase 0 corrects any fact here that turns out wrong.
+Written on 2026-11-10 from the repository at commit `8c44fb7` and from research into the reference repositories, and committed in `3a4319e`, `bc107b1` and `7fe4421`. Updated on 2026-11-24 from `main` at `e3a558f` with the owner's Stage A decisions (merge policy, D1 to D16, site and attribution rules) and the corrections a Stage A audit found. A full line-by-line audit of the repository is Phase 0 of the roadmap; the session doing Phase 0 corrects any fact here that turns out wrong.

@@ -15,7 +15,7 @@ git config user.name "weewzr"
 git config user.email "288510855+weewzr@users.noreply.github.com"
 ```
 
-No personal email address in any commit. End each commit message with the Claude attribution trailer that the running session is configured to use.
+No personal email address in any commit. Commits are attributed to the owner only (owner decision M2): no `Co-Authored-By` trailer, no "Generated with" line, no session link and no other assistant attribution in commit messages, pull requests or files.
 
 ## 3 Phase milestones
 
@@ -70,6 +70,7 @@ Never use the GitHub merge button or `gh pr merge` (they would create a merge co
 
 - Workflow `.github/workflows/web.yml` builds `web/dist` with `base: '/STRATO/'` and uploads it with `actions/upload-pages-artifact`; a `deploy` job uses `actions/deploy-pages` with `permissions: pages: write, id-token: write`, `concurrency: pages`.
 - Deploy only from `main`, automatically, by `web.yml` after the gated merge of Section 6. A deploy job runs only if the build, self-test and e2e jobs of the same commit pass. The work branch only uploads the build as a CI artefact for review. Deployment needs the Pages source set to GitHub Actions (Settings, Pages, Source: GitHub Actions), an owner setting (blocker B2 until done).
+- The Pages artefact holds the built site and the published documentation only; `prompt/` is never part of it (owner decision M3).
 - Stamp the commit hash into asset URLs (cache busting), as Outram Park and NUS-H2 do.
 - Reproducible build: pinned toolchain and lock files; CI builds twice and compares the outputs apart from the stamp.
 

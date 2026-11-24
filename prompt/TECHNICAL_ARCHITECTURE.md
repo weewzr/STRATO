@@ -60,7 +60,10 @@ Public functions, exported with `wasm-bindgen` (exact names are binding for the 
 #[wasm_bindgen] pub fn validate_config(toml_or_json: &str) -> String; // JSON: {ok, errors[], warnings[]}
 #[wasm_bindgen] pub fn run_v1(request_json: &str) -> String; // JSON RunResponse
 #[wasm_bindgen] pub fn analytical_release(request_json: &str) -> String; // JSON series from Code C
+#[wasm_bindgen] pub fn compare_v1(request_json: &str) -> String; // JSON: baseline run, modified run, difference series
 ```
+
+Owner decision M4 (`prompt/PROGRESS.md`, 2026-11-24): every quantity shown in the browser comes from the Rust solver through this wrapper or from verified precomputed output. The frontend does no scientific arithmetic, including layer inventory shares and difference curves. Hence `run_v1` returns per-layer inventories and shares for every profile, and `compare_v1` returns the difference curve (modified minus baseline on a common time grid). Both are post-processing in Rust that reuses `strato` data (`Mesh::cells[].volume`, `finite_volume::inventory`); they add no new physics. Display-only transforms (colour mapping, log scaling of an axis, unit formatting) stay in TypeScript and are named as such.
 
 Inside `run_v1`:
 
@@ -80,11 +83,15 @@ Inside `run_v1`:
   "times_s": [],
   "release_fraction": [],
   "balance_residual_mol": [],
-  "profiles": [{"t_s": 0.0, "c_mol_per_m3": []}],
+  "profiles": [{"t_s": 0.0, "c_mol_per_m3": [], "inventory_mol": 0.0, "layer_inventory_mol": [], "layer_share": []}],
   "analytical": {"times_s": [], "release_fraction": [], "accuracy_floor": 0.0, "valid_from_s": 0.0},
   "messages": []
 }
 ```
+
+`inventory_mol` is `finite_volume::inventory` of that profile; `layer_inventory_mol[j]` sums `volume * c` over the cells of region `j` in cell order; `layer_share[j]` is `layer_inventory_mol[j] / inventory_mol`. A wrapper test asserts that the layer inventories sum to `inventory_mol` within relative 1e-12.
+
+`compare_v1` takes `{baseline, modified}` (two run requests), runs both and returns `{"schema":1,"status":"ok","label":"COMPUTED v1.0","baseline":RunResponse,"modified":RunResponse,"difference":{"times_s":[],"release_fraction":[]}}`, where the difference is modified minus baseline computed in Rust on the times both runs share (rejected if the time grids differ, never interpolated in the browser).
 
 Errors never panic across the boundary: return `{"schema":1,"status":"rejected","errors":[...]}`. Use `std::panic::catch_unwind` where needed and set a panic hook that reports to the console.
 
@@ -152,7 +159,7 @@ Each term links to its section in `docs/mathematics/` (v1.0.0 Full Derivation fo
 - Radii come from the active config (`regions[].outer_radius_m`). Never hard-code TRISO dimensions.
 - Concentration colour: per-cell value from the selected profile mapped through cividis (default) or viridis, linear or logarithmic scale, with a legend that states units (mol m^-3) and the maximum.
 - 3D: nested spheres with a cutaway wedge; shells drawn as thin translucent surfaces plus a radial texture of cell values on the cut faces.
-- 2D cross-section: a canvas disc with concentric rings per cell; hovering or tabbing to a layer shows name, radii, $D_i$, inventory in the layer and the parameter's provenance.
+- 2D cross-section: a canvas disc with concentric rings per cell; hovering or tabbing to a layer shows name, radii, $D_i$, inventory in the layer (`layer_inventory_mol` and `layer_share` from `RunResponse`, never summed in TypeScript) and the parameter's provenance.
 
 ## 5 Precomputed data (`web/public/data/`)
 

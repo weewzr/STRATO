@@ -75,7 +75,7 @@ After completing each phase:
 - If an open mathematical or experimental question blocks a capability, record it, disable that capability and continue with independent tasks.
 - Do not invent parameters, measurements or validation results.
 - Do not change verified v1.0 code without the full regression suite (`prompt/TESTING_AND_VALIDATION.md`).
-- Web Phase 6 waits for owner decisions D1 to D14 (`prompt/PROGRESS.md`).
+- Web Phase 6 waits for owner decisions D1 to D16 (`prompt/PROGRESS.md`): Phase 6.1 on D1, D2, D3, D6 and D9 to D16, Phase 6.2 also on D4, D5, D7 and D8.
 
 ## 6 Operational boundaries
 

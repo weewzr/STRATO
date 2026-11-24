@@ -5,9 +5,9 @@
 | Check | Command | What it asserts |
 |---|---|---|
 | Unit and integration tests | `cargo test --all-targets` | finite-volume unit tests in `src/numerical/finite_volume.rs`; Code B against Code C in `tests/finite_volume_vs_analytical.rs`; golden regression in `tests/phase1_regression.rs` |
-| Golden regression | part of the above | `tests/golden/v1.0/timeseries.csv`, `final_profile.csv` and the analytical series, relative tolerance 1e-12 |
+| Golden regression | part of the above | `tests/phase1_regression.rs` asserts `tests/golden/v1.0/timeseries.csv`, `final_profile.csv` and the analytical series of `comparison_fv_vs_analytical.csv` (points after 2e4 s), relative tolerance 1e-12. `convergence_study.csv`, `main_run_stdout.txt` and `verify_stdout.txt` are not asserted by any test |
 | Verification example | `cargo run --release --example verify` | prints `FV_VERIFICATION PASS`; every printed claim is asserted |
-| Synthetic run | `cargo run --release` | uses `inputs/synthetic/synthetic_five_layer.toml`; CI compares outputs with `tests/golden/v1.0/` |
+| Synthetic run | `cargo run --release` | uses `inputs/synthetic/synthetic_five_layer.toml` and writes `results/synthetic-five-layer/`. CI runs it and uploads its standard output as an artefact, but does **not** compare the outputs with `tests/golden/v1.0/` (correction of 2026-11-24). The comparison is made by hand as in `docs/development/provenance.md` Section 3: `verify` output identical to the golden file apart from the `VERIFY_RUNTIME_S` line; main-run standard output identical after normalising path separators; the four CSV files byte for byte. Automating it (in `web.yml`, since `ci.yml` stays unchanged per `prompt/TECHNICAL_ARCHITECTURE.md` Section 7) is open work |
 | Lint and docs | `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo doc` with `-D warnings` | as in `.github/workflows/ci.yml` |
 | Derivation checks | `python -I -X utf8 scripts/derivation_checks/<script>.py` (project venv) | independent Python checks of the derivations; evidence, not product code |
 
@@ -32,9 +32,9 @@ Keep tolerances as named constants in one file per language (`crates/strato-wasm
 | 1 | Vitest store and component tests; Playwright at 375x812, 768x1024, 1280x800, 1920x1080; keyboard-only navigation; `prefers-reduced-motion`; no console errors; no failed network requests |
 | 2 | term assembly for all 8 toggle combinations; documentation anchors resolve; KaTeX renders without error; no numbers shown |
 | 3 | wrapper equals `finite_volume::run` exactly and golden files at 1e-12; invalid and placeholder inputs rejected; no panic crosses into JavaScript; wasm export and size check; browser parity against `web/public/data/golden_v1.json`; worker handshake, timeout and recovery; precompute regeneration identical |
-| 4 | colour map on a known profile; layer inventory shares sum to the total; WebGL fallback; playback frame rate measured |
-| 5 | difference curve equals modified minus baseline; downloads round-trip; comparison and validation toggles independent |
-| 6 | all cases of Section 5; full v1.0 suite unchanged |
+| 4 | colour map on a known profile; wrapper test that the layer inventories of `run_v1` sum to the total; e2e check that the displayed shares equal the wrapper's `layer_share` values (no sums in TypeScript); WebGL fallback; playback frame rate measured |
+| 5 | wrapper test that the `compare_v1` difference equals modified minus baseline; e2e check that the plotted difference equals the wrapper's values (no subtraction in TypeScript); downloads round-trip; comparison and validation toggles independent |
+| 6 | all cases of Section 5; full v1.0 suite unchanged (6.1 before 6.2) |
 | 7 | plotted measurements equal the CSV; metrics recomputed independently in a test |
 | 8 | axe-core accessibility audit via Playwright; performance budget; reproducible build; link check |
 

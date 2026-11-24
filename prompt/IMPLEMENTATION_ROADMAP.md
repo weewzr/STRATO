@@ -5,7 +5,7 @@ All work happens on `feat/strato-interactive-web-demo`. Each phase ends with tes
 ```
 P0 -> P1 -> P2 ----------------------\
         \-> P3 -> P4 -> P5 -----------+-> P8
-                    \-> P6 (gated: D1 to D14) -> P7 (predictions part)
+                    \-> P6 (gated: D1 to D16; 6.1 then 6.2) -> P7 (predictions part)
                     P7 (data part, no model) can start after P5
 ```
 
@@ -75,7 +75,7 @@ P0 -> P1 -> P2 ----------------------\
 - **Dependencies**: Phase 3; `three`, `@react-three/fiber`.
 - **Acceptance**: radii from config; colours equal the colour map applied to solver values (unit test on a known profile); playback at 30 fps or more measured in e2e; WebGL failure falls back to 2D; keyboard rotation and layer selection work.
 - **Tests**: colour-map unit tests; e2e screenshots at four viewports; frame-rate measurement; reduced motion.
-- **Scientific checks**: displayed layer inventory shares sum to the total inventory from the solver within 1e-12 relative.
+- **Scientific checks**: the displayed layer inventory shares are the `layer_share` values returned by `run_v1` (owner decision M4: computed in the Rust wrapper, never in TypeScript); a wrapper test asserts that the layer inventories sum to the solver's total inventory within 1e-12 relative, and an e2e test asserts that the displayed values equal the wrapper's values.
 - **Commit**: `feat(web): phase 4 - triso particle visualisation`.
 - **Proceed when**: all pass.
 
@@ -84,17 +84,20 @@ P0 -> P1 -> P2 ----------------------\
 - **Objectives**: radial profile, release curves (Code B and Code C), model comparison with optional difference curve, verification and convergence panel, provenance table, downloads.
 - **Files**: `web/src/plots/**`, `web/src/panels/Verification.tsx`, `Provenance.tsx`, `Downloads.tsx`, tests.
 - **Dependencies**: Phase 3; `plotly.js` partial bundle.
-- **Acceptance**: comparison and validation toggles are independent; difference curve equals modified minus baseline point by point; downloads contain metadata headers and reproduce the plotted values; every plot shows its label.
-- **Tests**: unit tests for difference and download serialisation; e2e toggles and downloads.
+- **Acceptance**: comparison and validation toggles are independent; the difference curve is the `difference` series returned by `compare_v1` (owner decision M4: computed in Rust, never subtracted in TypeScript) and a wrapper test shows that it equals modified minus baseline point by point; downloads contain metadata headers and reproduce the plotted values; every plot shows its label.
+- **Tests**: wrapper test for the difference series; unit tests for download serialisation; e2e toggles and downloads, and an e2e check that the plotted difference equals the wrapper's values.
 - **Scientific checks**: convergence plot shows observed orders from `convergence_study.json` (spatial about 2, temporal about 1) with the explanation already in `docs/mathematics/v1.0.0/` for the low printed temporal orders.
 - **Commit**: `feat(web): phase 5 - scientific comparison graphs`.
 - **Proceed when**: all pass.
 
 ## Phase 6: Phase 2 physics (gated)
 
-- **Gate**: every row D1 to D14 in `prompt/PROGRESS.md` "Owner decisions" has an owner choice. If any is PENDING, skip to the independent parts of Phases 7 and 8 and record the skip.
-- **Objectives**: implement decay, source, inventory accounting, Arrhenius diffusivity and temperature histories in Rust following `docs/mathematics/STRATO_Phase2_Pseudocode.md` and the owner's decisions; expose them in the wrapper; enable the toggles.
-- **Files**: new Rust modules beside the verified ones (for example `src/physics/decay.rs`, `src/physics/source.rs`, `src/physics/arrhenius.rs`, `src/physics/temperature.rs`), new tests, wrapper updates, docs updates (`docs/development/v1_to_v2_changes.md`, CHANGELOG).
+- **Gate**: every row D1 to D16 in `prompt/PROGRESS.md` "Owner decisions" has an owner choice. The gate is split (owner decision of 2026-11-24):
+  - **Phase 6.1** (scientific Phase 2.1: decay, source, inventory accounting at constant diffusivity) needs D1, D2, D3, D6, D9, D10, D11, D12, D13, D14, D15 and D16.
+  - **Phase 6.2** (scientific Phase 2.2: temperature-dependent diffusivity and temperature histories) also needs D4, D5, D7 and D8, and starts only after Phase 6.1 has passed its acceptance.
+  If a needed row is PENDING, skip that sub-phase, go to the independent parts of Phases 7 and 8 and record the skip. All sixteen rows were filled on 2026-11-24; open sub-items recorded beside a row (for example the D5 history format and reference temperature) must be settled by the owner before the code that needs them is written.
+- **Objectives**: implement decay, source, inventory accounting (6.1), then Arrhenius diffusivity and temperature histories (6.2) in Rust following `docs/mathematics/STRATO_Phase2_Pseudocode.md` and the owner's decisions; expose them in the wrapper; enable the toggles only for what is complete, tested and reviewed.
+- **Files**: new Rust modules beside the verified ones (for example `src/physics/decay.rs`, `src/physics/source.rs`, `src/physics/arrhenius.rs`, `src/physics/temperature.rs`), new tests, wrapper updates, docs updates (`docs/development/v1_to_v2_changes.md`, CHANGELOG). Owner decisions D7 (read-only accessors to the layer states of `src/analytical/sturm_liouville.rs`) and D9 (region count 1 to 5 in `Config::validate`) need small changes inside `src/`; this phase allows exactly those, with the full v1.0 regression suite passing before and after and the change listed in `docs/development/v1_to_v2_changes.md`.
 - **Dependencies**: Phase 3; owner decisions.
 - **Acceptance**: with decay and source off and constant temperature, results are bit-identical to v1.0 (cases V1, VT16, VI4 of the pseudocode); inventory closure (P21.42) holds to the documented tolerance; positivity holds; Booth single-sphere and CRP-6 cases 1a and 1b match their reference values; all v1.0 tests still pass.
 - **Tests**: `cargo test --all-targets` plus the new Phase 2 tests; native/wasm parity on Phase 2 cases.
@@ -115,6 +118,7 @@ P0 -> P1 -> P2 ----------------------\
 
 - **Objectives**: responsive and accessibility review, performance tuning, documentation (README section, `web/README.md`), Pages workflow, final PR.
 - **Files**: `.github/workflows/web.yml` (Pages job), `README.md` (web demo section), `web/README.md`, `CHANGELOG.md`.
-- **Acceptance**: all e2e checks pass; performance budget of `prompt/TECHNICAL_ARCHITECTURE.md` Section 6 measured and met or recorded; `npm audit` reviewed; build is reproducible (two clean builds give identical assets apart from the stamp).
+- **Site content** (owner decisions M3 and M5): the `prompt/` folder is not published on the site (excluded from the Pages artefact, no link to it from the site); the README sentence about the internal SNRSI comparison is not repeated, quoted or extended anywhere on the site.
+- **Acceptance**: all e2e checks pass; a link and content check shows no `prompt/` page and no SNRSI comparison text in the built site; performance budget of `prompt/TECHNICAL_ARCHITECTURE.md` Section 6 measured and met or recorded; `npm audit` reviewed; build is reproducible (two clean builds give identical assets apart from the stamp).
 - **Commit**: `feat(web): phase 8 - deployment and polish`.
 - **Finish**: open a pull request into `main`. When all mandatory tests, the independent verification and every acceptance criterion pass, the coordinator merges by the gated procedure of `prompt/COMMIT_AND_DEPLOYMENT.md` Section 6 (merge `main` into the work branch with a normal commit if needed, re-run CI, fast-forward push to `main`); `web.yml` then deploys to Pages, which needs the Pages source set to GitHub Actions (owner setting).
