@@ -40,7 +40,7 @@ Update this file at the end of every phase and every session. The next session r
 | Id | Blocker | Needed from |
 |---|---|---|
 | B1 | Owner decisions D1 to D14 pending; web Phase 6 and the prediction part of Phase 7 cannot start | owner |
-| B2 | GitHub Pages must be enabled (Settings, Pages, Source: GitHub Actions) and deployment needs a merge into `main` | owner |
+| B2 | The Pages source must be switched from "Deploy from a branch" to "GitHub Actions" (Settings, Pages, Source). Merging into `main` is done by the gated procedure of `prompt/COMMIT_AND_DEPLOYMENT.md` Section 6 | owner |
 | B3 | Push access from the collaborator's environment to `weewzr/STRATO` must be confirmed (collaborator access or a fine-grained token chosen by the owner) | owner and collaborator |
 | B4 | Open scientific items from the review package: CRP-6 gas constant and decay treatment; data gaps O1, O7, O8, O9; no stiff-regime staircase proof | owner, later phases |
 
@@ -73,6 +73,14 @@ Only the repository owner edits the "Owner choice" and "Date" columns. The agent
 | D12 | Step limits | hard caps or warnings | owner to choose | PENDING | |
 | D13 | Modal block R1 scope | kernel-uniform source and start profile only | kernel-uniform only, general projection FUTURE | PENDING | |
 | D14 | Step planner | merged planner of pseudocode block F | accept | PENDING | |
+
+### Owner policy decisions
+
+These rank first in the authority order of `prompt/MASTER_PROMPT.md`, above every other file in `prompt/`. They were recorded on the owner's instruction.
+
+| Id | Decision | Replaces | Source | Date |
+|---|---|---|---|---|
+| M1 | Merge policy. After all mandatory tests, the independent verification and every acceptance criterion pass, the coordinator merges `main` into the work branch with a normal commit if needed, re-runs CI, and then fast-forward pushes the work branch to `main` (`prompt/COMMIT_AND_DEPLOYMENT.md` Section 6). Never the GitHub merge button or `gh pr merge`, never force, never a history rewrite. Every scientific safeguard and every other rule of the package stays as it is. | every earlier statement that forbids merging into `main` or requires the final pull request to stay unmerged, including the verbatim records `prompt/ORIGINAL_REQUEST.md` ("Do not merge into `main` without explicit authorisation"; this row is that authorisation) and `prompt/RAYSTORAGE_REQUEST.md` ("Do not force-push or merge into main"; the force-push ban stands) | owner, Stage A checkpoint | 2026-11-24 |
 
 ## Pinned external references
 

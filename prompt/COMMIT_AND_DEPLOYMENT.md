@@ -2,7 +2,7 @@
 
 ## 1 Branches
 
-- `main`: protected by convention; only the owner merges into it.
+- `main`: protected by convention; it changes only by the owner or by the coordinator's gated fast-forward from the work branch (Section 6). Never force-pushed, never rewritten.
 - `feat/strato-interactive-web-demo`: the work branch, created from the latest `main`.
 - Optional short-lived branches `feat/web-<topic>` cut from the work branch for subagents, merged locally back into the work branch by the coordinator.
 
@@ -46,14 +46,30 @@ Name commits by the actual scope. Partial work uses an honest message (for examp
 
 `git push origin feat/strato-interactive-web-demo`. No force-push, no history rewrite, no branch deletion. If push fails for lack of access, record a blocker and keep committing locally.
 
-## 6 Pull request
+## 6 Pull request and gated merge
 
-When all achievable phases are done, open one PR from the work branch into `main` (`gh pr create`) with: phases completed, test and verification evidence, performance numbers, open blockers, owner decisions still pending. Never merge it (`gh pr merge` and the web merge button would stamp the account email on the merge commit). The owner merges locally.
+When all achievable phases are done, open one PR from the work branch into `main` (`gh pr create`) with: phases completed, test and verification evidence, performance numbers, open blockers, owner decisions still pending.
+
+Owner decision of 2026-11-24 (`prompt/PROGRESS.md`, "Owner decisions", row M1): the coordinator merges the work branch into `main` when, and only when, all of these hold:
+
+- all mandatory tests pass: the v1.0 suite of `prompt/TESTING_AND_VALIDATION.md` Section 1 (`FV_VERIFICATION PASS`), the tests of every completed phase, wrapper parity, web tests, e2e and the browser self-test, with CI green on the work-branch head;
+- the independent verification has been carried out and recorded;
+- every acceptance criterion of the completed phases is recorded as passed in `prompt/PROGRESS.md`;
+- `git diff v1.0.1 -- src tests examples inputs` is empty, unless a phase explicitly allowed a change with the full regression suite green before and after;
+- no Phase 2 toggle is enabled without a `COMPUTED v2.0` implementation that has passed its tests and review.
+
+Merge method:
+
+1. If `main` has moved, merge `main` into the work branch with a normal merge commit under the repository identity, and re-run CI on the result.
+2. Fast-forward push the work branch to `main`: `git push origin feat/strato-interactive-web-demo:main`. This creates no new commit on `main` and rewrites nothing.
+3. If the push is refused as non-fast-forward, stop, record a blocker and repeat from step 1; never add `--force`.
+
+Never use the GitHub merge button or `gh pr merge` (they would create a merge commit under the account address). No force-push, no history rewrite, no branch deletion. If any condition fails, nothing is merged and the reason is recorded in `prompt/PROGRESS.md`.
 
 ## 7 GitHub Pages
 
 - Workflow `.github/workflows/web.yml` builds `web/dist` with `base: '/STRATO/'` and uploads it with `actions/upload-pages-artifact`; a `deploy` job uses `actions/deploy-pages` with `permissions: pages: write, id-token: write`, `concurrency: pages`.
-- Deploy only from `main`. Until the owner merges and enables Pages (Settings, Pages, Source: GitHub Actions), the work branch only uploads the build as a CI artefact for review.
+- Deploy only from `main`, automatically, by `web.yml` after the gated merge of Section 6. A deploy job runs only if the build, self-test and e2e jobs of the same commit pass. The work branch only uploads the build as a CI artefact for review. Deployment needs the Pages source set to GitHub Actions (Settings, Pages, Source: GitHub Actions), an owner setting (blocker B2 until done).
 - Stamp the commit hash into asset URLs (cache busting), as Outram Park and NUS-H2 do.
 - Reproducible build: pinned toolchain and lock files; CI builds twice and compares the outputs apart from the stamp.
 

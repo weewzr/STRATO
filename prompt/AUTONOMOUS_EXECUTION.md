@@ -16,7 +16,8 @@ Within the STRATO repository and its development environment, the owner authoris
 - push `feat/strato-interactive-web-demo` (and short-lived branches cut from it) to the STRATO remote;
 - open pull requests into `main`;
 - run independent development subagents;
-- continue to the next phase once all acceptance criteria pass.
+- continue to the next phase once all acceptance criteria pass;
+- bring the work branch into `main` (the coordinator only), and so let the Pages workflow deploy it, only by the gated procedure of `prompt/COMMIT_AND_DEPLOYMENT.md` Section 6.
 
 **Limits.** This statement expresses the owner's intent. It does not override tool permissions, operating-system security, GitHub access controls or Claude Code approval requirements. Use only the permissions the environment actually grants. Never try to bypass an approval prompt, sandbox, authentication step or security control. Never use unrestricted shell permissions only to avoid prompts.
 
@@ -38,12 +39,14 @@ Do not ask for approval after each routine edit, test, build or commit. The acco
       "Bash(gh pr create:*)", "Bash(gh run list:*)", "Bash(gh run view:*)"
     ],
     "deny": [
-      "Bash(git push --force:*)", "Bash(git push -f:*)", "Bash(git push origin main:*)",
+      "Bash(git push --force:*)", "Bash(git push -f:*)", "Bash(git push --force-with-lease:*)", "Bash(git push origin main:*)",
       "Bash(git reset --hard:*)", "Bash(git branch -D:*)", "Bash(gh pr merge:*)", "Bash(gh repo delete:*)"
     ]
   }
 }
 ```
+
+The deny list keeps `git push origin main` (pushing a local `main`) and `gh pr merge` blocked. The only route into `main` is the fast-forward push of the work branch in `prompt/COMMIT_AND_DEPLOYMENT.md` Section 6 (`git push origin feat/strato-interactive-web-demo:main`), which the coordinator runs after the gate passes; it is not on the allow list, so it needs an explicit approval at that moment.
 
 If an action still needs an approval that has not been granted, do not work around it. Record it in `prompt/PROGRESS.md` under "Known blockers" and continue with independent work.
 
@@ -63,7 +66,7 @@ After completing each phase:
 ## 4 Git safety
 
 - Work only on `feat/strato-interactive-web-demo` (and short-lived feature branches merged locally into it).
-- No merge into `main`, no force-push, no history rewrite, no branch deletion, no `gh pr merge` and no web merge button. Merging into `main` is the owner's action.
+- Changes reach `main` only by the gated procedure in `prompt/COMMIT_AND_DEPLOYMENT.md` Section 6: after all mandatory tests, the independent verification and every acceptance criterion pass, the coordinator merges `main` into the work branch with a normal commit if needed, re-runs CI, and then fast-forward pushes the work branch to `main`. Never the GitHub merge button or `gh pr merge`, no force-push, no history rewrite, no branch deletion.
 - Do not overwrite unrelated work. Do not disable branch protection or security checks.
 
 ## 5 Scientific safety

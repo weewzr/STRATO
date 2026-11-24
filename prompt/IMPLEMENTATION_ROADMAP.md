@@ -117,4 +117,4 @@ P0 -> P1 -> P2 ----------------------\
 - **Files**: `.github/workflows/web.yml` (Pages job), `README.md` (web demo section), `web/README.md`, `CHANGELOG.md`.
 - **Acceptance**: all e2e checks pass; performance budget of `prompt/TECHNICAL_ARCHITECTURE.md` Section 6 measured and met or recorded; `npm audit` reviewed; build is reproducible (two clean builds give identical assets apart from the stamp).
 - **Commit**: `feat(web): phase 8 - deployment and polish`.
-- **Finish**: open a pull request into `main`; do not merge it. Pages deployment from `main` needs the owner to merge and to enable Pages.
+- **Finish**: open a pull request into `main`. When all mandatory tests, the independent verification and every acceptance criterion pass, the coordinator merges by the gated procedure of `prompt/COMMIT_AND_DEPLOYMENT.md` Section 6 (merge `main` into the work branch with a normal commit if needed, re-run CI, fast-forward push to `main`); `web.yml` then deploys to Pages, which needs the Pages source set to GitHub Actions (owner setting).
