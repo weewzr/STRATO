@@ -209,6 +209,51 @@ for (const colorScheme of ['light', 'dark'] as const) {
   }
 }
 
+/** Pairs of an equation number and an equation glyph run that overlap inside block A's equation box. */
+async function tagOverlaps(page: Page): Promise<string[]> {
+  return page.getByTestId('equation').evaluate((box) => {
+    const hits: string[] = [];
+    if (box.querySelectorAll('.katex-tag').length === 0) hits.push('no katex-tag found: the selector no longer matches KaTeX');
+    for (const html of Array.from(box.querySelectorAll('.katex-display > .katex > .katex-html'))) {
+      // KaTeX 0.19 names the parts katex-tag and katex-base.
+      const tag = html.querySelector(':scope > .katex-tag');
+      if (!tag) continue;
+      const t = tag.getBoundingClientRect();
+      const bases = Array.from(html.querySelectorAll(':scope > .katex-base'));
+      if (bases.length === 0) hits.push('no katex-base found: the selector no longer matches KaTeX');
+      for (const base of bases) {
+        const b = base.getBoundingClientRect();
+        const overlapX = Math.min(t.right, b.right) - Math.max(t.left, b.left);
+        const overlapY = Math.min(t.bottom, b.bottom) - Math.max(t.top, b.top);
+        if (overlapX > 0.5 && overlapY > 0.5) hits.push(`${tag.textContent ?? ''} over ${(base.textContent ?? '').slice(0, 24)}`);
+      }
+    }
+    return hits;
+  });
+}
+
+for (const vp of [
+  { width: 390, height: 844, isMobile: true, hasTouch: true },
+  { width: 768, height: 1024, isMobile: false, hasTouch: false },
+  { width: 1440, height: 900, isMobile: false, hasTouch: false },
+]) {
+  test.describe(`equation numbers at ${vp.width} px`, () => {
+    test.use({ viewport: { width: vp.width, height: vp.height }, isMobile: vp.isMobile, hasTouch: vp.hasTouch });
+
+    test('no equation number covers the equation at any stage', async ({ page, problems }) => {
+      void problems;
+      await gotoSection(page, 'explore');
+      await page.evaluate(() => document.fonts.ready);
+      for (const s of STAGES) {
+        if (vp.width < 768) await page.getByTestId('stage-select').selectOption(String(s));
+        else await pickStage(page, s);
+        await expect(page.getByTestId('equation-builder')).toHaveAttribute('data-stage', String(s));
+        expect(await tagOverlaps(page), `stage ${s}`).toEqual([]);
+      }
+    });
+  });
+}
+
 test.describe('builder on a 390 px phone (device emulation)', () => {
   test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3 });
 

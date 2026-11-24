@@ -1311,6 +1311,17 @@ select.field__input {
   min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
+  container: eqbox / inline-size;
+}
+/* KaTeX sets the equation number at the right edge with absolute positioning. In a narrow box a
+   long equation runs under it, so there the number moves to its own line, right-aligned, under the
+   equation (phone and tablet widths, and any narrow column). */
+@container eqbox (max-width: 36rem) {
+  .katex-display > .katex > .katex-html > .katex-tag {
+    position: static;
+    display: block;
+    text-align: right;
+  }
 }
 .eq-box .katex-display {
   margin: var(--space-2) 0;
@@ -1324,6 +1335,11 @@ select.field__input {
   border: 1px solid var(--border);
   border-left: 3px solid var(--accent);
   border-radius: var(--radius-sm);
+}
+@media (max-width: 767.98px) {
+  .eq-box--main {
+    padding: var(--space-1) var(--space-2);
+  }
 }
 .eq-box--main .katex {
   font-size: 1.25em;
@@ -1353,6 +1369,16 @@ select.field__input {
 }
 .eq-box--main .eq-system .katex {
   font-size: 1.15em;
+}
+/* On a phone the main equation is set a little smaller so that the longest stage fits the width;
+   anything longer still scrolls inside its own box. */
+@container eqbox (max-width: 26rem) {
+  .eq-box--main .katex {
+    font-size: 1em;
+  }
+  .eq-box--main .eq-system .katex {
+    font-size: 0.92em;
+  }
 }
 .eq-where {
   margin: 0;
@@ -1387,6 +1413,7 @@ select.field__input {
 .eq-new--lhs,
 .eq-new--diffusion {
   padding: 0;
+  animation: none;
 }
 @keyframes eq-fade {
   from {
@@ -1444,6 +1471,9 @@ select.field__input {
 }
 .eq-term-row.is-new .eq-term-btn {
   border-left-color: var(--accent);
+}
+.nowrap {
+  white-space: nowrap;
 }
 .eq-term-btn__sym {
   flex: 0 0 4.75rem;

@@ -32,7 +32,8 @@ const SYMBOL: Record<TermId, string> = {
   source: 'S(r,t)',
   decay: String.raw`\lambda c`,
   diffusion_T: 'D_i(T(t))',
-  arrhenius_layers: String.raw`D_{0,i,m},\ Q_{i,m}`,
+  // Two symbols, stacked so that both fit the symbol column.
+  arrhenius_layers: String.raw`\begin{gathered}D_{0,i,m}\\ Q_{i,m}\end{gathered}`,
   partition: '',
 };
 
@@ -309,8 +310,11 @@ function PreviewBanner({ stage, solved, catalogue }: { stage: Stage; solved: Sta
         </strong>{' '}
         {mech && status ? (
           <>
-            Not implemented in the solver, status <StatusChip status={status} mechanism={mech} compact />; selecting it changes no input
-            and no result.
+            Not implemented in the solver, status{' '}
+            <span className="nowrap">
+              <StatusChip status={status} mechanism={mech} compact />;
+            </span>{' '}
+            selecting it changes no input and no result.
           </>
         ) : (
           <>
@@ -444,7 +448,7 @@ export function EquationBuilder({ compact }: { compact: boolean }) {
             <strong className="eq-where__stage">
               Stage <span className="stage-num">{stage}</span>, {def.name.toLowerCase()}.
             </strong>{' '}
-            {def.summary} In each layer <Tex latex={DOMAIN.latex} />; equation <Ref>({asm.tag})</Ref>
+            {def.summary} In each layer <Tex latex={DOMAIN.latex} className="nowrap" />; equation <Ref>({asm.tag})</Ref>
             {asm.reductions.length > 0 ? (
               <>
                 {' '}
