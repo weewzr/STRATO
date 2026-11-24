@@ -95,7 +95,7 @@ Measured on the 16:38 production build (files in `web/dist/assets`, gzip level 9
 | CSS | 21,021 | 4,870 |
 | Fonts (7 `.woff2` files, plus `.woff` fallbacks) | 149,160 for the `.woff2` files | not compressed further |
 
-The JavaScript is well inside the 1.5 MB gzip budget of `prompt/TECHNICAL_ARCHITECTURE.md` Section 6. The budget will be decided by what Phases 2 to 5 add: KaTeX about 76 kB gzip, three.js about 89 kB gzip and the Plotly cartesian bundle about 503 kB gzip (measured in `docs/development/visualisation_library_comparison.md`), so Plotly and three.js should be loaded lazily. No timing was measured (no solver yet).
+The JavaScript is well inside the 1.5 MB gzip budget of `prompt/TECHNICAL_ARCHITECTURE.md` Section 6. The budget will be decided by what Phases 2 to 5 add: KaTeX about 76 kB gzip, three.js about 89 kB gzip and the selected Plotly basic partial bundle about 400 kB gzip, or the cartesian bundle (about 503 kB gzip) as the fallback if Phase 5 finds the basic bundle lacks error bars or log axes (all measured in `docs/development/visualisation_library_comparison.md`), so Plotly and three.js should be loaded lazily. No timing was measured (no solver yet).
 
 ### 4.5 Mobile responsiveness and accessibility
 

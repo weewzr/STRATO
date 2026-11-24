@@ -57,7 +57,7 @@ Owner decision of 2026-11-24 (`prompt/PROGRESS.md`, "Owner decisions", row M1): 
 - the independent verification has been carried out and recorded;
 - every acceptance criterion of the completed phases is recorded as passed in `prompt/PROGRESS.md`;
 - `git diff v1.0.1 -- src tests examples inputs` is empty, unless a phase explicitly allowed a change with the full regression suite green before and after;
-- no Phase 2 toggle is enabled without a `COMPUTED v2.0` implementation that has passed its tests and review.
+- no mechanism switch on the demo page is enabled without a `COMPUTED v2.0` implementation that has passed its tests and review and a research status of VERIFIED (`prompt/DESIGN_SPECIFICATION.md` Section 5).
 
 Merge method:
 

@@ -103,7 +103,7 @@ The gate is split. Phase 6.1 (scientific Phase 2.1: decay, source and inventory 
 | D15 | Integrator (added 2026-11-13) | Backward Euler only for v2.0; exponential integrator revisited later |
 | D16 | Proposed step changes of pseudocode Section 9.5 (added 2026-11-13) | adopt only the F3 to F5 diffusion-step rule and the R2.4 step-3 correction; defer the rest |
 
-While any row needed by a sub-phase is PENDING: Phase 6 code is not written, the Phase 2 toggles stay disabled with the text "Planned: awaiting reviewed implementation", and the roadmap continues with independent work.
+While any row needed by a sub-phase is PENDING: Phase 6 code is not written, the Phase 6 mechanism switches on the demo page stay disabled with the text "Not available: status STATUS; awaiting reviewed implementation (see the Phase 2 review package)", where STATUS is one of the five research-status words (see `DESIGN_SPECIFICATION.md` Section 5), and the roadmap continues with independent work.
 
 ## 5 Parameters and provenance
 

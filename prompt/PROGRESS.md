@@ -245,7 +245,9 @@ Status of every mechanism on 2026-11-24, assigned from the repository:
 
 Generation, decay and temperature dependence move to IMPLEMENTED and then VERIFIED only when web Phases 6.1 and 6.2 pass their tests and independent review.
 
-Questions for the owner from the brief (none blocks the work): (1) whether genuine Materials Studio screenshots or structure files exist, and with what method and conditions; (2) whether FLiBe or cover-gas material for STRATO exists outside the repository; (3) whether the live simulation may stay on the verified synthetic case until temperature-dependent diffusivity is implemented, with AGR-1 shown as geometry (rule E2 applies until then).
+Questions for the owner from the brief, answered on 2026-11-24: (1) genuine Materials Studio screenshots or structure files: none exist yet; (2) FLiBe or cover-gas material for STRATO: none exists. Rule now in force: the Materials Studio gallery placeholders, the Brick 9 catalogue entry and the roadmap page state in words that both will be built in future phases; their status stays PENDING, and no image, structure or FLiBe or cover-gas result is shown until the owner supplies genuine material with its method and conditions (rules E4 and E5 unchanged).
+
+Still open (does not block the work): (3) whether the live simulation may stay on the verified synthetic case until temperature-dependent diffusivity is implemented, with AGR-1 shown as geometry (rule E2 applies until then).
 
 ## Pinned external references
 

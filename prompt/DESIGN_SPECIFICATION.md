@@ -176,7 +176,7 @@ Each item has: a scientific caption; an accessible explanation (also the image's
 Rules (rule E5):
 
 - Only genuine BIOVIA Materials Studio screenshots supplied by the owner with method and conditions are shown as screenshots. No imitation screenshot, rendering or mock-up is made.
-- Where a calculation has not been performed, the item is a Pending placeholder: a plain panel with the word PENDING and a description of the planned calculation, no picture.
+- Where a calculation has not been performed, the item is a Pending placeholder: a plain panel with the word PENDING and a description of the planned calculation, no picture. The owner confirmed on 2026-11-24 that no Materials Studio screenshots or structure files exist yet; the gallery says in words that these calculations will be built in future phases.
 - Actual screenshots and interactive reconstructions (for example a later atomistic viewer of an exported structure, rule E6) are labelled differently and never mixed in one figure.
 - An ideal 3C-SiC crystal is never presented as representing the full polycrystalline SiC coating; published microstructural evidence guides SiC illustrations where available.
 - Atomistic migration barriers are never presented as, or converted on the page into, a macroscopic effective diffusivity.
@@ -190,7 +190,7 @@ A page that shows the brick-by-brick development sequence of the brief (bricks 1
 - AGR-1 UCO TRISO is the primary reference fuel. Its five layers (fuel kernel, buffer, inner pyrolytic carbon, silicon carbide, outer pyrolytic carbon) are drawn from the registered geometry in `data/geometry/geometry.csv`: by default the AGR-1 Baseline characterisation means (design `AGR1-B-M16`, rows G-01 to G-05, Morris et al. (2016) Table 2, status verified); other registered AGR-1 sets are selectable and labelled with their own row ids.
 - Material properties are shown only from registered rows. The registered kernel diffusivities are for UO2; any AGR-1 use of them is labelled with that assumption (rule E3).
 - AGR-2 is named as a future independent comparison and AGR-3/4 as a future failed-particle transport study; neither is shown as data before rows exist in `data/`.
-- The AGR experiments were made under gas-cooled conditions. Any later FLiBe or cover-gas work is a separate, downstream topic (Brick 9, PENDING, described only as planned, rule E4) and is never shown on the same axes or in the same table as AGR results without saying so.
+- The AGR experiments were made under gas-cooled conditions. Any later FLiBe or cover-gas work is a separate, downstream topic (Brick 9, PENDING, described only as planned, rule E4; the owner confirmed on 2026-11-24 that no FLiBe or cover-gas material exists yet, and the Brick 9 entry and the brick roadmap page say that this work will be built in future phases) and is never shown on the same axes or in the same table as AGR results without saying so.
 
 ## 8 Other sections
 
