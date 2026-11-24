@@ -1,6 +1,6 @@
 # Materials Studio gallery: planned atomistic calculations
 
-This gallery is meant to show genuine BIOVIA Materials Studio screenshots of atomistic structures relevant to silver and palladium in the AGR-1 SiC coating. **No such calculation has been performed and no image exists yet.** Every item below is a placeholder that describes a planned calculation; each is planned for a future phase of the project. No image is generated, drawn or imitated in its place.
+This gallery is meant to show genuine BIOVIA Materials Studio screenshots of atomistic structures relevant to silver, palladium, caesium, strontium, europium and the fission gases in the AGR-1 SiC coating. **No such calculation has been performed and no image exists yet.** Every item below is a placeholder that describes a planned calculation; each is planned for a future phase of the project. No image is generated, drawn or imitated in its place.
 
 Rules that apply to every item when it is done:
 
@@ -205,3 +205,45 @@ The authoritative list, with the same wording, is `data/research/gallery.csv`; t
 - **Status:** PENDING
 - **Related catalogue entries:** [pd_assisted_degradation](pd_assisted_degradation.md)
 - **Sources for the planned subject:** [ref:simon2022] [ref:demkowicz2016]
+
+## Caesium in bulk 3C-SiC and at a grain boundary
+
+- **Item:** `ms-cs-sic-gb` (Pending placeholder; no image)
+- **Caption:** Planned caesium sites in the bulk and at a grain boundary of 3C-SiC. Caesium is effectively retained by intact SiC; published atomistic boundary diffusion coefficients for caesium are far slower than experiment, so any result would be compared with that disagreement, not converted into an effective diffusivity. This calculation has not been performed. It is planned for a future phase of the project.
+- **Plain-language explanation:** A planned picture of single caesium atoms inside silicon carbide and in the boundary between two grains, the layer that holds caesium back. This calculation has not been performed. It is planned for a future phase of the project.
+- **Material:** 3C-SiC supercell and bicrystal
+- **Species:** Cs
+- **Intended method:** Planned: density-functional formation and binding energies (CASTEP module).
+- **Intended conditions:** Planned: static relaxation at 0 K.
+- **Provenance:** none; nothing has been produced.
+- **Status:** PENDING
+- **Related catalogue entries:** [cs_retention_barrier_integrity](cs_retention_barrier_integrity.md)
+- **Sources for the planned subject:** [ref:rabone2015] [ref:demkowicz2016] [ref:kirchhofer2013]
+
+## Strontium and europium in 3C-SiC
+
+- **Item:** `ms-sr-eu-sic` (Pending placeholder; no image)
+- **Caption:** Planned strontium and europium configurations in 3C-SiC and at a grain boundary. Both elements passed intact AGR-1 coatings in small amounts and were held in the outer pyrocarbon and matrix. This calculation has not been performed. It is planned for a future phase of the project.
+- **Plain-language explanation:** A planned picture of strontium and europium atoms inside silicon carbide, two elements that leak slowly through intact coatings. This calculation has not been performed. It is planned for a future phase of the project.
+- **Material:** 3C-SiC supercell and bicrystal
+- **Species:** Sr;Eu
+- **Intended method:** Planned: density-functional formation energies of substitutional and interstitial sites (CASTEP module).
+- **Intended conditions:** Planned: static relaxation at 0 K.
+- **Provenance:** none; nothing has been produced.
+- **Status:** PENDING
+- **Related catalogue entries:** [additional_species_downstream_transport](additional_species_downstream_transport.md)
+- **Sources for the planned subject:** [ref:demkowicz2016] [ref:morris2016] [ref:kirchhofer2013]
+
+## Krypton, xenon and iodine at vacancies in 3C-SiC
+
+- **Item:** `ms-noble-gas-sic` (Pending placeholder; no image)
+- **Caption:** Planned krypton, xenon and iodine atoms at vacancy sites and small cavities of 3C-SiC. An intact SiC layer keeps the particle gas-tight; the calculation would examine where these atoms sit, not predict a release. This calculation has not been performed. It is planned for a future phase of the project.
+- **Plain-language explanation:** A planned picture of large gas atoms trapped in gaps of the silicon carbide crystal, the layer that keeps fission gases inside the particle. This calculation has not been performed. It is planned for a future phase of the project.
+- **Material:** 3C-SiC supercell with vacancies
+- **Species:** Kr;Xe;I
+- **Intended method:** Planned: density-functional incorporation energies at vacancy sites (CASTEP module).
+- **Intended conditions:** Planned: static relaxation at 0 K.
+- **Provenance:** none; nothing has been produced.
+- **Status:** PENDING
+- **Related catalogue entries:** [additional_species_downstream_transport](additional_species_downstream_transport.md)
+- **Sources for the planned subject:** [ref:iaea1997] [ref:morris2016] [ref:kirchhofer2013]
