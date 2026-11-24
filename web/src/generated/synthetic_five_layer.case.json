@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "label": "INPUT",
+  "kind": "input_case",
+  "generator": "scripts/web/generate_data.py v1",
+  "strato_version": "1.0.1",
+  "input_file": "inputs/synthetic/synthetic_five_layer.toml",
+  "input_sha256": "257fe9933a4c1dee38a44545209bfafea7fc06945f389fad9aeb5f0d739afa93",
+  "input_commit": "8c5d8a8591d28e254f7040ef03f6b725f50fa390",
+  "command": "python -I -X utf8 scripts/web/generate_data.py case inputs/synthetic/synthetic_five_layer.toml",
+  "created_utc": "2026-11-24T08:19:51Z",
+  "notes": [
+    "SYNTHETIC NUMERICAL BENCHMARK - NOT LITERATURE TRISO DATA"
+  ],
+  "units": {
+    "temperature_k": "K",
+    "outer_radius_m": "m",
+    "diffusivity_m2_s": "m^2 s^-1",
+    "cells": "1",
+    "kernel_concentration_mol_m3": "mol m^-3",
+    "dt_s": "s",
+    "end_time_s": "s",
+    "output_every_steps": "1"
+  },
+  "data": {
+    "config": {
+      "case_name": "synthetic-five-layer-release",
+      "species": "synthetic",
+      "temperature_k": 1000.0,
+      "regions": [
+        {
+          "name": "Kernel",
+          "outer_radius_m": 0.0002,
+          "diffusivity_m2_s": 1e-12,
+          "cells": 40
+        },
+        {
+          "name": "Buffer",
+          "outer_radius_m": 0.0003,
+          "diffusivity_m2_s": 4e-10,
+          "cells": 40
+        },
+        {
+          "name": "IPyC",
+          "outer_radius_m": 0.00035,
+          "diffusivity_m2_s": 8e-13,
+          "cells": 40
+        },
+        {
+          "name": "SiC",
+          "outer_radius_m": 0.0004,
+          "diffusivity_m2_s": 2e-14,
+          "cells": 40
+        },
+        {
+          "name": "OPyC",
+          "outer_radius_m": 0.00045,
+          "diffusivity_m2_s": 7e-13,
+          "cells": 40
+        }
+      ],
+      "initial": {
+        "kernel_concentration_mol_m3": 1.0
+      },
+      "time": {
+        "dt_s": 200.0,
+        "end_time_s": 200000.0,
+        "output_every_steps": 10
+      },
+      "output": {
+        "directory": "results/synthetic-five-layer"
+      }
+    }
+  }
+}

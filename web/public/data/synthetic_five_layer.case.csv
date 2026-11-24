@@ -1,0 +1,33 @@
+# label: INPUT
+# kind: input_case
+# generator: scripts/web/generate_data.py v1
+# strato_version: 1.0.1
+# input_file: inputs/synthetic/synthetic_five_layer.toml
+# input_sha256: 257fe9933a4c1dee38a44545209bfafea7fc06945f389fad9aeb5f0d739afa93
+# input_commit: 8c5d8a8591d28e254f7040ef03f6b725f50fa390
+# command: python -I -X utf8 scripts/web/generate_data.py case inputs/synthetic/synthetic_five_layer.toml
+# created_utc: 2026-11-24T08:19:51Z
+# note: SYNTHETIC NUMERICAL BENCHMARK - NOT LITERATURE TRISO DATA
+group,region_index,region_name,key,value,unit
+case,,,case_name,synthetic-five-layer-release,
+case,,,species,synthetic,
+case,,,temperature_k,1000.0,K
+region,0,Kernel,outer_radius_m,0.0002,m
+region,0,Kernel,diffusivity_m2_s,1e-12,m^2 s^-1
+region,0,Kernel,cells,40,1
+region,1,Buffer,outer_radius_m,0.0003,m
+region,1,Buffer,diffusivity_m2_s,4e-10,m^2 s^-1
+region,1,Buffer,cells,40,1
+region,2,IPyC,outer_radius_m,0.00035,m
+region,2,IPyC,diffusivity_m2_s,8e-13,m^2 s^-1
+region,2,IPyC,cells,40,1
+region,3,SiC,outer_radius_m,0.0004,m
+region,3,SiC,diffusivity_m2_s,2e-14,m^2 s^-1
+region,3,SiC,cells,40,1
+region,4,OPyC,outer_radius_m,0.00045,m
+region,4,OPyC,diffusivity_m2_s,7e-13,m^2 s^-1
+region,4,OPyC,cells,40,1
+initial,,,kernel_concentration_mol_m3,1.0,mol m^-3
+time,,,dt_s,200.0,s
+time,,,end_time_s,200000.0,s
+time,,,output_every_steps,10,1

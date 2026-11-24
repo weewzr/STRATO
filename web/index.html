@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="STRATO web demonstration: fission-product diffusion through the five layers of a TRISO coated fuel particle, computed by the verified STRATO v1.0 Rust solver." />
+    <meta name="strato-build" content="__STRATO_COMMIT__" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>STRATO</title>
+    <script>
+      // Apply a stored manual theme before first paint. Without a stored choice the page follows the system setting.
+      try {
+        var t = localStorage.getItem('strato-theme');
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>The STRATO demonstration needs JavaScript. The derivations and source code are at https://github.com/weewzr/STRATO.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

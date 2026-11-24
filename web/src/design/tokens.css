@@ -1,0 +1,168 @@
+/* STRATO site tokens: "an instrument with a monograph behind it"
+   (owner decision M6; prompt/DESIGN_SPECIFICATION.md Sections 9 and 9.1).
+   Shared spacing, radii, durations, focus and touch sizes and the Okabe-Ito palette come from
+   tokens.core.css, copied unchanged from the owner's portfolio repository (core version 1.0.0).
+   This file holds STRATO's own colours, faces and type scale. Contrast ratios of every pair are
+   checked by web/tests/contrast.test.ts.
+   STRATO keeps its binding breakpoints 768 px and 1200 px (documented exception in the shared core, A4). */
+@import './tokens.core.css';
+
+/* Metric-matched local fallbacks, so the swap to the web font barely moves the layout.
+   Values computed with fontTools 4.60.1 from the Fontsource 5.3.0 latin 400 files against the
+   Windows faces named below (average advance of a pangram plus digits; ascent and descent from
+   the web font's metrics divided by size-adjust). */
+@font-face {
+  font-family: 'Literata Fallback';
+  src: local('Georgia');
+  size-adjust: 104.58%;
+  ascent-override: 112.54%;
+  descent-override: 29.45%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Fallback';
+  src: local('Arial');
+  size-adjust: 99.33%;
+  ascent-override: 103.19%;
+  descent-override: 27.68%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'IBM Plex Mono Fallback';
+  src: local('Consolas');
+  size-adjust: 109.13%;
+  ascent-override: 93.92%;
+  descent-override: 25.2%;
+  line-gap-override: 0%;
+}
+
+:root {
+  --font-doc: 'Literata', 'Literata Fallback', Georgia, serif;
+  --font-ui: 'IBM Plex Sans', 'IBM Plex Sans Fallback', Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'IBM Plex Mono Fallback', Consolas, monospace;
+
+  /* Type scale, ratio about 1.25 on a 16 px root. */
+  --fs-h1: 2.25rem;
+  --fs-h2: 1.625rem;
+  --fs-h3: 1.25rem;
+  --fs-doc: 1.0625rem;
+  --fs-ui: 0.9375rem;
+  --fs-label: 0.875rem;
+  --fs-mono: 0.875rem;
+  --fs-small: 0.8125rem;
+  --lh-doc: 1.65;
+  --lh-ui: 1.45;
+
+  --content-max: 84rem;
+  --header-height: 56px;
+  --status-height: 36px;
+
+  /* Light (default when the system asks for light or states no preference). */
+  --bg: #fbfbfa;
+  --bg-subtle: #f1f2f4;
+  --surface: #ffffff;
+  --border: #dcdfe4;
+  --border-strong: #767d8a;
+  --text: #15181e;
+  --text-muted: #4f5663;
+  --accent: #24508f;
+  --accent-hover: #1b3d6e;
+  --accent-bg: #e8eef7;
+  --on-accent: #ffffff;
+  --focus: #24508f;
+  --warn: #8a4b08;
+  --warn-bg: #fbf1e4;
+  --danger: #a3271b;
+
+  /* Result labels (Section 5 of the design specification). */
+  --label-computed: #24508f;
+  --label-measured: #8a4b08;
+  --label-illustrative: #5f5f5f;
+  --placeholder-text: #4f5663;
+
+  /* Mechanism colours (Okabe-Ito), each paired with a line style. */
+  --mech-decay: #0072b2;
+  --mech-source: #d55e00;
+  --mech-arrhenius: #009e73;
+
+  /* TRISO layers, one colour each, used identically wherever a layer is drawn (particle, profile bands,
+     inspector, reference-fuel view). Chosen by a max-min search of CIEDE2000 differences under normal
+     vision and simulated protan, deutan and tritan vision (Machado et al. 2009, severity 1); the
+     minimum pairwise difference and the 3:1 contrast on every surface are checked by
+     web/tests/palette.test.ts and web/tests/contrast.test.ts. */
+  --layer-kernel: #a36429;
+  --layer-buffer: #42352e;
+  --layer-ipyc: #1f285c;
+  --layer-sic: #2c9688;
+  --layer-opyc: #7c57c7;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0f1217;
+    --bg-subtle: #1b2029;
+    --surface: #161a21;
+    --border: #2c323c;
+    --border-strong: #6f7889;
+    --text: #e4e7ec;
+    --text-muted: #9aa3b2;
+    --accent: #8fb3ec;
+    --accent-hover: #b4cdf3;
+    --accent-bg: #1c2a40;
+    --on-accent: #0f1217;
+    --focus: #8fb3ec;
+    --warn: #e0a45c;
+    --warn-bg: #2a2117;
+    --danger: #f08b7f;
+    --label-computed: #8fb3ec;
+    --label-measured: #e0a45c;
+    --label-illustrative: #9aa3b2;
+    --placeholder-text: #9aa3b2;
+    --mech-decay: #56b4e9;
+    --mech-source: #e69f00;
+    --mech-arrhenius: #2bb68d;
+    --layer-kernel: #cc8e24;
+    --layer-buffer: #7a766c;
+    --layer-ipyc: #426cd7;
+    --layer-sic: #ace7c0;
+    --layer-opyc: #d0bee9;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #0f1217;
+  --bg-subtle: #1b2029;
+  --surface: #161a21;
+  --border: #2c323c;
+  --border-strong: #6f7889;
+  --text: #e4e7ec;
+  --text-muted: #9aa3b2;
+  --accent: #8fb3ec;
+  --accent-hover: #b4cdf3;
+  --accent-bg: #1c2a40;
+  --on-accent: #0f1217;
+  --focus: #8fb3ec;
+  --warn: #e0a45c;
+  --warn-bg: #2a2117;
+  --danger: #f08b7f;
+  --label-computed: #8fb3ec;
+  --label-measured: #e0a45c;
+  --label-illustrative: #9aa3b2;
+  --placeholder-text: #9aa3b2;
+  --mech-decay: #56b4e9;
+  --mech-source: #e69f00;
+  --mech-arrhenius: #2bb68d;
+  --layer-kernel: #cc8e24;
+  --layer-buffer: #7a766c;
+  --layer-ipyc: #426cd7;
+  --layer-sic: #ace7c0;
+  --layer-opyc: #d0bee9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-explain: 0ms;
+  }
+}

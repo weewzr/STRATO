@@ -1,0 +1,78 @@
+name: Web demo
+
+# Web demonstration of STRATO (prompt/TECHNICAL_ARCHITECTURE.md Section 7). ci.yml and docs-pdf.yml
+# are unchanged; this workflow adds the web checks. Web phase 1: generated data check, lint, type
+# check, unit tests, build, content check, browser tests and the build artefact. The wasm wrapper
+# tests and the catalogue check are added by web phases 3 and 2; the Pages deployment by phase 8.
+
+on:
+  push:
+    branches: [main, feat/strato-interactive-web-demo]
+    paths:
+      - 'web/**'
+      - 'scripts/web/**'
+      - 'inputs/**'
+      - 'Cargo.toml'
+      - '.github/workflows/web.yml'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: web-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: Web build and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The generated case files record the last commit of their input file, so the
+          # regeneration check needs the history.
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Generated data equal a fresh regeneration
+        working-directory: .
+        run: python3 -I -X utf8 scripts/web/generate_data.py case inputs/synthetic/synthetic_five_layer.toml --check
+      - name: Install
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Type check
+        run: npm run typecheck
+      - name: Unit and component tests
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Content check of the build
+        run: npm run check:content
+      - name: Install the browser
+        run: npx playwright install --with-deps chromium
+      - name: Browser tests
+        env:
+          EXPECT_COMMIT: ${{ github.sha }}
+        run: npx playwright test
+      - name: Browser test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: web/playwright-report/
+          if-no-files-found: ignore
+      - name: Upload the build
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: web/dist/
