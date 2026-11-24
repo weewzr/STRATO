@@ -94,7 +94,7 @@ Validation rows follow the NUS-H2 status words: `pass` or `fail` only against a 
 
 ## 7 Documentation practices
 
-- **Equation register (P3)**: `docs/mathematics/equation_register.csv` with columns `id, title, latex, variables, assumptions, source_doc, rust_fn, test_id, status`. Seed it from the v1.0.0 Final Deliverable (which already maps equations to Rust lines) and the Phase 2 derivations (status DERIVED NOT IMPLEMENTED). The equation explorer reads term LaTeX and links from it. A CI check confirms every `rust_fn` exists and every `test_id` names a real test.
+- **Equation register (P3)**: `docs/mathematics/equation_register.csv` with columns `id, title, latex, variables, assumptions, source_doc, rust_fn, test_id, status`. Seed it from the v1.0.0 Final Deliverable (which already maps equations to Rust lines) and the Phase 2 derivations (status DERIVED NOT IMPLEMENTED). The staged equation builder reads term LaTeX and links from it; the research status of each mechanism (owner decision M7) is not kept here but in `data/research/mechanisms.csv` (`prompt/TECHNICAL_ARCHITECTURE.md` Section 5.1), where DERIVED NOT IMPLEMENTED appears as RESEARCHED. A CI check confirms every `rust_fn` exists and every `test_id` names a real test.
 - **Equation-to-Rust links**: keep the pinned links of the Final Deliverable; add links from the register.
 - **Automated builds**: keep `.github/workflows/docs-pdf.yml`; add the register check. Do not move to LaTeX or Tectonic.
 - **Verification-status labels**: IMPLEMENTED, DERIVED NOT IMPLEMENTED, FUTURE, as already used.

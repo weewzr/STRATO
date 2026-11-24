@@ -23,10 +23,11 @@ No personal email address in any commit. Commits are attributed to the owner onl
 |---|---|
 | 0 | `docs(prompt): phase 0 - audit and architecture confirmation` |
 | 1 | `feat(web): phase 1 - dashboard foundation` |
-| 2 | `feat(web): phase 2 - interactive equation explorer` |
+| 2 | `feat(web): phase 2 - staged equation builder and research status` |
 | 3 | `feat(web): phase 3 - rust solver integration` |
 | 4 | `feat(web): phase 4 - triso particle visualisation` |
 | 5 | `feat(web): phase 5 - scientific comparison graphs` |
+| 5.5 | `feat(web): phase 5.5 - research catalogue interface` |
 | 6 | `feat(physics): phase 6 - verified model extensions` |
 | 7 | `feat(validation): phase 7 - literature comparison` |
 | 8 | `feat(web): phase 8 - deployment and polish` |

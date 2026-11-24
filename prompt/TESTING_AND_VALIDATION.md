@@ -29,18 +29,37 @@ Keep tolerances as named constants in one file per language (`crates/strato-wasm
 
 | Phase | Tests |
 |---|---|
-| 1 | Vitest store and component tests; Playwright at 375x812, 768x1024, 1280x800, 1920x1080; keyboard-only navigation; `prefers-reduced-motion`; no console errors; no failed network requests |
-| 2 | term assembly for all 8 toggle combinations; documentation anchors resolve; KaTeX renders without error; no numbers shown |
+| 1 | Vitest store and component tests; Playwright at 375x812, 768x1024, 1280x800, 1440x900, 1920x1080; block order A to E at every viewport; the fold requirement (Section 3.3); keyboard-only navigation; `prefers-reduced-motion`; no console errors; no failed network requests |
+| 2 | term assembly for the six builder stages and for all 8 combinations of the three Phase 6 switches; the status-system tests (Section 3.1); the "no active toggle without solver support" tests (Section 3.2); documentation and code anchors resolve; KaTeX renders without error; no numbers shown apart from equation numbers; the fold requirement with the builder in place |
 | 3 | wrapper equals `finite_volume::run` exactly and golden files at 1e-12; invalid and placeholder inputs rejected; no panic crosses into JavaScript; wasm export and size check; browser parity against `web/public/data/golden_v1.json`; worker handshake, timeout and recovery; precompute regeneration identical |
 | 4 | colour map on a known profile; wrapper test that the layer inventories of `run_v1` sum to the total; e2e check that the displayed shares equal the wrapper's `layer_share` values (no sums in TypeScript); WebGL fallback; playback frame rate measured |
 | 5 | wrapper test that the `compare_v1` difference equals modified minus baseline; e2e check that the plotted difference equals the wrapper's values (no subtraction in TypeScript); downloads round-trip; comparison and validation toggles independent |
-| 6 | all cases of Section 5; full v1.0 suite unchanged (6.1 before 6.2) |
-| 7 | plotted measurements equal the CSV; metrics recomputed independently in a test |
-| 8 | axe-core accessibility audit via Playwright; performance budget; reproducible build; link check |
+| 5.5 | nine species entries and three regimes render with every required heading; every status shown equals `data/research/mechanisms.csv`; every catalogue switch is disabled (Section 3.2); a gallery item shows an image only if its row is `screenshot` or `reconstruction` with an existing file and provenance, placeholders show the word PENDING and no image, and the two image kinds carry different labels; every `[ref:...]` renders as a link; reference links resolve or are marked NOT VERIFIED (link check); screenshots at 1440x900 and 390 px wide inspected |
+| 6 | all cases of Section 5; full v1.0 suite unchanged (6.1 before 6.2); `capabilities` gains a mechanism id only in the commit whose cases pass; Section 3.2 re-run with the new capabilities: a switch becomes active only when its id is in `capabilities` and its status is VERIFIED |
+| 7 | plotted measurements equal the CSV; metrics recomputed independently in a test; a VALIDATED row in `mechanisms.csv` names validation rows that exist and pass |
+| 8 | axe-core accessibility audit via Playwright; performance budget; reproducible build; link check; fold requirement and block order re-run on the final build in both themes |
+
+### 3.1 Research-status system
+
+- `scripts/web/check_catalogue.py` passes on the repository and, run against its own fixture folders, fails with the matching FAIL line for each of: a status that is not one of the five words (including a lower-case or misspelt word such as `Verified` or `PLANNED`), a `reference_ids` id or a `[ref:...]` missing from `references.csv`, a missing entry file, a duplicate `(mechanism_id, species, material_domain)`, a tenth or a missing species, a nuclide absent from `data/nuclear/decay.csv` without `(not in register)`, a VERIFIED row without evidence under `tests/`, a VALIDATED row without `validation_ids`, a `screenshot` row without file or provenance, a `placeholder` row with a file, and a stale `research_catalogue.json`.
+- A Vitest guard fails if any of the five status words appears as a string literal in `web/src/` outside `web/src/generated/` and the one module that defines the status union and its constants (`web/src/research/status.ts`, which `isAvailable()` imports); statuses of mechanisms come from the generated JSON only.
+- A component test renders every chip from a fixture catalogue and checks word, shape class and accessible name for all five statuses; an e2e test compares every status shown on Explore and Research with the generated JSON.
+- The builder's stage statuses on 2026-11-24 equal the table recorded in `prompt/PROGRESS.md` (M7) until a reviewed change updates both.
+
+### 3.2 No active toggle without solver support
+
+- Unit test of `isAvailable()` over every combination of status (five words) and capability (present, absent): it is true only for VERIFIED with the capability present.
+- Component test: with the v1.0 capabilities `["diffusion_layered"]`, every mechanism switch and every species switch is rendered with `aria-disabled="true"`, stays off after click, Enter and Space, and announces why; with a fixture where a mechanism is VERIFIED but absent from `capabilities`, and one where it is present but only IMPLEMENTED, it is still disabled.
+- Client test: the solver client never sends a request naming a mechanism for which `isAvailable()` is false; the wrapper test shows that such a request returns `rejected`.
+- e2e test: selecting builder stages 2 to 6 before Phase 6 shows the "Equation preview only" banner, leaves the simulation's input hash and result unchanged, and sends no worker request.
+
+### 3.3 Fold requirement at 1440 x 900
+
+Playwright at a 1440 x 900 CSS-pixel viewport, device scale factor 1, light and dark themes, with and without reduced motion, after fonts have loaded, scroll position 0, default case: the bounding box of the equation block (A, the typeset equation of the active stage and its stage picker) and the bounding boxes of the particle cross-section and of the release-fraction readout of block B, each with its result label, lie entirely within the viewport. The test also asserts that the top edges of blocks A, B, C, D and E increase in this order, at 1440 x 900 and at 390 px wide (device emulation). It runs for stage 1 and for the stage with the tallest equation.
 
 ## 4 Browser self-test
 
-Adopt the NUS-H2 pattern (`frontend/selftest.js`, `scripts/selftest.py` in https://github.com/weewzr/NUSH2 at `b4817b3`): with `?selftest=1` the built site runs checks and writes a JSON verdict to a hidden element and to `document.body.dataset.selftest` (`pass` or `fail`); CI reads it, also with reduced motion. STRATO checks: build stamp equals commit, wasm loads, synthetic run matches golden values, every section renders, no console error, no failed request. The self-test compares values only and computes no physics.
+Adopt the NUS-H2 pattern (`frontend/selftest.js`, `scripts/selftest.py` in https://github.com/weewzr/NUSH2 at `b4817b3`): with `?selftest=1` the built site runs checks and writes a JSON verdict to a hidden element and to `document.body.dataset.selftest` (`pass` or `fail`); CI reads it, also with reduced motion. STRATO checks: build stamp equals commit, wasm loads, synthetic run matches golden values, every section renders, every research status shown equals the generated catalogue, no mechanism switch is active outside `capabilities`, no console error, no failed request. The self-test compares values only and computes no physics.
 
 ## 5 Phase 2 verification cases (web Phase 6)
 

@@ -6,11 +6,14 @@ You are an autonomous Claude Code session working in the STRATO repository (http
 
 Build a visually outstanding, scientifically rigorous, interactive web demonstration of STRATO, the spherical TRISO fission-product diffusion code. The demo takes its interface and interaction ideas from Theodore's Outram Park dispersion demo (https://theodoreonzgit.github.io/outram-park-backend/demos/#dispersion), while every number it shows comes from STRATO's own Rust solver or is labelled as illustrative.
 
+The owner's equation-first brief (`prompt/EQUATION_FIRST_REQUEST.md`, owner decision M7 with rules E1 to E9 in `prompt/PROGRESS.md`) fixes the page order: the governing equation first, the live simulation immediately under it, then the controls, the scientific explanation and the future-research mechanisms. Physics grows one verified mechanism at a time.
+
 The demo must contain:
 
-- an interactive five-layer TRISO particle (kernel, buffer, IPyC, SiC, OPyC) with a 3D cutaway, a 2D cross-section and layer inspection;
-- a growing governing-equation explorer whose baseline spherical diffusion equation is always visible and grows when mechanisms are switched on ($-\lambda c$ for decay, $+S(r,t)$ for generation, $D_i \to D_i(T(t))$ for temperature dependence);
-- physics toggles, parameter controls, a time slider and simulation playback;
+- a staged governing-equation builder at the top of the page whose baseline layered spherical diffusion equation is always visible and which introduces one mechanism per stage (generation $+S(r,t)$, decay $-\lambda c$, temperature dependence $D_i \to D_i(T(t))$, layer-specific temperature laws, species-specific mechanisms only when implemented), each with its meaning, its discrete update and a five-level research status (PENDING, RESEARCHED, IMPLEMENTED, VERIFIED, VALIDATED);
+- directly under it, the live simulation: an interactive five-layer TRISO particle (kernel, buffer, IPyC, SiC, OPyC) with a 2D cross-section, a 3D cutaway and layer inspection, the radial profile, release fraction, inventory balance and numerical diagnostics, with AGR-1 UCO TRISO shown as the reference fuel by its registered geometry;
+- a future-research catalogue in three transport regimes with entries for nine species (Ag, Pd, Cs, Sr, Eu, I, Ru, Xe, Kr), pending mechanisms with disabled switches, and a Materials Studio gallery that shows only genuine screenshots and otherwise Pending placeholders;
+- physics switches (active only for mechanisms the solver implements and that are VERIFIED), parameter controls, a time slider and simulation playback;
 - dynamic concentration colouring and a radial concentration profile;
 - a baseline-versus-modified comparison graph (baseline, modified, optional difference curve) and a literature-validation graph (predictions, measurements, uncertainty, references), each independently toggleable;
 - numerical verification and convergence results, parameter provenance, references and downloadable results.

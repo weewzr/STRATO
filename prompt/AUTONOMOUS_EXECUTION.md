@@ -90,8 +90,8 @@ After completing each phase:
 |---|---|---|
 | Frontend design | `web/src/design/`, `web/src/panels/`, layout in `web/src/App.tsx` | tokens, layout, controls, accessibility |
 | Scientific computation | `crates/strato-wasm/`, Phase 6 Rust modules, `scripts/web/precompute.sh` | wrapper, parity, Phase 2 physics |
-| Visualisation | `web/src/particle/`, `web/src/plots/`, `web/src/equation/` | 3D and 2D particle, plots, equation explorer |
-| Literature and validation | `web/public/data/validation_*.json`, validation docs | measurement handling, provenance, metrics |
+| Visualisation | `web/src/particle/`, `web/src/plots/`, `web/src/equation/`, `web/src/research/` | 2D and 3D particle, plots, staged equation builder, research catalogue views |
+| Literature and validation | `web/public/data/validation_*.json`, validation docs, `data/research/`, `docs/research/` | measurement handling, provenance, metrics, research catalogue content with cited sources |
 | Testing and QA | `web/tests/`, `web/e2e/`, `.github/workflows/web.yml` | tests, self-test, CI, performance and accessibility checks |
 
 Rules: one owner per file at a time; shared files (`web/src/state/store.ts`, `web/src/solver/types.ts`, `package.json`, workflows) are edited only by the coordinator; subagents may use separate branches cut from the work branch; the coordinator reviews every diff, runs the tests and integrates. Every scientific calculation is verified (test or independent check) before integration. Subagents report assumptions, evidence, files changed, tests run and open issues.

@@ -56,21 +56,25 @@ The synthetic case is a verification case. Its parameters are not physical TRISO
 
 From `docs/mathematics/STRATO_Phase2_Derivations.md` and `docs/development/phase2_review_package.md`:
 
-| Mechanism | Change to the equation | Key equations | Status |
-|---|---|---|---|
-| Radioactive decay | adds $-\lambda c$, with $\lambda = \ln 2 / t_{1/2}$ | (P21.1), (P21.7) | DERIVED NOT IMPLEMENTED |
-| Fission-product generation | adds $+S(r,t)$, kernel source $S = \dot F\,y\,\chi_1/N_A$ | (P21.1), (P21.8) | DERIVED NOT IMPLEMENTED |
-| Inventory accounting | $M_0 + M_\mathrm{gen} = M + M_\mathrm{dec} + M_\mathrm{rel}$ | (P21.42), (P21.44) | DERIVED NOT IMPLEMENTED |
-| Temperature-dependent diffusivity | $D_i \to D_i(T(t)) = \sum_m D_{0,i,m}\,e^{-Q_{i,m}/(R_g T)}$ | (P22.1), (P22.15) | DERIVED NOT IMPLEMENTED |
-| Effective-time and modal projection | exact only under conditions E1 to E5 | (P22.26) to (P22.44) | DERIVED NOT IMPLEMENTED |
-| Activation products (Ag-110m, Cs-134, Eu-154) | two-step source | (P21.16) | FUTURE |
-| Parent-daughter chains | modal coupling | (P21.20) | FUTURE |
+| Mechanism | Change to the equation | Key equations | Status | Research status (M7) |
+|---|---|---|---|---|
+| Radioactive decay | adds $-\lambda c$, with $\lambda = \ln 2 / t_{1/2}$ | (P21.1), (P21.7) | DERIVED NOT IMPLEMENTED | RESEARCHED |
+| Fission-product generation | adds $+S(r,t)$, kernel source $S = \dot F\,y\,\chi_1/N_A$ | (P21.1), (P21.8) | DERIVED NOT IMPLEMENTED | RESEARCHED |
+| Inventory accounting | $M_0 + M_\mathrm{gen} = M + M_\mathrm{dec} + M_\mathrm{rel}$ | (P21.42), (P21.44) | DERIVED NOT IMPLEMENTED | RESEARCHED |
+| Temperature-dependent diffusivity | $D_i \to D_i(T(t)) = \sum_m D_{0,i,m}\,e^{-Q_{i,m}/(R_g T)}$ | (P22.1), (P22.15) | DERIVED NOT IMPLEMENTED | RESEARCHED |
+| Effective-time and modal projection | exact only under conditions E1 to E5 | (P22.26) to (P22.44) | DERIVED NOT IMPLEMENTED | RESEARCHED (verification reference, not a mechanism of its own) |
+| Activation products (Ag-110m, Cs-134, Eu-154) | two-step source | (P21.16) | FUTURE | PENDING |
+| Parent-daughter chains | modal coupling | (P21.20) | FUTURE | PENDING |
+
+(The conditions E1 to E5 of the effective-time row are those of the derivations, not the rules E1 to E9 of owner decision M7.)
+
+The last column is the five-level research status of the owner's equation-first brief (`prompt/EQUATION_FIRST_REQUEST.md`, owner decision M7): PENDING, RESEARCHED, IMPLEMENTED, VERIFIED, VALIDATED, with the definitions in `prompt/DESIGN_SPECIFICATION.md` Section 7.1. It is assigned from evidence per mechanism, species and material domain, never from the existence of a page, paper or placeholder; the v1.0 model of Section 2 is VERIFIED for the synthetic five-layer case and no mechanism is VALIDATED. The status on the website is read from `data/research/mechanisms.csv` (`prompt/TECHNICAL_ARCHITECTURE.md` Section 5.1). The mechanisms of the future-research catalogue (bricks 4 to 9 of the brief: silver trapping and grain-boundary transport, palladium-assisted degradation, caesium retention and barrier integrity, irradiation and coating degradation, further species and downstream FLiBe and cover-gas transport) are PENDING and are not implemented in this project.
 
 The full extended equation is
 
 $$\frac{\partial c}{\partial t} = \frac{1}{r^2}\frac{\partial}{\partial r}\left(r^2 D_i(T(t)) \frac{\partial c}{\partial r}\right) - \lambda c + S(r,t).$$
 
-The web demo may show these terms in the equation explorer, marked as planned, but no result may use them until web Phase 6 is complete.
+The web demo may show these terms in the staged equation builder, each with its research status, but no result may use them until web Phase 6 has implemented and verified them.
 
 Model assumptions A1 to A6 (derivations Section 3.1): spherical symmetry and Fickian diffusion with constant $D_i$ during a step; perfect interfaces; absorbing outer surface and regular centre; first-order decay with the same $\lambda$ in every layer; uniform kernel source (no recoil, no precursor migration); released atoms never return. The temperature is uniform across the particle, $T = T(t)$.
 
@@ -143,3 +147,9 @@ NUS-H2 (https://github.com/weewzr/NUSH2) and the archive https://github.com/weew
 - Choosing D1 to D16 on the owner's behalf.
 - Computing a displayed scientific quantity in the browser, including layer inventory shares and difference curves (owner decision M4).
 - Writing any experimental-agreement figure for STRATO (owner decision M5; see Section 6).
+- Showing a concentration profile, migration barrier, diffusivity or release fraction for a pending mechanism that is not taken from a cited source or computed by STRATO, or presenting any hypothetical output as a STRATO prediction (owner decision M7).
+- Raising a research status without the evidence its definition requires, or inferring a status from the existence of a page, paper, placeholder or configuration.
+- Activating a mechanism in the interface that the solver does not implement and verify, or implying that a switch changes the physics when it only changes an illustration.
+- Inserting a mechanism that needs coupled equations into the single transport equation as if it were one term.
+- Making or showing imitation Materials Studio screenshots; presenting an ideal 3C-SiC crystal as the full polycrystalline SiC coating; presenting an atomistic migration barrier as a macroscopic effective diffusivity.
+- Combining AGR-1 geometry with the synthetic diffusivities, or using UO2 kernel diffusivities for UCO without the label of rule E3; showing AGR results (gas-cooled) and any FLiBe or cover-gas result as one data set.

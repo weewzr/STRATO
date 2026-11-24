@@ -31,19 +31,26 @@ STRATO/
       solver/worker.ts       Web Worker that loads the wasm module
       solver/client.ts       request/response wrapper with handshake and timeouts
       solver/types.ts        TypeScript types mirroring the wrapper JSON
-      equation/terms.ts      term table (ids, LaTeX, status) - display only
-      equation/EquationExplorer.tsx
+      equation/terms.ts      term and stage table (ids, LaTeX, stage, mechanism id) - display only, no status
+      equation/EquationBuilder.tsx   staged builder (block A of the design specification)
+      research/              catalogue views (Research section and block E), read from generated JSON;
+                             research/status.ts is the only module that names the five status words
       particle/Particle3D.tsx, particle/CrossSection2D.tsx, particle/colormap.ts
       plots/RadialProfile.tsx, plots/ReleaseCurves.tsx, plots/ModelComparison.tsx, plots/Validation.tsx, plots/Convergence.tsx
       panels/Verification.tsx, panels/Provenance.tsx, panels/Downloads.tsx
+      generated/             JSON written by scripts/web/generate_data.py (case data, research catalogue)
       design/tokens.css
     public/data/             PRECOMPUTED JSON with provenance headers (generated, not hand edited)
     tests/                   unit and component tests (Vitest)
     e2e/                     browser tests (Playwright)
+  data/research/             NEW research catalogue tables (Section 5.1): mechanisms.csv, species.csv, references.csv, gallery.csv
+  docs/research/             NEW one Markdown file per catalogue entry (Section 5.1)
   scripts/web/
     build_wasm.sh            cargo build + wasm-bindgen CLI, version check against Cargo.lock
     precompute.sh            runs the native CLI and converts outputs to web/public/data/*.json
-  .github/workflows/web.yml  NEW: wrapper tests, wasm build, web tests, e2e, Pages artefact
+    generate_data.py         single generator of the web data files (case data; `catalogue` subcommand, Section 5.1)
+    check_catalogue.py       catalogue check that fails the build (Section 5.2)
+  .github/workflows/web.yml  NEW: wrapper tests, wasm build, catalogue check, web tests, e2e, Pages artefact
 ```
 
 Whether to turn the root into a Cargo workspace: prefer **not**. Keep `crates/strato-wasm` as a separate package with its own `Cargo.lock`, built with `--manifest-path crates/strato-wasm/Cargo.toml`, so the verified package, its lock file and CI stay byte for byte as they are. If a workspace becomes necessary, the full regression suite must pass unchanged and the decision goes in `prompt/PROGRESS.md`.
@@ -56,7 +63,7 @@ Public functions, exported with `wasm-bindgen` (exact names are binding for the 
 
 ```rust
 #[wasm_bindgen] pub fn abi_version() -> u32;                 // starts at 1
-#[wasm_bindgen] pub fn build_info() -> String;               // JSON: crate versions, git commit stamped at build time
+#[wasm_bindgen] pub fn build_info() -> String;               // JSON: crate versions, git commit stamped at build time, capabilities
 #[wasm_bindgen] pub fn validate_config(toml_or_json: &str) -> String; // JSON: {ok, errors[], warnings[]}
 #[wasm_bindgen] pub fn run_v1(request_json: &str) -> String; // JSON RunResponse
 #[wasm_bindgen] pub fn analytical_release(request_json: &str) -> String; // JSON series from Code C
@@ -88,6 +95,8 @@ Inside `run_v1`:
   "messages": []
 }
 ```
+
+`build_info` also returns `capabilities`: the list of mechanism ids (the `mechanism_id` values of Section 5.1) that this wrapper build can solve. In v1.0 it is exactly `["diffusion_layered"]`. Web Phase 6.1 adds `generation`, `decay` and `inventory_balance_v2` and Phase 6.2 adds `diffusivity_temperature` and `diffusivity_layer_laws`, each only in the commit whose tests and independent review pass. The interface activates a mechanism switch or a builder stage's live update only when its id is in `capabilities` and its status in `data/research/mechanisms.csv` is VERIFIED (Section 4, "Mechanism availability"); a request that names a mechanism outside `capabilities` is returned `rejected`. From Phase 6.1, `RunResponse` also carries the inventory terms of (P21.42) (start, generated, decayed, released, remaining, residual) for the balance of design specification Section 3.2 (rule E9); v1.0 responses carry `balance_residual_mol` as above.
 
 `inventory_mol` is `finite_volume::inventory` of that profile; `layer_inventory_mol[j]` sums `volume * c` over the cells of region `j` in cell order; `layer_share[j]` is `layer_inventory_mol[j] / inventory_mol`. A wrapper test asserts that the layer inventories sum to `inventory_mol` within relative 1e-12.
 
@@ -144,15 +153,20 @@ Install `wasm-bindgen-cli` at exactly the `wasm-bindgen` version in `crates/stra
 | UI primitives | hand-written CSS tokens and native controls; shadcn components optional (switch, slider, tabs, tooltip only) | must pass keyboard and screen-reader checks |
 | Animation | CSS transitions; `motion` optional | respect `prefers-reduced-motion` |
 | Data fetching | plain `fetch` of static JSON | TanStack Query rejected |
+| Atomistic viewer | none installed (rule E6) | candidate recorded in `docs/development/visualisation_library_comparison.md`; installed only when a genuine structure file exists to show |
+| Library choice | `docs/development/visualisation_library_comparison.md` | the comparison and selection rationale required by the equation-first brief; a new library needs a row there first |
 
 ### Store shape (`web/src/state/store.ts`)
 
 ```ts
-type Mechanism = 'decay' | 'source' | 'arrhenius';
+type Mechanism = 'decay' | 'source' | 'arrhenius';   // ids map to mechanism_id rows: decay, generation, diffusivity_temperature
+type Stage = 1 | 2 | 3 | 4 | 5 | 6;                 // builder stage shown in block A
 interface StratoState {
   config: V1Config;                 // mirrors inputs/synthetic/synthetic_five_layer.toml
   baselineConfig: V1Config;
-  mechanisms: Record<Mechanism, { enabled: boolean; available: boolean }>; // available=false until Phase 6
+  stage: Stage;                     // displayed stage; the solved stage is the highest available stage <= stage
+  capabilities: string[];           // from build_info(); empty until the wasm module has loaded
+  mechanisms: Record<Mechanism, { enabled: boolean; available: boolean }>; // available computed by isAvailable(), false until Phase 6
   run: RunResponse | null;          // current (modified) result
   baselineRun: RunResponse | null;
   status: 'idle' | 'running' | 'ok' | 'rejected' | 'error';
@@ -168,19 +182,26 @@ interface StratoState {
 - Timeout per request (default 10 s), with a visible error card and a retry button. A trapped wasm instance is recreated.
 - Debounce slider changes (about 150 ms) and cancel stale requests by id.
 
-### Equation explorer term model (`web/src/equation/terms.ts`)
+### Equation builder term model (`web/src/equation/terms.ts`)
 
-Display only; no evaluation.
+Display only; no evaluation. The stage order and the meaning of each stage are in `prompt/DESIGN_SPECIFICATION.md` Section 3 (owner decision M7). `terms.ts` holds the term ids, LaTeX, stage and mechanism id; the **status column is not in `terms.ts`**: the builder reads it from the generated catalogue JSON (Section 5.1), so a status is never typed into a component. The values below are the evidence-based statuses of 2026-11-24 (`prompt/PROGRESS.md`, M7) and are the rows that `data/research/mechanisms.csv` must hold for these mechanisms.
 
-| Term id | LaTeX | Toggle | Status before Phase 6 |
-|---|---|---|---|
-| `lhs` | `\frac{\partial c}{\partial t}` | always | IMPLEMENTED |
-| `diffusion` | `\frac{1}{r^2}\frac{\partial}{\partial r}\left(r^2 D_i \frac{\partial c}{\partial r}\right)` | always | IMPLEMENTED |
-| `diffusion_T` | replaces `D_i` with `D_i(T(t))` | `arrhenius` | DERIVED NOT IMPLEMENTED |
-| `decay` | `-\lambda c` | `decay` | DERIVED NOT IMPLEMENTED |
-| `source` | `+S(r,t)` | `source` | DERIVED NOT IMPLEMENTED |
+| Term id | LaTeX | Stage | Mechanism id | Toggle | Discrete form and code | Status on 2026-11-24 |
+|---|---|---|---|---|---|---|
+| `lhs` | `\frac{\partial c}{\partial t}` | 1 | `diffusion_layered` | always | (5.14), `backward_euler_step` in `src/numerical/finite_volume.rs` | VERIFIED (synthetic five-layer case) |
+| `diffusion` | `\frac{1}{r^2}\frac{\partial}{\partial r}\left(r^2 D_i \frac{\partial c}{\partial r}\right)` | 1 | `diffusion_layered` | always | (5.14), (5.15), same function | VERIFIED (synthetic five-layer case) |
+| `source` | `+S(r,t)` | 2 | `generation` | `source` | (P21.58), pseudocode only | RESEARCHED |
+| `decay` | `-\lambda c` | 3 | `decay` | `decay` | (P21.58), pseudocode only | RESEARCHED |
+| `diffusion_T` | replaces `D_i` with `D_i(T(t))` | 4 | `diffusivity_temperature` | `arrhenius` | (P22.15), pseudocode only | RESEARCHED |
+| `arrhenius_layers` | `D_i(T)=\sum_{m} D_{0,i,m}\,e^{-Q_{i,m}/(R_g T)}` shown under the equation | 5 | `diffusivity_layer_laws` | `arrhenius` | (P22.1), Phase 2 Derivations Section 5.4, pseudocode only | RESEARCHED |
+| `partition` | none (listed, not inserted: not in the model) | 5 | `interface_partition` | none | none | PENDING |
+| species entries | coupled systems from the catalogue, shown beside the equation | 6 | catalogue ids | none | none | PENDING |
 
-Each term links to its section in `docs/mathematics/` (v1.0.0 Full Derivation for the baseline; `STRATO_Phase2_Derivations.md` for (P21.1), (P21.8), (P22.1)).
+The old "DERIVED NOT IMPLEMENTED" status of this table maps to RESEARCHED, "FUTURE" to PENDING and "IMPLEMENTED" (v1.0) to VERIFIED for its stated domain. Each term links to its section in `docs/mathematics/` (v1.0.0 Full Derivation for the baseline; `STRATO_Phase2_Derivations.md` for (P21.1), (P21.8), (P22.1)), and each discrete form links to the code at the build commit, or to `docs/mathematics/STRATO_Phase2_Pseudocode.md` while no code exists.
+
+### Mechanism availability (`web/src/equation/availability.ts`)
+
+One function decides whether a mechanism is live: `isAvailable(id) = capabilities.includes(id) && status(id) === 'VERIFIED'`, where `capabilities` comes from `build_info()` and `status` from the generated catalogue JSON. It is a lookup, not physics. No component decides availability by itself; switches, stage live updates and solver requests all call this function, and the solver client drops (and reports) any mechanism for which it returns false. Until the wasm module has loaded, `capabilities` is empty and nothing is live.
 
 ### Particle rendering
 
@@ -198,6 +219,94 @@ Produced only by `scripts/web/precompute.sh` from the native release binary. Eac
 ```
 
 Initial files: `synthetic_run.json` (time series and final profile), `comparison_fv_vs_analytical.json`, `convergence_study.json`, `golden_v1.json` (copy of `tests/golden/v1.0/` values for the parity check). A CI step regenerates them and fails if they differ from the committed copies.
+
+### 5.1 Research catalogue files (owner decision M7)
+
+The research statuses, species, mechanisms, gallery items and references that the interface shows live in files in the repository. No status, species, mechanism, reference or caption is typed into a component: `scripts/web/generate_data.py catalogue` reads the files below and writes `web/src/generated/research_catalogue.json` (with a provenance header like that of Section 5 and of the generated case files: `label` `CATALOGUE`, `kind` `research_catalogue`, generator, commit, `created_utc` and the SHA-256 of every input file; `CATALOGUE` marks a data file, it is not a result label), and the components import only that JSON. A CI step regenerates it and fails if it differs from the committed copy.
+
+Format of every table: CSV as in RFC 4180, UTF-8 without byte-order mark, LF line ends, one header row with exactly the columns below in this order, one record per line, lists inside a cell separated by `;`, empty cell for "none". Free text is plain (no HTML); Markdown belongs in the entry files.
+
+`data/research/mechanisms.csv`: one row per mechanism, species and material domain (the unit to which a status is assigned).
+
+| Column | Content |
+|---|---|
+| `mechanism_id` | lower-case id with underscores, for example `diffusion_layered`, `generation`, `decay`, `diffusivity_temperature`, `diffusivity_layer_laws`, `interface_partition`, `ag_trapping_detrapping` |
+| `name` | display name |
+| `regime` | `baseline` (stages 1 to 5) or `A`, `B`, `C` (design specification Section 7.2); several regimes separated by `;` where a mechanism spans them |
+| `brick` | 1 to 9 (brief Section 11) |
+| `builder_stage` | 1 to 6, or empty for a catalogue-only entry |
+| `species` | one of `Ag`, `Pd`, `Cs`, `Sr`, `Eu`, `I`, `Ru`, `Xe`, `Kr`, or `all` |
+| `material_domain` | `kernel`, `buffer`, `IPyC`, `SiC`, `OPyC`, `interface`, `particle`, or a named case such as `synthetic_five_layer` |
+| `status` | exactly one of `PENDING`, `RESEARCHED`, `IMPLEMENTED`, `VERIFIED`, `VALIDATED` |
+| `status_basis` | one or two sentences: the evidence for the status |
+| `evidence` | `;`-separated repository paths (tests, derivation sections, register rows such as `data/diffusivity/arrhenius.csv#A1-01`) that support the status; empty only for PENDING |
+| `validation_ids` | `;`-separated validation-row ids of web Phase 7 (`prompt/TESTING_AND_VALIDATION.md` Section 7); required for VALIDATED, empty otherwise |
+| `equation_ids` | `;`-separated equation numbers such as `P21.58`, `5.14`, or empty |
+| `coupled` | `yes` if the mechanism needs additional coupled equations (shown as a coupled system), else `no` |
+| `solver_capability` | the `capabilities` id the wrapper must report for a live switch, or empty |
+| `required_parameters` | `;`-separated parameters the mechanism needs, each followed by `(registered)` with a register row id or `(missing)` |
+| `missing_work` | the calculations or experiments that are still missing |
+| `reference_ids` | `;`-separated ids from `references.csv` |
+| `entry` | path of the Markdown entry under `docs/research/` |
+| `status_date` | ISO date of the last status change |
+
+`data/research/species.csv`: exactly nine rows.
+
+| Column | Content |
+|---|---|
+| `species` | `Ag`, `Pd`, `Cs`, `Sr`, `Eu`, `I`, `Ru`, `Xe`, `Kr` |
+| `element` | English name (silver, palladium, caesium, strontium, europium, iodine, ruthenium, xenon, krypton) |
+| `nuclides` | `;`-separated nuclides of interest; each must be a `nuclide` in `data/nuclear/decay.csv` or carry the suffix `(not in register)` |
+| `layers` | `;`-separated relevant TRISO layers |
+| `regimes` | `;`-separated regimes `A`, `B`, `C` |
+| `summary` | one sentence: why the species matters |
+| `reference_ids` | `;`-separated ids from `references.csv` |
+| `entry` | path of the Markdown entry under `docs/research/` |
+
+A species row holds no status: a species' implementation status is the set of statuses of its rows in `mechanisms.csv` (and of the `all` rows), listed on its entry.
+
+`data/research/references.csv`
+
+| Column | Content |
+|---|---|
+| `reference_id` | short id, for example `morris2016`, `collin2016`, `iaea1997` |
+| `citation` | APA citation as in the parameter register |
+| `doi_or_url` | DOI URL or URL |
+| `link_checked` | ISO date on which the link was opened and found to resolve, or `NOT VERIFIED` |
+| `register_link` | the matching citation in `data/reference/STRATO_Parameter_Register.md`, or empty |
+| `notes` | what the reference is used for |
+
+`data/research/gallery.csv`: one row per Materials Studio item.
+
+| Column | Content |
+|---|---|
+| `item_id` | short id |
+| `kind` | `screenshot` (a genuine Materials Studio screenshot), `reconstruction` (an interactive view of an exported structure) or `placeholder` (Pending) |
+| `title`, `caption`, `alt_text` | scientific caption and accessible explanation |
+| `material`, `species` | for example `3C-SiC grain boundary`, `Ag` |
+| `method`, `conditions` | computational method and simulation conditions (for a placeholder: the planned calculation) |
+| `provenance` | who produced the file, when, with which software version; empty for a placeholder |
+| `file` | path of the image or structure file; empty for a placeholder |
+| `status` | one of the five status words |
+| `mechanism_ids`, `reference_ids` | links to `mechanisms.csv` and `references.csv` |
+
+`docs/research/<entry>.md`: one Markdown file per catalogue entry, named `species-<symbol>.md` for the nine species (for example `species-ag.md`), `regime-a.md` to `regime-c.md` for the regimes and `<mechanism_id>.md` for a mechanism with its own page. A species file has the headings of the brief, in this order: Why it matters; Relevant TRISO layers; Candidate release mechanisms; Current evidence; Proposed governing-equation extensions; Potential Materials Studio calculations; Experimental comparison opportunities; Research limitations; Implementation status. A mechanism file has: Proposed physics; Candidate governing equations (research concepts); Required parameters; Supporting literature; Missing calculations or experiments; Interactions with other regimes. Statuses are not written into these files (the CSV is the only place); every factual statement cites a `reference_id` in the form `[ref:morris2016]`, which the generator turns into a link. Equations are written in TeX between `$$` and are labelled "research concept".
+
+### 5.2 Catalogue check (`scripts/web/check_catalogue.py`)
+
+Python standard library only, run as `python -I -X utf8 scripts/web/check_catalogue.py` from the repository root. It reads the files of Section 5.1, writes nothing, prints one PASS or FAIL line per rule and exits 1 if any rule fails. `web.yml` runs it before `npm run build`, and the web build script runs it too, so a failure stops the build. Rules:
+
+1. Every table has exactly its header, in order; every row has as many cells as the header.
+2. Every `status` (in `mechanisms.csv` and `gallery.csv`) is exactly one of `PENDING`, `RESEARCHED`, `IMPLEMENTED`, `VERIFIED`, `VALIDATED`.
+3. Every id in a `reference_ids` cell exists in `references.csv`; every `[ref:...]` in `docs/research/*.md` exists there too; reference ids are unique.
+4. Every `entry` path exists; every file in `docs/research/` is referenced by at least one row.
+5. `(mechanism_id, species, material_domain)` is unique; `species.csv` has exactly the nine species, each once; every `species` value of `mechanisms.csv` is one of the nine or `all`; every `regime` is `baseline`, `A`, `B` or `C`.
+6. Every nuclide in `species.csv` exists in `data/nuclear/decay.csv` unless it carries `(not in register)`.
+7. Evidence for the higher statuses: RESEARCHED needs a non-empty `evidence`; IMPLEMENTED and VERIFIED need a non-empty `solver_capability` and `evidence` paths that exist, and VERIFIED needs at least one path under `tests/` or `crates/strato-wasm/tests/`; VALIDATED needs non-empty `validation_ids`. A brick 4 to 9 row above PENDING needs the same evidence as any other row (no exception).
+8. Gallery: a `screenshot` or `reconstruction` row needs an existing `file` and a non-empty `provenance`; a `placeholder` row needs an empty `file`; every `file` under the gallery folder is listed in `gallery.csv`.
+9. The generated `web/src/generated/research_catalogue.json` equals a fresh regeneration (ignoring `created_utc`).
+
+The check enforces form and references, not scientific truth: a status change still needs the evidence and the independent verification of the phase that delivers it, and is recorded in `prompt/PROGRESS.md`.
 
 ## 6 Performance budget
 
@@ -217,7 +326,7 @@ Keep `.github/workflows/ci.yml` and `docs-pdf.yml` unchanged. Add `.github/workf
 
 1. `cargo test --manifest-path crates/strato-wasm/Cargo.toml` (native parity tests).
 2. Build the wasm module, check exports and size.
-3. `npm ci`, `npm run lint`, `npm run typecheck`, `npm test` in `web/`.
+3. `python -I -X utf8 scripts/web/check_catalogue.py` (Section 5.2); then `npm ci`, `npm run lint`, `npm run typecheck`, `npm test` in `web/`.
 4. `npm run build`, then `npx playwright test` against `vite preview` (viewports, keyboard, reduced motion, console errors, failed requests, wasm parity, self-test).
 5. On the work branch: upload the build as an artefact. Deployment to Pages follows `prompt/COMMIT_AND_DEPLOYMENT.md`.
 

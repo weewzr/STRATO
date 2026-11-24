@@ -12,8 +12,8 @@ To start a session, give it this instruction: **"Read prompt/MASTER_PROMPT.md an
 | `PROGRESS.md` | Current phase, milestones, commits, tests run, blockers, next actions, the owner decisions table D1 to D16, the owner policy decisions and the session log. Read it second, every time. |
 | `SCIENTIFIC_REQUIREMENTS.md` | The model, implemented versus planned physics, the Phase 6 gate, parameter provenance, verification versus validation, result labels, forbidden actions. |
 | `TECHNICAL_ARCHITECTURE.md` | The hybrid architecture (client-side wasm plus precomputed native results), the wasm wrapper API, frontend stack, store, worker protocol, equation term model, performance budget, CI. |
-| `DESIGN_SPECIFICATION.md` | Page structure, every panel and its states, the growing equation explorer, the particle views, the two independently toggleable graphs, design system and accessibility. |
-| `IMPLEMENTATION_ROADMAP.md` | Phases 0 to 8 with objectives, files, dependencies, acceptance criteria, tests, scientific checks, commit messages and conditions for proceeding. |
+| `DESIGN_SPECIFICATION.md` | The equation-first page order (equation, live simulation, controls, explanation, future research), the staged equation builder, the five-level research status, the research catalogue and Materials Studio gallery, the particle views, the two independently toggleable graphs, design system and accessibility. |
+| `IMPLEMENTATION_ROADMAP.md` | Phases 0 to 8 (with Phase 5.5, the research catalogue interface) with objectives, files, dependencies, acceptance criteria, tests, scientific checks, commit messages and conditions for proceeding, and the mapping of the brief's bricks 1 to 9 to phases. |
 | `TESTING_AND_VALIDATION.md` | Existing v1.0 suite, tolerance policy, new tests per phase, browser self-test, Phase 2 verification cases, verification report, validation protocol. |
 | `AUTONOMOUS_EXECUTION.md` | Pre-authorised actions and their limits, a suggested permission allow list, the phase loop, git and scientific safety, boundaries, subagent roles. |
 | `COMMIT_AND_DEPLOYMENT.md` | Branches, commit identity, milestone messages, pre-commit checklist, pull request, GitHub Pages, releases. |
@@ -48,10 +48,11 @@ This folder is an instruction package for development sessions. It is not part o
 |---|---|
 | 0 | `docs(prompt): phase 0 - audit and architecture confirmation` |
 | 1 | `feat(web): phase 1 - dashboard foundation` |
-| 2 | `feat(web): phase 2 - interactive equation explorer` |
+| 2 | `feat(web): phase 2 - staged equation builder and research status` |
 | 3 | `feat(web): phase 3 - rust solver integration` |
 | 4 | `feat(web): phase 4 - triso particle visualisation` |
 | 5 | `feat(web): phase 5 - scientific comparison graphs` |
+| 5.5 | `feat(web): phase 5.5 - research catalogue interface` |
 | 6 | `feat(physics): phase 6 - verified model extensions` (gated) |
 | 7 | `feat(validation): phase 7 - literature comparison` |
 | 8 | `feat(web): phase 8 - deployment and polish` |
