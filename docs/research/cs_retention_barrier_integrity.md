@@ -7,7 +7,7 @@ Brick 7. Species: Cs. Material domain: the SiC layer, with the particle populati
 Caesium diffuses with relative ease through intact pyrocarbon but is effectively retained by intact SiC, so caesium release measures SiC integrity [ref:demkowicz2016]. Two populations of particles therefore matter:
 
 1. **Particles with intact SiC.** Release is extremely low: below 3 × 10⁻⁶ of the compact inventory during the AGR-1 irradiation [ref:demkowicz2016], below 5 × 10⁻⁶ after 300 h at 1600 °C or 100 h at 1800 °C in the safety tests, often hard to separate from background contamination [ref:morris2016].
-2. **Particles with failed or defective SiC.** They release a large but variable fraction: 0.38 to 0.65 of the Cs-134 in the three AGR-1 particles that failed in pile [ref:demkowicz2016]; particles with failed SiC did not release all their caesium in the safety tests either, and what they released varied [ref:morris2016].
+2. **Particles with failed or defective SiC.** They release a large but variable fraction: 0.38 to 0.65 of the Cs-134 in the three in-pile SiC failures located in Capsule 5 compacts (of four estimated in pile; the fourth was in Compact 6-3-2) [ref:demkowicz2016]; particles with failed SiC did not release all their caesium in the safety tests either, and what they released varied [ref:morris2016].
 
 The measured compact release is therefore governed by the number of particles with failed SiC, not by diffusion through intact SiC [ref:demkowicz2016] [ref:morris2016]. Part of the released caesium stays in the OPyC and compact matrix [ref:demkowicz2016].
 

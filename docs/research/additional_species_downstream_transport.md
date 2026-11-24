@@ -14,12 +14,12 @@ This entry has two parts that must stay apart. Part 1 is built on experiments ma
 | Eu | as strontium, at about one order of magnitude higher levels; possible diffusion through fine-grained SiC at 1800 °C [ref:demkowicz2016] [ref:morris2016] | [species-eu](species-eu.md) |
 | I | expected to behave like the fission gases; released mainly through failed coatings [ref:iaea1997] | [species-i](species-i.md) |
 | Ru | retained even in particles with failed SiC; content in SiC proportional to neutron exposure [ref:demkowicz2016] [ref:iaea1997] | [species-ru](species-ru.md) |
-| Xe, Kr | gas-tight behind intact SiC; released by failed particles and by uranium contamination outside the particles; an intact pyrocarbon layer retains most krypton even when the SiC has failed [ref:iaea1997] [ref:scates2010] [ref:morris2016] | [species-xe](species-xe.md), [species-kr](species-kr.md) |
+| Xe, Kr | gas-tight behind intact SiC; released by failed particles and by heavy-metal (uranium) contamination, whose location the AGR-1 gas-release source does not settle (see [species-xe](species-xe.md#candidate-release-mechanisms)); an intact pyrocarbon layer retains most krypton even when the SiC has failed [ref:iaea1997] [ref:scates2010] [ref:morris2016] | [species-xe](species-xe.md), [species-kr](species-kr.md) |
 
 Two physical features recur and are not in STRATO's model:
 
 1. **Retention outside the SiC.** Strontium, europium and part of the caesium and silver released from the particles stay in the OPyC and compact matrix, and this inventory dominates the heating-test release of strontium and europium [ref:morris2016]. STRATO's domain ends at the OPyC outer surface, which it treats as absorbing (free release).
-2. **Release that does not come from intact particles.** Fission-gas release in AGR-1 came from uranium contamination outside the particles [ref:scates2010], and caesium and krypton release from individual failed particles [ref:morris2016]. Both need a population description (see [brick 7](cs_retention_barrier_integrity.md) and [brick 8](coating_degradation_failure.md)).
+2. **Release that does not come from intact particles.** Fission-gas release in AGR-1 was attributed to heavy-metal (uranium) contamination [ref:scates2010], which the body of that paper places in the capsule graphite and compact matrix and its conclusion inside the TRISO coating layers (see the caveat in the [xenon entry](species-xe.md#candidate-release-mechanisms)); a later AGR-1 summary refers to uranium contamination in the compact matrix or OPyC [ref:demkowicz2016]. Caesium and krypton release from individual failed particles [ref:morris2016]. Both need a population description (see [brick 7](cs_retention_barrier_integrity.md) and [brick 8](coating_degradation_failure.md)).
 
 ### Part 2: downstream transport in FLiBe and a cover gas (planned work)
 

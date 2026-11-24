@@ -31,7 +31,7 @@ The register decay constant of I-131 is 9.996681 × 10⁻⁷ s⁻¹. Its precurs
 
 1. **Release through failed coatings** (Regime C): the dominant expectation in the literature, as for the fission gases [ref:iaea1997].
 2. **Trap emission in kernel and buffer** during temperature transients: the fractional release is described by two empirical functions, a gradual emission from traps and a fraction that escapes the traps in a burst [ref:iaea1997]. The related HRB model of fission-gas and iodine release from defective particles during temperature transients is coded in TRAGAS [ref:iaea1997].
-3. **Release from heavy-metal contamination** outside the particles, which in AGR-1 dominated the measured fission-gas release (see [Xenon](species-xe.md)) [ref:scates2010].
+3. **Release from heavy-metal (uranium) contamination**, which in AGR-1 dominated the measured fission-gas release [ref:scates2010]; the source does not settle where that contamination sits (see the caveat in the [xenon entry](species-xe.md#candidate-release-mechanisms)).
 
 ## Current evidence
 

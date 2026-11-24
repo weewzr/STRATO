@@ -26,7 +26,7 @@ The register knows xenon only as a precursor (Xe-137 in `data/nuclear/fission_yi
 ## Candidate release mechanisms
 
 1. **Release from particles with failed coatings** (Regime C) [ref:iaea1997] [ref:scates2010].
-2. **Release from heavy-metal contamination** outside the particles: in AGR-1 all measured releases were consistent with, and assumed to come from, uranium contamination, and comparison with models indicated gas diffusing from "tramp" uranium [ref:scates2010]. The source places this contamination in the graphite of the capsule and the matrix surrounding the fuel, while its conclusion speaks of tramp uranium "inside the TRISO coating layers"; the location is therefore not settled by this source [ref:scates2010].
+2. **Release from heavy-metal (uranium) contamination**: in AGR-1 all measured releases were consistent with, and assumed to come from, uranium contamination, and comparison with models indicated gas diffusing from "tramp" uranium [ref:scates2010]. The source places this contamination in the graphite of the capsule and the matrix surrounding the fuel, while its conclusion speaks of tramp uranium "inside the TRISO coating layers"; the location is therefore not settled by this source [ref:scates2010].
 3. **Diffusion and recoil from intact particles** (Regime A): the R/B models used for AGR-1 include terms for failure, contamination and direct recoil of fission fragments, with diffusion modelled by the Booth equivalent-sphere model, which depends on the diffusion coefficient and the half-life of the isotope [ref:scates2010].
 4. **Trap emission in kernel and buffer** during temperature transients, as interpreted for xenon and iodine in a German experiment [ref:iaea1997].
 

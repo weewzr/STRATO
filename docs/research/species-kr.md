@@ -28,7 +28,7 @@ The register decay constant of Kr-85 is 2.045347 × 10⁻⁹ s⁻¹. Kr-89 and K
 
 1. **Release from particles whose three dense layers have failed** (Regime C): rapid, about 100 % of a particle's inventory in the AGR-1 case at 1800 °C [ref:morris2016].
 2. **Diffusion through particles with failed SiC and intact pyrocarbon**: lower but detectable Kr-85 at 1800 °C may have come this way [ref:morris2016].
-3. **Release from uranium contamination** outside the particles: during the AGR-1 irradiation the Kr-85m R/B stayed mostly below 10⁻⁷ (Capsules 5 and 6 near 2 × 10⁻⁷ at the end, rising with fission power and temperature), consistent with contamination and with no particle failures [ref:scates2010].
+3. **Release from heavy-metal (uranium) contamination**, whose location the source does not settle (capsule graphite and compact matrix in the body of the paper, inside the TRISO coating layers in its conclusion; see the caveat in the [xenon entry](species-xe.md#candidate-release-mechanisms)) [ref:scates2010]; a later AGR-1 summary refers to uranium contamination in the compact matrix or OPyC [ref:demkowicz2016]. During the AGR-1 irradiation the Kr-85m R/B stayed mostly below 10⁻⁷ (Capsules 5 and 6 near 2 × 10⁻⁷ at the end, rising with fission power and temperature), consistent with contamination and with no particle failures [ref:scates2010].
 4. **Diffusion and recoil from intact particles** (Regime A), represented in R/B models by the Booth equivalent-sphere model [ref:scates2010].
 
 The population form of the release (failed particles plus contamination) is written in the [xenon entry](species-xe.md); coating failure is [brick 8](coating_degradation_failure.md).
