@@ -20,13 +20,14 @@ To start a session, give it this instruction: **"Read prompt/MASTER_PROMPT.md an
 | `GITHUB_REFERENCES.md` | Every reference repository with licence and verdict, the Outram Park section, a do-not-install list and the research notes. |
 | `RAYSTORAGE_INTEGRATION.md` | Engineering practices taken from NUS-H2 and the raystorage archive, with file paths, priorities, risks and the scientific independence rules. |
 | `RAYSTORAGE_REQUEST.md` | The owner's brief for the raystorage and NUS-H2 cross-project review, verbatim. |
+| `EQUATION_FIRST_REQUEST.md` | The owner's equation-first brief of 2026-11-24 (page order, staged equation builder, five-level research status, research catalogue, Materials Studio gallery), verbatim. Recorded as owner policy decision M7; it outranks `DESIGN_SPECIFICATION.md` where they differ. |
 | `ORIGINAL_REQUEST.md` | The owner's original brief for this package, verbatim. Later owner decisions in these files take precedence. |
 
 ## Owner decisions
 
 Web Phase 6 (decay, source, inventory, Arrhenius, temperature histories) is gated on the owner's choices for D1 to D16 in the table in `PROGRESS.md`. The gate is split into Phase 6.1 (decay, source, inventory; D1, D2, D3, D6 and D9 to D16) and Phase 6.2 (temperature-dependent diffusivity; also D4, D5, D7 and D8). The owner recorded all sixteen choices on 2026-11-24. The options are explained in `docs/development/phase2_review_package.md` Section 7.
 
-The same section of `PROGRESS.md` holds the owner policy decisions M1 to M5 (gated fast-forward merge, commit attribution, `prompt/` not published, browser quantities from the Rust wrapper only, the frozen README sentence on the SNRSI comparison).
+The same section of `PROGRESS.md` holds the owner policy decisions M1 to M7 (gated fast-forward merge, commit attribution, `prompt/` not published, browser quantities from the Rust wrapper only, the frozen README sentence on the SNRSI comparison, the visual identity, and the equation-first brief with its rules E1 to E9).
 
 This folder is an instruction package for development sessions. It is not part of the published website.
 
