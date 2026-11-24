@@ -6,7 +6,7 @@ Three options were evaluated for running STRATO in the browser.
 
 | Option | Verdict | Reason |
 |---|---|---|
-| A. Client-side WebAssembly | **Adopt** for live v1.0 runs | One synthetic run is about 200 cells and 1000 Backward Euler steps of a tridiagonal solve, which is milliseconds in wasm. The library already compiles for `wasm32-unknown-unknown` (`cargo check --locked --lib --target wasm32-unknown-unknown` passed on 2026-11-10). GitHub Pages is static, so no server is needed. Outram Park and NUS-H2 both run Rust in a Web Worker this way. |
+| A. Client-side WebAssembly | **Adopt** for live v1.0 runs | One synthetic run is about 200 cells and 1000 Backward Euler steps of a tridiagonal solve, which is milliseconds in wasm. The library already compiles for `wasm32-unknown-unknown` (`cargo check --locked --lib --target wasm32-unknown-unknown` passed on 2026-11-10 and again on 2026-11-24 with rustc 1.100.0). GitHub Pages is static, so no server is needed. Outram Park and NUS-H2 both run Rust in a Web Worker this way. |
 | B. Backend API | **Reject** | Needs hosting, secrets and uptime. GitHub Pages cannot run a server. Adds a second deployment to verify. |
 | C. Precomputed verified simulations | **Adopt** for heavy or reference results | The convergence study (`src/postprocessing/comparison.rs`, `convergence_study`) runs many refined meshes and is too slow for an interactive page. Reference cases are also better shown exactly as the native binary produced them. |
 
@@ -93,7 +93,21 @@ Inside `run_v1`:
 
 `compare_v1` takes `{baseline, modified}` (two run requests), runs both and returns `{"schema":1,"status":"ok","label":"COMPUTED v1.0","baseline":RunResponse,"modified":RunResponse,"difference":{"times_s":[],"release_fraction":[]}}`, where the difference is modified minus baseline computed in Rust on the times both runs share (rejected if the time grids differ, never interpolated in the browser).
 
-Errors never panic across the boundary: return `{"schema":1,"status":"rejected","errors":[...]}`. Use `std::panic::catch_unwind` where needed and set a panic hook that reports to the console.
+Errors never panic across the boundary: return `{"schema":1,"status":"rejected","errors":[...]}`. On `wasm32-unknown-unknown` the panic strategy is `abort` (`rustc --print cfg --target wasm32-unknown-unknown` prints `panic="abort"`, checked 2026-11-24 with rustc 1.100.0), so `std::panic::catch_unwind` catches nothing in the browser: a panic traps the instance (`RuntimeError: unreachable`). The wrapper therefore keeps every panic path unreachable by validating first (every `strato` call returns `Result`, and the remaining `expect` calls in the library, `finite_volume.rs` lines 88 and 89 and `sturm_liouville.rs` line 262, are reached only with an invalid or non-finite configuration that `Config::validate` refuses), sets a panic hook that reports the message to the console, and relies on the worker to report the trap and recreate the instance (Section 4, worker protocol). `catch_unwind` may still be used in the native wrapper tests.
+
+Facts about `strato` that the wrapper must respect (confirmed against `src/` at `v1.0.1` in Phase 0, 2026-11-24):
+
+| Fact | Consequence for the wrapper |
+|---|---|
+| `Config` and its parts derive `Deserialize` only, not `Serialize` | the `inputs` echo uses a wrapper-side mirror struct that derives `Serialize`; `src/` is not changed |
+| `Config` has a required `output.directory` field (used only by the CLI) | the request schema either carries it or the wrapper fills a fixed dummy value before deserialising; it never writes files |
+| `Config::validate` (`src/config.rs`, line 79) requires exactly five regions, positive finite radii increasing outwards, positive finite diffusivities, at least one cell per region, positive finite `dt_s` and `end_time_s`, `output_every_steps >= 1`, and a finite non-negative start concentration | these are the only rejection rules before web Phase 6 (D9 later allows 1 to 5 regions) |
+| `unfilled_placeholders` is private | the wrapper copies its rule for strings (Section 3, step 1) |
+| `Cell.material` is the zero-based region index of each cell, `Cell.volume` the exact shell volume | `region_of_cell` and `layer_inventory_mol` are built from them |
+| `finite_volume::run` takes `steps = ceil(end_time_s / dt_s)`, `dt = end_time_s / steps`, records rows at `step % output_every_steps == 0` and at the last step, accumulates the release with Kahan compensation and reports `balance_residual = inventory + released - initial` | the snapshot loop in step 3 copies this exactly, including the Kahan update order |
+| Code C: `postprocessing::comparison::compare_release(cfg, rows)` builds `ModalRelease::new(layers, 45 / t_min, MAX_MODES)` with `MAX_MODES = 20_000` and returns `accuracy_floor` and `min_valid_time_s`; `sturm_liouville::exact_release(layers, times, max_modes)` returns `None` before the validity time | `analytical.accuracy_floor` and `analytical.valid_from_s` come from these; times before `valid_from_s` are omitted, never filled |
+| `postprocessing::plots` writes SVG files through `plotters` | never called from the wrapper |
+| No `Instant`, `SystemTime`, `todo!` or `unimplemented!` in `src/` | the library is safe to call from wasm; the CLI (`src/main.rs`) and `examples/verify.rs` are not linked into the wrapper |
 
 Build (pattern from Outram Park `crates/dhoby-ghaut/web/dispersion/build.sh` and NUS-H2 `scripts/build_wasm.py`):
 
@@ -102,7 +116,7 @@ cargo build --release --manifest-path crates/strato-wasm/Cargo.toml --target was
 wasm-bindgen --target web --out-dir web/src/solver/pkg <wasm file>
 ```
 
-Install `wasm-bindgen-cli` at exactly the `wasm-bindgen` version in `crates/strato-wasm/Cargo.lock`, and have the build script check the match. `wasm-pack build --target web` is an acceptable alternative. Stamp the git short hash into the module and into page and worker URLs to defeat GitHub Pages caching (Outram Park uses `__BUILD__`, NUS-H2 uses `__COMMIT__`).
+Install `wasm-bindgen-cli` at exactly the `wasm-bindgen` version in `crates/strato-wasm/Cargo.lock`, and have the build script check the match. `wasm-pack build --target web` is an acceptable alternative. Stamp the git short hash into the module and into page and worker URLs to defeat GitHub Pages caching (Outram Park uses `__BUILD__` in the build scripts of its `dem`, `foam_studio`, `helical_sg` and `triso_atops` demos, not in the dispersion build; NUS-H2 uses `__COMMIT__` as a `?v=` query and in `build.json`). The installed CLI on the development machine is `wasm-bindgen 0.2.130` (2026-11-24); pin the crate to the same version.
 
 ## 4 Frontend
 

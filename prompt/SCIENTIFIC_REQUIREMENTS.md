@@ -35,7 +35,20 @@ Two independent solutions exist in `src/`:
 - **Code B**, `src/numerical/finite_volume.rs`: conservative finite volume with exact shell volumes, series-resistance face conductances, Backward Euler, subtraction-free tridiagonal elimination, Kahan-summed release and a balance residual.
 - **Code C**, `src/analytical/sturm_liouville.rs`: multilayer Sturm-Liouville eigenfunction series with Sturm-count eigenvalue isolation, modal weights, a reported accuracy floor and a validity time.
 
-Verified numbers (synthetic case `inputs/synthetic/synthetic_five_layer.toml`; source `tests/golden/v1.0/` and `docs/mathematics/v1.0.0/`): $F(2\times10^5\,\mathrm{s}) = 0.43255563909304$, first eigenvalues $3.273255671175805\times10^{-6}$ and $7.791893309400181\times10^{-5}\,\mathrm{s^{-1}}$, observed spatial order 2.00, temporal order 1.00 against a same-mesh reference, balance residual at most about $2.8\times10^{-13}$ of the initial inventory. Re-read these from the repository before displaying them.
+Verified numbers (synthetic case `inputs/synthetic/synthetic_five_layer.toml`). Each value is given with the file that holds it (checked in Phase 0 on 2026-11-24; the earlier text gave the 40-digit reference as if it were the golden value):
+
+| Quantity | Value | Where it is recorded |
+|---|---|---|
+| Exact release $F^{\mathrm{ex}}(2\times10^5\,\mathrm{s})$, Code C (Rust, 32 modes) | $0.43255563909285666$ | `tests/golden/v1.0/comparison_fv_vs_analytical.csv` (last row); printed as `4.325556390928e-1` in `main_run_stdout.txt` and `verify_stdout.txt` |
+| Exact release, 40-digit independent reference | $0.43255563909304174$ (binary64 inputs) | `docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md` (parameter table, line 2490); `docs/development/provenance.md` row 5 rounds it to 0.43255563909304 |
+| Finite-volume release $F(2\times10^5\,\mathrm{s})$, Code B, 200 cells, $\Delta t = 200$ s | $0.4324286068785298$ | `tests/golden/v1.0/timeseries.csv` (last row) |
+| Code B against Code C at the end time | $1.270322\times10^{-4}$ (maximum over output times $2.537522\times10^{-4}$) | `main_run_stdout.txt` |
+| First eigenvalues $\Lambda_1$, $\Lambda_2$ (Rust) | $3.273255671175805\times10^{-6}$ and $7.791893309400181\times10^{-5}\,\mathrm{s^{-1}}$ | `docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md` (lines 2101, 2102, 2487, 2488); not in any golden file |
+| Observed spatial order | 2.00, 2.00, 2.00, 2.00 | `main_run_stdout.txt`, `convergence_study.csv` |
+| Observed temporal order | printed 0.98, 0.97, 0.94, 0.89 against the exact series (the 200-cell spatial error enters); 0.999 to 1.000 against a same-mesh reference | `main_run_stdout.txt`; the same-mesh orders only in the v1.0.0 documents (Derivation line 3704, Final Deliverable row 20 and item I9). No Rust function computes the same-mesh reference (FUTURE) |
+| Balance residual | at most $2.806\times10^{-13}$ of the initial inventory (200 cells); $9.402717119255\times10^{-24}$ mol at the end of the main run | `verify_stdout.txt` (`CONSERVATION` lines), `main_run_stdout.txt` |
+
+Re-read these from the repository before displaying them. A page that shows a temporal order states which of the two references it uses.
 
 The synthetic case is a verification case. Its parameters are not physical TRISO data and the demo must say so.
 

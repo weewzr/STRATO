@@ -6,7 +6,7 @@ Update this file at the end of every phase and every session. The next session r
 
 | Item | Value |
 |---|---|
-| Current phase | Phase 0, in progress (policy and decisions recorded; baseline below) |
+| Current phase | Phase 0 done (2026-11-24); Phase 1 next |
 | Work branch | `feat/strato-interactive-web-demo`, created 2026-11-24 from `main` at `e3a558f` |
 | Latest commit on `main` | `e3a558f` (2026-11-24). The last commit touching `prompt/` on `main` is `7fe4421` |
 | STRATO version | 1.0.1 (licence AGPL-3.0-only since commit `8c44fb7`) |
@@ -26,7 +26,7 @@ Update this file at the end of every phase and every session. The next session r
 
 | Phase | Status | Commit | Tests run | Scientific checks |
 |---|---|---|---|---|
-| 0 Audit and architecture | in progress: v1.0 baseline and wasm check done (see "Phase 0 baseline"); API confirmation and cross-project review remain | the baseline commit on the work branch | fmt, clippy (both forms), `cargo test --all-targets`, `cargo doc` with `-D warnings`, release build, `verify`, synthetic run, `cargo check --lib --target wasm32-unknown-unknown` | outputs equal `tests/golden/v1.0/` exactly as specified (see below) |
+| 0 Audit and architecture | done 2026-11-24: baseline, wasm check, public API confirmation, fact check of `prompt/`, cross-project review (see "Phase 0 audit") | `054510e` (baseline) and the commit `docs(prompt): phase 0 - audit and architecture confirmation` | fmt, clippy (both forms), `cargo test --locked --all-targets` (20 passed), `cargo doc` with `-D warnings`, release build, `verify`, synthetic run, `cargo check --locked --lib --target wasm32-unknown-unknown`, all re-run on the Phase 0 tree; no web build or web tests exist yet (no `web/` until Phase 1) | outputs equal `tests/golden/v1.0/` exactly as specified; the verified numbers of `prompt/SCIENTIFIC_REQUIREMENTS.md` Section 2 traced to their files (one correction, see below) |
 | 1 Frontend foundation | not started | | | |
 | 2 Equation explorer | not started | | | |
 | 3 v1.0 solver integration | not started | | | |
@@ -48,12 +48,64 @@ Update this file at the end of every phase and every session. The next session r
 
 ## Remaining work
 
-Phase 0 (remaining audit items: public API against `prompt/TECHNICAL_ARCHITECTURE.md` Section 3, cross-project review) and phases 1 to 8.
+Phases 1 to 8.
 
 ## Next actions
 
-1. Phase 0: confirm the public API in `src/` against `prompt/TECHNICAL_ARCHITECTURE.md` Section 3, confirm the remaining facts in `prompt/`, and do the time-bounded cross-project review of `prompt/RAYSTORAGE_INTEGRATION.md` Section 4 (files) and Section 8 (effect on the roadmap).
-2. Phase 1.
+1. Phase 1 (frontend foundation) under `prompt/IMPLEMENTATION_ROADMAP.md`, with the visual identity of `prompt/DESIGN_SPECIFICATION.md` Section 4.1 (owner decision M6). `tokens.core.css` is to be copied from the owner's portfolio repository once it exists there; on 2026-11-24 it was not yet on that repository's `main`, so Phase 1 records the version it copies, or writes the file to the written specification and records that.
+2. Phase 1 also starts the browser self-test skeleton and the Playwright checks (`prompt/RAYSTORAGE_INTEGRATION.md` Section 8).
+3. Phase 3: follow the wrapper facts table and the panic rule added to `prompt/TECHNICAL_ARCHITECTURE.md` Section 3 in Phase 0.
+
+## Phase 0 audit (2026-11-24)
+
+### Tools
+
+Windows 11, PowerShell 5.1, per-user installs, no administrator rights. rustc 1.100.0 (0ef1bc386 2026-11-09), cargo 1.100.0, LLVM 23.1.5, host `x86_64-pc-windows-gnu`; installed targets `x86_64-pc-windows-gnu` and `wasm32-unknown-unknown`; components clippy, rustfmt, rust-src, llvm-tools; `wasm-bindgen` CLI 0.2.130; Node v24.22.3 with npm 11.19.1; Python 3.12.10; pandoc 3.14; git 2.56.1; Microsoft Edge 158.0.4370.33 (the Chromium for browser tests). No TeX and no LibreOffice on this machine, so the docs-PDF workflow cannot be run locally. No `gh` CLI: the cross-project files were read from blobless clones (see `prompt/RAYSTORAGE_INTEGRATION.md` Section 2).
+
+### Checks re-run on the Phase 0 tree
+
+| Check | Result |
+|---|---|
+| `cargo fmt --all --check` | exit 0 |
+| `cargo clippy --locked -- -D warnings`; `cargo clippy --locked --all-targets --all-features -- -D warnings` | exit 0; exit 0 |
+| `cargo test --locked --all-targets` | 14 + 0 + 3 + 3 + 0 = 20 passed, 0 failed, 0 ignored |
+| `cargo doc --locked --no-deps` with `RUSTDOCFLAGS=-D warnings` | exit 0 |
+| `cargo build --locked --release` | exit 0 |
+| `cargo run --locked --release --example verify` | `FV_VERIFICATION PASS`; standard output equal to `tests/golden/v1.0/verify_stdout.txt` line for line (33 lines) apart from `VERIFY_RUNTIME_S` (0.218527 here) |
+| `cargo run --locked --release -- inputs/synthetic/synthetic_five_layer.toml` | standard output equal to `main_run_stdout.txt` after normalising path separators (23 lines, 0 differing); the four CSV files byte-identical to the golden copies (SHA-256 equal) |
+| `cargo check --locked --lib --target wasm32-unknown-unknown` | exit 0 |
+| `git diff v1.0.1..HEAD -- src tests examples inputs` and the same against the working tree | empty |
+
+### Public API confirmed against `prompt/TECHNICAL_ARCHITECTURE.md` Section 3
+
+Every item the wrapper needs is public in `src/` at `v1.0.1`: `config::Config` with `RegionConfig`, `InitialConfig`, `TimeConfig`, `OutputConfig` (all fields public, `Deserialize` only), `Config::validate` at `src/config.rs` line 79, `config::PLACEHOLDER`; `numerical::finite_volume::{build_mesh, initial_concentration, inventory, backward_euler_step, run, explicit_dt_bound, Mesh, Cell, StepDiagnostics, TimeSeries}` with `Mesh.cells`, `Cell.volume` and `Cell.material` public; `postprocessing::comparison::{compare_release, convergence_study, layers_from_config, exact_release_at, MAX_MODES, ReleaseComparison, ConvergenceStudy}`; `analytical::sturm_liouville::{ModalRelease, exact_release, eigenvalues, Layer}`. Private as stated: `unfilled_placeholders` and the shooting layer states (D7 later adds read-only accessors). The step rule, the Kahan release sum and the balance residual of `finite_volume::run` are as Section 3 step 3 describes. Added to Section 3: a table of the facts the wrapper must respect (no `Serialize`, the required `output.directory`, the exact `validate` rules, `Cell.material` as region index, the Code C truncation `45 / t_min`) and a correction of the panic rule: `wasm32-unknown-unknown` uses `panic="abort"`, so `catch_unwind` cannot catch a panic in the browser; the wrapper must validate first and the worker must recover a trapped instance.
+
+### Scientific check of `prompt/SCIENTIFIC_REQUIREMENTS.md` Section 2
+
+Every number was traced to a repository file. All values agree with the repository, but the text called $F(2\times10^5\,\mathrm{s}) = 0.43255563909304$ a value from `tests/golden/v1.0/`: it is the 40-digit independent reference of the v1.0.0 derivation (0.43255563909304174), while the golden Code C value is 0.43255563909285666 (difference $1.9\times10^{-13}$, below the series accuracy floor $3.997\times10^{-12}$). The eigenvalues and the same-mesh temporal orders are in the v1.0.0 documents only, not in any golden file. Section 2 now lists each value with its file, including the Code B value 0.4324286068785298 and the printed temporal orders 0.98 to 0.89.
+
+### Cross-project review (time-bounded, one session)
+
+Read at the pinned commits, in the priority order of `prompt/RAYSTORAGE_INTEGRATION.md` Section 8; nothing executed, nothing copied.
+
+1. Rust/WebAssembly patterns. NUS-H2 uses a raw zero-import `cdylib` (`alloc`, `dealloc`, `call`, `abi_version`), status words `ok`, `not_converged`, `rejected`, `null` plus `engine_fields_missing` for values the engine lacks (the page prints `n/a` and never fills the gap), and measured timings with date and conditions. Outram Park uses `wasm-bindgen` with the CLI pinned to `Cargo.lock` and the hello handshake. STRATO keeps `wasm-bindgen` (decided in `prompt/TECHNICAL_ARCHITECTURE.md`); the zero-import check therefore does not transfer, the export and size check does.
+2. Numerical verification. NUS-H2 `GOLD_TOL = 1e-9` in `engine/vv/src/golden.rs` confirmed; STRATO keeps 1e-12. NUS-H2 CI regenerates its result files and compares them with the committed copies (`scripts/compare_results.py`), the model for STRATO's precompute regeneration check.
+3. Browser testing. `frontend/selftest.js` writes the verdict to `document.body.dataset.selftest`, checks the engine commit against `build.json` and the page stamp, and fetches every asset with `?v=__COMMIT__`; `site.yml` runs the self-test at normal and reduced motion with `--expect-commit`. Adopted as written in `prompt/TESTING_AND_VALIDATION.md` Section 4.
+4. Scientific provenance. Besides `data_use`, NUS-H2 classifies each reference value by `data_kind`; only `measured` rows validate physics. Added to `prompt/RAYSTORAGE_INTEGRATION.md` Section 4 for STRATO's Phase 7.
+5. Documentation workflows. `math/eq_register.csv` columns confirmed (`id, section, tier, title, latex, variables, assumptions, source, tag, engine_fn, test_id, validation`); STRATO's planned register keeps its own columns (Section 7 of that file). NUS-H2's `scripts/check_site.py` content guard is the model for the Phase 8 check of owner decisions M3 and M5.
+
+Corrections made: `prompt/RAYSTORAGE_INTEGRATION.md` (reading route without `gh`, newer `main` commits noted and not used, exact archive counts, exact `check_wasm.py` rule and why its zero-import rule does not transfer, two NUS-H2 script rows added, `data_kind` rule, Phase 0 path check recorded); `prompt/GITHUB_REFERENCES.md` Appendix B (Phase 0 path check; `__BUILD__` is in four other Outram Park web builds, not in the dispersion build); `prompt/TECHNICAL_ARCHITECTURE.md` Sections 1 and 3 (re-run wasm check, wrapper facts, panic rule, stamp locations, CLI version); `prompt/SCIENTIFIC_REQUIREMENTS.md` Section 2 (sources of the verified numbers); `prompt/DESIGN_SPECIFICATION.md` Section 4.1 (owner decision M6).
+
+### Fact check of `prompt/`
+
+Every repository path cited in `prompt/*.md` was tested. All existing-file references resolve, except `docs/mathematics/STRATO_Mathematical_Derivations.md` (cited by `src/lib.rs` line 13, frozen; already noted below). The other unresolved paths are files the plan creates (`web/`, `crates/strato-wasm/`, `scripts/web/`, `src/physics/`, `.github/workflows/web.yml`, `docs/mathematics/equation_register.csv`), paths inside the other repositories (checked there), or the suggested project allow-list file of `prompt/AUTONOMOUS_EXECUTION.md` Section 2, which the agent does not apply to itself.
+
+Noted, not changed (outside `prompt/`):
+
+- `docs/development/phase2_review_package.md` Section 3 still says the full set is (P21.1) to (P21.92) and (P22.1) to (P22.59); since `9802b2d` it runs to (P21.142) and (P22.142). Its Section 7 still shows D15 and D16 as PENDING; the owner's choices in this file rank above it.
+- The four golden files that no test asserts (`convergence_study.csv`, both stdout files) are compared only by hand; automating that comparison in `web.yml` stays open work (`prompt/TESTING_AND_VALIDATION.md` Section 1).
+
+NOT VERIFIED after Phase 0: the exact commit behind the live Outram Park site; the performance numbers of `prompt/TECHNICAL_ARCHITECTURE.md` Section 6 (no build exists); the docs-PDF build of the two Phase 2 documents (no TeX here).
 
 ## Phase 0 baseline (2026-11-24)
 
@@ -133,6 +185,7 @@ These rank first in the authority order of `prompt/MASTER_PROMPT.md`, above ever
 | M3 | The `prompt/` folder is not published on the website (not in the Pages artefact, not linked from the site) | none (new) | owner, Stage A checkpoint | 2026-11-24 |
 | M4 | Every quantity shown in the browser comes from the Rust solver through the WebAssembly wrapper or from verified precomputed output. No scientific equation or derived quantity is computed in JavaScript or TypeScript, including layer inventory shares and difference curves | the TypeScript computation of layer inventory shares (roadmap Phase 4) and of the difference curve (roadmap Phase 5) | owner, Stage A checkpoint | 2026-11-24 |
 | M5 | The sentence in the repository `README.md` about the internal SNRSI comparison is frozen exactly as it stands: not deleted, extended, repeated or quoted anywhere else (not in the demo, the portfolio or any presentation). Until computed per-temperature comparisons exist, which the owner will ask for later, no experimental-agreement figure is written anywhere | none (new) | owner, Stage A checkpoint | 2026-11-24 |
+| M6 | Visual identity and design rules. STRATO is "an instrument with a monograph behind it": open-licensed (OFL) fonts only, self-hosted (Literata, IBM Plex Sans, IBM Plex Mono); KaTeX with numbered equations; cividis colour map; the package's own result badges; a copied `tokens.core.css` from the shared written design specification in the portfolio repository; no shared component library; no command palette on this site; third-party component kits are inspiration only, nothing copied. Details in `prompt/DESIGN_SPECIFICATION.md` Section 4.1 | the open font and token choices of `prompt/DESIGN_SPECIFICATION.md` Section 4 (made specific, not replaced) | owner, Stage A checkpoint | 2026-11-24 |
 
 ## Pinned external references
 
@@ -142,9 +195,12 @@ These rank first in the authority order of `prompt/MASTER_PROMPT.md`, above ever
 | weewzr/NUSH2 | `b4817b305de5bfada5da147802cbf3aeffb9f4c1` |
 | weewzr/raystorage | `3a25c4a767b67faa3e797944ea9ac63f9265d4a1` |
 
+Checked in Phase 0 (2026-11-24): all three commits exist and every file the package names is present at them. Newer `main` commits seen and not used: outram-park-backend `a4dc9c7` (2026-11-23), NUSH2 `cfef6d5` (2026-11-19); raystorage `main` is still the pinned commit.
+
 ## Session log
 
 | Date | Session | Phases worked | Commits | Notes |
 |---|---|---|---|---|
 | 2026-11-10 | package author | none (instructions only) | `3a4319e`, `bc107b1`, `7fe4421` | package written; deep audit left to Phase 0 |
 | 2026-11-24 | Stage B setup | Phase 0 (part) | policy, decisions and baseline commits on `feat/strato-interactive-web-demo` | merge policy M1 adopted; D1 to D16 and M2 to M5 recorded; Phase 6 gate split; Stage A corrections; v1.0 baseline and wasm check pass and match the golden files exactly |
+| 2026-11-24 | Stage B, Phase 0 completion | Phase 0 | `docs(prompt): phase 0 - audit and architecture confirmation` | public API confirmed; wrapper facts and the wasm panic rule added to the architecture; verified numbers traced to their files (one source correction); cross-project review done and recorded; M6 recorded; full v1.0 suite re-run and unchanged |

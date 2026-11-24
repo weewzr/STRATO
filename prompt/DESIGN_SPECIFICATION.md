@@ -85,6 +85,20 @@ CSV and JSON of the current run, the baseline run and the comparison, each with 
 - Colour maps: cividis default, viridis option; never rainbow.
 - Accessibility: WCAG 2.2 AA contrast; every control reachable and operable by keyboard with visible focus; ARIA labels on canvases with a text summary of what they show; `prefers-reduced-motion` honoured everywhere.
 
+### 4.1 Visual identity (owner decision M6, 2026-11-24)
+
+The owner chose the identity "an instrument with a monograph behind it" for STRATO (recorded in `prompt/PROGRESS.md`, owner policy decision M6). It gives the rules above a visual form and replaces none of them; where this specification is more specific, this specification applies.
+
+- The Explore view is a calm instrument (control panel, particle, equation and profile changing together, status line). Behind it sit typeset, numbered and versioned derivation pages.
+- Fonts: open-licensed (SIL OFL) faces only, self-hosted from the site's own origin: Literata for document text and headings, IBM Plex Sans for interface text and controls, IBM Plex Mono for values, units and the status line, with tabular figures. No font from an outside host and no font under any other licence.
+- Maths: KaTeX (Section 3.2), display equations numbered and right-aligned in brackets.
+- Colour maps: cividis default, viridis option (unchanged from above).
+- Result badges: `COMPUTED v1.0`, `COMPUTED v2.0`, `PRECOMPUTED`, `MEASURED`, `ILLUSTRATIVE` (Section 5), each shown as a word plus a shape, never by colour alone.
+- Tokens: `web/src/design/tokens.css` holds STRATO's own colours and faces and imports a copied `tokens.core.css` (shared spacing, radii, durations, focus width, minimum sizes and colour-vision-safe palette). The shared written specification lives in `docs/DESIGN_SYSTEM.md` of the owner's portfolio repository; there is no shared component library and no command palette on this site.
+- Third-party component kits are inspiration only; nothing is copied from them.
+- Avoid what reads as generic: purple gradients, glowing statistic cards, decorative blobs, repeated oversized rounded cards, glass effects without purpose, vague slogans, invented metrics, decoration-only animation. Prefer editorial typography on a real type scale, one consistent card and table system, labelled navigation, figures with units and sources, and interactions that tell the reader something.
+- Every figure and exported file carries its source, the model version and the commit. Figure data come from one generator that writes CSV and JSON with a provenance header (Section 3.11 and `prompt/TECHNICAL_ARCHITECTURE.md` Section 5), never from numbers typed into components.
+
 ## 5 Labels on screen
 
 Every number, plot and particle colouring shows one of `COMPUTED v1.0`, `COMPUTED v2.0`, `PRECOMPUTED`, `ILLUSTRATIVE`, `MEASURED` (definitions in `prompt/SCIENTIFIC_REQUIREMENTS.md`). The status line names the label of the current main result.
