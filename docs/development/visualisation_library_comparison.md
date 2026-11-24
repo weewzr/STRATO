@@ -38,7 +38,7 @@ Anything not checked on an opened page is marked **not checked**. Licence compat
 
 - **What it does**: "Fast math typesetting for the web" (repository description). Renders TeX to HTML and MathML synchronously.
 - **Compatibility**: framework-free; called from a React component (`katex.render` or `renderToString`). TypeScript declarations in the package (`types/katex.d.ts`). One runtime dependency (`commander`, for the command-line tool).
-- **Release and maintenance**: v0.19.1 published 2026-10-23 (GitHub release and npm); five releases between 2026-09-23 and 2026-10-23; 33 commits since 2026-08-24; last push 2026-11-23; not archived.
+- **Release and maintenance**: v0.19.1 published 2026-10-23 (GitHub release and npm); six releases between 2026-09-23 and 2026-10-23 (v0.18.8 to v0.19.1, GitHub releases list); 33 commits since 2026-08-24; last push 2026-11-23; not archived.
 - **Licence**: MIT; compatible with AGPL-3.0-only (keep the notice).
 - **Size**: 75,947 B gzip for the script and 3,512 B gzip for the stylesheet (measured, jsDelivr `katex@0.19.1/dist/`); the fonts are extra and must be self-hosted (owner decision M6 allows the KaTeX fonts only if their licence is OFL; **not checked** here, to be checked in Phase 2 before shipping).
 - **Mobile**: no statement found; output is HTML text, so it scales with the page. Long equations need a scroll container (design specification Section 2.1).
@@ -90,7 +90,7 @@ Anything not checked on an opened page is marked **not checked**. Licence compat
 
 - **What it does**: "useful helpers for react-three-fiber" (cameras, controls, text, loaders and more).
 - **Compatibility**: peers `react ^19`, `react-dom ^19`, `three >=0.159`, `@react-three/fiber ^9.0.0` (npm 10.7.9). Runtime dependencies include `hls.js`, `@mediapipe/tasks-vision`, `troika-three-text`, `three-mesh-bvh`, `camera-controls`, `maath`, `detect-gpu` and others.
-- **Release and maintenance**: v10.7.9 released 2026-09-25 (v11 alphas since 2026-02); 7 commits since 2026-08-24; last push 2026-11-17.
+- **Release and maintenance**: v10.7.9 released 2026-09-25 (v11 alphas since 2026-01-14, latest v11.0.0-alpha.7 on 2026-09-05, npm registry times); 7 commits since 2026-08-24; last push 2026-11-17.
 - **Licence**: MIT; compatible.
 - **Size**: 1,753,692 B unpacked (metadata); a tree-shaken import was **not measured**.
 - **Mobile, accessibility**: **not checked**.
