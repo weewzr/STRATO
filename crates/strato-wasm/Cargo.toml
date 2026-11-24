@@ -1,0 +1,35 @@
+[package]
+name = "strato-wasm"
+version = "0.1.0"
+edition = "2021"
+description = "Thin WebAssembly wrapper around the verified STRATO v1.0 library: JSON in, JSON out, no physics."
+license = "AGPL-3.0-only"
+repository = "https://github.com/weewzr/STRATO"
+publish = false
+build = "build.rs"
+
+# A package of its own with its own Cargo.lock, so the verified package `strato`, its lock
+# file and its CI stay byte for byte as they are (prompt/TECHNICAL_ARCHITECTURE.md Section 2).
+[workspace]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+strato = { path = "../.." }
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+# float_roundtrip: every decimal in a request is read as the nearest double, exactly as the
+# TOML parser of the CLI reads it, so the wrapper sees the same inputs bit for bit.
+serde_json = { version = "1", features = ["float_roundtrip"] }
+toml = "0.8"
+# Pinned to the installed wasm-bindgen CLI; scripts/web/build_wasm.py checks that the two match.
+wasm-bindgen = "=0.2.130"
+
+[dev-dependencies]
+csv = "1"
+
+[profile.release]
+debug = false
+lto = true
+codegen-units = 1

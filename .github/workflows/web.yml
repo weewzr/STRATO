@@ -1,10 +1,13 @@
 name: Web demo
 
 # Web demonstration of STRATO (prompt/TECHNICAL_ARCHITECTURE.md Section 7). ci.yml and docs-pdf.yml
-# are unchanged; this workflow adds the web checks. Web phases 1 and 2: generated data checks, the
-# research catalogue check and its fixture tests, lint, type check, unit tests, build, content check,
-# browser tests and the build artefact. The wasm wrapper tests are added by web phase 3; the Pages
-# deployment by phase 8.
+# are unchanged; this workflow adds the web checks: generated data checks, the research catalogue
+# check and its fixture tests, the wasm wrapper tests (native parity with tests/golden/v1.0), the
+# wasm build with its export and size check, the precomputed-data regeneration check (which also
+# compares the native CLI output with tests/golden/v1.0 as docs/development/provenance.md Section 3
+# describes), lint, type check, unit tests, build, content check, browser tests (including the
+# browser parity tests and the self-test) and the build artefact. The Pages deployment comes with
+# web phase 8.
 
 on:
   push:
@@ -19,6 +22,10 @@ on:
       - 'docs/mathematics/**'
       - 'prompt/PROGRESS.md'
       - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'src/**'
+      - 'tests/golden/**'
+      - 'crates/**'
       - '.github/workflows/web.yml'
   pull_request:
   workflow_dispatch:
@@ -61,6 +68,31 @@ jobs:
       - name: Catalogue check fails on each of its bad fixtures
         working-directory: .
         run: python3 -I -X utf8 scripts/web/tests/test_check_catalogue.py
+      - name: Rust toolchain with the wasm target
+        working-directory: .
+        run: |
+          rustup target add wasm32-unknown-unknown
+          rustc -V
+          cargo -V
+      - name: Cache the wasm-bindgen CLI
+        id: bindgen-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/wasm-bindgen
+          key: wasm-bindgen-cli-0.2.130-${{ runner.os }}
+      - name: Install the wasm-bindgen CLI at the version of crates/strato-wasm/Cargo.lock
+        if: steps.bindgen-cache.outputs.cache-hit != 'true'
+        working-directory: .
+        run: cargo install wasm-bindgen-cli --version 0.2.130 --locked
+      - name: Wrapper tests (native parity with tests/golden/v1.0)
+        working-directory: .
+        run: cargo test --locked --manifest-path crates/strato-wasm/Cargo.toml
+      - name: Build the wasm module, check its exports and size
+        working-directory: .
+        run: sh scripts/web/build_wasm.sh
+      - name: Precomputed results equal a fresh regeneration; the native run equals tests/golden/v1.0
+        working-directory: .
+        run: sh scripts/web/precompute.sh --check
       - name: Install
         run: npm ci
       - name: Lint

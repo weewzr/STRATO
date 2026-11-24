@@ -37,6 +37,19 @@ export async function gotoSection(page: Page, id: string): Promise<void> {
   await expect(page.locator(`[data-section="${id}"] h1`)).toBeVisible();
 }
 
+/** Waits until the solver has answered for the current inputs (web phase 3). */
+export async function waitForRun(page: Page, status: 'ok' | 'rejected' = 'ok'): Promise<void> {
+  const b = page.getByTestId('block-b');
+  await expect(b).toHaveAttribute('data-run-status', status, { timeout: 20_000 });
+  const key = await b.getAttribute('data-input-key');
+  if (status === 'ok') await expect(b).toHaveAttribute('data-result-key', key ?? '');
+}
+
+/** Requests posted to the solver worker so far (stamped by solver/session.ts). */
+export async function solverRequests(page: Page): Promise<number> {
+  return Number((await page.locator('html').getAttribute('data-solver-requests')) ?? 'NaN');
+}
+
 export async function horizontalOverflow(page: Page): Promise<number> {
   return page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
 }

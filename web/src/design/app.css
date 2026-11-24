@@ -962,6 +962,178 @@ select.field__input {
   border-radius: var(--radius-sm);
 }
 
+/* ---------- Solver results in block B (web phase 3) ---------- */
+
+.readout--wide .badge {
+  align-self: center;
+}
+.is-stale .readout__value,
+.is-stale .num,
+.is-stale dd {
+  color: var(--text-muted);
+}
+.sim-note {
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+  font-style: italic;
+  color: var(--text-muted);
+}
+.sim-note::after {
+  content: '. ';
+}
+.sim-alert {
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-left: 3px solid var(--text);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-label);
+}
+.sim-alert__title {
+  margin: 0 0 var(--space-1);
+  font-weight: 600;
+}
+.sim-alert__text,
+.sim-alert__list {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  overflow-wrap: anywhere;
+}
+.sim-alert__list {
+  padding-left: var(--space-4);
+}
+
+.results {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+@media (min-width: 900px) {
+  .results {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+.layer-table tbody th {
+  white-space: nowrap;
+}
+.result-panel {
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.result-panel--empty {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--border-strong);
+}
+.result-panel__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.result-panel__title {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-label);
+  font-weight: 600;
+}
+.result-panel__note {
+  margin: var(--space-2) 0 0;
+  font-size: var(--fs-small);
+  line-height: var(--lh-ui);
+  color: var(--text-muted);
+}
+.result-panel__note:first-of-type {
+  margin-top: 0;
+}
+.result-panel__messages {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+.table--compact {
+  font-size: var(--fs-small);
+}
+.table--compact th,
+.table--compact td {
+  padding: var(--space-1) var(--space-2);
+}
+.table--compact th:first-child,
+.table--compact td:first-child {
+  padding-left: 0;
+}
+.table--compact td:last-child,
+.table--compact th:last-child {
+  padding-right: 0;
+}
+.table--compact tbody th {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.table--compact .num-col {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.table--compact tr.is-residual th,
+.table--compact tr.is-residual td {
+  border-bottom-color: var(--border-strong);
+}
+.layer-table {
+  margin-top: var(--space-3);
+}
+.layer-table .table__caption {
+  padding-bottom: var(--space-1);
+  font-size: var(--fs-small);
+}
+.layer-dot {
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  margin-right: var(--space-2);
+  vertical-align: baseline;
+  border-radius: 9999px;
+  background: var(--ring);
+}
+.diag {
+  margin: 0;
+  font-size: var(--fs-small);
+}
+.diag__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid var(--border);
+}
+.diag dt {
+  color: var(--text-muted);
+}
+.diag dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.diag__row--timing {
+  grid-template-columns: minmax(0, 1fr);
+}
+.diag__row--timing dd {
+  text-align: left;
+}
+.diag dd .muted {
+  font-family: var(--font-ui);
+}
+
 /* ---------- Placeholders: reserved places for later web phases ---------- */
 
 .placeholder {

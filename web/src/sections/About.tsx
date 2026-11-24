@@ -19,8 +19,12 @@ const BUILD_CONTENTS: { part: string; here: boolean; phase: string }[] = [
   },
   { part: 'Controls bound to the inputs, input checks, light and dark themes', here: true, phase: '1' },
   { part: 'Particle cross-section drawn to the input radii, one colour per layer (ILLUSTRATIVE)', here: true, phase: '1' },
-  { part: 'Staged equation builder (KaTeX, numbered equations) and the research status of each mechanism', here: false, phase: '2' },
-  { part: 'STRATO v1.0 solver in the browser (Rust compiled to WebAssembly, in a worker)', here: false, phase: '3' },
+  { part: 'Staged equation builder (KaTeX, numbered equations) and the research status of each mechanism', here: true, phase: '2' },
+  {
+    part: 'STRATO v1.0 solver in the browser (Rust compiled to WebAssembly, in a worker): release fraction, inventory balance with its residual, layer inventories and numerical diagnostics of every run; precomputed native output with provenance',
+    here: true,
+    phase: '3',
+  },
   { part: 'Particle view with concentration colouring, layer inventory shares, playback and the AGR-1 reference particle', here: false, phase: '4' },
   { part: 'Radial profile, release curves, model comparison, verification plots, downloads of results', here: false, phase: '5' },
   { part: 'Research catalogue: transport regimes, species entries, Materials Studio gallery, brick roadmap', here: false, phase: '5.5' },
@@ -59,7 +63,8 @@ export function About() {
       <p>
         The centre is symmetric, interfaces are in perfect contact, the outer surface is a perfect sink and the start inventory is uniform in
         the kernel. The release fraction <i>F</i>(<i>t</i>) is the share of the start inventory that has left through the outer surface. The
-        staged equation builder of web phase 2 will typeset and number these equations.
+        staged equation builder on the Explore page typesets and numbers these equations, and the simulation under it solves them with the
+        verified Rust solver compiled to WebAssembly.
       </p>
       <p>
         STRATO solves the problem two independent ways. Code B is a conservative finite-volume method with exact shell volumes and Backward

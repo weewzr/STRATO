@@ -289,14 +289,14 @@ function PreviewBanner({ stage, solved, catalogue }: { stage: Stage; solved: Sta
   if (solved >= stage) {
     return (
       <p className="live-note" data-testid="live-note">
-        Live: the simulation below solves this equation.
+        Live: the simulation below solves this equation with the verified Rust solver.
       </p>
     );
   }
   if (stage === 1) {
     return (
       <p className="live-note live-note--pending" data-testid="live-note">
-        The simulation below is of this equation; the Rust solver that runs it is connected in <Ref>web phase 3</Ref>.
+        The simulation below is of this equation; the Rust solver that runs it is loading.
       </p>
     );
   }
@@ -322,12 +322,7 @@ function PreviewBanner({ stage, solved, catalogue }: { stage: Stage; solved: Sta
             <Ref>web phase 5.5</Ref>).
           </>
         )}
-        {solved === 0 ? (
-          <>
-            {' '}
-            Solver: <Ref>web phase 3</Ref>.
-          </>
-        ) : null}
+        {solved === 0 ? ' The solver is loading.' : null}
       </p>
     </div>
   );

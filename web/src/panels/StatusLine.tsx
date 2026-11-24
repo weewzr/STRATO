@@ -3,11 +3,24 @@ import { useStrato } from '../state/store';
 import { Badge } from './Badge';
 
 /**
- * Footer status line: label of the current main result, solver state, model version and commit.
- * On phones it keeps one line: the result and the build commit.
+ * Footer status line: label of the current main result, solver state and time, model version and
+ * commit. On phones it keeps one line: the result and the build commit.
  */
 export function StatusLine({ compact = false }: { compact?: boolean }) {
   const run = useStrato((s) => s.run);
+  const solver = useStrato((s) => s.solver);
+  const info = useStrato((s) => s.runInfo);
+  const status = useStrato((s) => s.status);
+  const solverText =
+    solver.state === 'ready'
+      ? status === 'running'
+        ? 'Solver: running'
+        : info && run
+          ? `Solver: ${info.elapsedMs.toFixed(1)} ms in this browser`
+          : 'Solver: ready'
+      : solver.state === 'failed'
+        ? 'Solver: not available'
+        : 'Solver: loading';
   return (
     <footer className={`status${compact ? ' status--compact' : ''}`} aria-label="Status">
       <span className="status__item" data-testid="status-result">
@@ -16,10 +29,14 @@ export function StatusLine({ compact = false }: { compact?: boolean }) {
             Result <Badge label={run.label} />
           </>
         ) : (
-          'Result: none in this build'
+          'Result: none yet'
         )}
       </span>
-      {compact ? null : <span className="status__item">Solver: not connected (web phase 3)</span>}
+      {compact ? null : (
+        <span className="status__item" data-testid="status-solver">
+          {solverText}
+        </span>
+      )}
       {compact ? null : <span className="status__item">STRATO v{BUILD.strato_version}</span>}
       <span className="status__item" data-testid="status-commit">
         build{' '}

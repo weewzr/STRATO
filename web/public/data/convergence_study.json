@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "label": "PRECOMPUTED",
+  "kind": "convergence_study",
+  "generator": "strato 1.0.1",
+  "converter": "scripts/web/generate_data.py v1",
+  "strato_version": "1.0.1",
+  "commit": "99d21ed937d040e6c3357555003caaed2c92e5f7",
+  "input_file": "inputs/synthetic/synthetic_five_layer.toml",
+  "input_sha256": "257fe9933a4c1dee38a44545209bfafea7fc06945f389fad9aeb5f0d739afa93",
+  "command": "cargo run --locked --release -- inputs/synthetic/synthetic_five_layer.toml",
+  "rustc": "rustc 1.100.0 (0ef1bc386 2026-11-09)",
+  "created_utc": "2026-11-24T19:31:44Z",
+  "note": "Spatial and temporal refinement study of the native run; observed orders as the CLI prints them.",
+  "data": {
+    "points": {
+      "study": [
+        "spatial",
+        "spatial",
+        "spatial",
+        "spatial",
+        "spatial",
+        "temporal",
+        "temporal",
+        "temporal",
+        "temporal",
+        "temporal"
+      ],
+      "total_cells": [
+        100,
+        200,
+        400,
+        800,
+        1600,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "dt_s": [
+        200.0,
+        200.0,
+        200.0,
+        200.0,
+        200.0,
+        800.0,
+        400.0,
+        200.0,
+        100.0,
+        50.0
+      ],
+      "fv_release": [
+        0.4325337375009147,
+        0.4325501631858728,
+        0.4325542700813807,
+        0.43255529683639465,
+        0.4325555535278729,
+        0.43206441956136443,
+        0.432307130882962,
+        0.4324286068785298,
+        0.4324893749894793,
+        0.43251976657699553
+      ],
+      "abs_error_vs_exact": [
+        2.190159189069396e-05,
+        5.475906932561614e-06,
+        1.369011424667832e-06,
+        3.422564107125048e-07,
+        8.556493247269259e-08,
+        0.000491219531440934,
+        0.00024850820984334554,
+        0.00012703221427556866,
+        6.626410332605248e-05,
+        3.587251580983164e-05
+      ]
+    },
+    "exact_final_release_fraction": "4.325556390928e-1",
+    "spatial_observed_orders": "2.00,2.00,2.00,2.00",
+    "temporal_observed_orders": "0.98,0.97,0.94,0.89"
+  }
+}

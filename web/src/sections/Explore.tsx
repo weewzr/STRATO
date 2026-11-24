@@ -1,26 +1,35 @@
 import { useId } from 'react';
 import { repoFile } from '../build';
 import { findCase } from '../data/case';
+import { solvedStage } from '../equation/availability';
 import { EquationBuilder } from '../equation/EquationBuilder';
+import { BalancePanel, DiagnosticsPanel, ReleaseReadout, RunProblemNote } from '../panels/SimResults';
 import { TermExplanations } from '../equation/TermExplanations';
 import { ControlPanel } from '../panels/ControlPanel';
 import { ParticleSchematic } from '../panels/ParticleSchematic';
 import { Placeholder } from '../panels/Placeholder';
 import { hrefFor } from '../route';
-import { configDifferences, useStrato } from '../state/store';
+import { configDifferences, inputKey, useStrato } from '../state/store';
 import { validateInputs } from '../state/validation';
 import { useHeadingFocus } from './common';
 
 /**
  * The equation-first Explore page (owner decision M7; prompt/DESIGN_SPECIFICATION.md Section 2.1):
  * A governing equation, B live simulation, C controls, D explanation, E future research, in this
- * order at every width. Web phase 1 builds the frame; each placeholder names the phase that fills it.
+ * order at every width. Web phase 1 built the frame; web phase 3 connects the Rust solver in block B
+ * (release readout, inventory balance, diagnostics); each remaining placeholder names its phase.
  */
 export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenControls: () => void }) {
   const config = useStrato((s) => s.config);
   const baseline = useStrato((s) => s.baselineConfig);
   const caseId = useStrato((s) => s.caseId);
   const stage = useStrato((s) => s.stage);
+  const solver = useStrato((s) => s.solver);
+  const status = useStrato((s) => s.status);
+  const requestRun = useStrato((s) => s.requestRun);
+  const runInfo = useStrato((s) => s.runInfo);
+  const capabilities = useStrato((s) => s.capabilities);
+  const solved = solvedStage(capabilities);
   const entry = findCase(caseId);
   const h1 = useHeadingFocus();
   const ids = { b: useId(), c: useId(), d: useId(), e: useId() };
@@ -41,7 +50,15 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
       </section>
 
       {/* B: live simulation of the equation shown in A */}
-      <section className="block block--b" data-block="B" aria-labelledby={ids.b} data-testid="block-b">
+      <section
+        className="block block--b"
+        data-block="B"
+        aria-labelledby={ids.b}
+        data-testid="block-b"
+        data-input-key={inputKey(config)}
+        data-result-key={runInfo?.inputKey ?? ''}
+        data-run-status={status}
+      >
         <div className="block__head block__head--row">
           <h2 id={ids.b} className="block__title">
             Live simulation
@@ -51,14 +68,27 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           </p>
         </div>
         <div className="strip" role="group" aria-label="Simulation strip" data-testid="sim-strip">
-          <button type="button" className="btn btn--primary btn--small" aria-disabled="true" data-testid="strip-run" aria-describedby={`${ids.b}-solver`}>
+          <button
+            type="button"
+            className="btn btn--primary btn--small"
+            aria-disabled={solver.state !== 'ready'}
+            data-testid="strip-run"
+            aria-describedby={`${ids.b}-solver`}
+            onClick={() => {
+              if (solver.state === 'ready') requestRun();
+            }}
+          >
             Run
           </button>
-          <span className="strip__item" id={`${ids.b}-solver`}>
-            Solver: not connected in this build (web phase 3)
+          <span className="strip__item" id={`${ids.b}-solver`} data-testid="strip-solver" data-state={solver.state}>
+            {solver.state === 'ready' && solver.build
+              ? `Solver: STRATO ${solver.build.strato_version}, WebAssembly, ${status === 'running' ? 'running' : 'ready'}`
+              : solver.state === 'failed'
+                ? 'Solver: not available'
+                : 'Solver: loading'}
           </span>
           <span className="strip__item" data-testid="strip-stage">
-            Equation shown: stage {stage}; simulation: stage 1
+            Equation shown: stage {stage}; simulation: stage {solved > 0 ? solved : 1}
           </span>
           <span className="strip__item strip__item--muted">Playback: web phase 4</span>
           {compact ? (
@@ -70,27 +100,14 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
         <div className="sim">
           <div className="sim__particle">{entry ? <ParticleSchematic config={config} provenance={entry.provenance} /> : null}</div>
           <div className="sim__side">
-            <div className="readout readout--wide" data-testid="release-readout">
-              <p className="readout__label">Release fraction F(t)</p>
-              <p className="readout__value readout__value--none">No result</p>
-              <p className="readout__meta">
-                <span className="readout__nolabel">Label: none</span> The value and its result label appear when the solver runs (web phase 3).
-              </p>
-            </div>
+            <ReleaseReadout />
+            <RunProblemNote />
             <div className="sim__plots">
               <Placeholder phase="5" title="Radial concentration profile" testId="profile-placeholder" className="placeholder--plot">
                 <p>c(r) at the playback time, with the layer boundaries as labelled bands in the layer colours.</p>
               </Placeholder>
               <Placeholder phase="5" title="Release fraction over time" testId="release-placeholder" className="placeholder--plot">
                 <p>F(t) from the finite-volume solution and the eigenfunction series on the same axes, with a playback cursor.</p>
-              </Placeholder>
-            </div>
-            <div className="readouts">
-              <Placeholder phase="3" title="Inventory balance" testId="balance-placeholder" className="placeholder--compact">
-                <p>Inventory plus released minus start inventory, with its residual, as the Rust wrapper returns it.</p>
-              </Placeholder>
-              <Placeholder phase="3" title="Numerical diagnostics" testId="diagnostics-placeholder" className="placeholder--compact">
-                <p>Cells, steps, the time step used, the largest balance residual and the solver time.</p>
               </Placeholder>
             </div>
             <Placeholder phase="4" title="Reference fuel: AGR-1 UCO TRISO" testId="reference-fuel-placeholder" className="placeholder--compact">
@@ -105,6 +122,10 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
             </Placeholder>
           </div>
         </div>
+        <div className="results" role="group" aria-label="Inventory balance and numerical diagnostics of the run">
+          <BalancePanel />
+          <DiagnosticsPanel />
+        </div>
       </section>
 
       {/* C: controls */}
@@ -113,7 +134,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           <h2 id={ids.c} className="block__title">
             Controls
           </h2>
-          <p className="block__context">Inputs of the STRATO v1.0 format; no solver request is sent in this build.</p>
+          <p className="block__context">Inputs of the STRATO v1.0 format; a change reruns the solver after a short pause.</p>
         </div>
         {compact ? (
           <div className="controls-summary" data-testid="controls-summary">

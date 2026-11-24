@@ -1,6 +1,7 @@
 import { repoFile } from '../build';
 import { findCase, type V1Config } from '../data/case';
 import { plain } from '../format';
+import { Badge } from '../panels/Badge';
 import { useStrato } from '../state/store';
 import { SectionHeading, TableBox } from './common';
 
@@ -38,6 +39,14 @@ function rows(file: V1Config, current: V1Config): Row[] {
 }
 
 const show = (v: number | string) => (typeof v === 'number' ? plain(v) : v);
+
+/** Precomputed native output of the synthetic case (web/public/data, written by scripts/web/generate_data.py). */
+const PRECOMPUTED: { file: string; title: string; text: string }[] = [
+  { file: 'synthetic_run.timeseries.csv', title: 'Time series of the native run (CSV)', text: 'inventory, release, release fraction and balance residual at every output time.' },
+  { file: 'synthetic_run.final_profile.csv', title: 'Final concentration profile (CSV)', text: 'concentration in every cell at the end time.' },
+  { file: 'comparison_fv_vs_analytical.csv', title: 'Finite volume against the series (CSV)', text: 'Code B and Code C release fractions at every output time.' },
+  { file: 'convergence_study.csv', title: 'Convergence study (CSV)', text: 'spatial and temporal refinement errors against the exact series.' },
+];
 
 export function Data() {
   const config = useStrato((s) => s.config);
@@ -120,8 +129,21 @@ export function Data() {
           </a>
           , with a provenance header: generator, STRATO version, case file, SHA-256 and commit.
         </li>
-        <li>Run results (CSV and JSON with the same header) are added with the solver in web phase 3.</li>
+        {PRECOMPUTED.map((f) => (
+          <li key={f.file}>
+            <a href={`${import.meta.env.BASE_URL}data/${f.file}`} download data-testid={`download-${f.file}`}>
+              {f.title}
+            </a>{' '}
+            <Badge label="PRECOMPUTED" />: {f.text}
+          </li>
+        ))}
+        <li>Downloads of a live run, with the same header, come with the graphs in web phase 5.</li>
       </ul>
+      <p>
+        The precomputed files are written by <code>scripts/web/precompute.sh</code> from the native release build of STRATO; each starts with
+        a provenance header (generator, STRATO version, commit, input file and its SHA-256, command, toolchain), and continuous integration
+        regenerates them and fails if they differ.
+      </p>
 
       <h2>References</h2>
       <p>Key references of the STRATO model, as listed in the repository README.</p>

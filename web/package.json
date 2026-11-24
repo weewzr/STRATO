@@ -2,7 +2,7 @@
   "name": "strato-web",
   "private": true,
   "version": "0.1.0",
-  "description": "Interactive web demonstration of STRATO (web phase 2: staged equation builder and research status)",
+  "description": "Interactive web demonstration of STRATO (web phase 3: verified v1.0 solver in WebAssembly)",
   "license": "AGPL-3.0-only",
   "type": "module",
   "engines": {
@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "vite",
     "check:catalogue": "node scripts/check_catalogue.mjs",
-    "build": "node scripts/check_catalogue.mjs && tsc -p tsconfig.json --noEmit && vite build",
+    "build": "node scripts/check_catalogue.mjs && node scripts/check_wasm_pkg.mjs && tsc -p tsconfig.json --noEmit && vite build",
     "preview": "vite preview --port 4173 --strictPort",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",

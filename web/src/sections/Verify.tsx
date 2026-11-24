@@ -29,9 +29,19 @@ const CHECKS: { check: string; shows: string; evidence: { path: string; text: st
     evidence: [{ path: 'tests/phase1_regression.rs', text: 'tests/phase1_regression.rs' }],
   },
   {
+    check: 'Wrapper against the library',
+    shows:
+      'The WebAssembly wrapper steps the solver exactly as the library does: its time series and final profile are bit-for-bit those of finite_volume::run, and equal the delivered v1.0 outputs to 10⁻¹²; invalid and placeholder inputs are rejected with a message.',
+    evidence: [{ path: 'crates/strato-wasm/tests/parity.rs', text: 'crates/strato-wasm/tests/parity.rs' }],
+  },
+  {
     check: 'Native and browser parity',
-    shows: 'Required from web phase 3: the WebAssembly build gives the same numbers as the native build, to a relative tolerance of 10⁻¹² per value. Not yet run.',
-    evidence: [],
+    shows:
+      'The WebAssembly build in the browser gives the same numbers as the native wrapper, to a relative tolerance of 10⁻¹² per value with identical array lengths, and the delivered v1.0 outputs to 10⁻¹². Run by the browser tests in continuous integration and by the self-test of this page (?selftest=1).',
+    evidence: [
+      { path: 'web/e2e/solver.spec.ts', text: 'web/e2e/solver.spec.ts' },
+      { path: 'web/public/data/wrapper_native_synthetic.json', text: 'wrapper_native_synthetic.json' },
+    ],
   },
 ];
 
@@ -43,9 +53,9 @@ export function Verify() {
       </SectionHeading>
       <p>
         The checks below run in the repository's continuous integration and can be repeated with <code>cargo test --all-targets</code> and{' '}
-        <code>cargo run --release --example verify</code>. Their numbers are shown here from web phase 3 onwards, read from output that the
-        native STRATO binary produced (label PRECOMPUTED, with commit, input hash and command) and, for parity, from the live WebAssembly
-        run. No number is shown before that file exists.
+        <code>cargo run --release --example verify</code>. The output of the native STRATO binary for the synthetic case is published with
+        this site as precomputed files (label PRECOMPUTED, with commit, input hash and command; see Data). Their numbers are plotted here
+        in web phase 5. The live simulation on the Explore page reports its own balance residual and its difference from the series.
       </p>
       <TableBox label="Verification checks">
         <table className="table">

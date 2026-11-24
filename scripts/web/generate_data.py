@@ -22,6 +22,18 @@ catalogue
          yet is listed under ``tables_absent``. Values are copied; nothing is
          computed.
 
+precomputed
+         Run the native release binary (cargo run --locked --release) and the
+         native wasm wrapper (crates/strato-wasm, example native_run) on
+         inputs/synthetic/synthetic_five_layer.toml, and write their outputs
+         to web/public/data/ as JSON and CSV with a PRECOMPUTED provenance
+         header (prompt/TECHNICAL_ARCHITECTURE.md Section 5): the time series
+         and final profile, Code B against Code C, the convergence study, a
+         copy of tests/golden/v1.0/ for the browser parity check, and the
+         native wrapper response, the reference of the browser parity test.
+         Values are copied from the program outputs; nothing is computed
+         here. scripts/web/precompute.sh calls this subcommand.
+
 Options
 -------
 --check  Regenerate in memory and compare with the committed files. Exit 1
@@ -29,7 +41,10 @@ Options
          records when a file was written. For the catalogue the field
          ``commit`` (the tree the generator ran on) is ignored as well: a
          file cannot record the commit that contains it. The SHA-256 of every
-         input file is compared and pins the content.
+         input file is compared and pins the content. For the precomputed
+         files ``commit`` and ``rustc`` (the toolchain) are ignored as well,
+         and in the native wrapper response its stamped ``engine.commit``;
+         every value of the data is compared exactly.
 --root   (catalogue only) Repository root to read from and write to; the
          default is this repository. Used by the fixture tests of
          scripts/web/check_catalogue.py.
@@ -397,9 +412,237 @@ def cmd_catalogue(args: argparse.Namespace) -> int:
     return 0
 
 
+# ---------------------------------------------------------------------------
+# Precomputed results (prompt/TECHNICAL_ARCHITECTURE.md Section 5)
+# ---------------------------------------------------------------------------
+
+PRECOMPUTED_INPUT = "inputs/synthetic/synthetic_five_layer.toml"
+GOLDEN_DIR = "tests/golden/v1.0"
+CLI_OUT_DIR = "results/synthetic-five-layer"
+CLI_COMMAND = ["cargo", "run", "--locked", "--release", "--quiet", "--", PRECOMPUTED_INPUT]
+NATIVE_COMMAND = [
+    "cargo", "run", "--locked", "--release", "--quiet",
+    "--manifest-path", "crates/strato-wasm/Cargo.toml", "--example", "native_run", "--", PRECOMPUTED_INPUT,
+]
+# Lines of the CLI's standard output that name files (their separators depend on the platform).
+_PATH_KEYS = {"timeseries", "profile", "figure", "comparison", "convergence_study"}
+# Header fields that record when, where and with which tools a file was written; --check
+# ignores them (the data and the input hashes pin the content).
+PRECOMPUTED_VOLATILE = ("created_utc", "commit", "rustc")
+PRECOMPUTED_FILES = (
+    "synthetic_run.json",
+    "comparison_fv_vs_analytical.json",
+    "convergence_study.json",
+    "golden_v1.json",
+    "wrapper_native_synthetic.json",
+    "synthetic_run.timeseries.csv",
+    "synthetic_run.final_profile.csv",
+    "comparison_fv_vs_analytical.csv",
+    "convergence_study.csv",
+)
+
+
+def _sha256(path: pathlib.Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _columns(text: str) -> dict:
+    """CSV text to column arrays. Numbers are read with float(), which returns the double
+    that the shortest-round-trip text of the Rust csv writer denotes; an empty cell is None."""
+    rows = list(csv.reader(io.StringIO(text)))
+    head, body = rows[0], rows[1:]
+    out: dict = {h: [] for h in head}
+    for r in body:
+        for h, cell in zip(head, r):
+            if cell == "":
+                out[h].append(None)
+            else:
+                try:
+                    v: object = float(cell)
+                except ValueError:
+                    v = cell
+                if h in ("cell", "material", "total_cells"):
+                    v = int(cell)
+                out[h].append(v)
+    return out
+
+
+def _stdout_summary(text: str) -> dict:
+    out = {}
+    for line in text.splitlines():
+        if "=" not in line or line.startswith("WARNING"):
+            continue
+        k, v = line.split("=", 1)
+        if k in _PATH_KEYS:
+            continue
+        out[k] = v
+    return out
+
+
+def _run(cmd: list[str], env: dict | None = None) -> str:
+    res = subprocess.run(cmd, cwd=ROOT, check=True, capture_output=True, text=True, env=env)
+    return res.stdout
+
+
+def _rustc() -> str:
+    try:
+        return _run(["rustc", "-V"]).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return "unknown"
+
+
+def build_precomputed() -> tuple[dict[str, str], dict[str, str]]:
+    """Run the native release binary and the native wrapper on the synthetic case and return
+    {file name: text} for web/public/data/. Values are copied from the program outputs;
+    nothing is computed here."""
+    import os
+
+    inp = ROOT / PRECOMPUTED_INPUT
+    try:
+        commit_full = _git("rev-parse", "HEAD")
+    except (OSError, subprocess.CalledProcessError):
+        commit_full = "unknown"
+    version = _strato_version()
+    created = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    rustc = _rustc()
+
+    stdout = _run(CLI_COMMAND)
+    out_dir = ROOT / CLI_OUT_DIR
+    texts = {name: (out_dir / name).read_text(encoding="utf-8") for name in (
+        "timeseries.csv", "final_profile.csv", "comparison_fv_vs_analytical.csv", "convergence_study.csv")}
+
+    def header(kind: str, command: str, extra_inputs: list[dict] | None = None, note: str = "") -> dict:
+        h = {
+            "schema": SCHEMA,
+            "label": "PRECOMPUTED",
+            "kind": kind,
+            "generator": f"strato {version}",
+            "converter": f"{GENERATOR} v{GENERATOR_VERSION}",
+            "strato_version": version,
+            "commit": commit_full,
+            "input_file": PRECOMPUTED_INPUT,
+            "input_sha256": _sha256(inp),
+            "command": command,
+            "rustc": rustc,
+            "created_utc": created,
+        }
+        if extra_inputs:
+            h["inputs"] = extra_inputs
+        if note:
+            h["note"] = note
+        return h
+
+    cli = "cargo run --locked --release -- " + PRECOMPUTED_INPUT
+    files: dict[str, str] = {}
+    files["synthetic_run.json"] = _json_text({
+        **header("synthetic_run", cli, note="Time series and final profile of the native STRATO v1.0 run (Code B)."),
+        "data": {
+            "timeseries": _columns(texts["timeseries.csv"]),
+            "final_profile": _columns(texts["final_profile.csv"]),
+            "summary": _stdout_summary(stdout),
+        },
+    })
+    files["comparison_fv_vs_analytical.json"] = _json_text({
+        **header("comparison_fv_vs_analytical", cli, note="Code B against Code C at every output time, as the CLI writes it; empty series cells are null."),
+        "data": _columns(texts["comparison_fv_vs_analytical.csv"]),
+    })
+    summary = _stdout_summary(stdout)
+    files["convergence_study.json"] = _json_text({
+        **header("convergence_study", cli, note="Spatial and temporal refinement study of the native run; observed orders as the CLI prints them."),
+        "data": {
+            "points": _columns(texts["convergence_study.csv"]),
+            "exact_final_release_fraction": summary.get("exact_final_release_fraction"),
+            "spatial_observed_orders": summary.get("spatial_observed_orders"),
+            "temporal_observed_orders": summary.get("temporal_observed_orders"),
+        },
+    })
+    golden_names = ("timeseries.csv", "final_profile.csv", "comparison_fv_vs_analytical.csv", "convergence_study.csv")
+    golden_inputs = [{"path": f"{GOLDEN_DIR}/{n}", "sha256": _sha256(ROOT / GOLDEN_DIR / n)} for n in golden_names]
+    files["golden_v1.json"] = _json_text({
+        **header("golden_v1", f"copy of {GOLDEN_DIR}/", golden_inputs,
+                 "Values of the golden v1.0 files, copied for the browser parity check; not regenerated by any run."),
+        "data": {n.removesuffix(".csv"): _columns((ROOT / GOLDEN_DIR / n).read_text(encoding="utf-8")) for n in golden_names},
+    })
+    env = {**os.environ, "STRATO_BUILD_COMMIT": commit_full[:7], "STRATO_BUILD_DIRTY": "0"}
+    native = json.loads(_run(NATIVE_COMMAND, env=env))
+    files["wrapper_native_synthetic.json"] = _json_text({
+        **header("wrapper_native_run", "cargo run --locked --release --manifest-path crates/strato-wasm/Cargo.toml --example native_run -- " + PRECOMPUTED_INPUT,
+                 note="run_v1 response of the native wrapper (x86_64), the reference of the browser parity test."),
+        "data": native,
+    })
+
+    def csv_with_header(kind: str, body: str) -> str:
+        h = header(kind, cli)
+        lines = [f"# {k}: {h[k]}" for k in ("label", "kind", "generator", "converter", "strato_version", "commit",
+                                             "input_file", "input_sha256", "command", "rustc", "created_utc")]
+        return "\n".join(lines) + "\n" + body.replace("\r\n", "\n")
+
+    files["synthetic_run.timeseries.csv"] = csv_with_header("synthetic_run_timeseries", texts["timeseries.csv"])
+    files["synthetic_run.final_profile.csv"] = csv_with_header("synthetic_run_final_profile", texts["final_profile.csv"])
+    files["comparison_fv_vs_analytical.csv"] = csv_with_header("comparison_fv_vs_analytical", texts["comparison_fv_vs_analytical.csv"])
+    files["convergence_study.csv"] = csv_with_header("convergence_study", texts["convergence_study.csv"])
+    return files, {"stdout": stdout, **texts}
+
+
+def golden_comparison(raw: dict[str, str]) -> int:
+    """The comparison of docs/development/provenance.md Section 3, automated: the four CSV
+    files byte for byte, the standard output after normalising path separators."""
+    bad = 0
+    for name in ("timeseries.csv", "final_profile.csv", "comparison_fv_vs_analytical.csv", "convergence_study.csv"):
+        golden = (ROOT / GOLDEN_DIR / name).read_bytes()
+        same = raw[name].encode("utf-8") == golden
+        print(f"{'SAME   ' if same else 'DIFFERS'} {CLI_OUT_DIR}/{name} against {GOLDEN_DIR}/{name} (byte for byte)")
+        bad += not same
+    want = (ROOT / GOLDEN_DIR / "main_run_stdout.txt").read_text(encoding="utf-8").splitlines()
+    have = raw["stdout"].replace("\\", "/").splitlines()
+    same = want == have
+    print(f"{'SAME   ' if same else 'DIFFERS'} main-run standard output against {GOLDEN_DIR}/main_run_stdout.txt (path separators normalised, {len(have)} lines)")
+    return bad + (not same)
+
+
+def comparable_precomputed(name: str, text: str) -> str:
+    if name.endswith(".json"):
+        d = json.loads(text)
+        for k in PRECOMPUTED_VOLATILE:
+            d.pop(k, None)
+        if isinstance(d.get("data"), dict) and isinstance(d["data"].get("engine"), dict):
+            d["data"]["engine"].pop("commit", None)
+        return json.dumps(d, sort_keys=True)
+    keep = [l for l in text.splitlines() if not any(l.startswith(f"# {k}:") for k in PRECOMPUTED_VOLATILE)]
+    return "\n".join(keep)
+
+
+def cmd_precomputed(args: argparse.Namespace) -> int:
+    files, raw = build_precomputed()
+    golden_bad = golden_comparison(raw)
+    if args.check:
+        bad = golden_bad
+        for name in PRECOMPUTED_FILES:
+            path = CSV_DIR / name
+            rel = path.relative_to(ROOT).as_posix()
+            if not path.exists():
+                print(f"MISSING {rel}")
+                bad += 1
+            elif comparable_precomputed(name, path.read_text(encoding="utf-8")) != comparable_precomputed(name, files[name]):
+                print(f"DIFFERS {rel}")
+                bad += 1
+            else:
+                print(f"SAME    {rel}")
+        return 1 if bad else 0
+    for name in PRECOMPUTED_FILES:
+        path = CSV_DIR / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(files[name], encoding="utf-8", newline="\n")
+        print(f"WROTE   {path.relative_to(ROOT).as_posix()}")
+    return 0
+
+
 def main(argv: list[str]) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = p.add_subparsers(dest="cmd", required=True)
+    pc = sub.add_parser("precomputed", help="run the native binary and wrapper and write web/public/data/")
+    pc.add_argument("--check", action="store_true")
+    pc.set_defaults(func=cmd_precomputed)
     c = sub.add_parser("case", help="write the parameters of a TOML input case")
     c.add_argument("input")
     c.add_argument("--check", action="store_true")

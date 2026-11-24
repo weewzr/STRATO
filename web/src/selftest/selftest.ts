@@ -7,6 +7,10 @@ import { isAvailable } from '../equation/availability';
 import { SWITCH_MECHANISM, type SwitchId } from '../equation/terms';
 import { CATALOGUE, statusOf } from '../research/catalogue';
 import { SECTIONS } from '../route';
+import { compareArrays } from '../solver/compare';
+import { solverClient } from '../solver/session';
+import { GOLDEN_RTOL, PARITY_RTOL } from '../solver/tolerances';
+import type { RunReply } from '../solver/types';
 import { useStrato } from '../state/store';
 
 type Status = 'pass' | 'fail' | 'not_run';
@@ -38,6 +42,81 @@ async function waitFor(pred: () => boolean, ms = 3000): Promise<boolean> {
     await nextFrame();
   }
   return pred();
+}
+
+async function fetchJson(name: string): Promise<{ data: Record<string, unknown> } | null> {
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}data/${name}?v=${encodeURIComponent(BUILD.commit)}`, { cache: 'no-store' });
+    return res.ok ? ((await res.json()) as { data: Record<string, unknown> }) : null;
+  } catch {
+    return null;
+  }
+}
+
+type Col = (number | null)[];
+
+async function solverChecks(add: (id: string, ok: boolean, detail: string) => void): Promise<void> {
+  const ready = await waitFor(() => useStrato.getState().solver.state !== 'loading', 20000);
+  const s = useStrato.getState();
+  const build = s.solver.build;
+  add(
+    'wasm_loads',
+    ready && s.solver.state === 'ready' && build !== null && build.commit === BUILD.commit,
+    build ? `abi=${build.abi} strato=${build.strato_version} wasm commit=${build.commit} page commit=${BUILD.commit} capabilities=[${build.capabilities.join(', ')}]` : `state=${s.solver.state} ${s.solver.error ?? ''}`,
+  );
+  const client = solverClient();
+  if (!client || s.solver.state !== 'ready') {
+    add('golden_parity', false, 'no solver');
+    return;
+  }
+  let run: RunReply;
+  try {
+    // A request of its own (not runV1), so that the page's current run is not overtaken.
+    run = (await client.request<RunReply>('run_v1', { schema: 1, config: DEFAULT_CASE.config, mechanisms: ['diffusion_layered'] })).body;
+  } catch (e) {
+    add('golden_parity', false, `run failed: ${String(e)}`);
+    return;
+  }
+  if (run.status !== 'ok') {
+    add('golden_parity', false, `rejected: ${run.errors.join('; ')}`);
+    return;
+  }
+  const golden = await fetchJson('golden_v1.json');
+  const ts = golden?.data.timeseries as Record<string, Col> | undefined;
+  const fp = golden?.data.final_profile as Record<string, Col> | undefined;
+  if (!ts || !fp) {
+    add('golden_parity', false, 'golden_v1.json not loaded');
+  } else {
+    const m0 = ts.inventory_mol?.[0] ?? 0;
+    const cEnd = run.profiles[run.profiles.length - 1]?.c_mol_per_m3 ?? [];
+    const cmax = (fp.concentration_mol_m3 ?? []).reduce<number>((a, b) => (b !== null && b > a ? b : a), 0);
+    const results = [
+      compareArrays('time_s', run.times_s, ts.time_s ?? [], GOLDEN_RTOL, 1),
+      compareArrays('inventory_mol', run.inventory_mol, ts.inventory_mol ?? [], GOLDEN_RTOL, m0),
+      compareArrays('cumulative_release_mol', run.cumulative_release_mol, ts.cumulative_release_mol ?? [], GOLDEN_RTOL, m0),
+      compareArrays('release_fraction', run.release_fraction, ts.release_fraction ?? [], GOLDEN_RTOL, 1),
+      compareArrays('final_profile', cEnd, fp.concentration_mol_m3 ?? [], GOLDEN_RTOL, cmax),
+    ];
+    const bad = results.filter((r) => !r.ok);
+    add('golden_parity', bad.length === 0, bad.length === 0 ? `${results.map((r) => `${r.name}:${r.count}`).join(' ')} within ${GOLDEN_RTOL}` : bad.map((r) => `${r.name} ${JSON.stringify(r.first)} lengths ${r.sameLength}`).join('; '));
+  }
+  const native = await fetchJson('wrapper_native_synthetic.json');
+  const n = native?.data as unknown as RunReply | undefined;
+  if (!n || n.status !== 'ok') {
+    add('native_parity', false, 'wrapper_native_synthetic.json not loaded');
+    return;
+  }
+  const pairs: [string, Col, Col][] = [
+    ['times_s', run.times_s, n.times_s],
+    ['release_fraction', run.release_fraction, n.release_fraction],
+    ['inventory_mol', run.inventory_mol, n.inventory_mol],
+    ['balance_residual_mol', run.balance_residual_mol, n.balance_residual_mol],
+    ['final_profile', run.profiles[run.profiles.length - 1]?.c_mol_per_m3 ?? [], n.profiles[n.profiles.length - 1]?.c_mol_per_m3 ?? []],
+    ['analytical', run.analytical?.release_fraction ?? [], n.analytical?.release_fraction ?? []],
+  ];
+  const results = pairs.map(([name, a, b]) => compareArrays(name, a, b, PARITY_RTOL));
+  const bad = results.filter((r) => !r.ok);
+  add('native_parity', bad.length === 0, bad.length === 0 ? `${results.length} arrays equal per value within ${PARITY_RTOL}` : bad.map((r) => `${r.name} ${JSON.stringify(r.first)} failures ${r.failures}`).join('; '));
 }
 
 export async function runSelftest(): Promise<void> {
@@ -127,9 +206,9 @@ export async function runSelftest(): Promise<void> {
     add('reduced_motion', btn !== null && dur.split(',').every((d) => parseFloat(d) === 0), `button transition-duration=${dur}`);
   }
 
-  // 6. Solver checks arrive with the wasm wrapper.
-  checks.push({ id: 'wasm_loads', status: 'not_run', detail: 'no WebAssembly module before web phase 3' });
-  checks.push({ id: 'golden_parity', status: 'not_run', detail: 'no solver before web phase 3' });
+  // 6. Solver: the module loads, reports its build and capabilities, and a run of the default
+  //    case equals the golden v1.0 values (regression rule) and the native wrapper (parity rule).
+  await solverChecks(add);
 
   // 7. Failed requests (resource timing) and console errors.
   const failed = performance

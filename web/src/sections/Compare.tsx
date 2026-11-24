@@ -52,8 +52,9 @@ export function Compare() {
       <h2>Release curves</h2>
       <Note>
         <p>
-          The baseline curve, the modified curve and their difference need the solver (web phases 3 and 5). The difference curve will be the
-          series that the Rust wrapper returns; the browser does not subtract one curve from the other.
+          The baseline curve, the modified curve and their difference are plotted in web phase 5. The solver wrapper already returns the
+          difference series (compare_v1, modified minus baseline on the shared output times); the browser does not subtract one curve from
+          the other.
         </p>
       </Note>
     </article>

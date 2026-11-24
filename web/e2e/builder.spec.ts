@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Page } from '@playwright/test';
-import { expect, gotoSection, horizontalOverflow, test } from './fixtures';
+import { expect, gotoSection, horizontalOverflow, solverRequests, test, waitForRun } from './fixtures';
 
 // Web phase 2: the staged equation builder in the running build (prompt/TESTING_AND_VALIDATION.md
 // Sections 3, 3.1, 3.2 and 3.3).
@@ -33,7 +33,12 @@ test.describe('staged equation builder at 1440 x 900', () => {
   test('stages 2 to 6 show the preview banner, leave the simulation unchanged and send no request', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
+    // Web phase 3: the solver has run stage 1 before the stages are changed; selecting a stage
+    // must leave the inputs, the result and the solver request count as they are.
+    await waitForRun(page);
     const before = await simulationSnapshot(page);
+    const sentBefore = await solverRequests(page);
+    const keyBefore = await page.getByTestId('block-b').getAttribute('data-input-key');
     // Fonts and images the new equation needs may load; nothing else (no worker, data or solver request).
     const requests: string[] = [];
     page.on('request', (r) => {
@@ -46,6 +51,9 @@ test.describe('staged equation builder at 1440 x 900', () => {
       await expect(page.getByTestId('strip-stage')).toHaveText(`Equation shown: stage ${s}; simulation: stage 1`);
       expect(await simulationSnapshot(page)).toEqual(before);
     }
+    await page.waitForTimeout(400);
+    expect(await solverRequests(page)).toBe(sentBefore);
+    await expect(page.getByTestId('block-b')).toHaveAttribute('data-input-key', keyBefore ?? '');
     expect(requests).toEqual([]);
   });
 

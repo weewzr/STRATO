@@ -89,7 +89,7 @@ function LayerFields({ r, i, issueAt }: { r: RegionConfig; i: number; issueAt: (
 /**
  * Block C: the parameter controls, bound to the store. Inline (tablet and desktop) the layers sit
  * side by side as one group per layer; in the phone bottom sheet each layer is a collapsible group.
- * Nothing here runs the solver: Run stays unavailable until web phase 3.
+ * Run asks the solver session (solver/session.ts) for a run; every input change also reruns it.
  */
 export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlLayout; onClose?: (() => void) | undefined }) {
   const config = useStrato((s) => s.config);
@@ -98,6 +98,8 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
   const mechanisms = useStrato((s) => s.mechanisms);
   const capabilities = useStrato((s) => s.capabilities);
   const stage = useStrato((s) => s.stage);
+  const solverState = useStrato((s) => s.solver.state);
+  const requestRun = useStrato((s) => s.requestRun);
   const catalogue = useCatalogue();
   const introduced = switchIntroducedBy(stage);
   const { loadCase, setTimeField, setKernelConcentration, setTemperature, resetToBaseline, setCurrentAsBaseline, setMechanism } =
@@ -292,10 +294,17 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
         <button
           type="button"
           className="btn btn--primary"
-          aria-disabled="true"
+          aria-disabled={solverState !== 'ready'}
           aria-describedby={ids.run}
           data-testid="run"
-          onClick={() => setAnnounce('Run is not available yet: the Rust solver is connected in web phase 3.')}
+          onClick={() => {
+            if (solverState !== 'ready') {
+              setAnnounce(solverState === 'failed' ? 'Run is not available: the solver could not be loaded.' : 'The solver is still loading.');
+              return;
+            }
+            requestRun();
+            setAnnounce('Running the current inputs.');
+          }}
         >
           Run
         </button>
@@ -323,7 +332,8 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
         </button>
       </div>
       <p id={ids.run} className="field__hint">
-        Run needs the Rust solver compiled to WebAssembly, which this build does not include yet (web phase 3).
+        The verified STRATO v1.0 solver, compiled to WebAssembly, runs in your browser. A change of input reruns it after a short pause;
+        Run starts a run at once.
       </p>
       <p className="visually-hidden" role="status" aria-live="polite" data-testid="announce">
         {announce}

@@ -1,4 +1,4 @@
-import { expect, gotoSection, SECTIONS, test } from './fixtures';
+import { expect, gotoSection, SECTIONS, test, waitForRun } from './fixtures';
 
 test.describe('reduced motion', () => {
   test.use({ viewport: { width: 1280, height: 800 }, reducedMotion: 'reduce' });
@@ -76,12 +76,17 @@ test.describe('content and data', () => {
     await expect(table.locator('tr.is-changed')).toContainText('1e-12');
   });
 
-  test('the status line names the build commit and states that no result exists yet', async ({ page, problems }) => {
+  // Web phase 3: once the solver has run, the status line carries the result label of the run and
+  // the solver time; the WebAssembly module reports the same commit as the page.
+  test('the status line names the build commit, the result label and the solver time', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     const build = (await (await page.request.get('/STRATO/build.json')).json()) as { commit: string };
     await expect(page.getByTestId('status-commit')).toContainText(build.commit);
-    await expect(page.getByTestId('status-result')).toHaveText('Result: none in this build');
+    await waitForRun(page);
+    await expect(page.getByTestId('status-result')).toHaveText('Result COMPUTED v1.0');
+    await expect(page.getByTestId('status-solver')).toContainText(/ms in this browser/);
+    await expect(page.getByTestId('diagnostics-panel')).toContainText(`WebAssembly build ${build.commit}`);
     expect(await page.locator('meta[name="strato-build"]').getAttribute('content')).toBe(build.commit);
   });
 

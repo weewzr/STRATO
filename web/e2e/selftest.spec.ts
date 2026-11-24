@@ -9,7 +9,7 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
     await page.emulateMedia({ reducedMotion });
     const q = expectCommit ? `?selftest=1&expect=${encodeURIComponent(expectCommit)}` : '?selftest=1';
     await page.goto(`./${q}`);
-    await expect(page.locator('body')).toHaveAttribute('data-selftest', /^(pass|fail)$/, { timeout: 20_000 });
+    await expect(page.locator('body')).toHaveAttribute('data-selftest', /^(pass|fail)$/, { timeout: 40_000 });
     const verdict = JSON.parse((await page.locator('#selftest-result').textContent()) ?? '{}') as {
       result: string;
       checks: { id: string; status: string; detail: string }[];
@@ -18,6 +18,10 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
     const failed = verdict.checks.filter((c) => c.status === 'fail');
     expect(failed, JSON.stringify(failed)).toEqual([]);
     expect(verdict.result).toBe('pass');
+    // Web phase 3: the solver checks run and pass (they were not_run before the wasm module existed).
+    for (const id of ['wasm_loads', 'golden_parity', 'native_parity']) {
+      expect(verdict.checks.find((c) => c.id === id)?.status, id).toBe('pass');
+    }
     if (expectCommit) expect(verdict.checks.find((c) => c.id === 'expected_commit')?.status).toBe('pass');
     if (reducedMotion === 'reduce') expect(verdict.checks.find((c) => c.id === 'reduced_motion')?.status).toBe('pass');
   });

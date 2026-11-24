@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { cloneConfig, DEFAULT_CASE, findCase, type RegionConfig, type V1Config } from '../data/case';
 import { isAvailable } from '../equation/availability';
 import { SWITCH_MECHANISM, type Stage } from '../equation/terms';
-import type { RunResponse } from '../solver/types';
+import type { BuildInfo, RunResponse } from '../solver/types';
 
 // Mechanism switches; the ids map to mechanism_id rows of data/research/mechanisms.csv through
 // SWITCH_MECHANISM (equation/terms.ts): decay -> decay, source -> generation, arrhenius -> diffusivity_temperature.
@@ -21,6 +21,31 @@ export interface MechanismState {
   available: boolean;
 }
 
+/** The WebAssembly solver as the page sees it (web phase 3). */
+export interface SolverState {
+  state: 'loading' | 'ready' | 'failed';
+  build: BuildInfo | null;
+  error: string | null;
+  /** Workers replaced after a trap or a time-out. */
+  restarts: number;
+}
+
+/** The last run reply that is not a result: rejected inputs or a solver failure. */
+export interface RunProblem {
+  kind: 'rejected' | 'error';
+  messages: string[];
+}
+
+export interface RunInfo {
+  /** Wall time of the wrapper call in the worker (performance.now()), not a result. */
+  elapsedMs: number;
+  requestId: number;
+  /** Key of the inputs the result belongs to (inputKey of the config sent). */
+  inputKey: string;
+  /** Mechanism ids that isAvailable() removed from the request. */
+  dropped: string[];
+}
+
 export interface StratoState {
   caseId: string;
   config: V1Config;
@@ -33,6 +58,9 @@ export interface StratoState {
   run: RunResponse | null;
   baselineRun: RunResponse | null;
   status: RunStatus;
+  solver: SolverState;
+  runInfo: RunInfo | null;
+  problem: RunProblem | null;
   playback: { tIndex: number; playing: boolean; speed: number };
   view: {
     showComparison: boolean;
@@ -54,6 +82,23 @@ export interface StratoState {
   /** Records build_info().capabilities of the wasm wrapper and recomputes availability (web phase 3 calls it). */
   setCapabilities: (capabilities: string[]) => void;
   selectLayer: (index: number | null) => void;
+  setSolver: (patch: Partial<SolverState>) => void;
+  /** Records a solver reply: a result, rejected inputs or a failure (called by solver/session.ts). */
+  setRunOutcome: (outcome: { run: RunResponse; info: RunInfo } | { problem: RunProblem; info: RunInfo | null }) => void;
+  setRunning: () => void;
+  /** Asks the solver session for a run now; a no-op until solver/session.ts installs it. */
+  requestRun: () => void;
+}
+
+/** A key of the inputs (display and tests only): equal configs give equal keys. */
+export function inputKey(cfg: V1Config): string {
+  const text = JSON.stringify(cfg);
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(16).padStart(8, '0');
 }
 
 const MECHANISM_KEYS: Mechanism[] = ['decay', 'source', 'arrhenius'];
@@ -80,6 +125,9 @@ export function initialState() {
     run: null,
     baselineRun: null,
     status: 'idle' as RunStatus,
+    solver: { state: 'loading', build: null, error: null, restarts: 0 } as SolverState,
+    runInfo: null as RunInfo | null,
+    problem: null as RunProblem | null,
     playback: { tIndex: 0, playing: false, speed: 1 },
     view: { showComparison: false, showDifference: false, showValidation: false, logColour: false, selectedLayer: null },
   };
@@ -144,6 +192,17 @@ export const useStrato = create<StratoState>()((set, get) => ({
   setCapabilities: (capabilities) => set({ capabilities: [...capabilities], mechanisms: mechanismsFor(capabilities, get().mechanisms) }),
 
   selectLayer: (index) => set({ view: { ...get().view, selectedLayer: index } }),
+
+  setSolver: (patch) => set({ solver: { ...get().solver, ...patch } }),
+
+  setRunOutcome: (outcome) => {
+    if ('run' in outcome) set({ run: outcome.run, runInfo: outcome.info, problem: null, status: 'ok' });
+    else set({ run: null, runInfo: outcome.info, problem: outcome.problem, status: outcome.problem.kind });
+  },
+
+  setRunning: () => set({ status: 'running' }),
+
+  requestRun: () => undefined,
 }));
 
 export interface ConfigDifference {

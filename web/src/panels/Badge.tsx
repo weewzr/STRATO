@@ -24,8 +24,8 @@ export function Badge({ label }: { label: ResultLabel }) {
 }
 
 /** A number in scientific notation with an optional unit, typeset with a superscript exponent. */
-export function Sci({ value, unit }: { value: number; unit?: ReactNode }) {
-  const { mantissa, exponent } = sciParts(value);
+export function Sci({ value, unit, digits }: { value: number; unit?: ReactNode; digits?: number }) {
+  const { mantissa, exponent } = sciParts(value, digits);
   return (
     <span className="num">
       {exponent === null ? (

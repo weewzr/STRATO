@@ -634,7 +634,7 @@ export function balanceFor(stage: Stage): { equations: ShownEquation[]; note: st
           source: { doc: 'v1', tag: '3.9', section: '3.5.4 Cumulative release and release fraction', verbatim: L`F(t) = \frac{M_{\mathrm{rel}}(t)}{M^0} = 1 - \frac{M(t)}{M^0}` },
         },
       ],
-      note: 'The values of each term and the residual come from the Rust wrapper once the solver is connected (web phase 3).',
+      note: 'The values of each term and the residual for the current run are under “Inventory balance” in the live simulation below, as the Rust wrapper returns them; nothing is computed in the browser.',
     };
   }
   return {

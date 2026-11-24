@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { BLOCKS, blockTops, expect, gotoSection, horizontalOverflow, test, VIEWPORTS } from './fixtures';
+import { BLOCKS, blockTops, expect, gotoSection, horizontalOverflow, solverRequests, test, VIEWPORTS, waitForRun } from './fixtures';
 
 // Equation-first page structure (owner decision M7): blocks A to E in this order at every width,
 // and the fold requirement at 1440 x 900 (prompt/TESTING_AND_VALIDATION.md Section 3.3).
@@ -55,6 +55,8 @@ for (const colorScheme of ['light', 'dark'] as const) {
       test('the equation block and the top of the simulation are visible without scrolling', async ({ page, problems }) => {
         void problems;
         await gotoSection(page, 'explore');
+        // Web phase 3: measure with the solver's result in place (the readout then carries its label).
+        await waitForRun(page);
         await page.evaluate(() => document.fonts.ready);
         expect(await page.evaluate(() => window.scrollY)).toBe(0);
         const footerTop = (await page.locator('footer.status').boundingBox())?.y ?? 900;
@@ -68,9 +70,9 @@ for (const colorScheme of ['light', 'dark'] as const) {
           expect(box.x + box.width, `${id} right`).toBeLessThanOrEqual(1440);
           expect(box.y + box.height, `${id} bottom above the status line`).toBeLessThanOrEqual(footerTop + 0.5);
         }
-        // Each of the two simulation elements carries its result label (or states that no result exists yet).
+        // Each of the two simulation elements carries its result label, inside the measured box.
         await expect(page.getByTestId('particle').locator('.badge')).toHaveText('ILLUSTRATIVE');
-        await expect(page.getByTestId('release-readout')).toContainText('Label: none');
+        await expect(page.getByTestId('release-readout').locator('.badge')).toHaveText('COMPUTED v1.0');
         await expectOrder(page);
       });
     });
@@ -84,27 +86,38 @@ test.describe('placeholders', () => {
     void problems;
     await gotoSection(page, 'explore');
     const phases = await page.locator('[data-placeholder-phase]').evaluateAll((els) => els.map((e) => e.getAttribute('data-placeholder-phase')));
-    // Web phase 2 replaced the two phase-2 placeholders with the equation builder and the term explanations.
-    expect(phases.length).toBeGreaterThanOrEqual(6);
+    // Web phase 2 replaced the two phase-2 placeholders with the equation builder and the term
+    // explanations; web phase 3 replaced the two phase-3 placeholders with the solver's inventory
+    // balance and diagnostics.
+    expect(phases.length).toBeGreaterThanOrEqual(4);
     expect(phases).not.toContain('2');
+    expect(phases).not.toContain('3');
     for (const p of phases) expect(p).toMatch(/^\d(\.\d)?$/);
     await expect(page.locator('[data-placeholder-phase] .badge')).toHaveCount(0);
     await expect(page.getByTestId('simulation-case')).toContainText('Synthetic five-layer verification case, not AGR-1 data');
   });
 
-  test('the strip Run button and the mechanism switches send nothing and stay off', async ({ page, problems }) => {
+  // Web phase 3: Run now runs the solver; the mechanism switches still send nothing (Section 3.2).
+  test('the mechanism switches send nothing and stay off; Run sends exactly one solver request', async ({ page, problems }) => {
     void problems;
     const requests: string[] = [];
     await gotoSection(page, 'explore');
+    await waitForRun(page);
+    const before = await solverRequests(page);
+    expect(before).toBeGreaterThanOrEqual(1);
     page.on('request', (r) => requests.push(r.url()));
     // aria-disabled controls stay focusable and clickable; force skips Playwright's enabled check.
-    await page.getByTestId('strip-run').click({ force: true });
-    await page.getByTestId('run').click({ force: true });
     for (const id of ['source', 'decay', 'arrhenius']) {
       await page.getByTestId(`mech-${id}`).click({ force: true });
       await expect(page.getByTestId(`mech-${id}`)).toHaveAttribute('aria-checked', 'false');
     }
-    await expect(page.getByTestId('status-result')).toHaveText('Result: none in this build');
+    await page.waitForTimeout(400);
+    expect(await solverRequests(page)).toBe(before);
+    expect(requests).toEqual([]);
+    await page.getByTestId('strip-run').click();
+    await expect.poll(() => solverRequests(page)).toBe(before + 1);
+    await waitForRun(page);
+    await expect(page.getByTestId('status-result')).toHaveText('Result COMPUTED v1.0');
     expect(requests).toEqual([]);
   });
 });

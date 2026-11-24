@@ -135,15 +135,18 @@ describe('Explore page (owner decision M7)', () => {
     render(<App />);
     const b = screen.getByTestId('block-b');
     expect(within(b).getByTestId('particle')).toBeTruthy();
-    expect(within(b).getByTestId('release-readout').textContent).toContain('No result');
+    // Without a solver reply (no worker in this test) the readout says so and carries no label.
+    expect(within(b).getByTestId('release-readout').textContent).toContain('Waiting for the solver');
+    expect(within(b).getByTestId('release-readout').querySelector('.badge')).toBeNull();
     expect(within(b).getByTestId('simulation-case').textContent).toContain('not AGR-1 data');
   });
 
   it('marks every later-phase area as a placeholder with its phase and no result label', () => {
     render(<App />);
     const ph = Array.from(document.querySelectorAll<HTMLElement>('[data-placeholder-phase]'));
-    // Web phase 2 filled the two phase-2 placeholders (equation builder in A, terms in D).
-    expect(ph.map((p) => p.dataset.placeholderPhase)).toEqual(['5', '5', '3', '3', '4', '5.5']);
+    // Web phase 2 filled the two phase-2 placeholders (equation builder in A, terms in D); web
+    // phase 3 filled the two phase-3 placeholders (inventory balance and diagnostics in B).
+    expect(ph.map((p) => p.dataset.placeholderPhase)).toEqual(['5', '5', '4', '5.5']);
     for (const p of ph) {
       expect(p.textContent).toMatch(/^Placeholder/);
       expect(p.querySelector('.badge')).toBeNull();

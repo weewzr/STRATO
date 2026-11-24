@@ -79,18 +79,20 @@ describe('selecting a stage changes the display only', () => {
     });
   }
 
-  it('stage 1 shows no preview banner and says the solver arrives in web phase 3', () => {
+  // Web phase 3 connects the solver: before it reports its capabilities, stage 1 says the solver
+  // is loading (the Phase 2 text named web phase 3).
+  it('stage 1 shows no preview banner and says the solver is loading before it reports', () => {
     render(<EquationBuilder compact={false} />);
     expect(screen.queryByTestId('preview-banner')).toBeNull();
-    expect(screen.getByTestId('live-note').textContent).toMatch(/connected in web phase 3/);
+    expect(screen.getByTestId('live-note').textContent).toMatch(/Rust solver that runs it is loading/);
   });
 
   it('with the v1.0 capability, stage 1 is live and stage 2 is a preview', () => {
     act(() => useStrato.getState().setCapabilities(['diffusion_layered']));
     render(<EquationBuilder compact={false} />);
-    expect(screen.getByTestId('live-note').textContent).toBe('Live: the simulation below solves this equation.');
+    expect(screen.getByTestId('live-note').textContent).toBe('Live: the simulation below solves this equation with the verified Rust solver.');
     act(() => screen.getByTestId('stage-2').click());
-    expect(screen.getByTestId('preview-banner').textContent).not.toMatch(/Solver:/);
+    expect(screen.getByTestId('preview-banner').textContent).not.toMatch(/Solver|loading/);
   });
 });
 
