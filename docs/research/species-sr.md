@@ -56,7 +56,7 @@ with the FRG strontium rows (two branches in SiC, `A3-03` and `A3-04`) chosen by
 
 ## Potential Materials Studio calculations
 
-Planned: strontium and europium substitutional and interstitial configurations in 3C-SiC and at a grain boundary (gallery item `ms-sr-eu-sic`). None has been performed; the gallery shows a Pending placeholder only. An ideal crystal does not represent the polycrystalline coating [ref:kirchhofer2013].
+Planned: strontium and europium substitutional and interstitial configurations in 3C-SiC and at a grain boundary (gallery item `ms-sr-eu-sic`). None has been performed; the calculation is planned for a future phase of the project, and the gallery shows a Pending placeholder only. An ideal crystal does not represent the polycrystalline coating [ref:kirchhofer2013].
 
 ## Experimental comparison opportunities
 

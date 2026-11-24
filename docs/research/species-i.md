@@ -30,7 +30,7 @@ The register decay constant of I-131 is 9.996681 × 10⁻⁷ s⁻¹. Its precurs
 ## Candidate release mechanisms
 
 1. **Release through failed coatings** (Regime C): the dominant expectation in the literature, as for the fission gases [ref:iaea1997].
-2. **Trap emission in kernel and buffer** during temperature transients, with a burst fraction and a gradual emission described by empirical functions (HRB model coded in TRAGAS) [ref:iaea1997].
+2. **Trap emission in kernel and buffer** during temperature transients: the fractional release is described by two empirical functions, a gradual emission from traps and a fraction that escapes the traps in a burst [ref:iaea1997]. The related HRB model of fission-gas and iodine release from defective particles during temperature transients is coded in TRAGAS [ref:iaea1997].
 3. **Release from heavy-metal contamination** outside the particles, which in AGR-1 dominated the measured fission-gas release (see [Xenon](species-xe.md)) [ref:scates2010].
 
 ## Current evidence
@@ -44,7 +44,7 @@ Iodine would use the Phase 2 layered equation ((P21.1)) with the I-131 decay con
 
 ## Potential Materials Studio calculations
 
-Planned: iodine, krypton and xenon at vacancy sites and in small cavities of 3C-SiC (gallery item `ms-noble-gas-sic`). Not performed; Pending placeholder only. Iodine chemistry with caesium (for example CsI) is not covered by this item.
+Planned: iodine, krypton and xenon at vacancy sites and in small cavities of 3C-SiC (gallery item `ms-noble-gas-sic`). Not performed; planned for a future phase of the project; Pending placeholder only. Iodine chemistry with caesium (for example CsI) is not covered by this item.
 
 ## Experimental comparison opportunities
 

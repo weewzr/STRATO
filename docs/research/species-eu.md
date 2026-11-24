@@ -46,7 +46,7 @@ A matrix region (or an outer boundary condition other than free release) would b
 
 ## Potential Materials Studio calculations
 
-Planned: europium (with strontium) in 3C-SiC and at a SiC grain boundary (gallery item `ms-sr-eu-sic`). Not performed; Pending placeholder only. Atomistic energies would not be effective diffusivities.
+Planned: europium (with strontium) in 3C-SiC and at a SiC grain boundary (gallery item `ms-sr-eu-sic`). Not performed; planned for a future phase of the project; Pending placeholder only. Atomistic energies would not be effective diffusivities.
 
 ## Experimental comparison opportunities
 

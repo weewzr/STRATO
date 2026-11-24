@@ -21,8 +21,8 @@ The register decay constant of Kr-85 is 2.045347 × 10⁻⁹ s⁻¹. Kr-89 and K
 
 - **Kernel.** TECDOC-978 rows for iodine, krypton and xenon in UO2 (`A1-05` normal operation; `A1-06`, `A1-07` accident conditions) [ref:iaea1997]; Collin et al. used the accident-condition rows for the UCO kernel (`C16-16`, `C16-17`); rule E3 applies.
 - **IPyC and OPyC.** FRG two-branch rows `A2-04`, `A2-05` (krypton and xenon), USA rows `A2-09`, `A2-10`, Russian row `A2-14` [ref:iaea1997]. Pyrocarbon matters for krypton: particles with failed SiC kept most of their krypton while one pyrocarbon layer stayed intact [ref:morris2016].
-- **SiC.** The FRG data set chosen by owner decision D4 has no krypton (or xenon) row for SiC. Collin et al. used the Japanese xenon-in-SiC row for krypton (register row `C16-20`, equal to `A3-17`); this is a register data gap for Phase 2.2.
-- **Matrix.** Russian row `A4-14`; Collin et al. used the TECDOC-978 "iodine in pores" row for the krypton matrix value (`C16-21`); outside STRATO's particle domain.
+- **SiC.** The FRG data set chosen by owner decision D4 has no krypton (or xenon) row for SiC. The krypton-in-SiC value used by Collin et al. (register row `C16-20`) has the same coefficients as the Japanese xenon row `A3-17`; this is a register data gap for Phase 2.2.
+- **Matrix.** Russian row `A4-14`; the krypton matrix value used by Collin et al. (`C16-21`) has the same coefficients as the TECDOC-978 "iodine in pores" row `A4-06`; outside STRATO's particle domain.
 
 ## Candidate release mechanisms
 
@@ -53,7 +53,7 @@ with $\lambda_{\mathrm{Kr\text{-}85}} = 2.045347\times10^{-9}\ \mathrm{s^{-1}}$ 
 
 ## Potential Materials Studio calculations
 
-Planned: krypton (with xenon and iodine) at vacancy sites and small cavities in 3C-SiC (gallery item `ms-noble-gas-sic`). Not performed; Pending placeholder only.
+Planned: krypton (with xenon and iodine) at vacancy sites and small cavities in 3C-SiC (gallery item `ms-noble-gas-sic`). Not performed; planned for a future phase of the project; Pending placeholder only.
 
 ## Experimental comparison opportunities
 

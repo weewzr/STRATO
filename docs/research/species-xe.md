@@ -18,7 +18,7 @@ The register knows xenon only as a precursor (Xe-137 in `data/nuclear/fission_yi
 
 ## Relevant TRISO layers
 
-- **Kernel.** Register rows `A1-05`, `A1-06`, `A1-07` (iodine, krypton and xenon together, UO2) and `T71-04`, `T71-05` (IAEA, 2012) [ref:iaea1997]; rule E3 applies to UCO.
+- **Kernel.** Register rows `A1-05`, `A1-06`, `A1-07` (iodine, krypton and xenon together, UO2) [ref:iaea1997], and `T71-04`, `T71-05`, which the register takes from IAEA TECDOC-1674 (IAEA, 2012; not a catalogue reference); rule E3 applies to UCO.
 - **IPyC and OPyC.** Rows `A2-04`, `A2-05` (FRG, two branches) and `A2-09`, `A2-10` (USA), krypton and xenon together [ref:iaea1997]. An intact OPyC significantly delays gaseous fission products that have passed the SiC [ref:iaea1997].
 - **SiC.** Only Japanese xenon rows exist in the register (`A3-17`, and `A3-18`, `A3-19` whose nuclide label is inferred) [ref:iaea1997]; the FRG data set chosen by owner decision D4 has no xenon row for SiC.
 - **Matrix and structural graphite.** Row `A5-14` (xenon in structural graphite, only $D/r^2$ transferable); outside STRATO's particle domain.
@@ -26,7 +26,7 @@ The register knows xenon only as a precursor (Xe-137 in `data/nuclear/fission_yi
 ## Candidate release mechanisms
 
 1. **Release from particles with failed coatings** (Regime C) [ref:iaea1997] [ref:scates2010].
-2. **Release from heavy-metal contamination** outside the particles: in AGR-1 all measured releases were consistent with, and assumed to come from, uranium contamination, and comparison with models indicated gas diffusing from "tramp" uranium [ref:scates2010].
+2. **Release from heavy-metal contamination** outside the particles: in AGR-1 all measured releases were consistent with, and assumed to come from, uranium contamination, and comparison with models indicated gas diffusing from "tramp" uranium [ref:scates2010]. The source places this contamination in the graphite of the capsule and the matrix surrounding the fuel, while its conclusion speaks of tramp uranium "inside the TRISO coating layers"; the location is therefore not settled by this source [ref:scates2010].
 3. **Diffusion and recoil from intact particles** (Regime A): the R/B models used for AGR-1 include terms for failure, contamination and direct recoil of fission fragments, with diffusion modelled by the Booth equivalent-sphere model, which depends on the diffusion coefficient and the half-life of the isotope [ref:scates2010].
 4. **Trap emission in kernel and buffer** during temperature transients, as interpreted for xenon and iodine in a German experiment [ref:iaea1997].
 
@@ -49,7 +49,7 @@ with $f_{\mathrm{fail}}$ the fraction of failed TRISO particles and $f_{\mathrm{
 
 ## Potential Materials Studio calculations
 
-Planned: xenon (with krypton and iodine) at vacancy sites and small cavities in 3C-SiC (gallery item `ms-noble-gas-sic`). Not performed; Pending placeholder only.
+Planned: xenon (with krypton and iodine) at vacancy sites and small cavities in 3C-SiC (gallery item `ms-noble-gas-sic`). Not performed; planned for a future phase of the project; Pending placeholder only.
 
 ## Experimental comparison opportunities
 
@@ -60,7 +60,7 @@ The AGR R/B data come from a gas-cooled irradiation with an inert sweep gas [ref
 
 ## Research limitations
 
-- No xenon nuclide is in the decay register and no xenon yield row is registered for a xenon product.
+- No xenon nuclide is in the decay register; the only xenon yield rows (Xe-137) are registered as precursors of Cs-137, not as xenon sources.
 - The SiC xenon rows are Japanese only, and one of them carries an inferred label.
 - AGR-1 gas release is dominated by contamination, not by intact particles [ref:scates2010].
 

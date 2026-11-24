@@ -23,7 +23,7 @@ The register decay constant of Cs-137 is 7.302187 × 10⁻¹⁰ s⁻¹. Cs-134 i
 
 ## Relevant TRISO layers
 
-- **Kernel.** The register holds caesium kernel diffusivities only for UO2 (`data/diffusivity/arrhenius.csv#A1-01`, `#A1-02`, two branches, from [ref:iaea1997]); Collin et al. used the same UO2 values for the AGR-1 UCO kernel for lack of UCO data (register rows `C16-05`, `C16-06`). Using them for AGR-1 is an assumption that must be labelled (rule E3). PARFUME comparisons with AGR-1 suggest the caesium diffusivity in UCO may be overestimated by a factor of up to 250 [ref:collin2015].
+- **Kernel.** The register holds caesium kernel diffusivities only for UO2 (`data/diffusivity/arrhenius.csv#A1-01`, `#A1-02`, two branches, from [ref:iaea1997]); Collin et al. used the same UO2 values for the AGR-1 UCO kernel for lack of published UCO data [ref:collin2015] (register rows `C16-05`, `C16-06`). Using them for AGR-1 is an assumption that must be labelled (rule E3). PARFUME comparisons with AGR-1 suggest the caesium diffusivity in UCO may be overestimated by a factor of up to 250 [ref:collin2015].
 - **Buffer.** Treated as non-retentive in the literature data sets (register rows `BUF-01`, `C16-22`).
 - **IPyC and OPyC.** Caesium passes intact pyrocarbon with relative ease [ref:demkowicz2016]; register rows `A2-01`, `A2-06`, `A2-11`, `A2-12` (several national fits).
 - **SiC.** The barrier on which caesium retention depends. Register rows `A3-01`, `A3-02` (FRG, two branches, the first with a fast-fluence factor), `A3-06` to `A3-09` (USA, lower and upper curves), `A3-13`, `A3-14` (Japan), `A3-20` (Russian Federation) [ref:iaea1997].
@@ -43,7 +43,7 @@ The catalogue entry for these mechanisms is [Caesium retention and barrier integ
 - **AGR-1 irradiation.** Cs-134 release below 3 × 10⁻⁶ from compacts with intact SiC; four particles with in-pile SiC failure; the caesium released in Capsules 5 and 6 came mostly from those particles [ref:demkowicz2016].
 - **AGR-1 safety tests.** At 1600 °C, five of eight compacts released less than 10⁻⁵ Cs-134 (a few percent of one particle); each of the other three had one particle with failed SiC. Estimated SiC failures: 3 of about 33,100 particles at 1600 °C, about 4 of 8300 at 1700 °C and about 23 of 16,500 at 1800 °C. In this limited sample, the Variant 3 compacts (finer-grained SiC) released caesium later at 1800 °C [ref:morris2016].
 - **Empirical diffusivities disagree.** TECDOC-978 states that the US reference model assumes no diffusion of caesium (and strontium) through SiC, while US, German, Japanese and Russian diffusion fits exist [ref:iaea1997]. A PARFUME comparison with AGR-1 irradiation data over-predicted caesium release by a factor of up to 3 for particles with failed SiC and up to 100 for intact particles, which the authors attribute to diffusivities overestimated in UCO (up to a factor of 250) and in SiC (about 40 % on average) [ref:collin2015]. For the safety tests the over-prediction for intact particles reached up to five orders of magnitude [ref:collin2016]. Collin et al. derived tentative correction factors; by owner decision D4 such AGR-1 correction factors are never used as STRATO defaults.
-- **Atomistic.** Density-functional metadynamics at 1500 K gives caesium diffusion coefficients at β-SiC grain boundaries of 3.91 × 10⁻²³ to 2.15 × 10⁻²¹ m² s⁻¹, very much slower than experiment, which the authors read as a sign that a different mechanism operates [ref:rabone2015]. These are atomistic values for specific boundaries, not effective diffusivities of the coating.
+- **Atomistic.** Density-functional metadynamics at 1500 K gives caesium diffusion coefficients along a Σ5 grain boundary of β-SiC of 3.91 × 10⁻²³ to 2.15 × 10⁻²¹ m² s⁻¹, very much slower than experiment, which the authors read as a sign that a different mechanism operates [ref:rabone2015]. These are atomistic values for specific boundaries, not effective diffusivities of the coating.
 
 ## Proposed governing-equation extensions
 
@@ -65,7 +65,7 @@ with $\Gamma$ the fast-neutron fluence in $10^{25}\ \mathrm{m^{-2}}$ ($E > 16$ f
 
 ## Potential Materials Studio calculations
 
-Planned atomistic calculations for caesium are listed in the [Materials Studio gallery](materials_studio_gallery.md) (item `ms-cs-sic-gb`: caesium at SiC grain boundaries and in the bulk). None has been performed. An ideal 3C-SiC cell would not represent the polycrystalline AGR-1 coating [ref:kirchhofer2013], and atomistic barriers or diffusion coefficients are not effective diffusivities; the atomistic caesium values already published disagree with experiment by orders of magnitude [ref:rabone2015].
+Planned atomistic calculations for caesium are listed in the [Materials Studio gallery](materials_studio_gallery.md) (item `ms-cs-sic-gb`: caesium at SiC grain boundaries and in the bulk). None has been performed; the calculations are planned for a future phase of the project. An ideal 3C-SiC cell would not represent the polycrystalline AGR-1 coating [ref:kirchhofer2013], and atomistic barriers or diffusion coefficients are not effective diffusivities; the atomistic caesium values already published disagree with experiment by orders of magnitude [ref:rabone2015].
 
 ## Experimental comparison opportunities
 
