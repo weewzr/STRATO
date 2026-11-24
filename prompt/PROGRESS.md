@@ -26,7 +26,7 @@ Update this file at the end of every phase and every session. The next session r
 
 | Phase | Status | Commit | Tests run | Scientific checks |
 |---|---|---|---|---|
-| 0 Audit and architecture | not started | | | |
+| 0 Audit and architecture | in progress: v1.0 baseline and wasm check done (see "Phase 0 baseline"); API confirmation and cross-project review remain | the baseline commit on the work branch | fmt, clippy (both forms), `cargo test --all-targets`, `cargo doc` with `-D warnings`, release build, `verify`, synthetic run, `cargo check --lib --target wasm32-unknown-unknown` | outputs equal `tests/golden/v1.0/` exactly as specified (see below) |
 | 1 Frontend foundation | not started | | | |
 | 2 Equation explorer | not started | | | |
 | 3 v1.0 solver integration | not started | | | |
@@ -54,6 +54,36 @@ Phase 0 (remaining audit items: public API against `prompt/TECHNICAL_ARCHITECTUR
 
 1. Phase 0: confirm the public API in `src/` against `prompt/TECHNICAL_ARCHITECTURE.md` Section 3, confirm the remaining facts in `prompt/`, and do the time-bounded cross-project review of `prompt/RAYSTORAGE_INTEGRATION.md` Section 4 (files) and Section 8 (effect on the roadmap).
 2. Phase 1.
+
+## Phase 0 baseline (2026-11-24)
+
+Run on the untouched v1.0 tree (`main` at `e3a558f` plus `prompt/` edits only) on Windows 11 with rustc 1.100.0 (0ef1bc386 2026-11-09) and cargo 1.100.0, host `x86_64-pc-windows-gnu`, targets `x86_64-pc-windows-gnu` and `wasm32-unknown-unknown`; wasm-bindgen CLI 0.2.130 present.
+
+| Check | Command | Result |
+|---|---|---|
+| Format | `cargo fmt --all --check` | pass (exit 0, no output) |
+| Lint | `cargo clippy -- -D warnings` | pass (exit 0) |
+| Lint, CI form | `cargo clippy --all-targets --all-features -- -D warnings` | pass (exit 0) |
+| Tests | `cargo test --all-targets` | pass: 14 unit, 3 cross-method (`tests/finite_volume_vs_analytical.rs`), 3 regression (`tests/phase1_regression.rs`); 20 passed, 0 failed, 0 ignored. Re-run on the commit that recorded the decisions: same result |
+| Docs | `cargo doc --no-deps` with `RUSTDOCFLAGS=-D warnings` | pass (exit 0) |
+| Release build | `cargo build --release` | pass (exit 0) |
+| Wasm check | `cargo check --lib --target wasm32-unknown-unknown` | pass (exit 0) |
+| Verification | `cargo run --release --example verify` | prints `FV_VERIFICATION PASS` (exit 0); `VERIFY_RUNTIME_S 0.222089` on this machine |
+| Synthetic run | `cargo run --release -- inputs/synthetic/synthetic_five_layer.toml` | exit 0; `final_release_fraction=4.324286068785e-1`, `max_final_balance_residual_mol=9.402717119255e-24` |
+| Frozen code | `git diff v1.0.1..HEAD -- src tests examples inputs` | empty (0 lines) |
+
+Comparison with `tests/golden/v1.0/`, made as in `docs/development/provenance.md` Section 3:
+
+| Output | Rule | Result |
+|---|---|---|
+| `verify` standard output | identical apart from the `VERIFY_RUNTIME_S` line | identical: same line count, 0 differing lines |
+| main-run standard output | identical after normalising path separators (the Windows run prints `results/synthetic-five-layer\timeseries.csv`, the golden file has `/`) | identical: 0 differing lines |
+| `timeseries.csv` | byte for byte | byte-identical (14244 bytes, same SHA-256) |
+| `final_profile.csv` | byte for byte | byte-identical (9701 bytes) |
+| `convergence_study.csv` | byte for byte | byte-identical (650 bytes) |
+| `comparison_fv_vs_analytical.csv` | byte for byte | byte-identical (7159 bytes). The one last-digit difference at t = 6.8e4 s recorded in provenance Section 3 for rustc 1.96.0 does not occur with this GNU-host toolchain |
+
+No golden file was edited. The CLI writes its CSV files to `results/synthetic-five-layer/`, which is git-ignored.
 
 ## Corrections made on 2026-11-24 (Stage A audit)
 
@@ -116,4 +146,5 @@ These rank first in the authority order of `prompt/MASTER_PROMPT.md`, above ever
 
 | Date | Session | Phases worked | Commits | Notes |
 |---|---|---|---|---|
-| 2026-11-10 | package author | none (instructions only) | the `prompt/` commit | package written; deep audit left to Phase 0 |
+| 2026-11-10 | package author | none (instructions only) | `3a4319e`, `bc107b1`, `7fe4421` | package written; deep audit left to Phase 0 |
+| 2026-11-24 | Stage B setup | Phase 0 (part) | policy, decisions and baseline commits on `feat/strato-interactive-web-demo` | merge policy M1 adopted; D1 to D16 and M2 to M5 recorded; Phase 6 gate split; Stage A corrections; v1.0 baseline and wasm check pass and match the golden files exactly |
