@@ -165,7 +165,7 @@ Never shown for a pending mechanism: concentration profiles, migration barriers,
 
 Nine species, each with its own expandable entry or page: Ag (silver), Pd (palladium), Cs (caesium), Sr (strontium), Eu (europium), I (iodine), Ru (ruthenium), Xe (xenon), Kr (krypton). Each entry explains: why it matters; the relevant TRISO layers; candidate release mechanisms; current evidence; proposed governing-equation extensions; potential Materials Studio calculations; experimental comparison opportunities; research limitations; implementation status (the statuses of that species' mechanism rows).
 
-Rules: no entry implies that a species is already simulated; mechanisms are never activated automatically for every species; stable and radioactive isotopes are distinguished, and half-lives and decay constants come from `data/nuclear/decay.csv` or a cited source (a nuclide missing from the register is marked as such, not filled in).
+Rules: no entry implies that a species is already simulated; mechanisms are never activated automatically for every species; stable and radioactive isotopes are distinguished, and half-lives and decay constants come from `data/nuclear/decay.csv` or a cited source (a nuclide missing from the register is marked as such, not filled in); an entry that mentions downstream FLiBe or cover-gas transport says that this modelling does not exist in STRATO today and is "planned for a future phase" (Section 7.7).
 
 ### 7.5 Materials Studio gallery
 
@@ -176,7 +176,7 @@ Each item has: a scientific caption; an accessible explanation (also the image's
 Rules (rule E5):
 
 - Only genuine BIOVIA Materials Studio screenshots supplied by the owner with method and conditions are shown as screenshots. No imitation screenshot, rendering or mock-up is made.
-- Where a calculation has not been performed, the item is a Pending placeholder: a plain panel with the word PENDING and a description of the planned calculation, no picture. The owner confirmed on 2026-11-24 that no Materials Studio screenshots or structure files exist yet; the gallery says in words that these calculations will be built in future phases.
+- Where a calculation has not been performed, the item is a Pending placeholder: a plain panel with the word PENDING and a description of the planned calculation, no picture. The owner confirmed on 2026-11-24 that no Materials Studio screenshots or structure files exist yet; every placeholder says in words a reader sees that the calculation has not been performed and is "planned for a future phase", with no date and no promised result.
 - Actual screenshots and interactive reconstructions (for example a later atomistic viewer of an exported structure, rule E6) are labelled differently and never mixed in one figure.
 - An ideal 3C-SiC crystal is never presented as representing the full polycrystalline SiC coating; published microstructural evidence guides SiC illustrations where available.
 - Atomistic migration barriers are never presented as, or converted on the page into, a macroscopic effective diffusivity.
@@ -185,12 +185,19 @@ Rules (rule E5):
 
 A page that shows the brick-by-brick development sequence of the brief (bricks 1 to 9), each with its research status and the web phase that delivers it (mapping in `prompt/IMPLEMENTATION_ROADMAP.md`). Bricks 4 to 9 are catalogue entries with status PENDING and no implementation.
 
+The page names two items among the future phases, each with what it needs before it can start (owner answer of 2026-11-24):
+
+- **Materials Studio calculations** (gallery, Section 7.5): needs genuine BIOVIA Materials Studio screenshots or exported structure files supplied by the owner, each with its computational method and simulation conditions.
+- **FLiBe and cover-gas transport** (Brick 9, Section 7.7): needs FLiBe or cover-gas data from a cited source and a transport model for that environment, kept separate from the gas-cooled AGR conditions.
+
+Wording rule: both items, and every other future phase on this page, are described only as "planned for a future phase". No future phase is dated and no result is promised.
+
 ### 7.7 Reference fuel and experimental conditions
 
 - AGR-1 UCO TRISO is the primary reference fuel. Its five layers (fuel kernel, buffer, inner pyrolytic carbon, silicon carbide, outer pyrolytic carbon) are drawn from the registered geometry in `data/geometry/geometry.csv`: by default the AGR-1 Baseline characterisation means (design `AGR1-B-M16`, rows G-01 to G-05, Morris et al. (2016) Table 2, status verified); other registered AGR-1 sets are selectable and labelled with their own row ids.
 - Material properties are shown only from registered rows. The registered kernel diffusivities are for UO2; any AGR-1 use of them is labelled with that assumption (rule E3).
 - AGR-2 is named as a future independent comparison and AGR-3/4 as a future failed-particle transport study; neither is shown as data before rows exist in `data/`.
-- The AGR experiments were made under gas-cooled conditions. Any later FLiBe or cover-gas work is a separate, downstream topic (Brick 9, PENDING, described only as planned, rule E4; the owner confirmed on 2026-11-24 that no FLiBe or cover-gas material exists yet, and the Brick 9 entry and the brick roadmap page say that this work will be built in future phases) and is never shown on the same axes or in the same table as AGR results without saying so.
+- The AGR experiments were made under gas-cooled conditions. Any later FLiBe or cover-gas work is a separate, downstream topic (Brick 9, PENDING, described only as planned, rule E4; the owner confirmed on 2026-11-24 that no FLiBe or cover-gas material exists yet, and the Brick 9 entry, every species entry that mentions downstream transport and the brick roadmap page say that this modelling does not exist in STRATO today and is "planned for a future phase", with no date and no promised result, Section 7.6) and is never shown on the same axes or in the same table as AGR results without saying so.
 
 ## 8 Other sections
 

@@ -260,7 +260,7 @@ Library page layout (mobile first, per an HTML comment in the file):
 - one section per domain, each a heading, a short paragraph and wrapping tap-target buttons ("chips"); one demo may appear under several headings; a `featured` chip marks the suggested first click;
 - every demo link carries `data-kind="demo"` and `data-terms="..."` so the site search indexes it (`scripts/build-search-index.sh`).
 
-Directly relevant to STRATO: the same library page also holds a **TRISO-ATOPS demo** (`demos/triso-atops/`, eight rungs: triso, decay, walk, layers, failure, chemistry, release, source-term) that draws the same five-layer particle (kernel, buffer, IPyC, SiC, OPyC). It is a closer cousin of STRATO than the dispersion demo and should be studied first for layout of particle and release content. The dispersion demo is the better reference for the control panel and map-style field view.
+Directly relevant to STRATO: the same library page also holds a **TRISO-ATOPS demo** (`demos/triso-atops/`, eight rungs: triso, decay, walk, layers, failure, chemistry, release, source-term) that draws the same five-layer particle (kernel, buffer, IPyC, SiC, OPyC). It is a closer cousin of STRATO than the dispersion demo and should be studied first for layout of particle and release content. The dispersion demo is the better reference for the control panel and map-style field view (for the controls themselves only; its page structure is superseded by owner decision M7, see Section 8 item 1).
 
 ### 2. Page layout of the dispersion demo (and the shared frame it uses)
 
@@ -380,7 +380,7 @@ Quote of the one build line that matters (from `crates/dhoby-ghaut/web/dispersio
 
 ### 8. UI ideas STRATO should borrow
 
-1. **Fixed frame**: one big main view, a folding control panel ("Hide controls" and "Controls »"), `+`, `-` and `Reset` buttons always visible, 44 px touch targets, panel folded under about 700 px. This maps directly onto a React layout with a resizable panel.
+1. **Fixed frame**: one big main view, a folding control panel ("Hide controls" and "Controls »"), `+`, `-` and `Reset` buttons always visible, 44 px touch targets, panel folded under about 700 px. This maps directly onto a React layout with a resizable panel. Superseded for page structure by owner decision M7 (`prompt/DESIGN_SPECIFICATION.md` Section 2: equation first, live simulation under it, then the controls; the particle and the equation are never hidden behind a control drawer); keep only the always-visible `+`, `-` and `Reset` buttons and the 44 px touch targets.
 2. **A rung ladder with a deep-link name** (`?rung=<name>`) and an optional `&step=<name>`. For STRATO the rungs could be: particle, baseline diffusion, decay, generation, D(T), comparison, verification, validation. One table drives both directions (demo to lesson and lesson to demo).
 3. **Query-string state** for reproducible views (`pick`, `now`, `hold`), with unknown keys ignored. Cheap and valuable for sharing a result.
 4. **Every figure carries a caption** naming the quantity, scale (log or linear, number of decades) and maximum, plus a status line with the last calculation time and where it ran.
