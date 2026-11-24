@@ -16,7 +16,7 @@ const dir = process.env.SHOTS_DIR ?? '';
 const json = (...p: string[]) => JSON.parse(readFileSync(join(process.cwd(), ...p), 'utf8')) as unknown;
 const colormaps = json('src', 'generated', 'colormaps.json') as { data: Record<'cividis' | 'viridis', { rgb8: number[][] }> };
 const reference = json('src', 'generated', 'agr1_reference.json') as {
-  data: { default_set: string; sets: { set_id: string; layers: { row_id: string; value_text: string; outer_radius_text: string; status: string }[] }[] };
+  data: { default_set: string; sets: { set_id: string; link: string | null; layers: { row_id: string; value_text: string; outer_radius_text: string; status: string }[] }[] };
 };
 
 /**
@@ -161,7 +161,7 @@ test.describe('reduced motion', () => {
 test.describe('3D cutaway', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('renders, rotates with the arrow keys, zooms and resets, and keeps the equation and the profile on the first screen', async ({ page, problems }, info) => {
+  test('renders, rotates with the arrow keys, zooms and resets, and keeps the equation, the particle box with its controls and the profile on the first screen', async ({ page, problems }, info) => {
     void problems;
     await gotoSection(page, 'explore');
     await waitForRun(page);
@@ -170,6 +170,37 @@ test.describe('3D cutaway', () => {
     await expect(c).toBeVisible({ timeout: 20_000 });
     await expect.poll(async () => Number((await c.getAttribute('data-frames')) ?? '0'), { timeout: 20_000 }).toBeGreaterThan(0);
     await expect(page.getByTestId('particle')).toHaveAttribute('data-view', '3d');
+    // Fold, measured on the first screen before any click can scroll the page: the 3D view takes
+    // the place of the 2D drawing at no greater height, so the equation, the whole particle box
+    // with its 3D controls and key help, the release readout and the top of the profile area stay
+    // above the status line.
+    await page.evaluate(() => window.scrollTo(0, 0));
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+    const footerTop = (await page.locator('footer.status').boundingBox())?.y ?? 900;
+    for (const id of ['block-a', 'particle', 'p3d-canvas', 'p3d-controls', 'p3d-zoom-in', 'p3d-zoom-out', 'p3d-reset', 'p3d-keys', 'release-readout', 'profile-placeholder']) {
+      const box = await page.getByTestId(id).boundingBox();
+      expect(box, id).not.toBeNull();
+      expect(box?.y ?? -1, `${id} top`).toBeGreaterThanOrEqual(0);
+      expect((box?.y ?? 0) + (id === 'profile-placeholder' ? 0 : (box?.height ?? 0)), id).toBeLessThanOrEqual(footerTop + 0.5);
+    }
+    // The buttons lie inside the scene's box, clear of the particle at the default view (about 92 %
+    // of the stage height, centred), and the 3D drawing is no taller than the 2D one.
+    const canvasBox = (await c.boundingBox())!;
+    for (const id of ['p3d-zoom-in', 'p3d-zoom-out', 'p3d-reset']) {
+      const b = (await page.getByTestId(id).boundingBox())!;
+      expect(b.x + b.width, id).toBeLessThanOrEqual(canvasBox.x + canvasBox.width + 0.5);
+      expect(b.y + b.height, id).toBeLessThanOrEqual(canvasBox.y + canvasBox.height + 0.5);
+      expect(b.x, id).toBeGreaterThanOrEqual(canvasBox.x + canvasBox.width / 2 + 0.46 * canvasBox.height);
+    }
+    const drawing3d = (await page.locator('.particle__drawing').boundingBox())!.height;
+    await page.getByTestId('view-2d').click();
+    await expect(page.getByTestId('xsec')).toBeVisible();
+    const drawing2d = (await page.locator('.particle__drawing').boundingBox())!.height;
+    expect(drawing3d).toBeLessThanOrEqual(drawing2d + 0.5);
+    await page.getByTestId('view-3d').click();
+    await expect(c).toBeVisible({ timeout: 20_000 });
+    await expect.poll(async () => Number((await c.getAttribute('data-frames')) ?? '0'), { timeout: 20_000 }).toBeGreaterThan(0);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
     const az0 = Number(await c.getAttribute('data-azimuth'));
     await c.focus();
     await page.keyboard.press('ArrowRight');
@@ -179,13 +210,8 @@ test.describe('3D cutaway', () => {
     await page.keyboard.press('-');
     await page.getByTestId('p3d-reset').click();
     expect(Number(await c.getAttribute('data-azimuth'))).toBe(az0);
-    // Fold: the 3D view takes the place of the 2D drawing; the equation and the profile area stay on screen.
-    const footerTop = (await page.locator('footer.status').boundingBox())?.y ?? 900;
-    for (const id of ['block-a', 'particle', 'release-readout', 'profile-placeholder']) {
-      const box = await page.getByTestId(id).boundingBox();
-      expect(box, id).not.toBeNull();
-      expect((box?.y ?? 0) + (id === 'profile-placeholder' ? 0 : (box?.height ?? 0)), id).toBeLessThanOrEqual(footerTop + 0.5);
-    }
+    // The buttons were on screen, so using them did not scroll the page.
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
     // Playback in 3D: one rendered frame per new row, measured.
     await page.getByTestId('pb-slider').fill('0');
     await page.getByTestId('pb-speed').selectOption('8');
@@ -240,6 +266,15 @@ test.describe('AGR-1 reference particle', () => {
     for (const set of reference.data.sets) {
       await ref.getByTestId('reference-set').selectOption(set.set_id);
       await expect(ref).toHaveAttribute('data-set', set.set_id);
+      // Every link the reader can follow is a public https URL; no register-local file note is shown.
+      const hrefs = await ref.locator('a').evaluateAll((as) => as.map((a) => a.getAttribute('href') ?? ''));
+      expect(hrefs.length, set.set_id).toBeGreaterThan(0);
+      for (const h of hrefs) expect(h, `${set.set_id} href`).toMatch(/^https:\/\//);
+      await expect(ref).not.toContainText('file:');
+      await expect(ref).not.toContainText('.pdf');
+      await expect(ref).not.toContainText('idx');
+      if (set.link) await expect(ref.getByTestId('reference-link')).toHaveAttribute('href', set.link);
+      else await expect(ref.getByTestId('reference-no-link')).toContainText('no verified public link in the register');
       for (const l of set.layers) {
         const tr = ref.locator(`tr[data-row="${l.row_id}"]`);
         await expect(tr).toContainText(l.value_text);

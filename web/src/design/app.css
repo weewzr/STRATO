@@ -2342,13 +2342,19 @@ select.field__input {
   color: var(--text-muted);
 }
 
-/* 3D cutaway: the same box as the 2D drawing. */
-.p3d__canvas {
+/* 3D cutaway: takes the place of the 2D drawing and is no taller (stage plus one line of key help).
+   The particle fills about 92 % of the stage height at the default view, which leaves an empty
+   margin on the right for the zoom and reset buttons. */
+.p3d__stage {
   position: relative;
   width: 100%;
   max-width: 20rem;
-  aspect-ratio: 4 / 3;
   margin: 0 auto;
+}
+.p3d__canvas {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
   border-radius: var(--radius-sm);
   touch-action: none;
   cursor: grab;
@@ -2358,15 +2364,23 @@ select.field__input {
   outline-offset: var(--focus-offset);
 }
 .p3d__controls {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.p3d__controls .btn--icon {
+  width: var(--touch-min);
+  padding: 0;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
 }
 .p3d__keys {
-  flex: 1 1 12rem;
+  max-width: 20rem;
+  margin: var(--space-1) auto 0;
   font-size: var(--fs-small);
+  line-height: 1.35;
   color: var(--text-muted);
 }
 

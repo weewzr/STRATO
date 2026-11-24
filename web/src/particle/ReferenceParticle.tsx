@@ -80,9 +80,13 @@ export function ReferenceParticle() {
             {set.link ? (
               <>
                 {' '}
-                <a href={set.link}>{set.link.replace('https://doi.org/', 'doi:')}</a>
+                <a href={set.link} data-testid="reference-link">
+                  {set.link.replace('https://doi.org/', 'doi:')}
+                </a>
               </>
-            ) : null}
+            ) : (
+              <span data-testid="reference-no-link">; {set.link_status}</span>
+            )}
             ; evidence class {set.evidence_class}; register status {set.statuses.join(', ')}.
           </p>
         </div>

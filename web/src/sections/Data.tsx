@@ -141,16 +141,18 @@ export function Data() {
           <a href={`${import.meta.env.BASE_URL}data/agr1_reference_geometry.csv`} download data-testid="download-agr1-geometry">
             AGR-1 reference-particle geometry (CSV)
           </a>
-          : the registered kernel diameter and coating thicknesses of each AGR-1 set with row ids, status and source, and the outer
-          radii drawn by the reference view; written from <code>data/geometry/geometry.csv</code> by{' '}
-          <code>scripts/web/generate_data.py geometry</code>. Registered geometry, not a simulation.
+          : the registered kernel diameter and coating thicknesses of each AGR-1 set with row ids, status, source, location in the
+          source and public link where the register holds one, and the outer radii drawn by the reference view; written from{' '}
+          <code>data/geometry/geometry.csv</code> by <code>scripts/web/generate_data.py geometry</code>. Registered geometry, not a
+          simulation.
         </li>
         <li>Downloads of a live run, with the same header, come with the graphs in web phase 5.</li>
       </ul>
       <p>
         The precomputed files are written by <code>scripts/web/precompute.sh</code> from the native release build of STRATO; each starts with
         a provenance header (generator, STRATO version, commit, input file and its SHA-256, command, toolchain), and continuous integration
-        regenerates them and fails if they differ.
+        regenerates them and fails if they differ. In every generated file, including the AGR-1 geometry file, the commit in the header is
+        the source commit the file was generated from: a file cannot record the commit that contains it.
       </p>
 
       <h2>References</h2>

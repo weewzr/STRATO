@@ -263,55 +263,62 @@ export default function Particle3D({ run, label, onError }: { run: RunOk; label:
 
   return (
     <div className="p3d" data-testid="particle-3d">
-      <div
-        ref={wrap}
-        className="p3d__canvas"
-        tabIndex={0}
-        role="img"
-        aria-label={label}
-        aria-describedby="p3d-keys"
-        data-testid="p3d-canvas"
-        onKeyDown={onKeyDown}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-      >
-        <Canvas
-          frameloop="demand"
-          flat
-          dpr={[1, 2]}
-          camera={{ fov: 35, near: 0.1, far: 50 }}
-          gl={{ antialias: true, alpha: true, powerPreference: 'default' }}
-          onCreated={({ gl }) => {
-            if (!gl.getContext()) onError('WebGL context not created');
-          }}
+      {/* The stage takes the place of the 2D drawing at no greater height: the zoom and reset buttons sit
+          over the empty right margin of the scene, and the key help is one short line under it. */}
+      <div className="p3d__stage">
+        <div
+          ref={wrap}
+          className="p3d__canvas"
+          tabIndex={0}
+          role="img"
+          aria-label={label}
+          aria-describedby="p3d-keys"
+          data-testid="p3d-canvas"
+          onKeyDown={onKeyDown}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
         >
-          <Invalidator register={(fn) => (redraw.current = fn)} />
-          <Scene
-            run={run}
-            orbit={orbit}
-            onFrame={() => {
-              frames.current += 1;
-              if (wrap.current) wrap.current.dataset.frames = String(frames.current);
+          <Canvas
+            frameloop="demand"
+            flat
+            dpr={[1, 2]}
+            camera={{ fov: 35, near: 0.1, far: 50 }}
+            gl={{ antialias: true, alpha: true, powerPreference: 'default' }}
+            onCreated={({ gl }) => {
+              if (!gl.getContext()) onError('WebGL context not created');
             }}
-          />
-        </Canvas>
+          >
+            <Invalidator register={(fn) => (redraw.current = fn)} />
+            <Scene
+              run={run}
+              orbit={orbit}
+              onFrame={() => {
+                frames.current += 1;
+                if (wrap.current) wrap.current.dataset.frames = String(frames.current);
+              }}
+            />
+          </Canvas>
+        </div>
+        <div className="p3d__controls" role="group" aria-label="3D view controls" data-testid="p3d-controls">
+          <button type="button" className="btn btn--small btn--icon" aria-label="Zoom in" title="Zoom in" onClick={() => change({ distance: orbit.current.distance / ZOOM_STEP })} data-testid="p3d-zoom-in">
+            <span aria-hidden="true">+</span>
+          </button>
+          <button type="button" className="btn btn--small btn--icon" aria-label="Zoom out" title="Zoom out" onClick={() => change({ distance: orbit.current.distance * ZOOM_STEP })} data-testid="p3d-zoom-out">
+            <span aria-hidden="true">−</span>
+          </button>
+          <button type="button" className="btn btn--small btn--icon" aria-label="Reset view" title="Reset view" onClick={() => change({ ...DEFAULT_VIEW })} data-testid="p3d-reset">
+            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+              <path d="M3.5 8a4.5 4.5 0 1 0 1.32-3.18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              <path d="M4.2 1.8v3.4h3.4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
       </div>
-      <div className="p3d__controls" role="group" aria-label="3D view controls">
-        <button type="button" className="btn btn--small btn--icon" aria-label="Zoom in" onClick={() => change({ distance: orbit.current.distance / ZOOM_STEP })} data-testid="p3d-zoom-in">
-          <span aria-hidden="true">+</span>
-        </button>
-        <button type="button" className="btn btn--small btn--icon" aria-label="Zoom out" onClick={() => change({ distance: orbit.current.distance * ZOOM_STEP })} data-testid="p3d-zoom-out">
-          <span aria-hidden="true">−</span>
-        </button>
-        <button type="button" className="btn btn--small" onClick={() => change({ ...DEFAULT_VIEW })} data-testid="p3d-reset">
-          Reset view
-        </button>
-        <span id="p3d-keys" className="p3d__keys">
-          Drag or use the arrow keys to rotate; + and − zoom; 0 resets.
-        </span>
-      </div>
+      <p id="p3d-keys" className="p3d__keys" data-testid="p3d-keys">
+        Drag or arrow keys: rotate. + and −: zoom. 0: reset.
+      </p>
     </div>
   );
 }

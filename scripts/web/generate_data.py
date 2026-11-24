@@ -805,6 +805,22 @@ def _reader_location(text: str) -> str:
     return "; ".join(p for p in parts if p)
 
 
+LINK_VERIFIED = "public link in the register"
+LINK_NOT_VERIFIED = "no verified public link in the register"
+
+
+def _public_link(text: str) -> tuple[str | None, str]:
+    """The register's link if it is a public http(s) URL, else None; and a status in words.
+
+    The register also records local file notes such as "file:Paper/3.pdf (IAEA URL
+    NOT VERIFIED)"; those are not links a reader can follow and are not shipped.
+    """
+    link = text.strip()
+    if re.fullmatch(r"https?://\S+", link):
+        return link, LINK_VERIFIED
+    return None, LINK_NOT_VERIFIED
+
+
 def build_geometry() -> tuple[dict, str]:
     """The AGR-1 layer dimensions of the register, with each layer's outer radius.
 
@@ -827,6 +843,7 @@ def build_geometry() -> tuple[dict, str]:
             registered = r["outer_radius_um_calc"].strip()
             if registered and decimal.Decimal(registered) != outer:
                 raise SystemExit(f"{GEOMETRY_CSV}: row {r['id']} outer radius {registered} um, summed {outer!r} um")
+            link, link_status = _public_link(r["link"])
             layers.append({
                 "row_id": r["id"],
                 "design_id": r["design_id"],
@@ -842,17 +859,19 @@ def build_geometry() -> tuple[dict, str]:
                 "evidence_class": r["evidence_class"],
                 "status": r["status"],
                 "source": r["source"],
-                "source_location": r["source_location"],
                 "location": _reader_location(r["source_location"]),
-                "link": r["link"],
+                "link": link,
+                "link_status": link_status,
                 "notes": r["notes"],
             })
         main = next(r for r in rows if r["design_id"] == designs[-1])
+        set_link, set_link_status = _public_link(main["link"])
         sets.append({
             "set_id": set_id,
             "design": main["design"],
             "source": main["source"],
-            "link": main["link"],
+            "link": set_link,
+            "link_status": set_link_status,
             "evidence_class": main["evidence_class"],
             "statuses": sorted({l["status"] for l in layers}),
             "layers": layers,
@@ -871,7 +890,9 @@ def build_geometry() -> tuple[dict, str]:
         "note": (
             "Registered geometry of the AGR-1 UCO TRISO particle (rule E2): geometry only, not a simulation and "
             "never combined with the diffusivities of the synthetic case. REGISTER marks register data; it is not "
-            "a result label. Outer radii are sums of the registered diameter and thicknesses."
+            "a result label. Outer radii are sums of the registered diameter and thicknesses. location is the "
+            "register's source location without its local file names and text-extract indices; link is given only "
+            "where the register holds a public http(s) URL. commit is the source commit the file was generated from."
         ),
     }
     doc = {**header, "data": {"default_set": GEOMETRY_DEFAULT, "sets": sets}}
@@ -882,12 +903,12 @@ def build_geometry() -> tuple[dict, str]:
     buf.write(f"# note: {header['note']}\n")
     w = csv.writer(buf, lineterminator="\n")
     w.writerow(["set_id", "layer", "row_id", "design_id", "quantity", "value_um", "outer_radius_um",
-                "outer_radius_source", "evidence_class", "status", "source", "source_location"])
+                "outer_radius_source", "evidence_class", "status", "source", "location", "link"])
     for s in sets:
         for l in s["layers"]:
             w.writerow([s["set_id"], l["layer"], l["row_id"], l["design_id"], l["quantity"], l["value_text"],
                         l["outer_radius_text"], l["outer_radius_source"], l["evidence_class"], l["status"],
-                        l["source"], l["source_location"]])
+                        l["source"], l["location"], l["link"] or l["link_status"]])
     return doc, buf.getvalue()
 
 

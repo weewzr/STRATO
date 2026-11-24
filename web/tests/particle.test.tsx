@@ -135,6 +135,18 @@ describe('particle view', () => {
     expect(screen.getByTestId('view-note').textContent).toContain('WebGL 2');
     expect(screen.getByTestId('particle').dataset.view).toBe('2d');
   });
+
+  it('describes the colour scale in the caption as it is set (log by default, or linear)', () => {
+    withRun();
+    render(<ParticleView config={DEFAULT_CASE.config} provenance={DEFAULT_CASE.provenance} />);
+    const caption = () => screen.getByTestId('particle-figure').querySelector('figcaption')?.textContent ?? '';
+    expect(useStrato.getState().view.logColour).toBe(true);
+    expect(caption()).toContain('logarithmic colour scale over 6 decades up to the kernel start concentration');
+    expect(caption()).toContain('below 10⁻⁶ c0 take the lowest colour');
+    expect(caption()).not.toContain('from 0 to');
+    fireEvent.change(screen.getByTestId('colour-scale'), { target: { value: 'linear' } });
+    expect(caption()).toContain('linear colour scale from 0 to the kernel start concentration');
+  });
 });
 
 describe('AGR-1 reference particle (rule E2)', () => {
@@ -157,6 +169,25 @@ describe('AGR-1 reference particle (rule E2)', () => {
     fireEvent.change(within(fig).getByTestId('reference-set'), { target: { value: 'AGR1-T714-V1' } });
     expect(fig.dataset.set).toBe('AGR1-T714-V1');
     expect(fig.querySelector('tr[data-row="G-20"]')).toBeTruthy();
+  });
+
+  it('ships only public https links and the cleaned source location', () => {
+    for (const s of reference.data.sets) {
+      expect(s.link === null || /^https:\/\//.test(s.link), s.set_id).toBe(true);
+      expect(s.link_status).toBe(s.link ? 'public link in the register' : 'no verified public link in the register');
+      for (const l of s.layers) {
+        expect(l.link === null || /^https:\/\//.test(l.link), l.row_id).toBe(true);
+        expect(l.location, l.row_id).not.toMatch(/\.pdf|idx/);
+        expect('source_location' in l, l.row_id).toBe(false);
+      }
+    }
+    // The IAEA (2012) sets have no verified public URL in the register; the view says so in words.
+    render(<ReferenceParticle />);
+    const fig = screen.getByTestId('reference-particle');
+    fireEvent.change(within(fig).getByTestId('reference-set'), { target: { value: 'AGR1-T714-B' } });
+    expect(within(fig).queryByTestId('reference-link')).toBeNull();
+    expect(within(fig).getByTestId('reference-no-link').textContent).toContain('no verified public link in the register');
+    for (const a of Array.from(fig.querySelectorAll('a'))) expect(a.getAttribute('href') ?? '').toMatch(/^https:\/\//);
   });
 });
 

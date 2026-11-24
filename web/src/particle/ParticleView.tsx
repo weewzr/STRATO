@@ -19,6 +19,9 @@ import { hasWebGL2 } from './webgl';
 
 const Particle3D = lazy(() => import('./Particle3D'));
 
+/** Bottom of the logarithmic colour scale, as a fraction of c0 (10 to the power -LOG_DECADES). */
+const LOG_FLOOR = `10⁻${String(LOG_DECADES).replace(/\d/g, (k) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[Number(k)] ?? k)}`;
+
 class ThreeBoundary extends Component<{ onError: (message: string) => void; children: ReactNode }, { failed: boolean }> {
   override state = { failed: false };
   static getDerivedStateFromError() {
@@ -176,6 +179,7 @@ export function ParticleView({ config, provenance }: { config: V1Config; provena
   const selectLayer = useStrato((s) => s.selectLayer);
   const view = useStrato((s) => s.view.particleView);
   const map = useStrato((s) => s.view.colormap);
+  const logColour = useStrato((s) => s.view.logColour);
   const setView = useStrato((s) => s.setView);
   const [hovered, setHovered] = useState<number | null>(null);
   const [webgl, setWebgl] = useState<boolean | null>(null);
@@ -302,9 +306,20 @@ export function ParticleView({ config, provenance }: { config: V1Config; provena
         <strong>Figure 1.</strong>{' '}
         {run ? (
           <>
-            The concentration of the synthetic verification case in every cell of the solver mesh at the playback time, on a fixed
-            colour scale from 0 to the kernel start concentration <i>c</i>
-            <sub>0</sub>; the {names.length} layers are drawn to scale with their boundaries in the layer colours. The playback shows
+            The concentration of the synthetic verification case in every cell of the solver mesh at the playback time,{' '}
+            {logColour ? (
+              <>
+                on a fixed logarithmic colour scale over {LOG_DECADES} decades up to the kernel start concentration <i>c</i>
+                <sub>0</sub> (values at or below {LOG_FLOOR} <i>c</i>
+                <sub>0</sub> take the lowest colour)
+              </>
+            ) : (
+              <>
+                on a fixed linear colour scale from 0 to the kernel start concentration <i>c</i>
+                <sub>0</sub>
+              </>
+            )}
+            ; the {names.length} layers are drawn to scale with their boundaries in the layer colours. The playback shows
             the output times the solver recorded; nothing is interpolated.
           </>
         ) : (

@@ -4,12 +4,12 @@
   "kind": "reference_geometry",
   "generator": "scripts/web/generate_data.py v1",
   "strato_version": "1.0.1",
-  "commit": "48b5357eaad4c7d92bcec93fb9bfaac66fadf942",
+  "commit": "3afb131e07caddb51aee805e1d1c206908451877",
   "input_file": "data/geometry/geometry.csv",
   "input_sha256": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
   "command": "python -I -X utf8 scripts/web/generate_data.py geometry",
-  "created_utc": "2026-11-24T20:11:17Z",
-  "note": "Registered geometry of the AGR-1 UCO TRISO particle (rule E2): geometry only, not a simulation and never combined with the diffusivities of the synthetic case. REGISTER marks register data; it is not a result label. Outer radii are sums of the registered diameter and thicknesses.",
+  "created_utc": "2026-11-24T23:41:51Z",
+  "note": "Registered geometry of the AGR-1 UCO TRISO particle (rule E2): geometry only, not a simulation and never combined with the diffusivities of the synthetic case. REGISTER marks register data; it is not a result label. Outer radii are sums of the registered diameter and thicknesses. location is the register's source location without its local file names and text-extract indices; link is given only where the register holds a public http(s) URL. commit is the source commit the file was generated from.",
   "data": {
     "default_set": "AGR1-B-M16",
     "sets": [
@@ -18,6 +18,7 @@
         "design": "AGR-1 Baseline (Morris 2016 Table 2)",
         "source": "Morris et al. (2016)",
         "link": "https://doi.org/10.1016/j.nucengdes.2016.04.031",
+        "link_status": "public link in the register",
         "evidence_class": "measured",
         "statuses": [
           "verified"
@@ -38,9 +39,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "Morris et al. (2016)",
-            "source_location": "5.pdf Table 2; printed p. 27; idx 3",
             "location": "Table 2; printed p. 27",
             "link": "https://doi.org/10.1016/j.nucengdes.2016.04.031",
+            "link_status": "public link in the register",
             "notes": ""
           },
           {
@@ -58,9 +59,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "Morris et al. (2016)",
-            "source_location": "5.pdf Table 2; printed p. 27; idx 3",
             "location": "Table 2; printed p. 27",
             "link": "https://doi.org/10.1016/j.nucengdes.2016.04.031",
+            "link_status": "public link in the register",
             "notes": ""
           },
           {
@@ -78,9 +79,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "Morris et al. (2016)",
-            "source_location": "5.pdf Table 2; printed p. 27; idx 3",
             "location": "Table 2; printed p. 27",
             "link": "https://doi.org/10.1016/j.nucengdes.2016.04.031",
+            "link_status": "public link in the register",
             "notes": ""
           },
           {
@@ -98,9 +99,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "Morris et al. (2016)",
-            "source_location": "5.pdf Table 2; printed p. 27; idx 3",
             "location": "Table 2; printed p. 27",
             "link": "https://doi.org/10.1016/j.nucengdes.2016.04.031",
+            "link_status": "public link in the register",
             "notes": ""
           },
           {
@@ -118,9 +119,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "Morris et al. (2016)",
-            "source_location": "5.pdf Table 2; printed p. 27; idx 3",
             "location": "Table 2; printed p. 27",
             "link": "https://doi.org/10.1016/j.nucengdes.2016.04.031",
+            "link_status": "public link in the register",
             "notes": ""
           }
         ]
@@ -130,6 +131,7 @@
         "design": "AGR-1 nominal (Collin 2016 Sec. 3.1)",
         "source": "Collin et al. (2016)",
         "link": "https://doi.org/10.1016/j.nucengdes.2016.03.023",
+        "link_status": "public link in the register",
         "evidence_class": "specification",
         "statuses": [
           "verified"
@@ -150,9 +152,9 @@
             "evidence_class": "specification",
             "status": "verified",
             "source": "Collin et al. (2016)",
-            "source_location": "6.pdf Sec. 3.1; printed p. 380; idx 2",
             "location": "Sec. 3.1; printed p. 380",
             "link": "https://doi.org/10.1016/j.nucengdes.2016.03.023",
+            "link_status": "public link in the register",
             "notes": ""
           },
           {
@@ -170,9 +172,9 @@
             "evidence_class": "specification",
             "status": "verified",
             "source": "Collin et al. (2016)",
-            "source_location": "6.pdf Sec. 3.1; printed p. 380; idx 2",
             "location": "Sec. 3.1; printed p. 380",
             "link": "https://doi.org/10.1016/j.nucengdes.2016.03.023",
+            "link_status": "public link in the register",
             "notes": ""
           },
           {
@@ -190,9 +192,9 @@
             "evidence_class": "specification",
             "status": "verified",
             "source": "Collin et al. (2016)",
-            "source_location": "6.pdf Sec. 3.1; printed p. 380; idx 2",
             "location": "Sec. 3.1; printed p. 380",
             "link": "https://doi.org/10.1016/j.nucengdes.2016.03.023",
+            "link_status": "public link in the register",
             "notes": ""
           },
           {
@@ -210,9 +212,9 @@
             "evidence_class": "specification",
             "status": "verified",
             "source": "Collin et al. (2016)",
-            "source_location": "6.pdf Sec. 3.1; printed p. 380; idx 2",
             "location": "Sec. 3.1; printed p. 380",
             "link": "https://doi.org/10.1016/j.nucengdes.2016.03.023",
+            "link_status": "public link in the register",
             "notes": ""
           },
           {
@@ -230,9 +232,9 @@
             "evidence_class": "specification",
             "status": "verified",
             "source": "Collin et al. (2016)",
-            "source_location": "6.pdf Sec. 3.1; printed p. 380; idx 2",
             "location": "Sec. 3.1; printed p. 380",
             "link": "https://doi.org/10.1016/j.nucengdes.2016.03.023",
+            "link_status": "public link in the register",
             "notes": ""
           }
         ]
@@ -241,7 +243,8 @@
         "set_id": "AGR1-SPEC",
         "design": "AGR-1 specification (IAEA 2012 Table 7.14)",
         "source": "IAEA (2012)",
-        "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+        "link": null,
+        "link_status": "no verified public link in the register",
         "evidence_class": "specification",
         "statuses": [
           "verified"
@@ -262,9 +265,9 @@
             "evidence_class": "specification",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           },
           {
@@ -282,9 +285,9 @@
             "evidence_class": "specification",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           },
           {
@@ -302,9 +305,9 @@
             "evidence_class": "specification",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           },
           {
@@ -322,9 +325,9 @@
             "evidence_class": "specification",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           },
           {
@@ -342,9 +345,9 @@
             "evidence_class": "specification",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           }
         ]
@@ -353,7 +356,8 @@
         "set_id": "AGR1-T714-B",
         "design": "AGR-1 Baseline (IAEA 2012 Table 7.14)",
         "source": "IAEA (2012)",
-        "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+        "link": null,
+        "link_status": "no verified public link in the register",
         "evidence_class": "measured",
         "statuses": [
           "verified"
@@ -374,9 +378,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": "single kernel value printed for all variants"
           },
           {
@@ -394,9 +398,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           },
           {
@@ -414,9 +418,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           },
           {
@@ -434,9 +438,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           },
           {
@@ -454,9 +458,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           }
         ]
@@ -465,7 +469,8 @@
         "set_id": "AGR1-T714-V1",
         "design": "AGR-1 Variant 1 (IAEA 2012 Table 7.14)",
         "source": "IAEA (2012)",
-        "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+        "link": null,
+        "link_status": "no verified public link in the register",
         "evidence_class": "measured",
         "statuses": [
           "verified"
@@ -486,9 +491,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": "single kernel value printed for all variants"
           },
           {
@@ -506,9 +511,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           },
           {
@@ -526,9 +531,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           },
           {
@@ -546,9 +551,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           },
           {
@@ -566,9 +571,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           }
         ]
@@ -577,7 +582,8 @@
         "set_id": "AGR1-T714-V2",
         "design": "AGR-1 Variant 2 (IAEA 2012 Table 7.14)",
         "source": "IAEA (2012)",
-        "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+        "link": null,
+        "link_status": "no verified public link in the register",
         "evidence_class": "measured",
         "statuses": [
           "verified"
@@ -598,9 +604,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": "single kernel value printed for all variants"
           },
           {
@@ -618,9 +624,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           },
           {
@@ -638,9 +644,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           },
           {
@@ -658,9 +664,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           },
           {
@@ -678,9 +684,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           }
         ]
@@ -689,7 +695,8 @@
         "set_id": "AGR1-T714-V3",
         "design": "AGR-1 Variant 3 (IAEA 2012 Table 7.14)",
         "source": "IAEA (2012)",
-        "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+        "link": null,
+        "link_status": "no verified public link in the register",
         "evidence_class": "measured",
         "statuses": [
           "verified"
@@ -710,9 +717,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": "single kernel value printed for all variants"
           },
           {
@@ -730,9 +737,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           },
           {
@@ -750,9 +757,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           },
           {
@@ -770,9 +777,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           },
           {
@@ -790,9 +797,9 @@
             "evidence_class": "measured",
             "status": "verified",
             "source": "IAEA (2012)",
-            "source_location": "3.pdf Table 7.14; printed p. 397; idx 410",
             "location": "Table 7.14; printed p. 397",
-            "link": "file:Paper/3.pdf (IAEA URL NOT VERIFIED)",
+            "link": null,
+            "link_status": "no verified public link in the register",
             "notes": ""
           }
         ]
