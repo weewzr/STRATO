@@ -25,9 +25,9 @@ const BUILD_CONTENTS: { part: string; here: boolean; phase: string }[] = [
     here: true,
     phase: '3',
   },
-  { part: 'Particle view with concentration colouring, layer inventory shares, playback and the AGR-1 reference particle', here: false, phase: '4' },
-  { part: 'Radial profile, release curves, model comparison, verification plots, downloads of results', here: false, phase: '5' },
-  { part: 'Research catalogue: transport regimes, species entries, Materials Studio gallery, brick roadmap', here: false, phase: '5.5' },
+  { part: 'Particle view with concentration colouring, layer inventory shares, playback and the AGR-1 reference particle', here: true, phase: '4' },
+  { part: 'Radial profile, release curves, model comparison, verification plots, downloads of results', here: true, phase: '5' },
+  { part: 'Research catalogue: transport regimes, species entries, Materials Studio gallery, brick roadmap', here: true, phase: '5.5' },
   { part: 'Decay, generation and temperature-dependent diffusivity (derived, not implemented)', here: false, phase: '6' },
   { part: 'Measured release data and, after phase 6, model predictions', here: false, phase: '7' },
 ];
