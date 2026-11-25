@@ -229,7 +229,62 @@ fn a_lost_printed_range_makes_the_selection_stop_refusing() {
         ",1400,1750,printed range,",
         ",,,printed range,",
     );
+    t.arrhenius = mutate_line(
+        &t.arrhenius,
+        "C16-20,",
+        ",heating test,,,printed",
+        ",heating test,,,",
+    );
     assert_fails(&t, "DI.select.refuses-outside-range");
+}
+
+#[test]
+fn a_range_without_its_kind_or_a_kind_without_a_range_is_a_load_error() {
+    let mut t = real_texts();
+    t.arrhenius = mutate_line(
+        &t.arrhenius,
+        "C16-20,",
+        ",heating test,,,printed",
+        ",heating test,,,",
+    );
+    assert!(Register::from_texts(&t).is_err());
+    let mut t = real_texts();
+    // C16-22 has no range: giving it a kind must fail
+    let hit = t
+        .arrhenius
+        .lines()
+        .find(|l| l.starts_with("C16-22,"))
+        .unwrap()
+        .to_string();
+    assert!(hit.ends_with(",heating test,,,"), "{hit}");
+    t.arrhenius = t.arrhenius.replace(&hit, &format!("{hit}fitted"));
+    assert!(Register::from_texts(&t).is_err());
+}
+
+#[test]
+fn the_fitted_range_of_the_schappel_rows_is_not_called_published() {
+    use strato_data::arrhenius::RangeKind;
+    use strato_data::select::{ParticleLayer, Phase, Selector, Variant};
+    let r = common::real_register();
+    let sel = Selector {
+        arrhenius: &r.arrhenius,
+        irradiation: &r.irradiation,
+    };
+    let s = sel
+        .select(
+            "Ag",
+            ParticleLayer::SiC,
+            Phase::HeatingTest,
+            Variant::SchappelFitted,
+        )
+        .unwrap();
+    assert_eq!(s.range_kind, Some(RangeKind::Fitted));
+    let msg = s.diffusivity_at(1000.0).unwrap_err().to_string();
+    assert!(
+        msg.contains("fitted range (not printed by the source)"),
+        "{msg}"
+    );
+    assert!(!msg.contains("published range"), "{msg}");
 }
 
 #[test]
@@ -312,6 +367,28 @@ fn a_register_row_that_drifts_from_the_csv_fails() {
     );
     t.register_markdown = Some(drifted);
     assert_fails(&t, "DI.register-md.matches-csv");
+}
+
+#[test]
+fn a_changed_or_truncated_coefficient_in_the_register_fails() {
+    // main coefficient table (the row that starts "| C16-20 | Kr") and the section-6 copy
+    // (the row that starts "| C16-08 | Term"); a changed Q, a changed exponent, a truncated one
+    let md = real_texts()
+        .register_markdown
+        .expect("the register document exists");
+    for (prefix, from, to) in [
+        ("| C16-20 | Kr", "| 657 |", "| 658 |"),
+        ("| C16-20 | Kr", "$3.7\\times10^{1}$", "$3.7\\times10^{2}$"),
+        ("| C16-20 | Kr", "$3.7\\times10^{1}$", "$3.7$"),
+        ("| C16-08 | Term", "| 5.5e-14 |", "| 5.5e-1 |"),
+        ("| C16-08 | Term", "| 5.5e-14 |", "| 5.5 |"),
+    ] {
+        let mut t = real_texts();
+        let line = md.split('\n').find(|l| l.starts_with(prefix)).unwrap();
+        assert!(line.contains(from), "{prefix}: {from}");
+        t.register_markdown = Some(md.replacen(line, &line.replacen(from, to, 1), 1));
+        assert_fails(&t, "DI.register-md.matches-csv");
+    }
 }
 
 #[test]

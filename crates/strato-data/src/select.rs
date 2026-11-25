@@ -23,6 +23,7 @@ use std::fmt;
 
 use crate::arrhenius::{
     Arrhenius, ArrheniusRow, BoundKind, CoefficientClass, DiffusionLayer, Diffusivity, PhaseOfUse,
+    RangeKind,
 };
 use crate::irradiation::{ConditionValue, Irradiation};
 
@@ -107,18 +108,29 @@ impl std::error::Error for Unavailable {}
 pub struct OutsidePublishedRange {
     /// The temperature asked for, degC.
     pub t_celsius: f64,
-    /// The published range, degC.
+    /// The range, degC.
     pub published_c: (f64, f64),
-    /// The rows whose printed range applies.
+    /// Whether the range is printed by the source or is the range the source fitted to.
+    pub range_kind: RangeKind,
+    /// The rows whose range applies.
     pub rows: Vec<String>,
+}
+
+/// How a range is named in a message: a printed range is a published range, a fitted range is not.
+pub fn range_words(kind: RangeKind) -> &'static str {
+    match kind {
+        RangeKind::Printed => "published range",
+        RangeKind::Fitted => "fitted range (not printed by the source)",
+    }
 }
 
 impl fmt::Display for OutsidePublishedRange {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{} C is outside the published range {} to {} C of the rows {}; no coefficient is returned (use diffusivity_extrapolated to obtain a marked extrapolation)",
+            "{} C is outside the {} {} to {} C of the rows {}; no coefficient is returned (use diffusivity_extrapolated to obtain a marked extrapolation)",
             self.t_celsius,
+            range_words(self.range_kind),
             self.published_c.0,
             self.published_c.1,
             self.rows.join(", ")
@@ -157,8 +169,10 @@ pub enum RangeStatus {
     Inside,
     /// Outside: the value is an extrapolation of the published correlation.
     Extrapolated {
-        /// The printed range, degC.
+        /// The range, degC.
         published_c: (f64, f64),
+        /// Printed by the source, or the range the source fitted to.
+        range_kind: RangeKind,
     },
 }
 
@@ -181,8 +195,10 @@ pub struct Selection<'a> {
     pub source: String,
     /// Location of the rows in the source.
     pub source_location: String,
-    /// Printed temperature range common to the rows, degC (`None` when none is printed).
+    /// Temperature range common to the rows, degC (`None` when the rows carry none); see `range_kind`.
     pub published_range_c: Option<(f64, f64)>,
+    /// Whether that range is printed by the source (`Printed`) or is the fitted range of a source that prints none (`Fitted`, the Schappel rows).
+    pub range_kind: Option<RangeKind>,
     /// Kernel scaling, for the sensitivity case on the kernel layer.
     pub kernel_scale: Option<KernelScale>,
     /// Statements that must be shown wherever the coefficient is shown.
@@ -238,6 +254,7 @@ impl Selection<'_> {
                 return Err(OutsidePublishedRange {
                     t_celsius,
                     published_c: (lo, hi),
+                    range_kind: self.range_kind.unwrap_or(RangeKind::Printed),
                     rows: self.rows.iter().map(|r| r.id.clone()).collect(),
                 });
             }
@@ -250,7 +267,10 @@ impl Selection<'_> {
         let range = match self.published_range_c {
             None => RangeStatus::NoRangePrinted,
             Some((lo, hi)) if t_celsius >= lo && t_celsius <= hi => RangeStatus::Inside,
-            Some(p) => RangeStatus::Extrapolated { published_c: p },
+            Some(p) => RangeStatus::Extrapolated {
+                published_c: p,
+                range_kind: self.range_kind.unwrap_or(RangeKind::Printed),
+            },
         };
         Evaluated {
             diffusivity: self.raw(t_celsius),
@@ -372,7 +392,7 @@ const TABLE: &[Entry] = &[
         labels: KR_PYC_IRR_LABELS,
     },
     Entry {
-        elements: &["Ag", "Cs", "Sr", "Kr"],
+        elements: &["Ag", "Cs", "Sr", "Kr", "Xe"],
         layer: DiffusionLayer::Buffer,
         phase: Phase::Irradiation,
         ids: &["C15-13"],
@@ -464,7 +484,7 @@ const TABLE: &[Entry] = &[
         labels: KR_SIC_LABELS,
     },
     Entry {
-        elements: &["Ag", "Cs", "Sr", "Kr"],
+        elements: &["Ag", "Cs", "Sr", "Kr", "Xe"],
         layer: DiffusionLayer::Buffer,
         phase: Phase::HeatingTest,
         ids: &["C16-22"],
@@ -511,21 +531,20 @@ impl<'a> Selector<'a> {
         let reg_layer = layer.register_layer();
         let requested = element.to_string();
         let mut xe_label = None;
-        let element = if element == "Xe" {
-            // The Kr rows of the modelling sets are printed for Kr only (Collin 2015, 2016), except
-            // the UO2 kernel row A1-05 of TECDOC-978, which is printed for I, Kr and Xe.
-            if reg_layer == DiffusionLayer::Kernel && phase == Phase::Irradiation {
-                xe_label = Some(
-                    "Xe: the row A1-05 is printed for I, Kr and Xe (TECDOC-978 Table A-1), so the Kr selection applies to Xe"
-                        .to_string(),
-                );
-                "Kr"
-            } else {
-                return unavailable(format!(
-                    "no Xe row is offered for the {reg_layer:?} layer in the {} phase: the Kr rows of the published AGR-1 modelling are printed for Kr only, and only the UO2 kernel row A1-05 of the irradiation phase is printed for Xe as well",
-                    phase.as_str()
-                ));
-            }
+        let element = if element == "Xe" && reg_layer != DiffusionLayer::Buffer {
+            // The AGR-1 modelling (Collin 2015, 2016) names Kr, not Xe. The TECDOC-978 rows from
+            // which the Kr rows are taken are printed for Xe as well in the kernel (A1-05, A1-06,
+            // A1-07: I/Kr/Xe) and the pyrocarbon (A2-04, A2-05: Kr/Xe), and A3-17 is the Xe-in-SiC
+            // row itself. The Kr selection therefore applies to Xe, with a label naming the row
+            // printed for Xe. SiC during irradiation has no Kr row either (see below).
+            let text = match (reg_layer, phase) {
+                (DiffusionLayer::Kernel, Phase::Irradiation) => "Xe: the row A1-05 is printed for I, Kr and Xe (TECDOC-978 Table A-1), so the Kr selection applies to Xe",
+                (DiffusionLayer::Kernel, Phase::HeatingTest) => "Xe: the rows A1-06 and A1-07 (equal to C16-16 and C16-17) are printed for I, Kr and Xe (TECDOC-978 Table A-1, accident conditions), so the Kr selection applies to Xe",
+                (DiffusionLayer::PyC, _) => "Xe: the rows A2-04 and A2-05 (equal to C16-18 and C16-19) are printed for Kr and Xe (TECDOC-978 Table A-2), so the Kr selection applies to Xe",
+                _ => "Xe: the row A3-17 (equal to C16-20) is the Xe-in-SiC row of TECDOC-978 Table A-3 (Japan); the published AGR-1 modelling applies it to Kr",
+            };
+            xe_label = Some(text.to_string());
+            "Kr"
         } else {
             element
         };
@@ -612,6 +631,11 @@ impl<'a> Selector<'a> {
                         Some(a) => (a.0.max(r.0), a.1.min(r.1)),
                     })
                 });
+        let range_kind = if rows.iter().any(|r| r.range_kind == Some(RangeKind::Fitted)) {
+            Some(RangeKind::Fitted)
+        } else {
+            rows.iter().find_map(|r| r.range_kind)
+        };
         Ok(Selection {
             element: requested,
             layer,
@@ -621,6 +645,7 @@ impl<'a> Selector<'a> {
             source: rows[0].source.clone(),
             source_location: rows[0].source_location.clone(),
             published_range_c: range,
+            range_kind,
             kernel_scale,
             labels,
             rows,

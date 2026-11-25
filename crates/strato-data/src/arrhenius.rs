@@ -12,13 +12,13 @@
 use crate::common::{EvidenceClass, Status};
 use crate::error::{DataError, Result};
 use crate::string_enum;
-use crate::table::{Printed, Row, Table};
+use crate::table::{Printed, Row, Table, Vocabulary};
 
 /// Path of the file below the data folder.
 pub const FILE: &str = "diffusivity/arrhenius.csv";
 
 /// The exact header.
-pub const HEADER: [&str; 27] = [
+pub const HEADER: [&str; 28] = [
     "id",
     "set_id",
     "nuclide",
@@ -46,6 +46,7 @@ pub const HEADER: [&str; 27] = [
     "phase_of_use",
     "reference_radius_um",
     "fluence_definition",
+    "range_kind",
 ];
 
 /// Kernel radius of the reduced coefficients of TECDOC-1674 Table 7.1, metre (250 um, register note of T71-01).
@@ -136,6 +137,17 @@ string_enum! {
         HeatingTest => "heating test",
         /// The source ties the row to no phase.
         NotSpecified => "not specified",
+    }
+}
+
+string_enum! {
+    /// The `range_kind` column: what the temperature range of a row is.
+    pub enum RangeKind ("range kind") {
+        /// The source prints the range with the correlation.
+        Printed => "printed",
+        /// The source prints no range; the range is the one the source fitted the correlation to
+        /// (the temperatures of its heating tests). It is not a validity range printed by the source.
+        Fitted => "fitted",
     }
 }
 
@@ -314,6 +326,8 @@ pub struct ArrheniusRow {
     pub t_min_c: Option<Printed>,
     /// Upper end of the printed temperature range, degC.
     pub t_max_c: Option<Printed>,
+    /// Whether the range is printed by the source or is the fitted range (None when the row has no typed range).
+    pub range_kind: Option<RangeKind>,
     /// Note on the range.
     pub range_note: RangeNote,
     /// Gas constant printed with the set.
@@ -522,6 +536,23 @@ fn read_row(row: Row<'_>) -> Result<ArrheniusRow> {
     } else {
         GasConstant::Printed(Printed::parse(r).map_err(|m| row.err(Some("R_J_mol_K"), m))?)
     };
+    let t_min = row.opt_number("T_min_C")?;
+    let t_max = row.opt_number("T_max_C")?;
+    let range_kind = match row.text("range_kind")? {
+        "" => None,
+        s => Some(RangeKind::from_cell(s).ok_or_else(|| {
+            row.err(
+                Some("range_kind"),
+                "the range kind must be `printed` or `fitted`, or empty",
+            )
+        })?),
+    };
+    if range_kind.is_some() != (t_min.is_some() || t_max.is_some()) {
+        return Err(row.err(
+            Some("range_kind"),
+            "the range kind is given exactly when T_min_C or T_max_C is given",
+        ));
+    }
     Ok(ArrheniusRow {
         line: row.line(),
         id: row.required("id")?.to_string(),
@@ -537,8 +568,9 @@ fn read_row(row: Row<'_>) -> Result<ArrheniusRow> {
         fluence,
         reduced,
         form,
-        t_min_c: row.opt_number("T_min_C")?,
-        t_max_c: row.opt_number("T_max_C")?,
+        t_min_c: t_min,
+        t_max_c: t_max,
+        range_kind,
         range_note: row.vocab("T_range_note")?,
         gas_constant,
         data_class: row.required("data_class")?.to_string(),

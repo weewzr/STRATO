@@ -231,7 +231,7 @@ fn selection_checks(rep: &mut Report, reg: &Register) {
     rep.add(
         "DI.select.decision39",
         bad.is_empty(),
-        "decision 39: irradiation-phase selections use the single-term C15 rows (Kr: the labelled A1-05 and C16 Kr PyC rows), heating-test selections use the C16 rows with both terms exactly for Cs and Kr in the kernel, Cs and Sr in SiC and Kr in PyC",
+        "decision 39: irradiation-phase selections use the single-term C15 rows (Kr: the labelled A1-05, and the C16 Kr PyC rows C16-18 and C16-19 because no irradiation-phase Kr PyC row exists; their second term is below 0.1 percent up to 1800 C), heating-test selections use the C16 rows with both terms exactly for Cs and Kr in the kernel, Cs and Sr in SiC and Kr in PyC",
         format!("{bad:?}"),
     );
 
@@ -324,6 +324,7 @@ fn selection_checks(rep: &mut Report, reg: &Register) {
     let ok = match (&kr_sic, &cs_kernel) {
         (Ok(k), Ok(c)) => {
             k.published_range_c == Some((1400.0, 1750.0))
+                && k.range_kind == Some(crate::arrhenius::RangeKind::Printed)
                 && k.diffusivity_at(1600.0).is_ok()
                 && k.diffusivity_at(1800.0).is_err()
                 && k.diffusivity_at(1399.0).is_err()
@@ -432,23 +433,50 @@ fn selection_checks(rep: &mut Report, reg: &Register) {
         sel.select(
             "Xe-133",
             ParticleLayer::SiC,
-            Phase::HeatingTest,
+            Phase::Irradiation,
             Variant::Default,
         ),
     ];
-    let xe = sel.select(
-        "Xe-133",
-        ParticleLayer::Kernel,
-        Phase::Irradiation,
-        Variant::Default,
-    );
-    let xe_ok = matches!(&xe, Ok(s) if s.row_ids() == ["A1-05"]
-        && s.element == "Xe"
-        && s.labels.iter().any(|l| l.contains("printed for I, Kr and Xe")));
+    // Xe follows the Kr rows only where TECDOC-978 prints the row for Xe, and the label names it
+    let xe_cases = [
+        (
+            ParticleLayer::Kernel,
+            Phase::Irradiation,
+            "A1-05",
+            "printed for I, Kr and Xe",
+        ),
+        (
+            ParticleLayer::Kernel,
+            Phase::HeatingTest,
+            "C16-16",
+            "A1-06 and A1-07",
+        ),
+        (
+            ParticleLayer::IPyC,
+            Phase::Irradiation,
+            "C16-18",
+            "A2-04 and A2-05",
+        ),
+        (
+            ParticleLayer::OPyC,
+            Phase::HeatingTest,
+            "C16-18",
+            "A2-04 and A2-05",
+        ),
+        (ParticleLayer::SiC, Phase::HeatingTest, "C16-20", "A3-17"),
+    ];
+    let xe_ok = xe_cases.iter().all(|(layer, phase, first, text)| {
+        matches!(
+            sel.select("Xe-133", *layer, *phase, Variant::Default),
+            Ok(s) if s.rows[0].id == *first
+                && s.element == "Xe"
+                && s.labels.iter().any(|l| l.starts_with("Xe:") && l.contains(text))
+        )
+    });
     rep.add(
         "DI.select.unavailable",
         un.iter().all(|r| r.is_err()) && xe_ok,
-        "no coefficient is invented: Eu has none, Kr in SiC is not used during irradiation, the Schappel set offers nothing for the kernel (an Err, not a fallback to the default rows), Xe has a row only where the row is printed for Xe (A1-05, kernel, irradiation, labelled)",
+        "no coefficient is invented: Eu has none, Kr and Xe in SiC are not used during irradiation, the Schappel set offers nothing for the kernel (an Err, not a fallback to the default rows); Xe follows the Kr rows only where TECDOC-978 prints the row for Xe (A1-05, A1-06/07 in the kernel, A2-04/05 in the pyrocarbon, A3-17 in SiC for the heating tests) and every such selection carries a label naming that row",
         "",
     );
     // fitted range of the Schappel rows is typed, so the selector marks 1000 C as outside it
@@ -461,7 +489,14 @@ fn selection_checks(rep: &mut Report, reg: &Register) {
     let ok = match &sch {
         Ok(s) => {
             s.published_range_c == Some((1600.0, 1800.0))
-                && s.diffusivity_at(1000.0).is_err()
+                && s.range_kind == Some(crate::arrhenius::RangeKind::Fitted)
+                && s.diffusivity_at(1000.0)
+                    .map_err(|e| e.to_string())
+                    .err()
+                    .is_some_and(|m| {
+                        m.contains("fitted range (not printed by the source)")
+                            && !m.contains("published range")
+                    })
                 && s.diffusivity_at(1700.0).is_ok()
                 && matches!(
                     s.diffusivity_extrapolated(1000.0).range,
@@ -474,7 +509,7 @@ fn selection_checks(rep: &mut Report, reg: &Register) {
     rep.add(
         "DI.select.schappel-range",
         ok,
-        "the Schappel rows S20-01 to S20-03 carry the typed fitted range 1600 to 1800 C, the selection refuses or marks a temperature outside it, and says that the source prints no gas constant",
+        "the Schappel rows S20-01 to S20-03 carry the fitted range 1600 to 1800 C typed as fitted (range_kind; the source prints no range), the refusal says fitted range (not printed by the source), the selection refuses or marks a temperature outside it, and says that the source prints no gas constant",
         "",
     );
     // labels of the sensitivity case
@@ -576,8 +611,8 @@ fn release_checks(rep: &mut Report, reg: &Register) {
         .collect();
     rep.add(
         "DI.release.reading-uncertainty",
-        bad.is_empty() && n_stated == 187 && n_rec == 32 && collin_unstated.is_empty(),
-        "reading_uncertainty is empty exactly for the rows that were not read from a figure; each of the 219 digitised rows states it (187) or says not recorded (32, the visually read rows of Morris et al. 2016, whose figures are vector drawings that were not re-read); every digitised row of Collin et al. (2016) states it (decision 31)",
+        bad.is_empty() && n_stated == 219 && n_rec == 0 && collin_unstated.is_empty(),
+        "reading_uncertainty is empty exactly for the rows that were not read from a figure; each of the 219 digitised rows states it (none says not recorded: the 34 visually read rows of Morris et al. 2016 were re-read from the vector paths of their figures); every digitised row of Collin et al. (2016) states it (decision 31)",
         format!(
             "{n_stated} stated, {n_rec} not recorded; wrong: {bad:?}; Collin rows without it: {collin_unstated:?}"
         ),
@@ -938,6 +973,38 @@ fn parse_value_cell(cell: &str) -> Option<(String, f64)> {
     Some((qualifier, number))
 }
 
+/// True when a pre-factor cell of the register document equals the value of the CSV file. Numbers
+/// are compared as numbers (`$5.5\times10^{-14}$` and `5.5e-14` against `5.5e-14`), so a truncated
+/// mantissa or exponent is a difference; a cell that is not a number must equal the text.
+///
+/// Three printed forms are recognised and nothing else is accepted: an upper bound `\le` before
+/// the number, the fluence factor `\,e^{\Gamma/5}` after it (A3-01), and a parenthetical remark
+/// after the plain number (the section-6 copy of A3-01). The symbol `\infty` stands for the
+/// convention "infinite" of A4-08 and A4-09.
+fn same_prefactor(cell: &str, csv_value: &str) -> bool {
+    let cell = cell.trim();
+    if cell == "$\\infty$" || cell == "infinite" {
+        return csv_value.starts_with("infinite");
+    }
+    let mut text = cell.to_string();
+    if let Some(i) = text.find(" (") {
+        if text[..i].parse::<f64>().is_ok() {
+            text.truncate(i);
+        }
+    }
+    let text = text
+        .replace("$\\le ", "$")
+        .replace("\\,e^{\\Gamma/5}$", "$");
+    let doc = parse_value_cell(&text)
+        .filter(|(q, _)| q.is_empty())
+        .map(|(_, v)| v);
+    match (doc, csv_value.parse::<f64>().ok()) {
+        (Some(a), Some(b)) => rel(a, b) <= 1e-12,
+        (None, None) => cell == csv_value,
+        _ => false,
+    }
+}
+
 /// Compare the rows of `STRATO_Parameter_Register.md` with the two CSV files they restate: every
 /// `| E-xxx |` row against `release_measurements.csv` (class, qualifier, value, notes), and every
 /// coefficient row of the diffusivity tables against `arrhenius.csv` (pre-factor, activation
@@ -1074,21 +1141,35 @@ pub fn register_document_differences(
             diffs.push(format!("{id}: no coefficient row of 10 cells"));
             continue;
         };
+        let Some(m) = rows.iter().find(|c| c.len() == 14) else {
+            diffs.push(format!(
+                "{id}: no row in the main coefficient table (14 cells)"
+            ));
+            continue;
+        };
         let d0 = if r[a_d0].is_empty() {
             r[a_d0e].as_str()
         } else {
             r[a_d0].as_str()
         };
-        if !(c[2].starts_with(d0) || d0.starts_with(c[2])) {
-            diffs.push(format!("{id}: pre-factor `{}` against `{d0}`", c[2]));
-        }
         let q = if r[a_q].is_empty() {
             "-"
         } else {
             r[a_q].as_str()
         };
-        if c[3] != q {
-            diffs.push(format!("{id}: activation energy `{}` against `{q}`", c[3]));
+        // the section-6 copy and the main table: pre-factor compared as a number, Q as text
+        for (which, d0_cell, q_cell) in [("section 6", c[2], c[3]), ("main table", m[4], m[5])] {
+            if !same_prefactor(d0_cell, d0) {
+                diffs.push(format!(
+                    "{id}: {which} pre-factor `{d0_cell}` against `{d0}`"
+                ));
+            }
+            // a register cell says `none` where the CSV file has no Q
+            if q_cell != q && !(q == "-" && q_cell == "none") {
+                diffs.push(format!(
+                    "{id}: {which} activation energy `{q_cell}` against `{q}`"
+                ));
+            }
         }
         let src = format!("{}, {}", r[a_src], r[a_loc]);
         if c[4] != src {
@@ -1113,7 +1194,7 @@ pub fn register_document_differences(
 /// The check that the register document restates the CSV files without drift.
 pub fn register_text_checks(rep: &mut Report, t: &crate::register::RegisterTexts) {
     let id = "DI.register-md.matches-csv";
-    let desc = "every | E-xxx | row of STRATO_Parameter_Register.md restates its row of release_measurements.csv (class, qualifier, value, notes) and every coefficient row restates its row of arrhenius.csv (pre-factor, activation energy, source, temperature range, class)";
+    let desc = "every | E-xxx | row of STRATO_Parameter_Register.md restates its row of release_measurements.csv (class, qualifier, value, notes) and every coefficient row restates its row of arrhenius.csv in the main coefficient table and in the section-6 copy (pre-factor compared as a number, activation energy, source, temperature range, class)";
     match &t.register_markdown {
         None => rep.add(
             id,
