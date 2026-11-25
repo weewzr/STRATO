@@ -19,7 +19,7 @@ use super::{
     diagnostics::{StepDiagnostics, TimeSeries},
     grid::{Grid, ValidatedInput},
     inventory::{balance_residual, initial_vector, inventory, release_fraction, Accumulator},
-    tridiagonal,
+    tridiagonal::ThomasFactors,
 };
 use crate::config::Config;
 use anyhow::{bail, Result};
@@ -186,6 +186,8 @@ pub fn assemble(grid: &Grid, coeff: Coefficients, dt: f64) -> Result<Assembly> {
 #[derive(Clone, Debug)]
 pub struct Stepper {
     assembly: Assembly,
+    factors: ThomasFactors,
+    rhs: Vec<f64>,
     work: Vec<f64>,
 }
 
@@ -199,8 +201,12 @@ impl Stepper {
         let coeff = Coefficients::new(grid, d, dt)?;
         let assembly = assemble(grid, coeff, dt)?;
         let n = grid.n;
+        let m = &assembly.matrix;
+        let factors = ThomasFactors::new(&m.lower[1..n], &m.diag, &m.upper[..n - 1])?;
         Ok(Stepper {
             assembly,
+            factors,
+            rhs: vec![0.0; n],
             work: vec![0.0; n],
         })
     }
@@ -221,18 +227,12 @@ impl Stepper {
     ///
     /// # Errors
     ///
-    /// A failed tridiagonal solve (zero or non-finite pivot).
+    /// A non-finite result of the solve.
     pub fn step(&mut self, c_old: &[f64], c_new: &mut [f64]) -> Result<()> {
         let n = self.assembly.matrix.diag.len();
-        c_new[..n].copy_from_slice(&c_old[..n]);
-        let m = &self.assembly.matrix;
-        tridiagonal::solve_in_place(
-            &m.lower[1..n],
-            &m.diag,
-            &m.upper[..n - 1],
-            &mut c_new[..n],
-            &mut self.work,
-        )?;
+        self.rhs.copy_from_slice(&c_old[..n]);
+        self.factors
+            .solve(&self.rhs, &mut c_new[..n], &mut self.work)?;
         c_new[n] = 0.0;
         Ok(())
     }
@@ -281,7 +281,7 @@ pub fn run(cfg: &Config, limits: &Limits, snapshot_times: &[f64]) -> Result<RunR
 }
 
 /// Runs the simulation: grid (PS-02), coefficients and matrix (PS-04, PS-05), initial vector
-/// (F21, F22), then for each step the solve (F24 form via the tridiagonal module), the
+/// (F21, F22), then for each step the solve (F24, ThomasFactors), the
 /// release rate (F26) at the new level, the cumulative release (F27), and at output steps the
 /// inventory (F25), the release fraction (F28) and the residual (F30). The release is
 /// accumulated at every step whatever the output stride. A non-finite output row is an error.
@@ -476,12 +476,23 @@ mod tests {
         s.step(&c_old, &mut c_new).unwrap();
         let a = &s.assembly().matrix;
         let dense = dense_solve(a, &c_old[..g.n]);
-        // Pre-registered bound: error of a backward-stable solve is about cond * u * |x|,
-        // with cond <= ||A||_inf * ||A^-1||_inf <= ||A||_inf (P2).
+        // Derived bound. For this M-matrix (P1, P2) the (F24) factors satisfy |L||U| = |A|
+        // exactly, so the computed solution solves (A + dA) x = b with |dA| <= gamma_5 |A|
+        // (operation count per row: 2 roundings forming w_i and m_i, 2 in b'_i, 3 in the back
+        // substitution, at most 5 per component of the row; gamma_k = k u / (1 - k u)).
+        // Dense elimination of this tridiagonal matrix does the same non-zero operations (the
+        // pivots are the diagonal ones by dominance), so it satisfies the same bound. Then
+        // |x1 - x2| <= 2 gamma_5 |A^-1||A| |x| <= 2 gamma_5 ||A||_inf ||A^-1||_inf max|x|, with
+        // ||A^-1||_inf <= 1 (row sums of A are >= 1, P1) and max|x| <= 1 (P3, C_init = 1).
+        // The residual obeys |A x - b| <= gamma_5 |A||x| <= gamma_5 ||A||_inf max|x|.
         let norm = (0..g.n)
             .map(|i| a.diag[i].abs() + a.lower[i].abs() + a.upper[i].abs())
             .fold(0.0, f64::max);
-        let tol = 100.0 * norm * f64::EPSILON / 2.0;
+        let xmax = dense.iter().fold(0.0f64, |m, v| m.max(v.abs()));
+        let u = f64::EPSILON / 2.0;
+        let gamma5 = 5.0 * u / (1.0 - 5.0 * u);
+        let tol = 2.0 * gamma5 * norm * xmax;
+        let tol_res = gamma5 * norm * xmax;
         for i in 0..g.n {
             assert!(
                 (c_new[i] - dense[i]).abs() <= tol,
@@ -500,7 +511,7 @@ mod tests {
             if i + 1 < g.n {
                 r += a.upper[i] * c_new[i + 1];
             }
-            assert!(r.abs() <= tol, "residual row {i}: {r}");
+            assert!(r.abs() <= tol_res, "residual row {i}: {r}");
         }
     }
 
@@ -514,11 +525,18 @@ mod tests {
         for i in 1..g.n {
             let lhs = g.v[i] * (c_new[i] - c_old[i]) / 50.0;
             let rhs = k[i] * (c_new[i + 1] - c_new[i]) - k[i - 1] * (c_new[i] - c_new[i - 1]);
-            let scale = (k[i] + k[i - 1]) * c_new[i].abs().max(1e-300)
-                + (k[i] * c_new[i + 1].abs() + k[i - 1] * c_new[i - 1].abs())
-                + lhs.abs();
+            // Derived bound (units of V/dt times concentration). Backward error of the solve,
+            // |dA| <= gamma_5 |A| (see one_step_matches_dense_solve): 5 u S. Stored entries
+            // l = -dt k / v (2 roundings) and B = (1 - l) - u (2 roundings, all terms of one
+            // sign): 2 u S. Evaluating lhs here (3 roundings) and the two flux differences
+            // (2 roundings each, plus the final subtraction): 3 u S. Total 10 u S with
+            // S = (V/dt)(|c_i^new| + |c_i^old|) + k_i (|c_{i+1}| + |c_i|) + k_{i-1} (|c_i| + |c_{i-1}|),
+            // which bounds each partial scale; 13 u S is used as the sum of the counts (5+2+3+3).
+            let scale = g.v[i] / 50.0 * (c_new[i].abs() + c_old[i].abs())
+                + k[i] * (c_new[i + 1].abs() + c_new[i].abs())
+                + k[i - 1] * (c_new[i].abs() + c_new[i - 1].abs());
             assert!(
-                (lhs - rhs).abs() <= 1e4 * f64::EPSILON * scale + 1e-30,
+                (lhs - rhs).abs() <= 13.0 * (f64::EPSILON / 2.0) * scale,
                 "row {i}: {lhs} vs {rhs}"
             );
         }
@@ -579,11 +597,19 @@ mod tests {
         let (g, s) = stepper_for([7, 5, 6, 9, 8], 120.0);
         let a = s.assembly();
         let fo = a.coeff.fo[0];
+        // Derived bound, as for (F11) in general_row_f11_matches_explicit_forms: the stored
+        // radii carry u r absolute error, so the three radius differences inside L and U (in
+        // k and in V) have relative error up to 2 u r / dr (r <= r_kernel = N_kernel dr), and
+        // the remaining operations (about 8 roundings) add 8 eps relative to the entry.
+        // Entries are at most 2 fo. Hence tol = 2 fo (8 eps r_kernel / dr + 8 eps).
+        let r_kernel = g.r[g.interface_nodes[0]];
+        let tol_f15 =
+            2.0 * fo * (8.0 * f64::EPSILON * r_kernel / g.dr_region[0] + 8.0 * f64::EPSILON);
         for i in 2..g.interface_nodes[0] {
             let expect_l = -fo * (1.0 - 1.0 / i as f64);
             let expect_u = -fo * (1.0 + 1.0 / i as f64);
-            assert!((a.matrix.lower[i] - expect_l).abs() <= 1e-12 * fo);
-            assert!((a.matrix.upper[i] - expect_u).abs() <= 1e-12 * fo);
+            assert!((a.matrix.lower[i] - expect_l).abs() <= tol_f15);
+            assert!((a.matrix.upper[i] - expect_u).abs() <= tol_f15);
         }
         // The 1/i factor applied in a buffer node is not the matrix row.
         let i = g.interface_nodes[0] + 2;
