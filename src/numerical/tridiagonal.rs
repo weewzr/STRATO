@@ -513,26 +513,127 @@ mod tests {
         (l, d, u)
     }
 
+    /// Residual `b - A x` evaluated in floating point, and `(|A||x| + |b|)_i`.
+    fn residual_and_scale(
+        l: &[f64],
+        d: &[f64],
+        u: &[f64],
+        b: &[f64],
+        x: &[f64],
+    ) -> (Vec<f64>, Vec<f64>) {
+        let n = d.len();
+        let mut r = vec![0.0; n];
+        let mut s = vec![0.0; n];
+        for i in 0..n {
+            let mut v = b[i] - d[i] * x[i];
+            let mut sc = b[i].abs() + (d[i] * x[i]).abs();
+            if i > 0 {
+                v -= l[i - 1] * x[i - 1];
+                sc += (l[i - 1] * x[i - 1]).abs();
+            }
+            if i + 1 < n {
+                v -= u[i] * x[i + 1];
+                sc += (u[i] * x[i + 1]).abs();
+            }
+            r[i] = v;
+            s[i] = sc;
+        }
+        (r, s)
+    }
+
     #[test]
     fn thomas_matches_dense_f24() {
+        // Derived bounds, u = 2^-53, gamma_k = k u / (1 - k u).
+        // (1) For a matrix with positive diagonal and non-positive off-diagonals, L and U have
+        //     the sign pattern of A and (|L||U|)_ii = m_i + |w_i||U_{i-1}| = B_i, so |L||U| = |A|.
+        //     Tridiagonal LU plus the two bidiagonal solves then give
+        //     (A + dA) x = b with |dA| <= (4u + O(u^2)) |L||U| <= gamma_5 |A|
+        //     (Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section 9.6),
+        //     so the exact residual obeys |b - A x|_i <= gamma_5 (|A||x|)_i.
+        // (2) The residual evaluated below has at most 3 products, 3 additions and b, so it
+        //     differs from the exact one by at most gamma_4 (|A||x| + |b|)_i.
+        // (3) The pivoted dense reference y: its own backward error is not assumed; its
+        //     measured residual enters. x - y = A^-1 ((b - A x) - (b - A y)) gives
+        //     |x - y|_inf <= ||A^-1||_inf (||r_x|| + ||r_y||), and ||A^-1||_inf <= 1/margin
+        //     (Varah) with margin = min_i (B_i - |L_i| - |U_i|) >= 1 - 2u by construction
+        //     (1 + off + g, three roundings of non-negative terms).
+        let u = f64::EPSILON / 2.0;
+        let gamma = |k: f64| k * u / (1.0 - k * u);
         for (n, seed) in [(1usize, 1u64), (2, 2), (3, 3), (20, 4), (150, 5)] {
-            let (l, d, u) = f24_matrix(n, seed);
+            let (l, d, u_) = f24_matrix(n, seed);
             let mut g = Lcg(seed + 100);
             let b: Vec<f64> = (0..n).map(|_| g.next() * 4.0).collect();
-            let f = ThomasFactors::new(&l, &d, &u).unwrap();
+            let f = ThomasFactors::new(&l, &d, &u_).unwrap();
             assert!(f.pivots().iter().all(|&m| m > 0.0));
             let mut x = vec![0.0; n];
             let mut w = vec![0.0; n];
             f.solve(&b, &mut x, &mut w).unwrap();
-            let y = dense_solve(&l, &d, &u, &b);
-            for (p, q) in x.iter().zip(&y) {
-                assert!((p - q).abs() <= 1e-10 * (1.0 + q.abs()), "n={n}");
+            let y = dense_solve(&l, &d, &u_, &b);
+            let margin = (0..n)
+                .map(|i| {
+                    let lo = if i > 0 { l[i - 1].abs() } else { 0.0 };
+                    let up = if i + 1 < n { u_[i].abs() } else { 0.0 };
+                    d[i] - lo - up
+                })
+                .fold(f64::INFINITY, f64::min);
+            assert!(margin >= 1.0 - 4.0 * u, "n={n} margin {margin}");
+            let (rx, sx) = residual_and_scale(&l, &d, &u_, &b, &x);
+            let (ry, sy) = residual_and_scale(&l, &d, &u_, &b, &y);
+            let (mut nx, mut ny) = (0.0f64, 0.0f64);
+            for i in 0..n {
+                let abs_ax = sx[i] - b[i].abs();
+                assert!(
+                    rx[i].abs() <= gamma(5.0) * abs_ax + gamma(4.0) * sx[i],
+                    "n={n} row {i}: residual {}",
+                    rx[i]
+                );
+                nx = nx.max(rx[i].abs() + gamma(4.0) * sx[i]);
+                ny = ny.max(ry[i].abs() + gamma(4.0) * sy[i]);
             }
-            // Pivots are at least B_i's dominance margin: m_i >= 1 for these matrices.
-            assert!(f.pivots().iter().all(|&m| m >= 1.0 - 1e-12), "n={n}");
+            let tol = (nx + ny) / margin;
+            for (p, q) in x.iter().zip(&y) {
+                assert!((p - q).abs() <= tol, "n={n}: {p} vs {q}, tol {tol}");
+            }
         }
     }
 
+    #[test]
+    fn pivot_bound_p5() {
+        // Exact arithmetic (P5): m_i >= 1 + |U_i| (m_{n-1} >= 1), by induction using
+        // |U_{i-1}|/m_{i-1} <= |U_{i-1}|/(1 + |U_{i-1}|) <= 5/6 for |U| <= 5, so the correction
+        // w_i U_{i-1} (>= 0) is at most (5/6)|L_{i-1}|.
+        // Floating point: the stored diagonal of the test matrices satisfies
+        // B_i >= (1 + |L_{i-1}| + |U_i|)(1 - 2u); forming w (1 rounding), w U (1) and the
+        // subtraction (1) perturbs the correction by gamma_2 |L| < |L|/6 (so the induction
+        // keeps |U|/m < 1) and the result by one relative u of a quantity at most
+        // 4 + |L| + |U|. Hence the asserted bound
+        //   m_i >= (1 + |U_i|) - 3u (4 + |L_{i-1}| + |U_i|).
+        let u = f64::EPSILON / 2.0;
+        for (n, seed) in [
+            (1usize, 21u64),
+            (2, 22),
+            (3, 23),
+            (20, 24),
+            (150, 25),
+            (400, 26),
+        ] {
+            let (l, d, up) = f24_matrix(n, seed);
+            let f = ThomasFactors::new(&l, &d, &up).unwrap();
+            let mut smallest = f64::INFINITY;
+            for (i, &m) in f.pivots().iter().enumerate() {
+                let lo = if i > 0 { l[i - 1].abs() } else { 0.0 };
+                let un = if i + 1 < n { up[i].abs() } else { 0.0 };
+                let bound = (1.0 + un) - 3.0 * u * (4.0 + lo + un);
+                assert!(m >= bound, "n={n} row {i}: m = {m}, bound {bound}");
+                smallest = smallest.min(m - (1.0 + un));
+            }
+            // Multipliers |U_i|/m_i < 1 in floating point as well.
+            for (i, (uv, m)) in up.iter().zip(f.pivots()).enumerate() {
+                assert!(uv.abs() / m < 1.0, "n={n} row {i}");
+            }
+            assert!(smallest > -1e-12, "smallest margin {smallest}");
+        }
+    }
     #[test]
     fn thomas_pivot_sign_negative_control() {
         // A negative diagonal entry makes a pivot negative: refused, not solved.

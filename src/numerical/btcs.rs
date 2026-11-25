@@ -476,24 +476,68 @@ mod tests {
         s.step(&c_old, &mut c_new).unwrap();
         let a = &s.assembly().matrix;
         let dense = dense_solve(a, &c_old[..g.n]);
-        // Derived bound. For this M-matrix (P1, P2) the (F24) factors satisfy |L||U| = |A|
-        // exactly, so the computed solution solves (A + dA) x = b with |dA| <= gamma_5 |A|
-        // (operation count per row: 2 roundings forming w_i and m_i, 2 in b'_i, 3 in the back
-        // substitution, at most 5 per component of the row; gamma_k = k u / (1 - k u)).
-        // Dense elimination of this tridiagonal matrix does the same non-zero operations (the
-        // pivots are the diagonal ones by dominance), so it satisfies the same bound. Then
-        // |x1 - x2| <= 2 gamma_5 |A^-1||A| |x| <= 2 gamma_5 ||A||_inf ||A^-1||_inf max|x|, with
-        // ||A^-1||_inf <= 1 (row sums of A are >= 1, P1) and max|x| <= 1 (P3, C_init = 1).
-        // The residual obeys |A x - b| <= gamma_5 |A||x| <= gamma_5 ||A||_inf max|x|.
-        let norm = (0..g.n)
-            .map(|i| a.diag[i].abs() + a.lower[i].abs() + a.upper[i].abs())
-            .fold(0.0, f64::max);
-        let xmax = dense.iter().fold(0.0f64, |m, v| m.max(v.abs()));
+        // Derived bounds (u = 2^-53, gamma_k = k u / (1 - k u)).
+        // (1) Backward error of (F24). For this M-matrix (P1, P2) the factors satisfy
+        //     |L||U| = |A| exactly (L, U have the sign pattern of A, so no cancellation). For
+        //     tridiagonal LU followed by the two bidiagonal solves, Higham, Accuracy and
+        //     Stability of Numerical Algorithms, 2nd ed., Section 9.6, gives
+        //     (A + dA) x = b with |dA| <= (4u + O(u^2)) |L||U|, which is <= gamma_5 |A|.
+        //     Hence the exact residual obeys |b - A x|_i <= gamma_5 (|A||x|)_i.
+        // (2) The residual computed here has 3 products, 3 additions and the b term, so it
+        //     differs from the exact residual by at most gamma_4 (|A||x| + |b|)_i.
+        // (3) The pivoted dense reference y has no backward-error bound assumed: its own
+        //     measured residual enters instead. Since x - y = A^-1 ((b - A y) - (b - A x)),
+        //     |x - y|_inf <= ||A^-1||_inf (||r_x||_inf + ||r_y||_inf), with
+        //     ||A^-1||_inf <= 1 / (min row margin |B_i| - |L_i| - |U_i|) (row dominance, P1;
+        //     Varah's bound), evaluated from the stored matrix.
+        let n = g.n;
+        let residual = |x: &[f64]| -> (Vec<f64>, Vec<f64>) {
+            let mut r = vec![0.0; n];
+            let mut sc = vec![0.0; n];
+            for i in 0..n {
+                let mut v = c_old[i] - a.diag[i] * x[i];
+                let mut s = c_old[i].abs() + (a.diag[i] * x[i]).abs();
+                if i > 0 {
+                    v -= a.lower[i] * x[i - 1];
+                    s += (a.lower[i] * x[i - 1]).abs();
+                }
+                if i + 1 < n {
+                    v -= a.upper[i] * x[i + 1];
+                    s += (a.upper[i] * x[i + 1]).abs();
+                }
+                r[i] = v;
+                sc[i] = s;
+            }
+            (r, sc)
+        };
         let u = f64::EPSILON / 2.0;
-        let gamma5 = 5.0 * u / (1.0 - 5.0 * u);
-        let tol = 2.0 * gamma5 * norm * xmax;
-        let tol_res = gamma5 * norm * xmax;
-        for i in 0..g.n {
+        let gamma = |k: f64| k * u / (1.0 - k * u);
+        let margin = (0..n)
+            .map(|i| {
+                let l = if i > 0 { a.lower[i].abs() } else { 0.0 };
+                let up = if i + 1 < n { a.upper[i].abs() } else { 0.0 };
+                a.diag[i].abs() - l - up
+            })
+            .fold(f64::INFINITY, f64::min);
+        assert!(margin >= 1.0 - 1e-12, "row margin {margin}");
+        let inv_norm = 1.0 / margin;
+        let (rx, sx) = residual(&c_new[..n]);
+        let (ry, sy) = residual(&dense);
+        let mut res_x = 0.0f64;
+        let mut res_y = 0.0f64;
+        for i in 0..n {
+            // |A||x|_i = sx_i - |b_i|.
+            let abs_ax = sx[i] - c_old[i].abs();
+            assert!(
+                rx[i].abs() <= gamma(5.0) * abs_ax + gamma(4.0) * sx[i],
+                "residual row {i}: {}",
+                rx[i]
+            );
+            res_x = res_x.max(rx[i].abs() + gamma(4.0) * sx[i]);
+            res_y = res_y.max(ry[i].abs() + gamma(4.0) * sy[i]);
+        }
+        let tol = inv_norm * (res_x + res_y);
+        for i in 0..n {
             assert!(
                 (c_new[i] - dense[i]).abs() <= tol,
                 "node {i}: {} vs {} (tol {tol})",
@@ -501,20 +545,8 @@ mod tests {
                 dense[i]
             );
         }
-        assert_eq!(c_new[g.n], 0.0);
-        // Residual of the system.
-        for i in 0..g.n {
-            let mut r = a.diag[i] * c_new[i] - c_old[i];
-            if i > 0 {
-                r += a.lower[i] * c_new[i - 1];
-            }
-            if i + 1 < g.n {
-                r += a.upper[i] * c_new[i + 1];
-            }
-            assert!(r.abs() <= tol_res, "residual row {i}: {r}");
-        }
+        assert_eq!(c_new[n], 0.0);
     }
-
     #[test]
     fn rows_satisfy_flux_balance_f10() {
         let (g, mut s) = stepper_for([8, 6, 5, 7, 6], 50.0);
@@ -526,12 +558,12 @@ mod tests {
             let lhs = g.v[i] * (c_new[i] - c_old[i]) / 50.0;
             let rhs = k[i] * (c_new[i + 1] - c_new[i]) - k[i - 1] * (c_new[i] - c_new[i - 1]);
             // Derived bound (units of V/dt times concentration). Backward error of the solve,
-            // |dA| <= gamma_5 |A| (see one_step_matches_dense_solve): 5 u S. Stored entries
+            // |dA| <= gamma_5 |A| (see one_step_matches_dense_solve, item 1): 5 u S. Stored entries
             // l = -dt k / v (2 roundings) and B = (1 - l) - u (2 roundings, all terms of one
             // sign): 2 u S. Evaluating lhs here (3 roundings) and the two flux differences
-            // (2 roundings each, plus the final subtraction): 3 u S. Total 10 u S with
+            // (2 roundings each, plus the final subtraction): 3 u S. The counts add to 13 u S, with
             // S = (V/dt)(|c_i^new| + |c_i^old|) + k_i (|c_{i+1}| + |c_i|) + k_{i-1} (|c_i| + |c_{i-1}|),
-            // which bounds each partial scale; 13 u S is used as the sum of the counts (5+2+3+3).
+            // which bounds each partial scale; 13 u S = (5+2+3+3) u S is used.
             let scale = g.v[i] / 50.0 * (c_new[i].abs() + c_old[i].abs())
                 + k[i] * (c_new[i + 1].abs() + c_new[i].abs())
                 + k[i - 1] * (c_new[i].abs() + c_new[i - 1].abs());
