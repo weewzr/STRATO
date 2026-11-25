@@ -1,0 +1,24 @@
+[package]
+name = "strato-webtools"
+version = "0.1.0"
+description = "Generators and checkers of the STRATO web demo, written in Rust: the data files of web/src/generated and web/public/data, the research catalogue check and the WebAssembly build check. Replaces scripts/web/*.py and the shell wrappers."
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "strato-webtools"
+path = "src/main.rs"
+
+[dependencies]
+# JSON values with the key order of the source (preserve_order) and exact float parsing.
+serde_json = { version = "1", features = ["preserve_order", "float_roundtrip"] }
+# TOML input cases: integers and floats stay distinct, as in the Python tomllib the tool replaces.
+toml = "0.8"
+# SHA-256 of the input files that pin the generated data.
+sha2 = "0.10"
+# The Markdown subset of the research entries uses look-around, which the regex crate lacks.
+fancy-regex = "0.14"
+# The size budget of the wasm module is measured after gzip.
+flate2 = "1"
