@@ -1,0 +1,20 @@
+[package]
+name = "strato-data"
+version = "0.1.0"
+description = "Typed, validated readers for the STRATO scientific registers (geometry, diffusivity, nuclear data, temperature histories, release measurements) and the consistency checks of the Python audit scripts, in Rust. Not part of the WebAssembly solver."
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+name = "strato_data"
+path = "src/lib.rs"
+
+[[bin]]
+name = "strato-data"
+path = "src/main.rs"
+
+# No dependencies: the register files are plain comma separated text and the checks use only
+# the standard library, so nothing in this crate can change a number by way of a dependency.
+[dependencies]

@@ -32,6 +32,10 @@ on:
       - 'data/nuclear/decay.csv'
       - 'data/colormaps/**'
       - 'data/geometry/**'
+      - 'data/diffusivity/**'
+      - 'data/nuclear/**'
+      - 'data/temperature/**'
+      - 'data/experimental/**'
       - 'docs/research/**'
       - 'docs/mathematics/**'
       - 'data/reference/**'
@@ -137,6 +141,10 @@ jobs:
           cargo fmt --manifest-path crates/Cargo.toml --all --check
           cargo clippy --locked --manifest-path crates/Cargo.toml --all-targets -- -D warnings
           cargo test --locked --manifest-path crates/Cargo.toml
+      # The six register files of data/ against every consistency check of the Python audit scripts, in Rust (crates/strato-data/CHECKS.md).
+      - name: Register data layer checks (data/ files)
+        working-directory: .
+        run: cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-data -- check --repo .
       - name: Render the derivation and register documents into the build
         working-directory: .
         run: cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-docsite -- build --repo . --out web/dist --commit "$GITHUB_SHA"
