@@ -1,0 +1,39 @@
+# STRATO experimental comparison: deviation of the model from the measurement versus time; provisional rows are marked and are not comparisons
+# label: numerical solution of the stated model; not experimental validation; the comparison with the register is a comparison of release behaviour, not a validation
+# solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1
+# commit: ef34d34169360c8790a559e40c5952aa65561c73
+# model_limitations: kernel-only start (inventory-matched start node); constant diffusion coefficient per layer evaluated at the test temperature from the first hour (heating ramps are not modelled); no radioactive decay and no fission-product generation in the solver yet; perfect interface contact; absorbing outer surface; one intact particle, no matrix; the model fraction is a fraction of the particle's own inventory
+# parameter_source: geometry design AGR1-B-M16 (register rows G-01 G-02 G-03 G-04 G-05); diffusion coefficients of register sets C16-T2 and C16-BUF evaluated at the test temperature, class published PARFUME correlation, phase heating test (the kernel rows are UO2 surrogates: no UCO measurement exists, decision 40); every coefficient row and its class are in the sensitivity file and in comparison.json
+# parameter_class: coefficients are the published heating-test correlation of the register (class and phase per row in the sensitivity file); radii are the registered measured baseline geometry; every measurement keeps its register row id
+# release_measurements_sha256: 1aa5680164e947e5df73079af882edd418d30be1ff7324c84470021f71475230
+# arrhenius_sha256: 4167c3bbdfcad6e37cc6badcd66c9dff1c1f7022d651d3c5947a2bbdadd5217e
+# geometry_sha256: 8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f
+# temperature_histories_sha256: 6ab3201672afd15f92ec9e529318377c829afaa5804288a3a694032145ab4af0
+Row identifier,Comparison status,Kind of evaluation,Nuclide,Test temperature (degC),Time at temperature (h),Measured value or bound (dimensionless),Model value compared (dimensionless),"Signed deviation, model minus measurement (dimensionless)",Absolute deviation (dimensionless),Relative deviation (percent),"Signed log10 ratio, model over measurement (dimensionless)",Excess of the model over a bound (dimensionless)
+E-033,DATA INCOMPLETE,provisional point value (denominator not established; not a comparison),Ag-110m,1.6e3,3e2,1.8e-3,5.918821931398587e-1,5.900821931398587e-1,5.900821931398587e-1,3.278234406332548e4,2.5169627692536993e0,
+E-034,DATA INCOMPLETE,provisional point value (denominator not established; not a comparison),Ag-110m,1.6e3,3e2,2.5e-3,5.918821931398587e-1,5.893821931398587e-1,5.893821931398587e-1,2.357528772559435e4,2.3742952656849674e0,
+E-035,DATA INCOMPLETE,provisional point value (denominator not established; not a comparison),Ag-110m,1.6e3,3e2,6e-4,5.918821931398587e-1,5.912821931398586e-1,5.912821931398586e-1,9.854703218997645e4,2.9940840239733615e0,
+E-036,DATA INCOMPLETE,provisional point value (denominator not established; not a comparison),Ag-110m,1.6e3,4e2,1.5e-4,7.033093564328766e-1,7.031593564328766e-1,7.031593564328766e-1,4.687729042885845e5,3.6710551360061534e0,
+E-037,DATA INCOMPLETE,provisional point value (denominator not established; not a comparison),Ag-110m,1.7e3,3.03e2,2.8e-3,7.757381156047615e-1,7.729381156047614e-1,7.729381156047614e-1,2.7604932700170055e4,2.442557099524608e0,
+E-028,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs,1.6e3,3e2,5e-6,9.041912496619471e-4,,,,2.2572902954846636e0,8.991912496619471e-4
+E-029,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs,1.8e3,1e2,5e-6,1.064421993613218e-1,,,,4.328143835243234e0,1.0643719936132179e-1
+E-010,DATA INCOMPLETE,provisional point value (denominator not established; not a comparison),Cs-134,1.6e3,3e2,8.5e-8,9.041912496619471e-4,9.04106249661947e-4,9.04106249661947e-4,1.0636544113669966e6,4.0268413741063895e0,
+E-011,DATA INCOMPLETE,provisional point value (denominator not established; not a comparison),Cs-134,1.6e3,3e2,3.7e-7,9.041912496619471e-4,9.038212496619471e-4,9.038212496619471e-4,2.4427601342214784e5,3.3880585757536874e0,
+E-012,DATA INCOMPLETE,provisional point value (denominator not established; not a comparison),Cs-134,1.6e3,3e2,1.9e-6,9.041912496619471e-4,9.022912496619471e-4,9.022912496619471e-4,4.748901314010248e4,2.6775066988678535e0,
+E-013,DATA INCOMPLETE,provisional point value (denominator not established; not a comparison),Cs-134,1.6e3,3e2,1.6e-6,9.041912496619471e-4,9.02591249661947e-4,9.02591249661947e-4,5.641195310387169e4,2.752140317164758e0,
+E-015,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,3e2,2.7e-7,9.041912496619471e-4,,,,3.524896535661695e0,9.039212496619471e-4
+E-016,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,3e2,7e-7,9.041912496619471e-4,,,,3.111162259806426e0,9.034912496619471e-4
+E-017,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,3e2,4e-6,9.041912496619471e-4,,,,2.3542003084927203e0,9.001912496619471e-4
+E-018,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,3e2,5e-6,9.041912496619471e-4,,,,2.2572902954846636e0,8.991912496619471e-4
+E-027,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,3e2,1e-5,9.041912496619471e-4,,,,1.9562602998206826e0,8.941912496619471e-4
+E-032,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,3e2,5e-6,9.041912496619471e-4,,,,2.2572902954846636e0,8.991912496619471e-4
+E-187,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,3e2,2.79e-7,9.041912496619471e-4,,,,3.510656096547085e0,9.039122496619471e-4
+E-193,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,3e2,6.77e-7,9.041912496619471e-4,,,,3.125671631135538e0,9.03514249661947e-4
+E-198,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,3e2,3.8e-6,9.041912496619471e-4,,,,2.3764767032038723e0,9.003912496619471e-4
+E-199,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,3e2,4.75e-6,9.041912496619471e-4,,,,2.279566690195816e0,8.994412496619471e-4
+E-014,DATA INCOMPLETE,provisional point value (denominator not established; not a comparison),Cs-134,1.6e3,4e2,1.6e-8,3.028855095503881e-3,3.028839095503881e-3,3.028839095503881e-3,1.8930244346899252e7,5.277158513942563e0,
+E-019,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,4e2,1e-6,3.028855095503881e-3,,,,3.4812784965984878e0,3.0278550955038807e-3
+E-201,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,4e2,9.41e-7,3.028855095503881e-3,,,,3.507688873171231e0,3.027914095503881e-3
+E-020,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.7e3,2.55e2,8e-8,4.778061173017858e-2,,,,5.776161718684374e0,4.778053173017858e-2
+E-021,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.7e3,3.03e2,7.5e-7,6.46854598065988e-2,,,,4.935745406219375e0,6.468470980659881e-2
+E-195,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.7e3,3.03e2,7.29e-7,6.46854598065988e-2,,,,4.948079141293101e0,6.46847308065988e-2
