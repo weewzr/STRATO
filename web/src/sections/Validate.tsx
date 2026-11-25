@@ -1,6 +1,36 @@
 import { repoFile } from '../build';
 import { hrefFor } from '../route';
+import { useStrato } from '../state/store';
 import { Note, SectionHeading } from './common';
+
+/**
+ * The switch of the validation layer (prompt/DESIGN_SPECIFICATION.md Section 8.2, independent of the
+ * comparison of Section 8.1). No prediction exists before the Phase 2 physics, so the switch is shown,
+ * focusable and disabled; operating it changes nothing, and nothing in Compare depends on it.
+ */
+function ValidationLayer() {
+  const on = useStrato((s) => s.view.showValidation);
+  return (
+    <div className="switch-row" role="group" aria-label="Validation layer">
+      <button
+        type="button"
+        role="switch"
+        className="btn btn--small"
+        aria-checked={on}
+        aria-disabled="true"
+        aria-describedby="validation-layer-why"
+        data-testid="toggle-validation"
+        onClick={() => undefined}
+      >
+        Model predictions against measurements
+      </button>
+      <span id="validation-layer-why" className="muted">
+        Not available: no model prediction exists until the Phase 2 physics is implemented and verified (web phase 6), and the measurements
+        are plotted in web phase 7.
+      </span>
+    </div>
+  );
+}
 
 export function Validate() {
   return (
@@ -15,6 +45,7 @@ export function Validate() {
           derived in the Phase 2 documents and not implemented. A v1.0 constant-temperature result is never compared with heating-test data.
         </p>
       </Note>
+      <ValidationLayer />
       <h2>What this section will show</h2>
       <ul className="prose-list">
         <li>

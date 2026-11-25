@@ -95,6 +95,14 @@
   --layer-ipyc: #1f285c;
   --layer-sic: #2c9688;
   --layer-opyc: #7c57c7;
+
+  /* Plot series (web phase 5), each also told apart by its line style or marker, never by colour alone:
+     finite volume (Code B), series (Code C), baseline run, difference curve; and the plot grid. */
+  --series-b: #24508f;
+  --series-c: #b04a00;
+  --series-base: #4f5663;
+  --series-diff: #00735a;
+  --plot-grid: #e6e8ec;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -126,6 +134,11 @@
     --layer-ipyc: #426cd7;
     --layer-sic: #ace7c0;
     --layer-opyc: #d0bee9;
+    --series-b: #8fb3ec;
+    --series-c: #e69f00;
+    --series-base: #9aa3b2;
+    --series-diff: #2bb68d;
+    --plot-grid: #262c35;
   }
 }
 
@@ -157,6 +170,11 @@
   --layer-ipyc: #426cd7;
   --layer-sic: #ace7c0;
   --layer-opyc: #d0bee9;
+  --series-b: #8fb3ec;
+  --series-c: #e69f00;
+  --series-base: #9aa3b2;
+  --series-diff: #2bb68d;
+  --plot-grid: #262c35;
 }
 
 @media (prefers-reduced-motion: reduce) {

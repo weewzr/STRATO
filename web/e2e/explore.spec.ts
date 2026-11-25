@@ -90,11 +90,13 @@ test.describe('placeholders', () => {
     // Web phase 2 replaced the two phase-2 placeholders with the equation builder and the term
     // explanations; web phase 3 replaced the two phase-3 placeholders with the solver's inventory
     // balance and diagnostics; web phase 4 replaced the AGR-1 reference placeholder with the
-    // registered-geometry view.
-    expect(phases.length).toBeGreaterThanOrEqual(3);
+    // registered-geometry view; web phase 5 replaced the profile and release placeholders with the
+    // plots. The catalogue summary (web phase 5.5) remains.
+    expect(phases).toEqual(['5.5']);
     expect(phases).not.toContain('2');
     expect(phases).not.toContain('3');
     expect(phases).not.toContain('4');
+    expect(phases).not.toContain('5');
     for (const p of phases) expect(p).toMatch(/^\d(\.\d)?$/);
     await expect(page.locator('[data-placeholder-phase] .badge')).toHaveCount(0);
     await expect(page.getByTestId('simulation-case')).toContainText('Synthetic five-layer verification case, not AGR-1 data');

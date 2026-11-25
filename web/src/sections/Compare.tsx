@@ -1,23 +1,145 @@
+import { useEffect, useMemo } from 'react';
+import { BUILD } from '../build';
+import { findCase } from '../data/case';
 import { plain } from '../format';
+import { Badge, Sci } from '../panels/Badge';
+import { compareFigure } from '../plots/figures';
+import { Plot } from '../plots/Plot';
+import { usePlotTheme } from '../plots/theme';
 import { hrefFor } from '../route';
-import { configDifferences, useStrato } from '../state/store';
+import { comparisonKey, configDifferences, useStrato } from '../state/store';
 import { Note, SectionHeading, TableBox } from './common';
+
+// The Compare section (web phase 5; prompt/DESIGN_SPECIFICATION.md Section 8.1): the baseline and the
+// current release curves from compare_v1, and the optional difference curve that compare_v1 computes
+// in Rust (current minus baseline on the shared output times). The browser subtracts nothing. The
+// comparison runs only while this section is open.
+
+function ComparisonFigure() {
+  const comparison = useStrato((s) => s.comparison);
+  const config = useStrato((s) => s.config);
+  const baseline = useStrato((s) => s.baselineConfig);
+  const showBaseline = useStrato((s) => s.view.showComparison);
+  const showDifference = useStrato((s) => s.view.showDifference);
+  const setView = useStrato((s) => s.setView);
+  const caseId = useStrato((s) => s.caseId);
+  const theme = usePlotTheme();
+  const reply = comparison.reply;
+  const stale = reply !== null && (comparison.status === 'running' || comparison.key !== comparisonKey(baseline, config));
+  const figure = useMemo(() => (reply ? compareFigure(reply, { showBaseline, showDifference }, theme) : null), [reply, showBaseline, showDifference, theme]);
+  const caseFile = findCase(caseId)?.provenance.input_file ?? '';
+
+  return (
+    <figure className={`figure plotfig${stale ? ' is-stale' : ''}`} data-testid="compare-figure" data-state={reply ? 'ok' : comparison.status}>
+      <div className="figure__head">
+        {reply ? <Badge label={reply.label} /> : <span className="readout__nolabel">Label: none</span>}
+        <span className="figure__kind">
+          Release fraction <i>F</i>(<i>t</i>) of the baseline and of the current inputs
+          {stale ? <span className="sim-note"> updating for the changed inputs</span> : null}
+        </span>
+      </div>
+      <div className="switch-row" role="group" aria-label="Comparison layers">
+        <label className="plot-option">
+          <input type="checkbox" checked={showBaseline} onChange={(e) => setView({ showComparison: e.target.checked })} data-testid="toggle-comparison" />
+          <span>Baseline curve</span>
+        </label>
+        <label className="plot-option">
+          <input type="checkbox" checked={showDifference} onChange={(e) => setView({ showDifference: e.target.checked })} data-testid="toggle-difference" />
+          <span>Difference curve, current minus baseline (right axis)</span>
+        </label>
+      </div>
+      {reply && figure ? (
+        <Plot
+          figure={figure}
+          testId="compare-plot"
+          height={320}
+          label={`Release fraction against time for the baseline${showBaseline ? ' (dashed)' : ' (hidden)'} and the current inputs (solid)${showDifference ? ', with the difference current minus baseline on the right axis (dotted), as compare_v1 returned it' : ''}.`}
+          exportInfo={{
+            name: `strato-comparison-${reply.engine.commit}`,
+            source: `STRATO v${reply.engine.strato_version}, Rust solver in WebAssembly (build ${reply.engine.commit}), compare_v1; ${reply.label}; synthetic five-layer verification case, not physical data; page build ${BUILD.commit}.`,
+          }}
+        />
+      ) : comparison.status === 'rejected' || comparison.status === 'error' ? (
+        <div className="sim-alert" role="alert" data-testid="compare-problem">
+          <p className="sim-alert__title">{comparison.status === 'rejected' ? 'The solver rejected the comparison' : 'The comparison did not finish'}</p>
+          <ul className="sim-alert__list">
+            {(comparison.problem ?? []).map((m) => (
+              <li key={m}>{m}</li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <p className="plotfig__empty" role="status">
+          {comparison.status === 'running' ? 'Running the comparison…' : 'Waiting for the solver.'}
+        </p>
+      )}
+      {reply ? (
+        <p className="figure__kind" data-testid="compare-summary">
+          Final release fraction: baseline{' '}
+          <span data-testid="compare-final-baseline" data-value={String(reply.baseline.diagnostics.final_release_fraction)}>
+            {reply.baseline.diagnostics.final_release_fraction.toPrecision(6)}
+          </span>
+          , current{' '}
+          <span data-testid="compare-final-current" data-value={String(reply.modified.diagnostics.final_release_fraction)}>
+            {reply.modified.diagnostics.final_release_fraction.toPrecision(6)}
+          </span>
+          ; difference at <i>t</i>
+          <sub>end</sub>{' '}
+          {(() => {
+            const d = reply.difference.release_fraction[reply.difference.release_fraction.length - 1];
+            return d === undefined ? '–' : (
+              <span data-testid="compare-final-difference" data-value={String(d)}>
+                <Sci value={d} digits={4} />
+              </span>
+            );
+          })()}{' '}
+          (from compare_v1). Solver time {comparison.elapsedMs !== null ? `${comparison.elapsedMs.toFixed(1)} ms` : '–'}, not a result.
+        </p>
+      ) : null}
+      <figcaption className="figure__caption">
+        <strong>Figure 1.</strong> Fraction of the start inventory released, for the baseline (dashed) and the current inputs (solid), both
+        run by the verified v1.0 solver; before the Phase 2 physics, a comparison shows the effect of changed inputs, not of new physics.
+        The dotted difference curve is the series that <code>compare_v1</code> returns: the current minus the baseline release fraction,
+        computed in Rust at each output time both runs share. Runs with different output times are not compared, because the difference is
+        never interpolated. The parameters that differ are listed above.
+        {reply ? (
+          <span className="figure__source">
+            Source: STRATO v{reply.engine.strato_version} Rust solver in WebAssembly, build <code>{reply.engine.commit}</code>, both runs
+            starting from <code>{caseFile}</code> (synthetic verification case, not physical data). Page build <code>{BUILD.commit}</code>.
+            The CSV and JSON of the comparison are under <a href={hrefFor('data')}>Data</a>.
+          </span>
+        ) : null}
+      </figcaption>
+    </figure>
+  );
+}
 
 export function Compare() {
   const config = useStrato((s) => s.config);
   const baseline = useStrato((s) => s.baselineConfig);
+  const ready = useStrato((s) => s.solver.state === 'ready');
+  const comparisonKeyNow = useStrato((s) => s.comparison.key);
+  const requestCompare = useStrato((s) => s.requestCompare);
   const diffs = configDifferences(baseline, config);
+  const key = comparisonKey(baseline, config);
+
+  // Run the comparison while this section is open, once per (baseline, current) pair.
+  useEffect(() => {
+    if (ready && comparisonKeyNow !== key) requestCompare();
+  }, [ready, key, comparisonKeyNow, requestCompare]);
+
   return (
     <article className="section" data-section="compare">
-      <SectionHeading lede="Compare a modified parameter set with a baseline. Both runs will use the verified v1.0 solver, so the comparison shows the effect of the inputs, not of new physics.">
+      <SectionHeading lede="Compare the current inputs with a baseline. Both runs use the verified v1.0 solver, so the comparison shows the effect of the inputs, not of new physics.">
         Compare with the baseline
       </SectionHeading>
 
       <h2>Inputs that differ from the baseline</h2>
       {diffs.length === 0 ? (
         <p data-testid="no-diffs">
-          The current inputs equal the baseline. Change a value in the controls on <a href={hrefFor('explore')}>Explore</a>, or use{' '}
-          <em>Set current as baseline</em> there to keep the present values as the reference.
+          The current inputs equal the baseline, so the two curves coincide and the difference returned by the solver is zero. Change a value
+          in the controls on <a href={hrefFor('explore')}>Explore</a>, or use <em>Set current as baseline</em> there to keep the present values
+          as the reference.
         </p>
       ) : (
         <TableBox label="Inputs that differ from the baseline">
@@ -50,11 +172,11 @@ export function Compare() {
       )}
 
       <h2>Release curves</h2>
+      <ComparisonFigure />
       <Note>
         <p>
-          The baseline curve, the modified curve and their difference are plotted in web phase 5. The solver wrapper already returns the
-          difference series (compare_v1, modified minus baseline on the shared output times); the browser does not subtract one curve from
-          the other.
+          The comparison and the validation layers are independent: the switches above change only this figure, and the measurements and
+          predictions of the <a href={hrefFor('validate')}>Validate</a> section are not drawn here.
         </p>
       </Note>
     </article>

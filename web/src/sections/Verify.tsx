@@ -1,4 +1,5 @@
 import { repoFile } from '../build';
+import { BalancePanelVerify, CodeBCPanel, ConvergencePanel } from '../panels/Verification';
 import { SectionHeading, TableBox } from './common';
 
 const CHECKS: { check: string; shows: string; evidence: { path: string; text: string }[] }[] = [
@@ -35,6 +36,15 @@ const CHECKS: { check: string; shows: string; evidence: { path: string; text: st
     evidence: [{ path: 'crates/strato-wasm/tests/parity.rs', text: 'crates/strato-wasm/tests/parity.rs' }],
   },
   {
+    check: 'Difference curve of a comparison',
+    shows:
+      'The difference curve on Compare is the series compare_v1 returns, current minus baseline computed in Rust on the shared output times; a wrapper test checks it point by point, and a browser test checks that the plotted curve and the download equal it. Runs with different output times are rejected, never interpolated.',
+    evidence: [
+      { path: 'crates/strato-wasm/tests/parity.rs', text: 'crates/strato-wasm/tests/parity.rs' },
+      { path: 'web/e2e/plots.spec.ts', text: 'web/e2e/plots.spec.ts' },
+    ],
+  },
+  {
     check: 'Native and browser parity',
     shows:
       'The WebAssembly build in the browser gives the same numbers as the native wrapper, to a relative tolerance of 10⁻¹² per value with identical array lengths, and the delivered v1.0 outputs to 10⁻¹². Run by the browser tests in continuous integration and by the self-test of this page (?selftest=1).',
@@ -54,9 +64,17 @@ export function Verify() {
       <p>
         The checks below run in the repository's continuous integration and can be repeated with <code>cargo test --all-targets</code> and{' '}
         <code>cargo run --release --example verify</code>. The output of the native STRATO binary for the synthetic case is published with
-        this site as precomputed files (label PRECOMPUTED, with commit, input hash and command; see Data). Their numbers are plotted here
-        in web phase 5. The live simulation on the Explore page reports its own balance residual and its difference from the series.
+        this site as precomputed files (label PRECOMPUTED, with commit, input hash and command; see Data); the figures below plot them as
+        they are. The live simulation on the Explore page reports its own balance residual and its largest and final difference from the
+        series (label COMPUTED v1.0). All of this is verification on the synthetic case; none of it compares the model with a measurement.
       </p>
+      <h2>Finite volume against the exact series</h2>
+      <CodeBCPanel />
+      <h2>Convergence</h2>
+      <ConvergencePanel />
+      <h2>Inventory balance</h2>
+      <BalancePanelVerify />
+      <h2>Checks and their evidence</h2>
       <TableBox label="Verification checks">
         <table className="table">
           <caption className="visually-hidden">Verification checks of STRATO v1.0</caption>

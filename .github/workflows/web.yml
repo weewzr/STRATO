@@ -100,6 +100,9 @@ jobs:
       - name: Precomputed results equal a fresh regeneration; the native run equals tests/golden/v1.0
         working-directory: .
         run: sh scripts/web/precompute.sh --check
+      - name: Guide lines of the convergence plots equal a fresh regeneration
+        working-directory: .
+        run: python3 -I -X utf8 scripts/web/generate_data.py figures --check
       - name: Install
         run: npm ci
       - name: Lint

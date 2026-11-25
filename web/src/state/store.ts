@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { cloneConfig, DEFAULT_CASE, findCase, type RegionConfig, type V1Config } from '../data/case';
 import { isAvailable } from '../equation/availability';
 import { SWITCH_MECHANISM, type Stage } from '../equation/terms';
-import type { BuildInfo, RunResponse } from '../solver/types';
+import type { BuildInfo, CompareOk, RunResponse } from '../solver/types';
 
 // Mechanism switches; the ids map to mechanism_id rows of data/research/mechanisms.csv through
 // SWITCH_MECHANISM (equation/terms.ts): decay -> decay, source -> generation, arrhenius -> diffusivity_temperature.
@@ -20,6 +20,8 @@ export type ColormapName = 'cividis' | 'viridis';
 export type ParticleView = '2d' | '3d';
 /** Playback speeds offered (prompt/DESIGN_SPECIFICATION.md Section 4.2: 0.25x to 8x). */
 export const PLAYBACK_SPEEDS = [0.25, 0.5, 1, 2, 4, 8] as const;
+/** The plot shown in block B on a phone, where one plot is shown at a time (prompt/DESIGN_SPECIFICATION.md Section 2.1). */
+export type SimPlot = 'profile' | 'release';
 
 export interface PlaybackState {
   /** Index of the output row shown (run.profiles[tIndex]); the solver's recorded rows, never interpolated. */
@@ -59,6 +61,17 @@ export interface RunInfo {
   dropped: string[];
 }
 
+/** The comparison of the current inputs with the baseline (compare_v1), run while the Compare section is open (web phase 5). */
+export interface ComparisonState {
+  status: 'idle' | 'running' | 'ok' | 'rejected' | 'error';
+  reply: CompareOk | null;
+  problem: string[] | null;
+  /** comparisonKey of the baseline and current inputs that the reply (or the problem) belongs to. */
+  key: string;
+  /** Wall time of the wrapper call in the worker, not a result. */
+  elapsedMs: number | null;
+}
+
 export interface StratoState {
   caseId: string;
   config: V1Config;
@@ -75,6 +88,7 @@ export interface StratoState {
   runInfo: RunInfo | null;
   problem: RunProblem | null;
   playback: PlaybackState;
+  comparison: ComparisonState;
   view: {
     showComparison: boolean;
     showDifference: boolean;
@@ -83,6 +97,11 @@ export interface StratoState {
     colormap: ColormapName;
     particleView: ParticleView;
     selectedLayer: number | null;
+    /** Display options of the plots (web phase 5); they change no input and no result. */
+    profileLog: boolean;
+    profileStart: boolean;
+    releaseLog: boolean;
+    simPlot: SimPlot;
   };
 
   loadCase: (id: string) => void;
@@ -98,7 +117,16 @@ export interface StratoState {
   setCapabilities: (capabilities: string[]) => void;
   selectLayer: (index: number | null) => void;
   /** Display options of the particle (colour scale, colour map, 2D or 3D); they change no input and no result. */
-  setView: (patch: Partial<Pick<StratoState['view'], 'logColour' | 'colormap' | 'particleView'>>) => void;
+  /**
+   * Display options: the particle (colour scale, colour map, 2D or 3D), the plots (log axes, start
+   * profile, the plot shown on a phone) and the comparison and validation layers (Compare and Validate
+   * sections, independent of each other). They change no input and no result.
+   */
+  setView: (patch: Partial<Omit<StratoState['view'], 'selectedLayer'>>) => void;
+  /** Records the state of the comparison (called by solver/session.ts). */
+  setComparison: (patch: Partial<ComparisonState>) => void;
+  /** Asks the solver session for a comparison now; a no-op until solver/session.ts installs it. */
+  requestCompare: () => void;
   /** Playback over the recorded output rows of the current run (web phase 4). */
   setPlayback: (patch: Partial<PlaybackState>) => void;
   stepPlayback: (delta: number) => void;
@@ -149,8 +177,11 @@ export function initialState() {
     runInfo: null as RunInfo | null,
     problem: null as RunProblem | null,
     playback: { tIndex: 0, playing: false, speed: 1 },
+    comparison: { status: 'idle', reply: null, problem: null, key: '', elapsedMs: null } as ComparisonState,
     view: {
-      showComparison: false,
+      // Compare section: the baseline curve is shown by default, the difference curve is optional
+      // (prompt/DESIGN_SPECIFICATION.md Section 8.1). Validate section: no prediction layer exists yet.
+      showComparison: true,
       showDifference: false,
       showValidation: false,
       // Logarithmic by default: at most output times most of the particle is far below c0, and a
@@ -159,6 +190,11 @@ export function initialState() {
       colormap: 'cividis' as ColormapName,
       particleView: '2d' as ParticleView,
       selectedLayer: null as number | null,
+      // The profile's concentration axis has the particle's default scale: six decades up to c0.
+      profileLog: true,
+      profileStart: true,
+      releaseLog: false,
+      simPlot: 'profile' as SimPlot,
     },
   };
 }
@@ -247,6 +283,10 @@ export const useStrato = create<StratoState>()((set, get) => ({
 
   setSolver: (patch) => set({ solver: { ...get().solver, ...patch } }),
 
+  setComparison: (patch) => set({ comparison: { ...get().comparison, ...patch } }),
+
+  requestCompare: () => undefined,
+
   setRunOutcome: (outcome) => {
     // A new result is shown at its last output row (t_end, the time of the release readout); playback stops.
     const speed = get().playback.speed;
@@ -272,6 +312,11 @@ export interface ConfigDifference {
   unit: string;
   baseline: number | string;
   current: number | string;
+}
+
+/** Key of a (baseline, current) pair of configurations (display and tests only). */
+export function comparisonKey(baseline: V1Config, current: V1Config): string {
+  return `${inputKey(baseline)}|${inputKey(current)}`;
 }
 
 /** Lists the input fields whose values differ between two configurations (equality test only). */

@@ -129,6 +129,22 @@ export interface Rejected {
 export type RunResponse = RunOk;
 export type RunReply = RunOk | Rejected;
 
+/**
+ * compare_v1: both runs and the difference series, modified minus baseline on the output times both
+ * runs share, computed in Rust (prompt/TECHNICAL_ARCHITECTURE.md Section 3; owner decision M4).
+ */
+export interface CompareOk {
+  schema: 1;
+  status: 'ok';
+  label: ResultLabel;
+  engine: EngineStamp;
+  baseline: RunOk;
+  modified: RunOk;
+  difference: { times_s: number[]; release_fraction: number[] };
+}
+
+export type CompareReply = CompareOk | Rejected;
+
 export interface ValidateReply {
   schema: 1;
   ok: boolean;

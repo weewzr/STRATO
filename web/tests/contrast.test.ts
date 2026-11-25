@@ -51,6 +51,10 @@ const PAIRS: [string, string, number][] = [
   ...['mech-decay', 'mech-source', 'mech-arrhenius'].flatMap((m) =>
     ['surface', 'bg-subtle'].map((b): [string, string, number] => [m, b, NON_TEXT]),
   ),
+  // Plot series (web phase 5) are lines on the figure surface; each also has its own line style.
+  ...['series-b', 'series-c', 'series-base', 'series-diff'].flatMap((l) =>
+    ['bg', 'surface', 'bg-subtle'].map((b): [string, string, number] => [l, b, NON_TEXT]),
+  ),
   // Layer colours are drawn as ring outlines, leader lines and swatches on the page and figure surfaces.
   ...['layer-kernel', 'layer-buffer', 'layer-ipyc', 'layer-sic', 'layer-opyc'].flatMap((l) =>
     ['bg', 'surface', 'bg-subtle'].map((b): [string, string, number] => [l, b, NON_TEXT]),

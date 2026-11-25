@@ -10,6 +10,7 @@ import { Playback } from '../panels/Playback';
 import { ParticleView } from '../particle/ParticleView';
 import { ReferenceParticle } from '../particle/ReferenceParticle';
 import { Placeholder } from '../panels/Placeholder';
+import { SimPlots } from '../plots/SimPlots';
 import { hrefFor } from '../route';
 import { configDifferences, inputKey, useStrato } from '../state/store';
 import { validateInputs } from '../state/validation';
@@ -21,7 +22,8 @@ import { useHeadingFocus } from './common';
  * order at every width. Web phase 1 built the frame; web phase 3 connects the Rust solver in block B
  * (release readout, inventory balance, diagnostics); web phase 4 colours the particle from the
  * solver's profiles, adds playback, the 3D cutaway and the AGR-1 reference particle (geometry only);
- * each remaining placeholder names its phase.
+ * web phase 5 adds the radial profile and the release curves beside the particle; each remaining
+ * placeholder names its phase.
  */
 export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenControls: () => void }) {
   const config = useStrato((s) => s.config);
@@ -106,14 +108,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           <div className="sim__side">
             <ReleaseReadout />
             <RunProblemNote />
-            <div className="sim__plots">
-              <Placeholder phase="5" title="Radial concentration profile" testId="profile-placeholder" className="placeholder--plot">
-                <p>c(r) at the playback time, with the layer boundaries as labelled bands in the layer colours.</p>
-              </Placeholder>
-              <Placeholder phase="5" title="Release fraction over time" testId="release-placeholder" className="placeholder--plot">
-                <p>F(t) from the finite-volume solution and the eigenfunction series on the same axes, with a playback cursor.</p>
-              </Placeholder>
-            </div>
+            <SimPlots compact={compact} />
             <ReferenceParticle />
           </div>
         </div>

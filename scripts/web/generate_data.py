@@ -54,6 +54,14 @@ geometry
          was not clean. Regenerate from a clean tree after committing a change
          to the generator, so that the commit reproduces the files.
 
+figures  Read web/public/data/convergence_study.json (PRECOMPUTED) and write
+         web/public/data/convergence_guides.json and .csv: the guide lines of
+         slope 2 (spatial) and 1 (temporal) through the coarsest point of each
+         refinement study, drawn on the convergence plots of the Verify section
+         as a reading aid (label DISPLAY, not a result). Header as for the
+         geometry files (commit with "+modified", generator_sha256); the
+         SHA-256 of the input's ``data`` object pins the input.
+
 Options
 -------
 --check  Regenerate in memory and compare with the committed files. Exit 1
@@ -953,6 +961,88 @@ def cmd_geometry(args: argparse.Namespace) -> int:
     )
 
 
+# ---------------------------------------------------------------------------
+# Reading aids of the verification figures (web phase 5)
+# ---------------------------------------------------------------------------
+
+CONVERGENCE_JSON = "web/public/data/convergence_study.json"
+GUIDES_JSON = "web/public/data/convergence_guides.json"
+GUIDES_CSV = "web/public/data/convergence_guides.csv"
+# Reference slopes of prompt/DESIGN_SPECIFICATION.md Section 8.3: second order in space, first order
+# in time (docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md Section 6.7).
+GUIDE_SLOPES = {"spatial": 2, "temporal": 1}
+
+
+def _canonical_sha256(value: object) -> str:
+    return hashlib.sha256(json.dumps(value, sort_keys=True).encode("utf-8")).hexdigest()
+
+
+def build_guides() -> tuple[dict, str]:
+    """Guide lines of slope 2 (spatial) and 1 (temporal) for the convergence plots.
+
+    Each guide passes through the coarsest point of its study: for the spatial study
+    ``e_0 (N_0 / N)^2`` over the total cell counts N, for the temporal study
+    ``e_0 (dt / dt_0)^1`` over the time steps dt, where ``e_0`` is the error the native
+    binary printed for the coarsest level. A reading aid on a log-log plot (the straight
+    line a method of that order would follow), not a result: label DISPLAY. The points
+    and errors are copied from web/public/data/convergence_study.json (PRECOMPUTED); the
+    SHA-256 of that file's ``data`` object pins the input.
+    """
+    src = json.loads((ROOT / CONVERGENCE_JSON).read_text(encoding="utf-8"))
+    if src.get("label") != "PRECOMPUTED" or src.get("kind") != "convergence_study":
+        raise SystemExit(f"{CONVERGENCE_JSON}: not the precomputed convergence study")
+    pts = src["data"]["points"]
+    guides: dict = {}
+    for study, slope in GUIDE_SLOPES.items():
+        idx = [i for i, s in enumerate(pts["study"]) if s == study]
+        if len(idx) < 2:
+            raise SystemExit(f"{CONVERGENCE_JSON}: fewer than two {study} points")
+        e0 = pts["abs_error_vs_exact"][idx[0]]
+        if study == "spatial":
+            x = [pts["total_cells"][i] for i in idx]
+            y = [e0 * (x[0] / n) ** slope for n in x]
+            guides[study] = {"x_name": "total_cells", "x": x, "slope": slope, "guide_abs_error": y, "anchor_abs_error": e0}
+        else:
+            x = [pts["dt_s"][i] for i in idx]
+            y = [e0 * (dt / x[0]) ** slope for dt in x]
+            guides[study] = {"x_name": "dt_s", "x": x, "slope": slope, "guide_abs_error": y, "anchor_abs_error": e0}
+    header = {
+        "schema": SCHEMA,
+        "label": "DISPLAY",
+        "kind": "convergence_guides",
+        "generator": f"{GENERATOR} v{GENERATOR_VERSION}",
+        "generator_sha256": _generator_sha256(),
+        "strato_version": _strato_version(),
+        "commit": _source_commit((GENERATOR, CONVERGENCE_JSON)),
+        "command": f"python -I -X utf8 {GENERATOR} figures",
+        "created_utc": _now(),
+        "note": (
+            "Guide lines of the convergence plots: slope 2 over the total cell count (spatial study) and slope 1 over the "
+            "time step (temporal study), each through the coarsest point of its study. A reading aid, not a result."
+        ),
+        "inputs": [{"path": CONVERGENCE_JSON, "data_sha256": _canonical_sha256(src["data"]), "commit": src.get("commit", "")}],
+    }
+    doc = {**header, "data": guides}
+    buf = io.StringIO()
+    for k in ("label", "kind", "generator", "generator_sha256", "strato_version", "commit", "command", "created_utc", "note"):
+        buf.write(f"# {k}: {header[k]}\n")
+    buf.write(f"# input: {CONVERGENCE_JSON} (data_sha256 {header['inputs'][0]['data_sha256']})\n")
+    w = csv.writer(buf, lineterminator="\n")
+    w.writerow(["study", "x_name", "x", "slope", "guide_abs_error"])
+    for study, g in guides.items():
+        for xv, yv in zip(g["x"], g["guide_abs_error"]):
+            w.writerow([study, g["x_name"], repr(xv), g["slope"], repr(yv)])
+    return doc, buf.getvalue()
+
+
+def cmd_figures(args: argparse.Namespace) -> int:
+    doc, csv_text = build_guides()
+    return _write_or_check(
+        [(ROOT / GUIDES_JSON, _json_text(doc), True), (ROOT / GUIDES_CSV, csv_text, False)],
+        args.check,
+    )
+
+
 def main(argv: list[str]) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -973,6 +1063,9 @@ def main(argv: list[str]) -> int:
     g = sub.add_parser("geometry", help="write the AGR-1 reference-particle geometry from the register")
     g.add_argument("--check", action="store_true")
     g.set_defaults(func=cmd_geometry)
+    f = sub.add_parser("figures", help="write the guide lines of the convergence plots")
+    f.add_argument("--check", action="store_true")
+    f.set_defaults(func=cmd_figures)
     args = p.parse_args(argv)
     return args.func(args)
 

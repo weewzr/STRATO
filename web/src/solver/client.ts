@@ -6,7 +6,7 @@
 import { filterRequestedMechanisms } from '../equation/availability';
 import type { ErrorMessage, HelloMessage, RequestKind, ResponseMessage, WorkerMessage, WorkerRequest } from './protocol';
 import { REQUEST_TIMEOUT_MS } from './tolerances';
-import type { BuildInfo, RunReply, ValidateReply } from './types';
+import type { BuildInfo, CompareReply, RunReply, ValidateReply } from './types';
 
 /** The part of the Worker interface the client uses (a fake in the unit tests). */
 export interface WorkerLike {
@@ -55,6 +55,7 @@ export class SolverClient {
   private queue: WorkerRequest[] = [];
   private pending = new Map<number, Pending>();
   private latestRun = 0;
+  private latestCompare = 0;
   private closed = false;
   /** Requests posted to a worker, for the tests that require that no request is sent. */
   sent = 0;
@@ -168,6 +169,28 @@ export class SolverClient {
     const ticket = ++this.latestRun;
     const reply = await this.request<RunReply>('run_v1', { schema: 1, config, mechanisms: send });
     if (ticket !== this.latestRun) throw new SolverError('stale', 'overtaken by a newer run');
+    return { ...reply, dropped };
+  }
+
+  /**
+   * Runs the baseline and the current configuration through compare_v1, which returns both runs and
+   * their difference computed in Rust. Mechanisms are filtered as for runV1, for both halves. Latest
+   * wins, separately from runV1: a reply that a newer comparison has overtaken rejects with 'stale'.
+   */
+  async compareV1(
+    baseline: unknown,
+    modified: unknown,
+    mechanisms: readonly string[],
+    capabilities: readonly string[],
+  ): Promise<Reply<CompareReply> & { dropped: string[] }> {
+    const { send, dropped } = filterRequestedMechanisms(mechanisms, capabilities);
+    const ticket = ++this.latestCompare;
+    const reply = await this.request<CompareReply>('compare', {
+      schema: 1,
+      baseline: { schema: 1, config: baseline, mechanisms: send },
+      modified: { schema: 1, config: modified, mechanisms: send },
+    });
+    if (ticket !== this.latestCompare) throw new SolverError('stale', 'overtaken by a newer comparison');
     return { ...reply, dropped };
   }
 

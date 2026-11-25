@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "label": "DISPLAY",
+  "kind": "convergence_guides",
+  "generator": "scripts/web/generate_data.py v1",
+  "generator_sha256": "da6e43b8d6892818528817d1bcaddad552136b9b21eea9d605889d64ffd1135f",
+  "strato_version": "1.0.1",
+  "commit": "6dc10a47c547729d424071fec9eb1565926d45da+modified",
+  "command": "python -I -X utf8 scripts/web/generate_data.py figures",
+  "created_utc": "2026-11-25T01:05:47Z",
+  "note": "Guide lines of the convergence plots: slope 2 over the total cell count (spatial study) and slope 1 over the time step (temporal study), each through the coarsest point of its study. A reading aid, not a result.",
+  "inputs": [
+    {
+      "path": "web/public/data/convergence_study.json",
+      "data_sha256": "99083d64268a582943fcd8a12b111ec04aa64e05b0aca464b54b43c418160772",
+      "commit": "99d21ed937d040e6c3357555003caaed2c92e5f7"
+    }
+  ],
+  "data": {
+    "spatial": {
+      "x_name": "total_cells",
+      "x": [
+        100,
+        200,
+        400,
+        800,
+        1600
+      ],
+      "slope": 2,
+      "guide_abs_error": [
+        2.190159189069396e-05,
+        5.47539797267349e-06,
+        1.3688494931683726e-06,
+        3.4221237329209314e-07,
+        8.555309332302329e-08
+      ],
+      "anchor_abs_error": 2.190159189069396e-05
+    },
+    "temporal": {
+      "x_name": "dt_s",
+      "x": [
+        800.0,
+        400.0,
+        200.0,
+        100.0,
+        50.0
+      ],
+      "slope": 1,
+      "guide_abs_error": [
+        0.000491219531440934,
+        0.000245609765720467,
+        0.0001228048828602335,
+        6.140244143011675e-05,
+        3.0701220715058375e-05
+      ],
+      "anchor_abs_error": 0.000491219531440934
+    }
+  }
+}

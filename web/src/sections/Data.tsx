@@ -1,102 +1,39 @@
 import { repoFile } from '../build';
-import { findCase, type V1Config } from '../data/case';
-import { plain } from '../format';
+import { findCase } from '../data/case';
 import { Badge } from '../panels/Badge';
+import { LiveDownloads } from '../panels/Downloads';
+import { ParameterProvenance, References } from '../panels/Provenance';
 import { useStrato } from '../state/store';
-import { SectionHeading, TableBox } from './common';
-
-interface Row {
-  group: string;
-  input: string;
-  unit: string;
-  file: number | string;
-  current: number | string;
-}
-
-function rows(file: V1Config, current: V1Config): Row[] {
-  const out: Row[] = [
-    { group: 'Case', input: 'Species', unit: '', file: file.species, current: current.species },
-    { group: 'Case', input: 'Temperature (recorded only)', unit: 'K', file: file.temperature_k, current: current.temperature_k },
-  ];
-  file.regions.forEach((r, i) => {
-    const c = current.regions[i];
-    if (!c) return;
-    out.push({ group: r.name, input: 'Outer radius', unit: 'm', file: r.outer_radius_m, current: c.outer_radius_m });
-    out.push({ group: r.name, input: 'Diffusivity', unit: 'm² s⁻¹', file: r.diffusivity_m2_s, current: c.diffusivity_m2_s });
-    out.push({ group: r.name, input: 'Cells', unit: '', file: r.cells, current: c.cells });
-  });
-  out.push({
-    group: 'Start',
-    input: 'Kernel concentration',
-    unit: 'mol m⁻³',
-    file: file.initial.kernel_concentration_mol_m3,
-    current: current.initial.kernel_concentration_mol_m3,
-  });
-  out.push({ group: 'Time', input: 'Time step', unit: 's', file: file.time.dt_s, current: current.time.dt_s });
-  out.push({ group: 'Time', input: 'End time', unit: 's', file: file.time.end_time_s, current: current.time.end_time_s });
-  out.push({ group: 'Time', input: 'Output every', unit: 'steps', file: file.time.output_every_steps, current: current.time.output_every_steps });
-  return out;
-}
-
-const show = (v: number | string) => (typeof v === 'number' ? plain(v) : v);
+import { SectionHeading } from './common';
 
 /** Precomputed native output of the synthetic case (web/public/data, written by scripts/web/generate_data.py). */
 const PRECOMPUTED: { file: string; title: string; text: string }[] = [
   { file: 'synthetic_run.timeseries.csv', title: 'Time series of the native run (CSV)', text: 'inventory, release, release fraction and balance residual at every output time.' },
   { file: 'synthetic_run.final_profile.csv', title: 'Final concentration profile (CSV)', text: 'concentration in every cell at the end time.' },
-  { file: 'comparison_fv_vs_analytical.csv', title: 'Finite volume against the series (CSV)', text: 'Code B and Code C release fractions at every output time.' },
+  {
+    file: 'comparison_fv_vs_analytical.csv',
+    title: 'Finite volume against the series (CSV)',
+    text: 'Code B and Code C release fractions and their pointwise difference at every output time, as the native program wrote them.',
+  },
   { file: 'convergence_study.csv', title: 'Convergence study (CSV)', text: 'spatial and temporal refinement errors against the exact series.' },
 ];
 
+/**
+ * The Data section (prompt/DESIGN_SPECIFICATION.md Sections 8.4 and 8.5): the provenance of every
+ * parameter in use, the downloads of the live results (web phase 5) and of the precomputed native
+ * output, and the reference list.
+ */
 export function Data() {
-  const config = useStrato((s) => s.config);
   const caseId = useStrato((s) => s.caseId);
   const entry = findCase(caseId);
   if (!entry) return null;
   const p = entry.provenance;
   return (
     <article className="section" data-section="data">
-      <SectionHeading lede="Where every input comes from, and the files you can download.">Data and provenance</SectionHeading>
+      <SectionHeading lede="Where every input comes from, the results to download with their provenance, and the references.">Data and provenance</SectionHeading>
 
-      <h2>Inputs of the active case</h2>
-      <TableBox label="Inputs of the active case">
-        <table className="table" data-testid="input-table">
-          <caption className="table__caption">
-            <strong>Table 1.</strong> {entry.title}: values in the case file and the values now set in the controls. Synthetic values chosen for
-            verification, not measured TRISO properties.
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Group</th>
-              <th scope="col">Input</th>
-              <th scope="col" className="num-col">
-                Case file
-              </th>
-              <th scope="col" className="num-col">
-                Current
-              </th>
-              <th scope="col">Unit</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows(entry.config, config).map((r) => {
-              const differs = !Object.is(r.file, r.current);
-              return (
-                <tr key={`${r.group}-${r.input}`} className={differs ? 'is-changed' : undefined}>
-                  <td>{r.group}</td>
-                  <th scope="row">{r.input}</th>
-                  <td className="num-col num">{show(r.file)}</td>
-                  <td className="num-col num">
-                    {show(r.current)}
-                    {differs ? <span className="changed-mark"> changed</span> : null}
-                  </td>
-                  <td>{r.unit}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </TableBox>
+      <h2>Parameters in use</h2>
+      <ParameterProvenance entry={entry} />
 
       <dl className="provenance" data-testid="provenance">
         <dt>Case file</dt>
@@ -121,7 +58,16 @@ export function Data() {
         <dd>{p.notes.join(' ')}</dd>
       </dl>
 
-      <h2>Downloads</h2>
+      <h2>Downloads of the live results</h2>
+      <p>
+        Written in this browser from the solver's reply as it is, each file with a header: result label, STRATO version, the commit of the
+        WebAssembly solver build and of the page, the case file, the full inputs, the time of the download and the unit of every column.
+        Numbers are written in the shortest form that reads back to the same value, so a file reproduces the plotted values exactly. Each
+        figure can also be saved as SVG or PNG with its source line.
+      </p>
+      <LiveDownloads />
+
+      <h2>Precomputed native output and inputs</h2>
       <ul className="prose-list">
         <li>
           <a href={`${import.meta.env.BASE_URL}${entry.csvPath}`} download data-testid="download-case">
@@ -138,6 +84,13 @@ export function Data() {
           </li>
         ))}
         <li>
+          <a href={`${import.meta.env.BASE_URL}data/convergence_guides.csv`} download data-testid="download-convergence_guides.csv">
+            Guide lines of the convergence plots (CSV)
+          </a>
+          : the lines of slope 2 and 1 drawn on the convergence plots under Verify, through the coarsest point of each study; written from{' '}
+          <code>convergence_study.json</code> by <code>scripts/web/generate_data.py figures</code>. A reading aid, not a result.
+        </li>
+        <li>
           <a href={`${import.meta.env.BASE_URL}data/agr1_reference_geometry.csv`} download data-testid="download-agr1-geometry">
             AGR-1 reference-particle geometry (CSV)
           </a>
@@ -146,37 +99,18 @@ export function Data() {
           <code>data/geometry/geometry.csv</code> by <code>scripts/web/generate_data.py geometry</code>. Registered geometry, not a
           simulation.
         </li>
-        <li>Downloads of a live run, with the same header, come with the graphs in web phase 5.</li>
       </ul>
       <p>
         The precomputed files are written by <code>scripts/web/precompute.sh</code> from the native release build of STRATO; each starts with
         a provenance header (generator, STRATO version, commit, input file and its SHA-256, command, toolchain), and continuous integration
         regenerates them and fails if they differ. In every generated file, including the AGR-1 geometry file, the commit in the header is
-        the source commit the file was generated from: a file cannot record the commit that contains it. The AGR-1 geometry file also
-        records the SHA-256 of the generator that wrote it, and its commit carries the suffix <code>+modified</code> if the generator or
-        the register file differed from that commit.
+        the source commit the file was generated from: a file cannot record the commit that contains it. The AGR-1 geometry file and the
+        guide-line file also record the SHA-256 of the generator that wrote them, and their commit carries the suffix{' '}
+        <code>+modified</code> if the generator or its input differed from that commit.
       </p>
 
       <h2>References</h2>
-      <p>Key references of the STRATO model, as listed in the repository README.</p>
-      <ul className="refs">
-        <li>
-          Gelbard, F. (2003). <em>Analytical modeling of fission product releases by diffusion from multicoated fuel particles</em>{' '}
-          (SAND2002-3966). Sandia National Laboratories.
-        </li>
-        <li>
-          International Atomic Energy Agency. (1997). <em>Fuel performance and fission product behaviour in gas cooled reactors</em>{' '}
-          (IAEA-TECDOC-978). IAEA.
-        </li>
-        <li>
-          Hales, J. D., Jiang, W., Toptan, A., &amp; Gamble, K. A. (2021). Modeling fission product diffusion in TRISO fuel particles with
-          BISON. <em>Journal of Nuclear Materials, 548</em>, 152840. <a href="https://doi.org/10.1016/j.jnucmat.2021.152840">doi:10.1016/j.jnucmat.2021.152840</a>
-        </li>
-      </ul>
-      <p>
-        Literature parameters for Phase 2, each with its register status (verified, digitised or not verified) and source, are in the{' '}
-        <a href={repoFile('data/reference/STRATO_Parameter_Register.md')}>parameter register</a>. v1.0 does not read them.
-      </p>
+      <References />
     </article>
   );
 }

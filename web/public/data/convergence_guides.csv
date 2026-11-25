@@ -1,0 +1,21 @@
+# label: DISPLAY
+# kind: convergence_guides
+# generator: scripts/web/generate_data.py v1
+# generator_sha256: da6e43b8d6892818528817d1bcaddad552136b9b21eea9d605889d64ffd1135f
+# strato_version: 1.0.1
+# commit: 6dc10a47c547729d424071fec9eb1565926d45da+modified
+# command: python -I -X utf8 scripts/web/generate_data.py figures
+# created_utc: 2026-11-25T01:05:47Z
+# note: Guide lines of the convergence plots: slope 2 over the total cell count (spatial study) and slope 1 over the time step (temporal study), each through the coarsest point of its study. A reading aid, not a result.
+# input: web/public/data/convergence_study.json (data_sha256 99083d64268a582943fcd8a12b111ec04aa64e05b0aca464b54b43c418160772)
+study,x_name,x,slope,guide_abs_error
+spatial,total_cells,100,2,2.190159189069396e-05
+spatial,total_cells,200,2,5.47539797267349e-06
+spatial,total_cells,400,2,1.3688494931683726e-06
+spatial,total_cells,800,2,3.4221237329209314e-07
+spatial,total_cells,1600,2,8.555309332302329e-08
+temporal,dt_s,800.0,1,0.000491219531440934
+temporal,dt_s,400.0,1,0.000245609765720467
+temporal,dt_s,200.0,1,0.0001228048828602335
+temporal,dt_s,100.0,1,6.140244143011675e-05
+temporal,dt_s,50.0,1,3.0701220715058375e-05

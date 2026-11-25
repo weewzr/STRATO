@@ -1,7 +1,8 @@
 // Connects the solver client to the store (web phase 3): records build_info().capabilities,
 // runs the current inputs once the worker is ready and again after every change (debounced),
-// and stores the wrapper's reply as it is. Nothing here computes a value.
-import { inputKey, useStrato } from '../state/store';
+// and stores the wrapper's reply as it is; from web phase 5 it also runs compare_v1 when the Compare
+// section asks for it. Nothing here computes a value.
+import { comparisonKey, inputKey, useStrato } from '../state/store';
 import { SolverClient, SolverError, type WorkerFactory } from './client';
 import { RUN_DEBOUNCE_MS } from './tolerances';
 
@@ -48,6 +49,43 @@ function schedule(delay: number): void {
   }, delay);
 }
 
+let compareTimer: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * Compares the current inputs with the baseline through compare_v1 (web phase 5). Asked for only by
+ * the Compare section, so the Explore page sends no comparison request. The reply is stored as it is.
+ */
+async function compareNow(): Promise<void> {
+  if (!client) return;
+  const s = useStrato.getState();
+  if (s.solver.state !== 'ready') return;
+  const baseline = s.baselineConfig;
+  const current = s.config;
+  const key = comparisonKey(baseline, current);
+  s.setComparison({ status: 'running' });
+  try {
+    const pending = client.compareV1(baseline, current, RUN_MECHANISMS, s.capabilities);
+    stampRequests();
+    const reply = await pending;
+    const set = useStrato.getState().setComparison;
+    if (reply.body.status === 'ok') set({ status: 'ok', reply: reply.body, problem: null, key, elapsedMs: reply.elapsedMs });
+    else set({ status: 'rejected', reply: null, problem: reply.body.errors, key, elapsedMs: null });
+  } catch (e) {
+    stampRequests();
+    if (e instanceof SolverError && e.reason === 'stale') return;
+    const text = e instanceof Error ? e.message : String(e);
+    useStrato.getState().setComparison({ status: 'error', reply: null, problem: [text], key, elapsedMs: null });
+  }
+}
+
+function scheduleCompare(delay: number): void {
+  if (compareTimer) clearTimeout(compareTimer);
+  compareTimer = setTimeout(() => {
+    compareTimer = null;
+    void compareNow();
+  }, delay);
+}
+
 const defaultFactory: WorkerFactory = () => new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
 
 /** Starts the worker and keeps the run in step with the inputs. Called once, from main.tsx. */
@@ -71,7 +109,7 @@ export function startSolver(factory: WorkerFactory = defaultFactory): SolverClie
     },
   });
   stampRequests();
-  useStrato.setState({ requestRun: () => schedule(0) });
+  useStrato.setState({ requestRun: () => schedule(0), requestCompare: () => scheduleCompare(RUN_DEBOUNCE_MS) });
   useStrato.subscribe((state, prev) => {
     if (state.config !== prev.config && state.solver.state === 'ready') schedule(RUN_DEBOUNCE_MS);
   });

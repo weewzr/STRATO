@@ -256,16 +256,16 @@ test.describe('3D cutaway', () => {
     await expect(page.getByTestId('particle')).toHaveAttribute('data-view', '3d');
     // Fold, measured on the first screen before any click can scroll the page: the 3D view takes
     // the place of the 2D drawing at no greater height, so the equation, the whole particle box
-    // with its 3D controls and key help, the release readout and the top of the profile area stay
+    // with its 3D controls and key help, the release readout and the top of the profile figure stay
     // above the status line.
     await page.evaluate(() => window.scrollTo(0, 0));
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
     const footerTop = (await page.locator('footer.status').boundingBox())?.y ?? 900;
-    for (const id of ['block-a', 'particle', 'p3d-canvas', 'p3d-controls', 'p3d-zoom-in', 'p3d-zoom-out', 'p3d-reset', 'p3d-keys', 'release-readout', 'profile-placeholder']) {
+    for (const id of ['block-a', 'particle', 'p3d-canvas', 'p3d-controls', 'p3d-zoom-in', 'p3d-zoom-out', 'p3d-reset', 'p3d-keys', 'release-readout', 'profile-figure']) {
       const box = await page.getByTestId(id).boundingBox();
       expect(box, id).not.toBeNull();
       expect(box?.y ?? -1, `${id} top`).toBeGreaterThanOrEqual(0);
-      expect((box?.y ?? 0) + (id === 'profile-placeholder' ? 0 : (box?.height ?? 0)), id).toBeLessThanOrEqual(footerTop + 0.5);
+      expect((box?.y ?? 0) + (id === 'profile-figure' ? 0 : (box?.height ?? 0)), id).toBeLessThanOrEqual(footerTop + 0.5);
     }
     // The buttons lie inside the scene's box, clear of the particle at the default view (about 92 %
     // of the stage height, centred), and the 3D drawing is no taller than the 2D one.
