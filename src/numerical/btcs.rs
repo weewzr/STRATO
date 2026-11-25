@@ -478,10 +478,10 @@ mod tests {
         let dense = dense_solve(a, &c_old[..g.n]);
         // Derived bounds (u = 2^-53, gamma_k = k u / (1 - k u)).
         // (1) Backward error of (F24). For this M-matrix (P1, P2) the factors satisfy
-        //     |L||U| = |A| exactly (L, U have the sign pattern of A, so no cancellation). For
-        //     tridiagonal LU followed by the two bidiagonal solves, Higham, Accuracy and
-        //     Stability of Numerical Algorithms, 2nd ed., Section 9.6, gives
-        //     (A + dA) x = b with |dA| <= (4u + O(u^2)) |L||U|, which is <= gamma_5 |A|.
+        //     |L||U| <= (1 + O(u)) |A| (L, U have the sign pattern of A, so no cancellation). The
+        //     backward error of tridiagonal LU followed by the two bidiagonal solves is derived
+        //     in `tridiagonal::tests::thomas_matches_dense_f24` (item 1 there):
+        //     (A + dA) x = b with |dA| <= kappa_t |A|, kappa_t = 4u + O(u^2) <= gamma_5.
         //     Hence the exact residual obeys |b - A x|_i <= gamma_5 (|A||x|)_i.
         // (2) The residual computed here has 3 products, 3 additions and the b term, so it
         //     differs from the exact residual by at most gamma_4 (|A||x| + |b|)_i.
@@ -512,14 +512,18 @@ mod tests {
         };
         let u = f64::EPSILON / 2.0;
         let gamma = |k: f64| k * u / (1.0 - k * u);
+        // The margin is evaluated in floating point (two subtractions, error at most
+        // gamma_2 (|B| + |L| + |U|)); that error is subtracted, so `margin` is a rigorous lower
+        // bound of the true row margin. No fixed value (such as 1) is assumed: Varah's bound
+        // only needs margin > 0.
         let margin = (0..n)
             .map(|i| {
                 let l = if i > 0 { a.lower[i].abs() } else { 0.0 };
                 let up = if i + 1 < n { a.upper[i].abs() } else { 0.0 };
-                a.diag[i].abs() - l - up
+                (a.diag[i].abs() - l - up) - gamma(2.0) * (a.diag[i].abs() + l + up)
             })
             .fold(f64::INFINITY, f64::min);
-        assert!(margin >= 1.0 - 1e-12, "row margin {margin}");
+        assert!(margin > 0.0, "row margin {margin}");
         let inv_norm = 1.0 / margin;
         let (rx, sx) = residual(&c_new[..n]);
         let (ry, sy) = residual(&dense);
@@ -557,18 +561,30 @@ mod tests {
         for i in 1..g.n {
             let lhs = g.v[i] * (c_new[i] - c_old[i]) / 50.0;
             let rhs = k[i] * (c_new[i + 1] - c_new[i]) - k[i - 1] * (c_new[i] - c_new[i - 1]);
-            // Derived bound (units of V/dt times concentration). Backward error of the solve,
-            // |dA| <= gamma_5 |A| (see one_step_matches_dense_solve, item 1): 5 u S. Stored entries
-            // l = -dt k / v (2 roundings) and B = (1 - l) - u (2 roundings, all terms of one
-            // sign): 2 u S. Evaluating lhs here (3 roundings) and the two flux differences
-            // (2 roundings each, plus the final subtraction): 3 u S. The counts add to 13 u S, with
+            // Derived bound (units of V/dt times concentration), u = 2^-53. Per unit of S below:
+            //  - backward error of the solve, |dA| <= kappa_t |A|, kappa_t = 4u + O(u^2)
+            //    (see one_step_matches_dense_solve, item 1): 4u;
+            //  - stored entries. The product dt K is rounded once and shared by the two rows that
+            //    use K_i (the same operands), which is a relative change u of K_i (it defines
+            //    K' = P/(-dt)); against the exact-form row with K' and the same V, the stored L
+            //    and U carry one rounding each (u |L||x_{i-1}|, u |U||x_{i+1}|), and B =
+            //    fl(fl(1 - l) - u) has two roundings of positive terms plus the change of
+            //    |L| + |U|: gamma_2 B + u (|L| + |U|)/(1 - u) <= 3u B + O(u^2) B, so 3u in all
+            //    (no modified V is needed);
+            //  - the shared dt K rounding against the K used in rhs here: u;
+            //  - evaluating lhs here (3 roundings) and rhs (two flux terms of 2 roundings each
+            //    and the final subtraction: 3 roundings): 6u.
+            // The counts add to (4 + 3 + 1 + 6) u = 14 u S. (An earlier version of this comment
+            // counted 13 u S; it missed the shared dt K rounding.) With
             // S = (V/dt)(|c_i^new| + |c_i^old|) + k_i (|c_{i+1}| + |c_i|) + k_{i-1} (|c_i| + |c_{i-1}|),
-            // which bounds each partial scale; 13 u S = (5+2+3+3) u S is used.
+            // which bounds each partial scale. O(u^2) terms are below 1e-30 S and are absorbed by
+            // the factor (1 + 100 u) used on the bound.
             let scale = g.v[i] / 50.0 * (c_new[i].abs() + c_old[i].abs())
                 + k[i] * (c_new[i + 1].abs() + c_new[i].abs())
                 + k[i - 1] * (c_new[i].abs() + c_new[i - 1].abs());
+            let u = f64::EPSILON / 2.0;
             assert!(
-                (lhs - rhs).abs() <= 13.0 * (f64::EPSILON / 2.0) * scale,
+                (lhs - rhs).abs() <= 14.0 * u * (1.0 + 100.0 * u) * scale,
                 "row {i}: {lhs} vs {rhs}"
             );
         }
@@ -576,15 +592,33 @@ mod tests {
 
     #[test]
     fn general_row_f11_matches_explicit_forms() {
-        // Pre-registered tolerance: stored radii carry u*r absolute error, so a difference of
-        // radii has relative error up to 2u*r/dr, and L, U contain three such differences:
-        // tol = 8 eps (r_N / dr_min) + 64 eps (relative to the largest entry of the row).
+        // Derived tolerance, relative to the largest entry of the row, u = 2^-53,
+        // rho = r_N / dr_min. A stored node is r_i = fl(R_prev + fl(j dr)) with
+        // dr = fl(fl(R_k - R_prev)/n_k): its distance to the ideal node R_prev + j h is at most
+        // 3 u r_i (u r_i for the sum, gamma_2 j h for dr and the product); interface and outer
+        // radii are exact. Hence the stored difference a = r_i - r_{i-1} satisfies
+        // |a/h - 1| <= 6 u rho + u, and (a + b)/(2h) - 1 = (r_{i+1} - r_{i-1})/(2h) - 1 is at
+        // most 3 u rho + u; the explicit forms use dr = h (1 + gamma_2) instead.
+        // The assembled entry is -2 dt D r_{i-1} / (a r_i (a + b)) (1 + theta) with 8 roundings
+        // (K: 3, dt K: 1, V: 3, final division: 1); the explicit one is -fo (1 - dr/r_i) with
+        // 6 roundings (fo: 3, dr/r: 1, 1 - .: 1, product: 1), and the cancellation in 1 - dr/r_i
+        // (i >= 2 in the kernel, dr/r <= 1/2) costs at most 2u more. The numerators differ by
+        // (a - dr), at most 6 u rho + 3u in relative size of r_i - dr >= r_i/2. The first-order
+        // terms add up: the three radius effects (a against dr: 6 rho + 3; the numerator: 6 rho + 3;
+        // (a + b) against 2 dr: 3 rho + 3) give 15 u rho + 9u, the roundings 8 + 6 + 2 = 16u, so an
+        // off-diagonal entry has relative error E <= 15 u rho + 25 u; the diagonal
+        // B = 1 + |L| + |U| adds two roundings and one more for the explicit 1 + 2 fo: E + 3u;
+        // interface rows add three roundings (s, 2 dr/s, one product) and have exact interface
+        // radii. One bound is used for all rows: E_tot = (15 rho + 31) u, plus the second-order
+        // allowance 2 E_tot^2 (the neglected terms are products of two such quantities).
         let counts = [7, 5, 6, 9, 8];
         let (g, s) = stepper_for(counts, 120.0);
         let a = &s.assembly();
         let c = &a.coeff;
         let dr_min = g.dr_region.iter().cloned().fold(f64::INFINITY, f64::min);
-        let rel = 8.0 * f64::EPSILON * g.r[g.n] / dr_min + 64.0 * f64::EPSILON;
+        let rho = g.r[g.n] / dr_min;
+        let e_tot = (15.0 * rho + 31.0) * (f64::EPSILON / 2.0);
+        let rel = e_tot + 2.0 * e_tot * e_tot;
         let within = |x: f64, y: f64, scale: f64| (x - y).abs() <= rel * scale;
         for i in 1..g.n {
             let (l, b, u) = (a.matrix.lower[i], a.matrix.diag[i], a.matrix.upper[i]);
@@ -629,14 +663,18 @@ mod tests {
         let (g, s) = stepper_for([7, 5, 6, 9, 8], 120.0);
         let a = s.assembly();
         let fo = a.coeff.fo[0];
-        // Derived bound, as for (F11) in general_row_f11_matches_explicit_forms: the stored
-        // radii carry u r absolute error, so the three radius differences inside L and U (in
-        // k and in V) have relative error up to 2 u r / dr (r <= r_kernel = N_kernel dr), and
-        // the remaining operations (about 8 roundings) add 8 eps relative to the entry.
-        // Entries are at most 2 fo. Hence tol = 2 fo (8 eps r_kernel / dr + 8 eps).
+        // Derived bound, with the notation of general_row_f11_matches_explicit_forms (u = 2^-53,
+        // rho = r_kernel / dr = n_kernel here). The radius effects give 15 u rho + 9u relative
+        // error of the entry. Roundings: assembled entry 8; the expected value
+        // -fo (1 - 1/i) has 3 more (1/i, 1 - ., product) and fo itself 3 (it is shared with the
+        // ideal D dt/dr^2); the cancellation in 1 - 1/i (i >= 2) at most 2u: 16u. Relative error
+        // E = 15 u rho + 25 u; the entries are at most 2 fo in magnitude (|1 +- 1/i| <= 2
+        // for i >= 1), so tol = 2 fo (E + 2 E^2), the second term being the allowance for the
+        // neglected products of two small quantities.
         let r_kernel = g.r[g.interface_nodes[0]];
-        let tol_f15 =
-            2.0 * fo * (8.0 * f64::EPSILON * r_kernel / g.dr_region[0] + 8.0 * f64::EPSILON);
+        let rho = r_kernel / g.dr_region[0];
+        let e_f15 = (15.0 * rho + 25.0) * (f64::EPSILON / 2.0);
+        let tol_f15 = 2.0 * fo * (e_f15 + 2.0 * e_f15 * e_f15);
         for i in 2..g.interface_nodes[0] {
             let expect_l = -fo * (1.0 - 1.0 / i as f64);
             let expect_u = -fo * (1.0 + 1.0 / i as f64);
@@ -646,7 +684,16 @@ mod tests {
         // The 1/i factor applied in a buffer node is not the matrix row.
         let i = g.interface_nodes[0] + 2;
         let wrong_l = -a.coeff.fo[1] * (1.0 - 1.0 / (i as f64));
-        assert!((a.matrix.lower[i] - wrong_l).abs() > 1e-6 * a.coeff.fo[1]);
+        // The control must differ from the stored entry by more than the rounding tolerance of
+        // the comparison itself (the F15 tolerance scaled to the buffer's Fourier number), so
+        // that the test could not mistake it for a rounding difference.
+        let e_buf = (15.0 * (g.r[g.n] / g.dr_region.iter().cloned().fold(f64::INFINITY, f64::min))
+            + 31.0)
+            * (f64::EPSILON / 2.0);
+        assert!(
+            (a.matrix.lower[i] - wrong_l).abs()
+                > 2.0 * a.coeff.fo[1] * (e_buf + 2.0 * e_buf * e_buf)
+        );
     }
 
     #[test]
@@ -675,7 +722,9 @@ mod tests {
             let n = g.n;
             let u_last = -200.0 * a.coeff.k_outer[n - 1] / g.v[n - 1];
             let expect = 1.0 + a.matrix.lower[n - 1].abs() + u_last.abs();
-            assert!((a.matrix.diag[n - 1] - expect).abs() <= 8.0 * f64::EPSILON * expect);
+            // No tolerance: `assemble` computes B = fl(fl(1 - l) - u) with the same l and
+            // u (the same operands, so the same roundings) and 1 - l = 1 + |l|, - u = + |u|.
+            assert_eq!(a.matrix.diag[n - 1].to_bits(), expect.to_bits());
             assert_eq!(a.matrix.upper[n - 1], 0.0);
             assert_eq!(s.k_last().to_bits(), a.coeff.k_outer[n - 1].to_bits());
         }
@@ -696,8 +745,57 @@ mod tests {
         let (c_old, _, _) = initial_vector(&g, 1.0);
         let mut c_new = vec![0.0; g.n + 1];
         s.step(&c_old, &mut c_new).unwrap();
-        for i in 0..g.n {
-            assert!((c_new[i] - c_old[i]).abs() < 1e-6, "node {i}");
+        // Derived bound, u = 2^-53, gamma_k = k u/(1 - k u). Let x be the computed new profile
+        // and r = c - A x the exact residual. Then A x = c - r, so A (x - c) = -r - (A - I) c,
+        // and
+        //   |x - c|_inf <= ||A^-1||_inf (|r|_inf + |(A - I) c|_inf),
+        // with ||A^-1||_inf <= 1/margin (Varah, row dominance, margin = min row margin, from
+        // the stored matrix with its evaluation error subtracted). |r|_i is at most the
+        // evaluated residual plus gamma_4 (|A||x| + |c|)_i (3 products, 3 sums, c);
+        // |(A - I) c|_i <= |L_i||c_{i-1}| + |B_i - 1||c_i| + |U_i||c_{i+1}|, evaluated with the
+        // factor (1 + gamma_5). For dt = 1e-9 s every |L|, |U|, |B - 1| is about 1e-15 or
+        // smaller, so the bound is of that size, not a fixed constant.
+        let a = &s.assembly().matrix;
+        let n = g.n;
+        let u = f64::EPSILON / 2.0;
+        let gamma = |k: f64| k * u / (1.0 - k * u);
+        let margin = (0..n)
+            .map(|i| {
+                let l = if i > 0 { a.lower[i].abs() } else { 0.0 };
+                let up = if i + 1 < n { a.upper[i].abs() } else { 0.0 };
+                (a.diag[i].abs() - l - up) - gamma(2.0) * (a.diag[i].abs() + l + up)
+            })
+            .fold(f64::INFINITY, f64::min);
+        assert!(margin > 0.0);
+        let mut worst = 0.0f64;
+        for i in 0..n {
+            let (cm, cp) = (
+                if i > 0 { c_old[i - 1] } else { 0.0 },
+                if i + 1 < n { c_old[i + 1] } else { 0.0 },
+            );
+            let (lo, up) = (
+                if i > 0 { a.lower[i] } else { 0.0 },
+                if i + 1 < n { a.upper[i] } else { 0.0 },
+            );
+            let mut r = c_old[i] - a.diag[i] * c_new[i];
+            let mut sc = c_old[i].abs() + (a.diag[i] * c_new[i]).abs();
+            if i > 0 {
+                r -= lo * c_new[i - 1];
+                sc += (lo * c_new[i - 1]).abs();
+            }
+            if i + 1 < n {
+                r -= up * c_new[i + 1];
+                sc += (up * c_new[i + 1]).abs();
+            }
+            let a_minus_i = (lo.abs() * cm.abs()
+                + (a.diag[i] - 1.0).abs() * c_old[i].abs()
+                + up.abs() * cp.abs())
+                * (1.0 + gamma(5.0));
+            worst = worst.max(r.abs() + gamma(4.0) * sc + a_minus_i);
+        }
+        let tol = worst / margin;
+        for i in 0..n {
+            assert!((c_new[i] - c_old[i]).abs() <= tol, "node {i}: tol {tol}");
         }
     }
 
@@ -774,11 +872,15 @@ mod tests {
     fn cumulative_release_is_sum_of_rates() {
         let c = config([6, 5, 4, 5, 4], 200.0, 4000.0);
         let r = run(&c, &LIMITS, &[]).unwrap();
-        let mut sum = 0.0;
+        // No tolerance: (F27) is the compensated sum of the increments dt * Phi in the order of
+        // the steps. Re-accumulating the same increments with the same accumulator must give the
+        // same bits; the quantitative accuracy of that accumulator enters the balance bound of
+        // `tests/btcs_verification.rs`.
+        let mut acc = crate::numerical::inventory::Accumulator::new();
         for (_, row) in r.series.iter().skip(1) {
-            sum += r.meta.dt * row.release_rate.unwrap();
+            acc.add(r.meta.dt * row.release_rate.unwrap());
         }
         let last = r.series.last().unwrap().1;
-        assert!((sum - last.cumulative_release).abs() <= 1e-12 * sum.abs());
+        assert_eq!(acc.value().to_bits(), last.cumulative_release.to_bits());
     }
 }

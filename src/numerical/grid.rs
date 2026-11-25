@@ -338,7 +338,9 @@ mod tests {
         }
         let k = g.interface_nodes[0];
         assert!(g.dr_inner(k) != g.dr_outer(k));
-        assert!((g.dr_inner(2) - g.dr_region[0]).abs() < 1e-12 * g.dr_region[0]);
+        // No tolerance: kernel nodes 1 and 2 are fl(1 dr) = dr and fl(2 dr) = 2 dr (exact
+        // doubling), so the stored difference 2 dr - dr is dr exactly.
+        assert_eq!(g.dr_inner(2).to_bits(), g.dr_region[0].to_bits());
     }
 
     #[test]
@@ -348,12 +350,22 @@ mod tests {
         // Interior node 1 of the kernel: r_1 = R_1/3, equal spacings R_1/3.
         let r1 = RADII[0] / 3.0;
         let expect = r1 * r1 * (RADII[0] / 3.0);
-        assert!((g.v[1] - expect).abs() <= 8.0 * f64::EPSILON * expect);
-        // Interface node: weight is the sum of half of each adjacent interval.
+        // No tolerance: r_0 = 0, r_1 = dr, r_2 = 2 dr exactly, so (F7) computes
+        // ((dr dr) * (dr + dr)) / 2 = ((dr dr) * 2 dr) / 2; scaling by 2 is exact, hence this
+        // equals (dr dr) dr bit for bit.
+        assert_eq!(g.v[1].to_bits(), expect.to_bits());
+        // Interface node: weight is the sum of half of each adjacent interval. With
+        // u = 2^-53, gamma_3 = 3u/(1-3u): V = ((r r)(a + b))/2 has 3 roundings (r r, a + b,
+        // the product; halving is exact), so V = T (1 + th), |th| <= gamma_3, T = r^2 (a + b)/2.
+        // The check value ((r r) a)/2 + ((r r) b)/2 has 2 roundings in each half (the shared
+        // r r, one product) and 1 in the sum: also gamma_3. So |V - check| <= 2 gamma_3 T
+        // <= 2 gamma_3 V / (1 - gamma_3).
         let k = g.interface_nodes[0];
         let half_in = g.r[k] * g.r[k] * g.dr_inner(k) / 2.0;
         let half_out = g.r[k] * g.r[k] * g.dr_outer(k) / 2.0;
-        assert!((g.v[k] - (half_in + half_out)).abs() <= 8.0 * f64::EPSILON * g.v[k]);
+        let u = f64::EPSILON / 2.0;
+        let g3 = 3.0 * u / (1.0 - 3.0 * u);
+        assert!((g.v[k] - (half_in + half_out)).abs() <= 2.0 * g3 / (1.0 - g3) * g.v[k]);
     }
 
     #[test]
