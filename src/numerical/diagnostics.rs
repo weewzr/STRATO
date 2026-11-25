@@ -20,6 +20,9 @@ pub struct StepDiagnostics {
     pub release_rate: Option<f64>,
     /// `eps^j` (F30), mol.
     pub balance_residual: f64,
+    /// Derived a-posteriori rounding bound on `|eps^j|`, mol (see [`BalanceBound`]). The
+    /// observed residual is always reported beside it (coordinator decision 6).
+    pub balance_residual_bound: f64,
     /// Smallest nodal concentration, mol/m^3.
     pub min_concentration: f64,
     /// Largest nodal concentration, mol/m^3.
@@ -28,6 +31,57 @@ pub struct StepDiagnostics {
 
 /// `(t^j in s, row)`.
 pub type TimeSeries = Vec<(f64, StepDiagnostics)>;
+
+/// A-posteriori rounding bound on the balance residual `|eps^j| / M^0` (property P18).
+///
+/// Derivation (recorded before it was used, in `tests/btcs_verification.rs`): the identity
+/// (F29) follows by summing the exact-form rows (F10) over `i = 1 ..= N-1`. The computed
+/// solution satisfies the stored rows up to the backward error of tridiagonal elimination,
+/// `|delta_i| <= 4u (|A||x|)_i` (Higham, LU of a diagonally dominant tridiagonal matrix), and
+/// the stored entries differ from the exact `-dt K / V` and `1 - L - U` by at most `2u`
+/// relative. Hence per step `|Delta eps| <= 4 pi (4u + 2u) sum_i V_i (|A||x|)_i`; the constant
+/// used is `16 u` (a safety factor of about 2.7 over `6 u`). The final rounding of `M^j` (`N`
+/// terms), of `dt Phi` (three products) and of the compensated sum adds `(N + 8) u M^0`.
+/// `u = 2^-53`. This is a bound derived from the operation count, not a rigorous proof, and
+/// nothing about it is tightened empirically (coordinator decision 6).
+#[derive(Clone, Copy, Debug)]
+pub struct BalanceBound {
+    cumulative: f64,
+    tail: f64,
+}
+
+impl BalanceBound {
+    /// Unit roundoff of `f64`.
+    pub const U: f64 = f64::EPSILON / 2.0;
+    /// The per-step constant `16 u`, as a multiple of `u`.
+    pub const STEP_CONSTANT_IN_U: f64 = 16.0;
+
+    /// Bound for a grid with `n` the index of the outer node (`N`).
+    pub fn new(n: usize) -> BalanceBound {
+        BalanceBound {
+            cumulative: 0.0,
+            tail: (n as f64 + 8.0) * Self::U,
+        }
+    }
+
+    /// Adds the increment of one step: `c_new` is the profile after the step (length `N + 1`),
+    /// `v` the weights `V_i`, `m0` the initial inventory.
+    pub fn add_step(&mut self, a: &Tridiagonal, v: &[f64], c_new: &[f64], m0: f64) {
+        let n = a.diag.len();
+        let mut s = 0.0;
+        for i in 1..n {
+            let left = a.lower[i].abs() * c_new[i - 1].abs();
+            let right = a.upper[i].abs() * c_new[i + 1].abs();
+            s += v[i] * (left + a.diag[i].abs() * c_new[i].abs() + right);
+        }
+        self.cumulative += 4.0 * std::f64::consts::PI * Self::STEP_CONSTANT_IN_U * Self::U * s / m0;
+    }
+
+    /// The bound on `|eps^j| / M^0` after the steps added so far.
+    pub fn relative(&self) -> f64 {
+        self.cumulative + self.tail
+    }
+}
 
 /// Result of [`check_matrix_structure`].
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -192,6 +246,7 @@ mod tests {
             release_fraction: f,
             release_rate: None,
             balance_residual: eps,
+            balance_residual_bound: 1e-9,
             min_concentration: 0.0,
             max_concentration: 1.0,
         }

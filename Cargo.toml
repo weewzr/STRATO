@@ -17,6 +17,10 @@ path = "src/lib.rs"
 name = "strato"
 path = "src/main.rs"
 
+[[bin]]
+name = "strato-btcs"
+path = "src/bin/strato_btcs.rs"
+
 [dependencies]
 anyhow = "1"
 csv = "1"
