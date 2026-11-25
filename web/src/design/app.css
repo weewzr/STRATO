@@ -1523,15 +1523,16 @@ select.field__input {
 }
 @media (min-width: 1200px) {
   .builder {
-    grid-template-columns: 13.5rem minmax(0, 1fr) 21rem;
+    grid-template-columns: 17rem minmax(0, 1fr) 20rem;
     grid-template-areas:
       'picker eq side'
-      'more more more';
+      'picker more more';
     column-gap: var(--space-4);
     align-items: start;
   }
   .builder > .stages {
     grid-area: picker;
+    align-self: start;
   }
   .builder > .builder__main {
     display: contents;
@@ -1557,8 +1558,12 @@ select.field__input {
   overflow: hidden;
 }
 @media (min-width: 1200px) {
+  /* Two columns of nine rows, read down the first column and then down the second: seventeen entries
+     stay within the height of the equation beside them. */
   .stages {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(9, auto);
+    grid-auto-flow: column;
   }
 }
 .stage {
@@ -1632,6 +1637,24 @@ select.field__input {
   font-size: var(--tick-min);
   font-style: italic;
 }
+/* Seventeen entries fit beside the equation only when each is one line; a fine pointer needs no 44 px target. */
+@media (hover: hover) and (pointer: fine) {
+  .stage {
+    min-height: 1.625rem;
+    padding-top: 1px;
+    padding-bottom: 1px;
+  }
+  .stage__num {
+    width: 1.375rem;
+    height: 1.25rem;
+    font-size: var(--tick-min);
+  }
+}
+/* The previews are set apart from the steps of the solver by a rule above the first of them. */
+.stage.is-group-start {
+  box-shadow: 0 -2px 0 var(--border-strong);
+}
+
 .stage-select {
   max-width: 24rem;
 }
@@ -1765,11 +1788,6 @@ select.field__input {
   border-bottom: 2px solid var(--mech-arrhenius);
 }
 /* Stage 1 introduces the baseline itself: no tint, the whole equation is the new content. */
-.eq-new--lhs,
-.eq-new--diffusion {
-  padding: 0;
-  animation: none;
-}
 @keyframes eq-fade {
   from {
     opacity: 0;
@@ -1779,14 +1797,27 @@ select.field__input {
   }
 }
 /* The term picked in the term list is outlined in the equation, so the reader sees where it sits. */
-.eq-box[data-active-term='lhs'] .eq-term--lhs,
-.eq-box[data-active-term='diffusion'] .eq-term--diffusion,
-.eq-box[data-active-term='source'] .eq-term--source,
-.eq-box[data-active-term='decay'] .eq-term--decay,
-.eq-box[data-active-term='diffusion_T'] .eq-term--diffusion_T,
-.eq-box[data-active-term='arrhenius_layers'] .eq-term--arrhenius_layers {
+.eq-box .eq-term.is-active {
   outline: 1px dashed var(--border-strong);
   outline-offset: 3px;
+}
+/* An equation wider than its box (number included) gets its number on its own line, set by the builder
+   after KaTeX has rendered and again when the box is resized; the equation itself scrolls in its box. */
+.eq-box .eq-tag-below > .katex > .katex-html > .katex-tag {
+  position: static;
+  display: block;
+  text-align: right;
+}
+/* The label of each equation of the step, above it. */
+.eq-label {
+  display: block;
+  margin-top: var(--space-1);
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+.eq-box--main .eq-label + .katex-display {
+  margin-top: 0;
 }
 
 /* Term list: one row per term, with its research status; the new term of the stage is marked. */

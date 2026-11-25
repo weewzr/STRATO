@@ -1,39 +1,38 @@
 // @vitest-environment node
-// Staged equation builder: term assembly, LaTeX against the derivation documents, KaTeX rendering,
-// and the documentation and code anchors (prompt/IMPLEMENTATION_ROADMAP.md Phase 2,
-// prompt/TESTING_AND_VALIDATION.md Section 3 row 2).
-import { readFileSync } from 'node:fs';
+// Progressive equation builder for the BTCS solver: every equation against the BTCS documents,
+// KaTeX rendering, the notation rules of directive Section 5, and the documentation and code anchors
+// (prompt/TESTING_AND_VALIDATION.md Section 3 row 2).
+import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { DOCS, headingSlug, type DocId } from '../src/equation/links';
+import { DOCS, headingSlug, type DocId, type DocRef } from '../src/equation/links';
 import {
-  assemble,
-  assembleStage,
+  allEquations,
   balanceFor,
   conditionsFor,
-  DOMAIN,
-  implementationFor,
-  listedOnly,
-  STAGE_DEFS,
+  CORE_STAGES,
+  equationNumber,
+  LAST_SOLVED_STEP,
+  mainEquations,
+  markParts,
+  PREVIEW_STAGES,
   STAGES,
-  stageTerms,
+  STEP_DEFS,
   SWITCH_MECHANISM,
   SWITCHES,
   switchIntroducedBy,
-  systemTerms,
   TERMS,
   type EqSource,
-  type ShownEquation,
-  type SwitchSet,
-  type TermId,
 } from '../src/equation/terms';
 import { renderTex } from '../src/equation/Tex';
 
 const REPO = fileURLToPath(new URL('../..', import.meta.url));
 const docText = (doc: DocId) => readFileSync(join(REPO, DOCS[doc].path), 'utf8');
-const TEXT: Record<DocId, string> = { v1: docText('v1'), p2: docText('p2'), pseudo: docText('pseudo') };
+const TEXT: Record<DocId, string> = { d1: docText('d1'), d2: docText('d2'), d3: docText('d3'), d4: docText('d4') };
 const squash = (s: string) => s.replace(/\s+/g, '');
+const MATHS = squash(TEXT.d1 + TEXT.d2);
 
 /** Removes \htmlClass{classes}{body} wrappers, keeping the body (brace matching). */
 export function stripHtmlClass(latex: string): string {
@@ -93,157 +92,189 @@ function sectionText(doc: DocId, heading: string): string {
   return TEXT[doc].slice(h.start, next ? next.start : undefined);
 }
 
-function applyNotation(src: EqSource): string {
-  let s = src.verbatim;
-  for (const [from, to] of src.notation ?? []) s = s.split(from).join(to);
-  return s;
-}
-
-function checkSource(src: EqSource, displayed: string, what: string) {
+function checkSource(src: EqSource, displayed: string, what: string, numberAs?: string) {
   const block = src.tag ? taggedBlock(src.doc, src.tag) : sectionText(src.doc, src.section);
   expect(squash(block), `${what}: verbatim copy not found in ${src.tag ? `(${src.tag})` : src.section}`).toContain(squash(src.verbatim));
   // The tagged equation also lies in the cited section.
   if (src.tag) expect(sectionText(src.doc, src.section), `${what}: (${src.tag}) is not in section "${src.section}"`).toContain(`\\tag{${src.tag}}`);
-  expect(squash(applyNotation(src)), `${what}: displayed LaTeX differs from the copy after the stated notation changes`).toBe(
-    squash(stripHtmlClass(displayed)),
-  );
+  // An untagged line that the page numbers by a name from the text: the section must use that name.
+  if (!src.tag && numberAs) expect(sectionText(src.doc, src.section), `${what}: the name ${numberAs} is not in the section`).toContain(numberAs);
+  // Nothing is rewritten: the displayed LaTeX is the copy.
+  expect(squash(stripHtmlClass(displayed)), `${what}: displayed LaTeX differs from the document text`).toBe(squash(src.verbatim));
 }
 
-const allShown = (): [string, ShownEquation][] =>
-  STAGES.flatMap((s) => [
-    ...conditionsFor(s).equations.map((e) => [`stage ${s} condition ${e.id}`, e] as [string, ShownEquation]),
-    ...implementationFor(s).equations.map((e) => [`stage ${s} implementation ${e.id}`, e] as [string, ShownEquation]),
-    ...balanceFor(s).equations.map((e) => [`stage ${s} balance ${e.id}`, e] as [string, ShownEquation]),
-  ]);
+describe('the fourteen steps and the three previews', () => {
+  it('has the fourteen steps of directive Section 16 in order, then three previews', () => {
+    expect(CORE_STAGES.map((s) => STEP_DEFS[s].name)).toEqual([
+      'Conservation of mass',
+      "Fick's law",
+      'Spherical diffusion equation',
+      'Five-layer material model',
+      'Central spatial differences',
+      'Backward Euler discretisation',
+      'Centre-node equation',
+      'Interface-node equations',
+      'Outer-boundary equation',
+      'Tridiagonal matrix',
+      'Rust solution algorithm',
+      'Inventory and release',
+      'Numerical verification',
+      'Experimental comparisons',
+    ]);
+    expect(PREVIEW_STAGES.map((s) => STEP_DEFS[s].name)).toEqual([
+      'Fission-product generation (preview)',
+      'Radioactive decay (preview)',
+      'Temperature-dependent diffusivity (preview)',
+    ]);
+    expect(STAGES.length).toBe(17);
+    expect(CORE_STAGES.every((s) => STEP_DEFS[s].kind === 'step')).toBe(true);
+    expect(PREVIEW_STAGES.every((s) => STEP_DEFS[s].kind === 'preview' && STEP_DEFS[s].mechanism !== null)).toBe(true);
+    expect(LAST_SOLVED_STEP).toBe(12);
+  });
 
-describe('LaTeX of every term matches the cited equation of the derivation documents', () => {
-  it('terms of the transport equation and the system', () => {
-    for (const t of Object.values(TERMS)) {
-      if (t.latex === '') {
-        expect(t.sources, `${t.id} is listed only and cites no equation`).toEqual([]);
-        continue;
-      }
-      expect(t.sources.length, `${t.id} has a source`).toBeGreaterThan(0);
-      for (const s of t.sources) checkSource(s, t.latex, `term ${t.id}`);
-      if (t.formula) checkSource(t.formula.source, t.formula.latex, `formula of ${t.id}`);
+  it('every step has a main equation and parts, and part ids are unique over all steps', () => {
+    const ids = STAGES.flatMap((s) => STEP_DEFS[s].parts.map((p) => p.id));
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const s of STAGES) {
+      expect(STEP_DEFS[s].main.length, `step ${s} main`).toBeGreaterThan(0);
+      expect(STEP_DEFS[s].parts.length, `step ${s} parts`).toBeGreaterThan(0);
+      expect(STEP_DEFS[s].stage).toBe(s);
     }
+    expect(Object.keys(TERMS).sort()).toEqual([...ids].sort());
   });
 
-  it('domain of the layer equation', () => {
-    checkSource(DOMAIN.source, DOMAIN.latex, 'domain');
-  });
-
-  it('conditions, discrete updates and balances of every stage', () => {
-    for (const [what, e] of allShown()) checkSource(e.source, e.latex, what);
-  });
-
-  it('highlights only parts of the copied equation', () => {
-    for (const [what, e] of allShown()) {
-      if (e.latex.includes('\\htmlClass')) expect(squash(stripHtmlClass(e.latex)), what).toBe(squash(applyNotation(e.source)));
-    }
-  });
-
-  it('the stripping helper removes nested wrappers and keeps their content', () => {
-    expect(stripHtmlClass('a \\htmlClass{x y}{b + \\frac{c}{d}} e')).toBe('a b + \\frac{c}{d} e');
-    expect(stripHtmlClass('\\htmlClass{x}{\\htmlClass{y}{z}}')).toBe('z');
-  });
-});
-
-describe('term assembly for the six builder stages', () => {
-  const expected: Record<number, { terms: TermId[]; tag: string; system: TermId[]; listed: TermId[] }> = {
-    1: { terms: ['lhs', 'diffusion'], tag: '2.6', system: [], listed: [] },
-    2: { terms: ['lhs', 'diffusion', 'source'], tag: 'P21.1', system: [], listed: [] },
-    3: { terms: ['lhs', 'diffusion', 'decay', 'source'], tag: 'P21.1', system: [], listed: [] },
-    4: { terms: ['lhs', 'diffusion_T', 'decay', 'source'], tag: 'P22.11', system: [], listed: [] },
-    5: { terms: ['lhs', 'diffusion_T', 'decay', 'source'], tag: 'P22.11', system: ['arrhenius_layers'], listed: ['partition'] },
-    6: { terms: ['lhs', 'diffusion_T', 'decay', 'source'], tag: 'P22.11', system: ['arrhenius_layers'], listed: ['partition'] },
-  };
-
-  for (const s of STAGES) {
-    it(`stage ${s} shows exactly its terms and highlights exactly its new term`, () => {
-      const a = assembleStage(s);
-      const want = expected[s]!;
-      expect(a.terms).toEqual(want.terms);
-      expect(a.tag).toBe(want.tag);
-      expect(systemTerms(s)).toEqual(want.system);
-      expect(listedOnly(s)).toEqual(want.listed);
-      expect(stageTerms(s)).toEqual([...want.terms, ...want.system, ...want.listed]);
-      // Each term appears once, and only the stage's new terms carry the highlight.
-      for (const t of a.terms) expect(a.latex.split(`eq-term--${t}`).length - 1, `${t} once`).toBe(1);
-      const highlighted = a.terms.filter((t) => new RegExp(`eq-term--${t} eq-new`).test(a.latex));
-      expect(highlighted).toEqual(STAGE_DEFS[s].newTerms.filter((t) => a.terms.includes(t)));
-      // Stage 1 is always visible as the base: its two terms are in every stage.
-      expect(a.terms[0]).toBe('lhs');
-      expect(['diffusion', 'diffusion_T']).toContain(a.terms[1]);
-    });
-  }
-
-  it('stage 5 introduces the layer laws and lists the partition coefficients as not in the model', () => {
-    expect(STAGE_DEFS[5].newTerms).toEqual(['arrhenius_layers', 'partition']);
-    expect(TERMS.partition.latex).toBe('');
-    expect(TERMS.arrhenius_layers.meaning).toMatch(/layering itself is already in stage one/);
-    expect(STAGE_DEFS[5].summary).toMatch(/layering itself is already in stage one/);
-  });
-
-  it('keeps the stage picker and the switches in step', () => {
-    expect(switchIntroducedBy(1)).toBeNull();
-    expect(switchIntroducedBy(2)).toBe('source');
-    expect(switchIntroducedBy(3)).toBe('decay');
-    expect(switchIntroducedBy(4)).toBe('arrhenius');
-    expect(switchIntroducedBy(5)).toBe('arrhenius');
-    expect(switchIntroducedBy(6)).toBeNull();
+  it('keeps the previews, the switches and the mechanism ids in step', () => {
     expect(SWITCHES.map((s) => s.id)).toEqual(['source', 'decay', 'arrhenius']);
     expect(SWITCH_MECHANISM).toEqual({ source: 'generation', decay: 'decay', arrhenius: 'diffusivity_temperature' });
+    for (const sw of SWITCHES) {
+      expect(switchIntroducedBy(sw.stage)).toBe(sw.id);
+      expect(STEP_DEFS[sw.stage].kind).toBe('preview');
+      expect(STEP_DEFS[sw.stage].mechanism).toBe(SWITCH_MECHANISM[sw.id]);
+      expect(TERMS[sw.term]?.stage).toBe(sw.stage);
+    }
+    for (const s of CORE_STAGES) expect(switchIntroducedBy(s)).toBeNull();
   });
 });
 
-describe('term assembly for all eight combinations of the three Phase 6 switches', () => {
-  const combos: SwitchSet[] = [];
-  for (const source of [false, true]) for (const decay of [false, true]) for (const arrhenius of [false, true]) combos.push({ source, decay, arrhenius });
-
-  it('has eight distinct combinations', () => {
-    expect(new Set(combos.map((c) => JSON.stringify(c))).size).toBe(8);
+describe('every equation is the text of Document 1 or Document 2', () => {
+  it('main, implementation, condition and balance equations of every step', () => {
+    for (const [what, e] of allEquations()) {
+      expect(e.latex, `${what}: no rewriting of the copied line`).toBe(e.source.verbatim);
+      checkSource(e.source, e.latex, what, e.numberAs);
+    }
   });
 
-  for (const sw of combos) {
-    it(`source=${sw.source} decay=${sw.decay} arrhenius=${sw.arrhenius}`, () => {
-      const a = assemble(sw);
-      const want: TermId[] = ['lhs', sw.arrhenius ? 'diffusion_T' : 'diffusion'];
-      if (sw.decay) want.push('decay');
-      if (sw.source) want.push('source');
-      expect(a.terms).toEqual(want);
-      const any = sw.source || sw.decay || sw.arrhenius;
-      expect(a.tag).toBe(sw.arrhenius ? 'P22.11' : any ? 'P21.1' : '2.6');
-      if (any) {
-        expect(a.reductions.includes(String.raw`\lambda = 0`)).toBe(!sw.decay);
-        expect(a.reductions.includes('S = 0')).toBe(!sw.source);
-      } else {
-        expect(a.reductions[0]).toBe('S = 0');
+  it('the equation number shown is the number printed in the document', () => {
+    for (const [what, e] of allEquations()) {
+      const n = equationNumber(e);
+      if (e.source.tag) expect(n, what).toBe(e.source.doc === 'd1' ? `D1.${e.source.tag}` : e.source.tag);
+      else expect(n, what).toBe(e.numberAs ?? null);
+      // Every number of Document 2 shown as an F-number is an F-number of that document.
+      if (e.source.doc === 'd2' && e.source.tag) expect(e.source.tag, what).toMatch(/^F\d+[a-z]?$/);
+      if (e.source.doc === 'd1' && e.source.tag) expect(e.source.tag, what).toMatch(/^\d+[a-z]?$/);
+    }
+  });
+
+  it('only the BTCS documents are cited as the source of an equation', () => {
+    for (const [, e] of allEquations()) expect(['d1', 'd2']).toContain(e.source.doc);
+  });
+
+  it('the highlighted equation of a step is the copy with wrappers added', () => {
+    for (const s of STAGES) {
+      const shown = mainEquations(s);
+      expect(shown.length).toBe(STEP_DEFS[s].main.length);
+      shown.forEach((e, i) => {
+        const src = STEP_DEFS[s].main[i]!;
+        expect(squash(stripHtmlClass(e.latex)), `step ${s} ${e.id}`).toBe(squash(src.latex));
+        checkSource(src.source, stripHtmlClass(e.latex), `step ${s} ${e.id}`, src.numberAs);
+      });
+    }
+  });
+
+  it('every part marks a piece of a main equation of its step, and only the previews carry a mechanism colour', () => {
+    for (const s of STAGES) {
+      const def = STEP_DEFS[s];
+      for (const p of def.parts) {
+        if (p.latex !== '') {
+          expect(
+            def.main.some((e) => e.latex.includes(p.latex)),
+            `step ${s} part ${p.id}: "${p.latex}" is not in a main equation`,
+          ).toBe(true);
+        }
+        expect(p.highlight !== undefined, `part ${p.id}`).toBe(def.kind === 'preview');
+        expect(p.mechanism !== null, `part ${p.id}`).toBe(def.kind === 'preview');
       }
-      // No highlight unless asked for, and the equation typesets.
-      expect(a.latex).not.toContain('eq-new');
-      expect(() => renderTex(`${a.latex} \\tag{${a.tag}}`, true)).not.toThrow();
-      // The displayed equation is the cited one after removing the switched-off terms.
-      const shown = squash(stripHtmlClass(a.latex));
-      for (const t of a.terms) expect(shown).toContain(squash(TERMS[t].latex));
-    });
-  }
+      // The highlight wrappers do not overlap (markParts throws if they do).
+      for (const e of def.main) expect(() => markParts(e.latex, def.parts)).not.toThrow();
+    }
+  });
+
+  it('every symbol, piece and unit of the parts occurs in the maths of the documents', () => {
+    for (const s of STAGES) {
+      for (const p of STEP_DEFS[s].parts) {
+        expect(MATHS.includes(squash(p.symbol)), `part ${p.id} symbol ${p.symbol}`).toBe(true);
+        if (p.latex) expect(MATHS.includes(squash(p.latex)), `part ${p.id} latex`).toBe(true);
+        for (const u of p.units) {
+          expect(MATHS.includes(squash(u.symbol)), `unit symbol ${u.symbol} of ${p.id}`).toBe(true);
+          if (!u.unit.startsWith('\\text{')) expect(MATHS.includes(squash(u.unit)), `unit ${u.unit} of ${p.id}`).toBe(true);
+        }
+      }
+    }
+    for (const sw of SWITCHES) expect(squash(TEXT.d2).includes(squash(sw.latex)), `switch ${sw.id}`).toBe(true);
+  });
+
+  it('the previews show only the places that Document 2, Section 9 marks', () => {
+    const section9 = squash(sectionText('d2', '9. Placeholders for the approved additional physics (directive Section 17)'));
+    for (const s of PREVIEW_STAGES) {
+      for (const e of STEP_DEFS[s].main) {
+        expect(e.source.doc).toBe('d2');
+        expect(e.source.tag).toBeNull();
+        expect(section9, `step ${s} ${e.id}`).toContain(squash(e.latex));
+      }
+    }
+  });
+});
+
+describe('notation of directive Section 5', () => {
+  const shown = () => allEquations().map(([what, e]) => [what, e.latex] as [string, string]);
+
+  it('powers enclose the whole variable in parentheses; the time index j is a superscript index', () => {
+    for (const [what, latex] of shown()) {
+      for (const m of latex.matchAll(/\^\{?([2-9])\}?/g)) {
+        const before = latex.slice(0, m.index);
+        expect(/(\\right\)|\\partial|\\partial r)$/.test(before), `${what}: bare power "${before.slice(-14)}^${m[1]}"`).toBe(true);
+      }
+      expect(latex, what).not.toMatch(/C_i\[j\]|C\[/);
+    }
+  });
+
+  it('no equation uses j as a spatial index or i as a material index', () => {
+    for (const [what, latex] of shown()) {
+      expect(latex, what).not.toMatch(/\b[A-Za-z]_j\b|_\{j[,}]/);
+      expect(latex, what).not.toMatch(/D_i\b(?!,)/);
+    }
+  });
+
+  it('text shown in block A has no numeral outside an equation, a reference or a step number', () => {
+    for (const s of STAGES) {
+      const def = STEP_DEFS[s];
+      const texts = [def.name, def.short, def.summary, ...def.main.flatMap((e) => [e.label, e.note ?? '']), ...def.parts.flatMap((p) => [p.name, p.meaning])];
+      for (const t of texts) expect(t, `step ${s}: "${t}"`).not.toMatch(/\d/);
+    }
+  });
 });
 
 describe('KaTeX renders every LaTeX string without error', () => {
-  it('equations, formulas, units and domain', () => {
-    const strings: [string, boolean][] = [[DOMAIN.latex, false]];
+  it('equations with their numbers, highlights, symbols, units and switches', () => {
+    const strings: [string, boolean][] = [];
     for (const s of STAGES) {
-      const a = assembleStage(s);
-      strings.push([`${a.latex} \\tag{${a.tag}}`, true]);
-      for (const r of a.reductions) strings.push([r, false]);
+      for (const e of mainEquations(s)) strings.push([`${e.latex} \\tag{${equationNumber(e) ?? ''}}`, true]);
+      for (const p of STEP_DEFS[s].parts) {
+        strings.push([p.symbol, false]);
+        for (const u of p.units) strings.push([u.symbol, false], [u.unit, false]);
+      }
     }
-    for (const t of Object.values(TERMS)) {
-      if (t.latex) strings.push([t.latex, true]);
-      if (t.formula) strings.push([`${t.formula.latex} \\tag{${t.formula.source.tag ?? ''}}`, true]);
-      for (const u of t.units) strings.push([u.symbol, false], [u.unit, false]);
-    }
-    for (const [, e] of allShown()) strings.push([e.source.tag ? `${e.latex} \\tag{${e.source.tag}}` : e.latex, true]);
+    for (const [, e] of allEquations()) strings.push([`${e.latex} \\tag{${equationNumber(e) ?? ''}}`, true]);
     for (const sw of SWITCHES) strings.push([sw.latex, false]);
     for (const [latex, display] of strings) expect(() => renderTex(latex, display), latex).not.toThrow();
   });
@@ -254,10 +285,14 @@ describe('KaTeX renders every LaTeX string without error', () => {
 });
 
 describe('documentation and code anchors resolve', () => {
-  const docRefs = () => [
-    ...Object.values(TERMS).map((t) => t.derivation),
-    ...STAGES.flatMap((s) => [...implementationFor(s).pseudocode, ...implementationFor(s).derivation]),
-    ...allShown().map(([, e]) => ({ doc: e.source.doc, section: e.source.section })),
+  type Ref = DocRef & { label?: string };
+  const docRefs = (): Ref[] => [
+    ...STAGES.flatMap((s) => [
+      ...STEP_DEFS[s].parts.map((p) => p.derivation),
+      ...STEP_DEFS[s].implementation.pseudocode,
+      ...STEP_DEFS[s].implementation.derivation,
+    ]),
+    ...allEquations().map(([, e]) => ({ doc: e.source.doc, section: e.source.section })),
   ];
 
   it('every cited section is a heading of its document, with a unique GitHub anchor', () => {
@@ -271,33 +306,63 @@ describe('documentation and code anchors resolve', () => {
   });
 
   it('the anchor function follows GitHub slugs', () => {
-    expect(headingSlug('2.6 Layer equation of v1.0.0')).toBe('26-layer-equation-of-v100');
-    expect(headingSlug('4.3 (b) Backward Euler with implicit decay')).toBe('43-b-backward-euler-with-implicit-decay');
-    expect(headingSlug('5.4 (d) General multilayer case: layer-specific activation energies')).toBe(
-      '54-d-general-multilayer-case-layer-specific-activation-energies',
+    expect(headingSlug('5. The matrix rows')).toBe('5-the-matrix-rows');
+    expect(headingSlug('PS-10 `ThomasFactors` : tridiagonal solution')).toBe('ps-10-thomasfactors--tridiagonal-solution');
+    expect(headingSlug("1. From conservation of mass and Fick's law to the spherical diffusion equation")).toBe(
+      '1-from-conservation-of-mass-and-ficks-law-to-the-spherical-diffusion-equation',
     );
-  });
-
-  it('every code link points at the line that defines the named function', () => {
-    const refs = STAGES.flatMap((s) => implementationFor(s).code);
-    expect(refs.length).toBeGreaterThan(0);
-    for (const c of refs) {
-      const lines = readFileSync(join(REPO, c.path), 'utf8').split('\n');
-      expect(lines[c.line - 1], `${c.path}#L${c.line}`).toContain(c.symbol);
-    }
   });
 
   it('every document path exists', () => {
     for (const d of Object.values(DOCS)) expect(readFileSync(join(REPO, d.path), 'utf8').length).toBeGreaterThan(0);
   });
 
-  it('a stage without code says so and links the pseudocode', () => {
-    for (const s of [2, 3, 4, 5] as const) {
-      const impl = implementationFor(s);
-      expect(impl.code).toEqual([]);
-      expect(impl.note).toMatch(/^Derived, not implemented/);
-      expect(impl.pseudocode.length).toBeGreaterThan(0);
+  /** The lines of a source file of the BTCS solver: the working tree, else the tip of the solver branch. */
+  const cache = new Map<string, string[] | null>();
+  function sourceLines(path: string): string[] | null {
+    if (!cache.has(path)) cache.set(path, readSourceLines(path));
+    return cache.get(path) ?? null;
+  }
+  function readSourceLines(path: string): string[] | null {
+    if (existsSync(join(REPO, path))) return readFileSync(join(REPO, path), 'utf8').split('\n');
+    try {
+      return execFileSync('git', ['show', `origin/feat/btcs-solver:${path}`], { cwd: REPO, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 16 * 1024 * 1024 }).split('\n');
+    } catch {
+      return null;
     }
-    expect(implementationFor(1).code.map((c) => c.symbol)).toContain('pub fn backward_euler_step');
+  }
+
+  const refs = STAGES.flatMap((s) => STEP_DEFS[s].implementation.code);
+  const available = refs.every((c) => sourceLines(c.path) !== null);
+
+  it('has code links for the steps that have code, and none for the steps that do not', () => {
+    for (const s of [1, 2, 3, 4, 14] as const) expect(STEP_DEFS[s].implementation.code, `step ${s}`).toEqual([]);
+    for (const s of [5, 6, 7, 8, 9, 10, 11, 12, 13] as const) expect(STEP_DEFS[s].implementation.code.length, `step ${s}`).toBeGreaterThan(0);
+    for (const c of refs) expect(c.path).toMatch(/^(src|tests)\/.+\.rs$/);
+    expect(STEP_DEFS[11].implementation.code.map((c) => c.symbol)).toContain('pub fn solve_in_place');
+  });
+
+  // The files of the solver are on branch feat/btcs-solver. In a checkout that holds neither the files
+  // nor that branch the check cannot run; it then says so instead of passing silently.
+  it.skipIf(!available)('every code link points at the line that defines the named item', () => {
+    for (const c of refs) {
+      const lines = sourceLines(c.path) ?? [];
+      expect(lines[c.line - 1], `${c.path}#L${c.line}`).toContain(c.symbol);
+    }
+  });
+
+  it('a preview or a placeholder says so and links no code', () => {
+    for (const s of PREVIEW_STAGES) {
+      expect(STEP_DEFS[s].implementation.code).toEqual([]);
+      expect(STEP_DEFS[s].implementation.note).toMatch(/^Preview, not implemented/);
+    }
+    expect(STEP_DEFS[14].implementation.note).toMatch(/^Placeholder/);
+  });
+
+  it('conditions and balance disclosures of every step are defined', () => {
+    for (const s of STAGES) {
+      expect(conditionsFor(s).note.length).toBeGreaterThan(0);
+      expect(balanceFor(s).note.length).toBeGreaterThan(0);
+    }
   });
 });
