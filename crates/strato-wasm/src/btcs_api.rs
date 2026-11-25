@@ -22,17 +22,16 @@ use anyhow::Result;
 use serde::Deserialize;
 use serde_json::{json, Map, Value};
 use std::collections::{BTreeMap, BTreeSet};
-use std::f64::consts::PI;
 use strato::{
     analytical::sturm_liouville::ModalRelease,
     config::Config,
     numerical::{
         btcs::{self, Limits, Stepper},
+        btcs_report::{balance_bound_history, interface_flux_report, layer_shares, ring_edges},
         coefficients::Coefficients,
         diagnostics::{check_matrix_structure, check_series, check_step_properties},
         grid::{Grid, NodeClass, ValidatedInput},
-        interfaces::interface_flux_both_sides,
-        inventory::{initial_vector, inventory, inventory_by_region},
+        inventory::inventory,
     },
     postprocessing::comparison::{layers_from_config, MAX_MODES},
 };
@@ -57,9 +56,6 @@ pub const MAX_STEPS_BTCS: usize = 20_000;
 pub const MAX_PROFILE_VALUES_BTCS: usize = 1_000_000;
 /// Wrapper limit: requested profile times in one request.
 pub const MAX_PROFILE_TIMES: usize = 1_000;
-
-/// Unit roundoff of `f64`, `u = 2^-53`.
-const UNIT_ROUNDOFF: f64 = f64::EPSILON / 2.0;
 
 const LIMITS: Limits = Limits {
     max_intervals_total: MAX_TOTAL_INTERVALS,
@@ -366,12 +362,7 @@ fn grid_value(grid: &Grid, cfg: &Config, input: &ValidatedInput) -> Value {
         inner.push(a);
         outer.push(b);
     }
-    let mut edges = Vec::with_capacity(n + 2);
-    edges.push(0.0);
-    for i in 0..n {
-        edges.push((grid.r[i] + grid.r[i + 1]) / 2.0);
-    }
-    edges.push(grid.r[n]);
+    let edges = ring_edges(grid);
     json!({
         "intervals_total": n,
         "nodes": n + 1,
@@ -390,48 +381,6 @@ fn grid_value(grid: &Grid, cfg: &Config, input: &ValidatedInput) -> Value {
 }
 
 // ---------------------------------------------------------------------------------------
-// Balance bound
-// ---------------------------------------------------------------------------------------
-
-/// A-posteriori rounding bound on `|eps^j| / M^0` after each step `j = 0 ..= steps`
-/// (coordinator decision 6: the tolerance of the balance residual is this derived bound, and
-/// the observed residual is always reported beside it).
-///
-/// The bound is the one derived in the header of `tests/btcs_verification.rs`
-/// (`balance_bound_history`): the identity (F29) follows by summing the exact-form rows over
-/// `i = 1 ..= N-1`; the computed solution satisfies the stored rows up to the backward error
-/// of tridiagonal elimination (4u |A||x|), the stored entries differ from the exact ones by at
-/// most 2u relative, hence per step `|Delta eps| <= 4 pi 16 u sum_i V_i (|A||x|)_i`, and the
-/// final roundings add `(N + 8) u M^0`. The constant 16 is the safety factor chosen there
-/// before any run. It is a bound on rounding only; it is not a discretisation error.
-///
-/// The function steps once more with the library's `Stepper`, so the matrix and the vectors
-/// are exactly those of the run.
-pub fn balance_bound_history(input: &ValidatedInput, grid: &Grid, m0: f64) -> Result<Vec<f64>> {
-    let mut stepper = Stepper::new(grid, input.d, input.dt)?;
-    let (mut c_old, _, _) = initial_vector(grid, input.c_init);
-    let mut c_new = vec![0.0; grid.n + 1];
-    let tail = (grid.n as f64 + 8.0) * UNIT_ROUNDOFF;
-    let mut cumulative = 0.0;
-    let mut out = Vec::with_capacity(input.steps + 1);
-    out.push(tail);
-    for _ in 0..input.steps {
-        stepper.step(&c_old, &mut c_new)?;
-        let a = &stepper.assembly().matrix;
-        let mut s = 0.0;
-        for i in 1..grid.n {
-            let left = a.lower[i].abs() * c_new[i - 1].abs();
-            let right = a.upper[i].abs() * c_new[i + 1].abs();
-            s += grid.v[i] * (left + a.diag[i].abs() * c_new[i].abs() + right);
-        }
-        cumulative += 4.0 * PI * 16.0 * UNIT_ROUNDOFF * s / m0;
-        out.push(cumulative + tail);
-        std::mem::swap(&mut c_old, &mut c_new);
-    }
-    Ok(out)
-}
-
-// ---------------------------------------------------------------------------------------
 // Run
 // ---------------------------------------------------------------------------------------
 
@@ -443,8 +392,8 @@ fn finite_or_null(x: f64) -> Value {
     }
 }
 
-/// Interface fluxes of one step (equation F31, both expressions) with the rounding-level
-/// tolerance `100 u` times the sum of the magnitudes of the terms, as in the library's test E.
+/// Interface fluxes of one step as a JSON object, from the library's report; the second value is
+/// the worst relative difference between the two expressions.
 fn interface_flux_value(
     grid: &Grid,
     coeff: &Coefficients,
@@ -452,44 +401,18 @@ fn interface_flux_value(
     c_new: &[f64],
     dt: f64,
 ) -> (Value, f64) {
-    let mut from_inner = Vec::new();
-    let mut from_outer = Vec::new();
-    let mut mismatch = Vec::new();
-    let mut bound = Vec::new();
-    let mut within = true;
-    let mut worst_rel = 0.0f64;
-    for &i in &grid.interface_nodes {
-        let (fi, fo) = interface_flux_both_sides(grid, coeff, c_old, c_new, dt, i);
-        let radius = grid.r[i];
-        let scale = 4.0
-            * PI
-            * (coeff.k_outer[i - 1] * (c_new[i - 1].abs() + c_new[i].abs())
-                + coeff.k_outer[i] * (c_new[i].abs() + c_new[i + 1].abs())
-                + (radius * radius * (grid.dr_inner(i) + grid.dr_outer(i)) / 2.0 / dt)
-                    * (c_new[i].abs() + c_old[i].abs()));
-        let tol = 100.0 * UNIT_ROUNDOFF * scale;
-        let diff = (fi - fo).abs();
-        within &= diff <= tol;
-        let denom = fi.abs() + fo.abs();
-        if denom > 0.0 {
-            worst_rel = worst_rel.max(diff / denom);
-        }
-        from_inner.push(fi);
-        from_outer.push(fo);
-        mismatch.push(diff);
-        bound.push(tol);
-    }
+    let r = interface_flux_report(grid, coeff, c_old, c_new, dt);
     (
         json!({
-            "interface_nodes": grid.interface_nodes,
-            "radii_m": grid.interface_nodes.iter().map(|&i| grid.r[i]).collect::<Vec<f64>>(),
-            "outward_from_inner_expression_mol_s": from_inner,
-            "outward_from_outer_expression_mol_s": from_outer,
-            "difference_mol_s": mismatch,
-            "difference_bound_mol_s": bound,
-            "within_bound": within,
+            "interface_nodes": r.nodes,
+            "radii_m": r.radii_m,
+            "outward_from_inner_expression_mol_s": r.from_inner,
+            "outward_from_outer_expression_mol_s": r.from_outer,
+            "difference_mol_s": r.difference,
+            "difference_bound_mol_s": r.bound,
+            "within_bound": r.within_bound,
         }),
-        worst_rel,
+        r.worst_relative,
     )
 }
 
@@ -544,16 +467,20 @@ fn run_prepared(p: &Prepared) -> Result<Value, Vec<String>> {
             return Err(vec!["internal: a requested profile was not recorded".into()]);
         };
         let inv = inventory(grid, c);
-        let layers = inventory_by_region(grid, c);
-        let share = if inv > 0.0 {
-            worst_layer_sum = worst_layer_sum.max((layers.iter().sum::<f64>() - inv).abs() / inv);
-            json!(layers.iter().map(|l| l / inv).collect::<Vec<f64>>())
-        } else {
-            messages.push(format!(
-                "step {s}: inventory is not positive, layer shares not given"
-            ));
-            Value::Null
+        let shares = layer_shares(grid, c, inv);
+        let share = match &shares.share {
+            Some(v) => {
+                worst_layer_sum = worst_layer_sum.max(shares.sum_relative_error);
+                json!(v)
+            }
+            None => {
+                messages.push(format!(
+                    "step {s}: inventory is not positive, layer shares not given"
+                ));
+                Value::Null
+            }
         };
+        let layers = shares.layer_inventory_mol;
         let flux = if *s >= 1 {
             match snap.get(&(*s - 1)) {
                 Some(old) => {

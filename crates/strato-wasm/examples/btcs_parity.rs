@@ -11,7 +11,15 @@
 //!
 //! The rule is the existing per-value rule of the wrapper (`tolerances::PARITY_RTOL`): every
 //! number of the two replies must satisfy |a - b| <= rtol * max(|a|, |b|), array lengths and
-//! object keys must be identical, and strings, booleans and nulls must be equal. Every leaf of
+//! object keys must be identical, and strings, booleans and nulls must be equal. One stated
+//! addition applies to the values that come from the independent Sturm-Liouville series
+//! (`analytical.*` and `diagnostics.analytical_comparison.*`, see `tolerances::SERIES_FLOOR_RULE`):
+//! the series itself reports an absolute accuracy `accuracy_floor` (its own estimate, from the
+//! cancellation in its shooting solution), and the native and WebAssembly builds use different
+//! exp/cos/sin routines, so those values may differ by up to that floor in absolute terms. The
+//! floor is read from the native reply of the same case and added to the allowance of those
+//! values only; `accuracy_floor` and `min_flux_ratio` themselves, and every BTCS value, keep the
+//! strict rule. Every leaf of
 //! the reply is compared, including the diagnostics; nothing is left out. Every leaf that fails
 //! is reported with its path (array positions shown as `[]`), the number of failures, the
 //! first failing pair and the worst relative difference. The exit status is 1 when any value
@@ -166,7 +174,21 @@ fn fail(t: &mut Tally, path: &str, a: String, b: String, rel: f64) {
     f.first.get_or_insert((a, b));
 }
 
-fn walk(path: &str, a: &Value, b: &Value, t: &mut Tally) {
+/// The absolute allowance added to the per-value rule for one leaf: the series accuracy floor of
+/// the case for series-derived values, except for the two numbers that define the floor.
+fn extra_allowance(path: &str, floor: f64) -> f64 {
+    let pat = pattern(path);
+    if is_series_derived(&pat)
+        && !pat.ends_with(".accuracy_floor")
+        && !pat.ends_with(".min_flux_ratio")
+    {
+        floor
+    } else {
+        0.0
+    }
+}
+
+fn walk(path: &str, a: &Value, b: &Value, floor: f64, t: &mut Tally) {
     match (a, b) {
         (Value::Number(x), Value::Number(y)) => {
             let (x, y) = (
@@ -180,7 +202,7 @@ fn walk(path: &str, a: &Value, b: &Value, t: &mut Tally) {
             }
             let rel = (x - y).abs() / x.abs().max(y.abs());
             t.worst_rel = t.worst_rel.max(rel);
-            if (x - y).abs() > PARITY_RTOL * x.abs().max(y.abs()) {
+            if (x - y).abs() > PARITY_RTOL * x.abs().max(y.abs()) + extra_allowance(path, floor) {
                 fail(t, path, format!("{x:e}"), format!("{y:e}"), rel);
             }
         }
@@ -195,13 +217,13 @@ fn walk(path: &str, a: &Value, b: &Value, t: &mut Tally) {
                 );
             }
             for (i, (p, q)) in x.iter().zip(y).enumerate() {
-                walk(&format!("{path}[{i}]"), p, q, t);
+                walk(&format!("{path}[{i}]"), p, q, floor, t);
             }
         }
         (Value::Object(x), Value::Object(y)) => {
             for k in x.keys().chain(y.keys().filter(|k| !x.contains_key(*k))) {
                 match (x.get(k), y.get(k)) {
-                    (Some(p), Some(q)) => walk(&format!("{path}.{k}"), p, q, t),
+                    (Some(p), Some(q)) => walk(&format!("{path}.{k}"), p, q, floor, t),
                     _ => fail(
                         t,
                         &format!("{path}.{k} (key)"),
@@ -266,7 +288,8 @@ fn main() -> ExitCode {
                     continue;
                 };
                 let mut t = Tally::default();
-                walk("", nv, wv, &mut t);
+                let floor = nv["analytical"]["accuracy_floor"].as_f64().unwrap_or(0.0);
+                walk("", nv, wv, floor, &mut t);
                 let status = if t.failures.is_empty() {
                     "PASS"
                 } else {
@@ -286,7 +309,7 @@ fn main() -> ExitCode {
                         "BTCS"
                     };
                     println!(
-                        "    outside {PARITY_RTOL:e} [{kind}]: {pat}: {} value(s), worst relative {:e}, first native {a} wasm {b}",
+                        "    outside the rule [{kind}]: {pat}: {} value(s), worst relative {:e}, first native {a} wasm {b}",
                         f.count, f.worst_rel
                     );
                 }

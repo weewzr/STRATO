@@ -2,6 +2,7 @@
 
 pub mod boundary_conditions;
 pub mod btcs;
+pub mod btcs_report;
 pub mod coefficients;
 pub mod diagnostics;
 pub mod finite_volume;
