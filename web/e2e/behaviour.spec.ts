@@ -36,7 +36,22 @@ test.describe('themes', () => {
     await expect(toggle).toHaveAttribute('aria-pressed', 'false');
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-pressed', 'true');
-    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(15, 18, 23)');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect.poll(() => page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(15, 18, 23)');
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('strato-theme'))).toBe('dark');
+    // A reload while the page is still fetching (the solver's WebAssembly module, the lazily loaded
+    // plot chunk, fonts) aborts those requests, and the fixture rightly records each abort as a failed
+    // request. Reload only once the first page view has finished loading: the solver has answered,
+    // every plot of block B has been drawn (so the plot chunk is in), the fonts are in and no request
+    // is in flight.
+    await waitForRun(page);
+    const graphs = page.locator('[data-testid$="-graph"]');
+    await expect.poll(() => graphs.count()).toBeGreaterThan(0);
+    await expect
+      .poll(() => graphs.evaluateAll((els) => els.every((el) => (el as HTMLElement).dataset.ready === 'true')), { timeout: 20_000 })
+      .toBe(true);
+    await page.evaluate(() => document.fonts.ready.then(() => undefined));
+    await page.waitForLoadState('networkidle');
     await page.reload();
     await expect(page.getByTestId('theme-toggle')).toHaveAttribute('aria-pressed', 'true');
     expect(await page.evaluate(() => document.documentElement.getAttribute('data-theme'))).toBe('dark');
