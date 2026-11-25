@@ -870,6 +870,33 @@ fn balance_identity_to_rounding_every_step() {
 }
 
 #[test]
+fn production_balance_bound_equals_the_test_derivation() {
+    // The bound reported in every output row of the run (`BalanceBound`) is the same quantity
+    // as the history derived above, accumulated in the same order; it is not a second formula.
+    for n in [20usize, 40] {
+        let cfg = s5(n, 200.0);
+        let r = run(&cfg, &LIMITS, &[]).unwrap();
+        let history = balance_bound_history(&cfg);
+        let history = history.bound;
+        assert_eq!(history.len(), r.series.len());
+        let m0 = r.meta.initial_inventory;
+        for (k, (_, row)) in r.series.iter().enumerate() {
+            // The same operations in the same order; the run stores the bound in mol (one
+            // multiplication by m0) and it is divided by m0 here (one division): relative
+            // difference at most gamma_2.
+            let rel = row.balance_residual_bound / m0;
+            assert!(
+                (rel - history[k]).abs() <= gamma(2.0) * history[k],
+                "n={n} row {k}: {rel} vs {}",
+                history[k]
+            );
+            // The observed residual is reported beside the bound and lies below it.
+            assert!(row.balance_residual.abs() <= row.balance_residual_bound);
+        }
+    }
+}
+
+#[test]
 fn balance_negative_control_wrong_release_level() {
     // Release computed from the OLD level C_{N-1}^j gives a residual of discretisation size,
     // not rounding size (D2 Section 7.2).

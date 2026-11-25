@@ -16,7 +16,9 @@
 use super::{
     boundary_conditions::{centre_row, release_rate},
     coefficients::Coefficients,
-    diagnostics::{StepDiagnostics, TimeSeries},
+    diagnostics::{
+        check_matrix_structure, BalanceBound, MatrixReport, StepDiagnostics, TimeSeries,
+    },
     grid::{Grid, ValidatedInput},
     inventory::{balance_residual, initial_vector, inventory, release_fraction, Accumulator},
     tridiagonal::ThomasFactors,
@@ -192,11 +194,12 @@ pub struct Stepper {
 }
 
 impl Stepper {
-    /// Builds the coefficients (PS-04) and the matrix (PS-05).
+    /// Builds the coefficients (PS-04), the matrix (PS-05) and its Thomas factors (PS-10,
+    /// the form (F24)).
     ///
     /// # Errors
     ///
-    /// As [`Coefficients::new`] and [`assemble`].
+    /// As [`Coefficients::new`] and [`assemble`]; a computed pivot that is not positive.
     pub fn new(grid: &Grid, d: [f64; 5], dt: f64) -> Result<Stepper> {
         let coeff = Coefficients::new(grid, d, dt)?;
         let assembly = assemble(grid, coeff, dt)?;
@@ -211,6 +214,11 @@ impl Stepper {
         })
     }
 
+    /// The Thomas factors (pivots `m_i` and multipliers `w_i`) of the assembled matrix.
+    pub fn factors(&self) -> &ThomasFactors {
+        &self.factors
+    }
+
     /// The assembled system.
     pub fn assembly(&self) -> &Assembly {
         &self.assembly
@@ -222,8 +230,9 @@ impl Stepper {
     }
 
     /// Advances `C^j` (`c_old`, length `N+1`) to `C^{j+1}` (`c_new`, length `N+1`):
-    /// right-hand side `b_i^j = C_i^j` (F20), tridiagonal solve of (F19) for `C_0 .. C_{N-1}`
-    /// by `numerical::tridiagonal`, and `C_N^{j+1} = 0` (F18). `c_old[N]` is not read.
+    /// right-hand side `b_i^j = C_i^j` (F20), the solve of (F19) for `C_0 .. C_{N-1}` by the
+    /// Thomas algorithm in the form (F24) (`tridiagonal::ThomasFactors`), and `C_N^{j+1} = 0`
+    /// (F18). `c_old[N]` is not read.
     ///
     /// # Errors
     ///
@@ -253,6 +262,14 @@ pub struct RunMeta {
     pub theta: f64,
     /// `M^0` in mol.
     pub initial_inventory: f64,
+    /// `Fo_material` (F8).
+    pub fo: [f64; 5],
+    /// Sign pattern and row margins of the assembled matrix (P1).
+    pub matrix: MatrixReport,
+    /// Smallest `m_i - |U_i|` over `0 <= i <= N-2` (P5 says at least 1 in exact arithmetic).
+    pub min_pivot_margin: f64,
+    /// Largest multiplier `|U_i| / m_i` over `0 <= i <= N-2` (P5 says below 1).
+    pub max_multiplier: f64,
 }
 
 /// Result of [`run`].
@@ -301,6 +318,7 @@ pub fn run_input(input: &ValidatedInput, snapshot_times: &[f64]) -> Result<RunRe
     let mut released = Accumulator::new();
 
     let (cmin, cmax) = min_max(&c_old);
+    let mut bound = BalanceBound::new(n, input.steps, m0);
     let mut series: TimeSeries = vec![(
         0.0,
         StepDiagnostics {
@@ -309,6 +327,7 @@ pub fn run_input(input: &ValidatedInput, snapshot_times: &[f64]) -> Result<RunRe
             release_fraction: 0.0,
             release_rate: None,
             balance_residual: balance_residual(m0, 0.0, m0),
+            balance_residual_bound: bound.first_row(m0) * m0,
             min_concentration: cmin,
             max_concentration: cmax,
         },
@@ -329,6 +348,7 @@ pub fn run_input(input: &ValidatedInput, snapshot_times: &[f64]) -> Result<RunRe
     for step in 1..=input.steps {
         stepper.step(&c_old, &mut c_new)?;
         let phi = release_rate(stepper.k_last(), c_new[n - 1]);
+        bound.add_step(&stepper.assembly().matrix, &grid.v, &c_new, input.dt * phi);
         released.add(input.dt * phi);
         std::mem::swap(&mut c_old, &mut c_new);
         let t = step as f64 * input.dt;
@@ -341,6 +361,7 @@ pub fn run_input(input: &ValidatedInput, snapshot_times: &[f64]) -> Result<RunRe
                 release_fraction: release_fraction(released.value(), m0),
                 release_rate: Some(phi),
                 balance_residual: balance_residual(m, released.value(), m0),
+                balance_residual_bound: bound.row(m, released.value()) * m0,
                 min_concentration: cmin,
                 max_concentration: cmax,
             };
@@ -361,6 +382,16 @@ pub fn run_input(input: &ValidatedInput, snapshot_times: &[f64]) -> Result<RunRe
         }
     }
 
+    let matrix_report = check_matrix_structure(&stepper.assembly().matrix)?;
+    let pivots = stepper.factors().pivots();
+    let upper = &stepper.assembly().matrix.upper;
+    let mut min_pivot_margin = f64::INFINITY;
+    let mut max_multiplier: f64 = 0.0;
+    for i in 0..n - 1 {
+        min_pivot_margin = min_pivot_margin.min(pivots[i] - upper[i].abs());
+        max_multiplier = max_multiplier.max(upper[i].abs() / pivots[i]);
+    }
+
     Ok(RunResult {
         grid,
         series,
@@ -373,6 +404,10 @@ pub fn run_input(input: &ValidatedInput, snapshot_times: &[f64]) -> Result<RunRe
             n,
             theta,
             initial_inventory: m0,
+            fo: stepper.assembly().coeff.fo,
+            matrix: matrix_report,
+            min_pivot_margin,
+            max_multiplier,
         },
     })
 }
@@ -392,6 +427,7 @@ mod tests {
     use super::*;
     use crate::config::{InitialConfig, OutputConfig, RegionConfig, TimeConfig};
     use crate::numerical::interfaces::{interface_row_explicit, interior_row_explicit};
+    use crate::numerical::tridiagonal;
 
     const RADII: [f64; 5] = [2.0e-4, 3.0e-4, 3.5e-4, 4.0e-4, 4.5e-4];
     const D: [f64; 5] = [1.0e-12, 4.0e-10, 8.0e-13, 2.0e-14, 7.0e-13];
@@ -551,6 +587,43 @@ mod tests {
         }
         assert_eq!(c_new[n], 0.0);
     }
+    #[test]
+    fn production_solve_matches_general_tridiagonal_module() {
+        // Decision 5: the production path is the F24 form; the general module is the
+        // cross-check. Bound: each of the two solves has backward error |dA| <= gamma_5 |A|
+        // (Higham, Section 9.6; see one_step_matches_dense_solve), so with ||A^-1||_inf <= 1
+        // they differ by at most 2 gamma_5 ||A||_inf ||x||_inf, which is the tolerance used (with
+        // gamma_5 = 5u / (1 - 5u) exactly, no margin).
+        for (counts, dt) in [([6, 5, 4, 5, 4], 200.0), ([20, 20, 20, 20, 20], 1.0e5)] {
+            let (g, mut s) = stepper_for(counts, dt);
+            let (mut c_old, _, _) = initial_vector(&g, 1.0);
+            let mut c_new = vec![0.0; g.n + 1];
+            for step in 0..5 {
+                s.step(&c_old, &mut c_new).unwrap();
+                let a = &s.assembly().matrix;
+                let n = g.n;
+                let general =
+                    tridiagonal::solve(&a.lower[1..n], &a.diag, &a.upper[..n - 1], &c_old[..n])
+                        .unwrap();
+                let norm = (0..n)
+                    .map(|i| a.diag[i].abs() + a.lower[i].abs() + a.upper[i].abs())
+                    .fold(0.0, f64::max);
+                let xmax = general.iter().cloned().fold(0.0, f64::max);
+                let u = f64::EPSILON / 2.0;
+                let tol = 2.0 * (5.0 * u / (1.0 - 5.0 * u)) * norm * xmax;
+                for i in 0..n {
+                    assert!(
+                        (c_new[i] - general[i]).abs() <= tol,
+                        "step {step} node {i}: {} vs {} (tol {tol})",
+                        c_new[i],
+                        general[i]
+                    );
+                }
+                std::mem::swap(&mut c_old, &mut c_new);
+            }
+        }
+    }
+
     #[test]
     fn rows_satisfy_flux_balance_f10() {
         let (g, mut s) = stepper_for([8, 6, 5, 7, 6], 50.0);
