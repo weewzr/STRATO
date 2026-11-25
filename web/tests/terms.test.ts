@@ -1,4 +1,4 @@
-// @vitest-environment node
+﻿// @vitest-environment node
 // Progressive equation builder for the BTCS solver: every equation against the BTCS documents,
 // KaTeX rendering, the notation rules of directive Section 5, and the documentation and code anchors
 // (prompt/TESTING_AND_VALIDATION.md Section 3 row 2).
@@ -92,9 +92,68 @@ function sectionText(doc: DocId, heading: string): string {
   return TEXT[doc].slice(h.start, next ? next.start : undefined);
 }
 
+/** The block without \tag{}, a trailing full stop or comma, and an outer \boxed{}. */
+export function wholeEquation(block: string): string {
+  let b = block.replace(/\\tag\{[^}]*\}/g, '').trim();
+  b = b.replace(/[.,]\s*$/, '').trim();
+  if (b.startsWith('\\boxed{') && b.endsWith('}')) {
+    let depth = 0;
+    let closesAtEnd = true;
+    for (let i = '\\boxed'.length; i < b.length; i++) {
+      if (b[i] === '{') depth++;
+      else if (b[i] === '}') {
+        depth--;
+        if (depth === 0 && i < b.length - 1) closesAtEnd = false;
+      }
+    }
+    if (closesAtEnd) b = b.slice('\\boxed{'.length, -1).trim();
+  }
+  return b.replace(/[.,]\s*$/, '').trim();
+}
+
+/** The content of a leading \\boxed{...} group, or null. */
+export function boxedInner(whole: string): string | null {
+  if (!whole.startsWith('\\boxed{')) return null;
+  let depth = 0;
+  for (let i = '\\boxed'.length; i < whole.length; i++) {
+    if (whole[i] === '{') depth++;
+    else if (whole[i] === '}' && --depth === 0) return whole.slice('\\boxed{'.length, i);
+  }
+  return null;
+}
+
+/** True when position `at` of the (whitespace-free) text lies at brace depth 0 next to =, a comma, a semicolon or an end. */
+export function atTopLevelSeparator(text: string, at: number, start: boolean): boolean {
+  let depth = 0;
+  for (let i = 0; i < at; i++) {
+    if (text[i] === '{') depth++;
+    else if (text[i] === '}') depth--;
+  }
+  if (depth !== 0) return false;
+  if (at === 0 || at === text.length) return true;
+  const ch = start ? text[at - 1]! : text[at]!;
+  return ch === '=' || ch === ',' || ch === ';';
+}
 function checkSource(src: EqSource, displayed: string, what: string, numberAs?: string) {
   const block = src.tag ? taggedBlock(src.doc, src.tag) : sectionText(src.doc, src.section);
-  expect(squash(block), `${what}: verbatim copy not found in ${src.tag ? `(${src.tag})` : src.section}`).toContain(squash(src.verbatim));
+  if (src.tag) {
+    // A tagged equation is the whole block, so a copy with terms or qualifiers cut off fails; a piece needs an explicit declaration.
+    const whole = squash(wholeEquation(block));
+    if (src.piece) {
+      const v = squash(src.verbatim);
+      const inner = boxedInner(whole);
+      if (inner !== null && v === squash(inner)) return;
+      const at = whole.indexOf(v);
+      expect(at, `${what}: declared piece not found in (${src.tag})`).toBeGreaterThanOrEqual(0);
+      expect(v, `${what}: a piece must differ from the whole equation`).not.toBe(whole);
+      expect(atTopLevelSeparator(whole, at, true), `${what}: the piece does not start at a top-level separator`).toBe(true);
+      expect(atTopLevelSeparator(whole, at + v.length, false), `${what}: the piece does not end at a top-level separator`).toBe(true);
+    } else {
+      expect(squash(src.verbatim), `${what}: copy differs from the whole block of (${src.tag})`).toBe(whole);
+    }
+  } else {
+    expect(squash(block), `${what}: verbatim copy not found in ${src.section}`).toContain(squash(src.verbatim));
+  }
   // The tagged equation also lies in the cited section.
   if (src.tag) expect(sectionText(src.doc, src.section), `${what}: (${src.tag}) is not in section "${src.section}"`).toContain(`\\tag{${src.tag}}`);
   // An untagged line that the page numbers by a name from the text: the section must use that name.
@@ -164,6 +223,25 @@ describe('every equation is the text of Document 1 or Document 2', () => {
     }
   });
 
+  it('a copy with terms or qualifiers cut off is refused', () => {
+    const find = (tag: string) => allEquations().map(([, e]) => e).find((e) => e.source.tag === tag && !e.source.piece)!;
+    const cut = (tag: string, from: string) => {
+      const e = find(tag);
+      const at = e.source.verbatim.lastIndexOf(from);
+      expect(at, `${tag}: marker present`).toBeGreaterThan(0);
+      const short = e.source.verbatim.slice(0, at).trimEnd();
+      expect(() => checkSource({ ...e.source, verbatim: short }, short, tag), `${tag} shortened`).toThrow();
+    };
+    cut('F17', ' + \\left|U_{N-1}\\right|'); // the last term of the diagonal
+    cut('F11', ' = 1 + \\left|L_i\\right|'); // the second form of B_i
+    cut('15', ', \\qquad U_i'); // the upper coefficient
+    cut('F29', ' \\quad \\text{for every }'); // the qualifier
+    // The untouched copies pass.
+    for (const tag of ['F17', 'F11', '15', 'F29']) {
+      const e = find(tag);
+      expect(() => checkSource(e.source, e.latex, tag)).not.toThrow();
+    }
+  });
   it('the equation number shown is the number printed in the document', () => {
     for (const [what, e] of allEquations()) {
       const n = equationNumber(e);
@@ -339,7 +417,7 @@ describe('documentation and code anchors resolve', () => {
     for (const s of [1, 2, 3, 4, 14] as const) expect(STEP_DEFS[s].implementation.code, `step ${s}`).toEqual([]);
     for (const s of [5, 6, 7, 8, 9, 10, 11, 12, 13] as const) expect(STEP_DEFS[s].implementation.code.length, `step ${s}`).toBeGreaterThan(0);
     for (const c of refs) expect(c.path).toMatch(/^(src|tests)\/.+\.rs$/);
-    expect(STEP_DEFS[11].implementation.code.map((c) => c.symbol)).toContain('pub fn solve_in_place');
+    expect(STEP_DEFS[11].implementation.code.map((c) => c.symbol)).toContain('pub struct ThomasFactors');
   });
 
   // The files of the solver are on branch feat/btcs-solver. In a checkout that holds neither the files

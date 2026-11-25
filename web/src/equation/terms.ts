@@ -1,4 +1,4 @@
-// Step and part table of the progressive equation builder for the BTCS solver (directive Section 16:
+﻿// Step and part table of the progressive equation builder for the BTCS solver (directive Section 16:
 // the fourteen steps, then three labelled previews). Display only: nothing here is evaluated. No
 // research status is written here; the builder reads every status from the generated catalogue.
 //
@@ -44,6 +44,8 @@ export interface EqSource {
   section: string;
   /** Copied character for character from the document (the shown LaTeX is exactly this). */
   verbatim: string;
+  /** True only when the shown LaTeX is a declared piece of a longer tagged equation; it must start and end at a top-level separator. */
+  piece?: boolean;
 }
 
 export interface UnitRow {
@@ -135,20 +137,17 @@ const D2_9 = '9. Placeholders for the approved additional physics (directive Sec
 
 const L = (s: TemplateStringsArray) => String.raw(s);
 
-const eq = (id: string, label: string, doc: DocId, tag: string | null, section: string, verbatim: string, extra: { numberAs?: string; note?: string } = {}): ShownEquation => ({
-  id,
-  label,
-  latex: verbatim,
-  source: { doc, tag, section, verbatim },
-  ...extra,
-});
+const eq = (id: string, label: string, doc: DocId, tag: string | null, section: string, verbatim: string, extra: { numberAs?: string; note?: string; piece?: boolean } = {}): ShownEquation => {
+  const { piece, ...rest } = extra;
+  return { id, label, latex: verbatim, source: { doc, tag, section, verbatim, ...(piece ? { piece: true } : {}) }, ...rest };
+};
 
 // Document 1
 const D1_EQ1 = eq('mass_shell', 'Balance on a thin shell', 'd1', '1', D1_1, L`\frac{d}{dt}\int_r^{r+\delta r} C(s,t)\,4\pi\left(s\right)^2\,ds = \Phi(r,t) - \Phi(r+\delta r,t)`);
 const D1_EQ2 = eq('mass_local', 'The shell shrunk to a radius', 'd1', '2', D1_1, L`4\pi\left(r\right)^2\,\frac{\partial C}{\partial t} = -\frac{\partial \Phi}{\partial r} = -\frac{\partial}{\partial r}\left[4\pi\left(r\right)^2 J\right]`);
 const D1_EQ3 = eq('fick', "Fick's first law", 'd1', '3', D1_1, L`J = -D(r)\,\frac{\partial C}{\partial r}`);
 const D1_EQ4 = eq('spherical', 'Spherical diffusion equation', 'd1', '4', D1_1, L`\frac{\partial C}{\partial t} = \frac{1}{\left(r\right)^2}\frac{\partial}{\partial r}\left[\left(r\right)^2 D(r)\,\frac{\partial C}{\partial r}\right]`);
-const D1_EQ5 = eq('spherical_layer', 'Inside one material, the diffusivity is a constant', 'd1', '5', D1_2, L`\frac{\partial C}{\partial t} = D\left[\frac{\partial^2 C}{\partial r^2} + \frac{2}{r}\frac{\partial C}{\partial r}\right]`);
+const D1_EQ5 = eq('spherical_layer', 'Inside one material, the diffusivity is a constant', 'd1', '5', D1_2, L`\frac{\partial C}{\partial t} = D\left[\frac{\partial^2 C}{\partial r^2} + \frac{2}{r}\frac{\partial C}{\partial r}\right]`, { piece: true });
 const D1_EQ9 = eq('second_difference', 'Central second difference, with its error', 'd1', '9', D1_32, L`\frac{\partial^2 C}{\partial r^2}(r_i) = \frac{C_{i+1} - 2C_i + C_{i-1}}{\left(\Delta r\right)^2} - \frac{\left(\Delta r\right)^2}{12}C_i'''' + O\left(\left(\Delta r\right)^4\right)`);
 const D1_EQ10 = eq('first_difference', 'Central first difference, with its error', 'd1', '10', D1_32, L`\frac{\partial C}{\partial r}(r_i) = \frac{C_{i+1} - C_{i-1}}{2\,\Delta r} - \frac{\left(\Delta r\right)^2}{6}C_i''' + O\left(\left(\Delta r\right)^4\right)`);
 const D1_EQ11 = eq('time_quotient', 'Backward Euler: the time quotient belongs to the new time level', 'd1', '11', D1_33, L`\frac{\partial C}{\partial t}(r_i, t^{j+1}) = \frac{C_i^{j+1} - C_i^j}{\Delta t} + \frac{\Delta t}{2}\ddot C(r_i, t^{j+1}) + O\left(\left(\Delta t\right)^2\right)`);
@@ -252,8 +251,8 @@ const U_RI = u('r_i', 'radius of node i', String.raw`\mathrm{m}`);
 const U_DT = u(String.raw`\Delta t`, 'time step', String.raw`\mathrm{s}`);
 const U_CIJ = u('C_i^j', 'concentration at node i and time step j', CONC);
 const U_FO = u(String.raw`\mathrm{Fo} = D\,\Delta t/\left(\Delta r\right)^2`, 'mesh Fourier number', NONE);
-const U_K = u(String.raw`K_{i,\mathrm{outer}}`, 'conductance of the interval between node i and node i+1, divided by 4π', String.raw`\mathrm{m^3\ s^{-1}}`);
-const U_V = u('V_i', 'storage weight of node i (nodal volume divided by 4π)', String.raw`\mathrm{m^3}`);
+const U_K = u(String.raw`K_{i,\mathrm{outer}}`, 'conductance of the interval between node i and node i+1, divided by 4Ï€', String.raw`\mathrm{m^3\ s^{-1}}`);
+const U_V = u('V_i', 'storage weight of node i (nodal volume divided by 4Ï€)', String.raw`\mathrm{m^3}`);
 const U_LBU = u('L_i, B_i, U_i', 'lower, diagonal and upper coefficient of matrix row i', NONE);
 const U_M = u(String.raw`M^j`, 'discrete inventory', String.raw`\mathrm{mol}`);
 const U_PHI = u(String.raw`\Phi^{j}`, 'discrete release rate through the outer surface', String.raw`\mathrm{mol\ s^{-1}}`);
@@ -283,7 +282,10 @@ const CODE = {
   tridiagonal: code('Tridiagonal, the three diagonals', 'src/numerical/btcs.rs', 123, 'pub struct Tridiagonal'),
   step: code('Stepper::step, one implicit step', 'src/numerical/btcs.rs', 231, 'pub fn step'),
   run: code('run, the time loop', 'src/numerical/btcs.rs', 278, 'pub fn run'),
-  solve: code('solve_in_place, the tridiagonal solve', 'src/numerical/tridiagonal.rs', 79, 'pub fn solve_in_place'),
+  thomas: code('ThomasFactors, the F24 factors', 'src/numerical/tridiagonal.rs', 152, 'pub struct ThomasFactors'),
+  thomasNew: code('ThomasFactors::new, the forward sweep', 'src/numerical/tridiagonal.rs', 169, 'pub fn new'),
+  thomasSolve: code('ThomasFactors::solve, the back substitution', 'src/numerical/tridiagonal.rs', 230, 'pub fn solve'),
+  crossCheck: code('solve_in_place, the general Thomas solve kept as a cross-check', 'src/numerical/tridiagonal.rs', 79, 'pub fn solve_in_place'),
   centre: code('centre_row, the centre-node row', 'src/numerical/boundary_conditions.rs', 11, 'pub fn centre_row'),
   outer: code('outer_value, the absorbing boundary', 'src/numerical/boundary_conditions.rs', 17, 'pub fn outer_value'),
   release: code('release_rate, the outward flow', 'src/numerical/boundary_conditions.rs', 32, 'pub fn release_rate'),
@@ -297,7 +299,7 @@ const CODE = {
   fraction: code('release_fraction', 'src/numerical/inventory.rs', 98, 'pub fn release_fraction'),
   residual: code('balance_residual', 'src/numerical/inventory.rs', 104, 'pub fn balance_residual'),
   series: code('check_series, the checks on a whole run', 'src/numerical/diagnostics.rs', 140, 'pub fn check_series'),
-  balanceTest: code('balance identity, every step, to rounding', 'tests/btcs_verification.rs', 692, 'fn balance_identity_to_rounding_every_step'),
+  balanceTest: code('balance identity, every step, to rounding', 'tests/btcs_verification.rs', 856, 'fn balance_identity_to_rounding_every_step'),
 };
 const PS = (n: string, label: string): DocRef & { label: string } => ({ doc: 'd3', section: n, label });
 const PSEUDO = {
@@ -424,7 +426,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
     short: 'Spherical eq.',
     kind: 'step',
     mechanism: null,
-    summary: 'Fick’s law put into the local balance gives the equation that the solver discretises. Inside one material, where the diffusivity is constant, it takes the familiar second-derivative form.',
+    summary: 'Fickâ€™s law put into the local balance gives the equation that the solver discretises. Inside one material, where the diffusivity is constant, it takes the familiar second-derivative form.',
     main: [D1_EQ4],
     parts: [
       part({
@@ -517,7 +519,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
     short: 'Differences',
     kind: 'step',
     mechanism: null,
-    summary: 'On the grid of nodes, the first and second derivative are replaced by central differences from Taylor’s theorem. Both are second-order accurate.',
+    summary: 'On the grid of nodes, the first and second derivative are replaced by central differences from Taylorâ€™s theorem. Both are second-order accurate.',
     main: [D1_EQ9],
     parts: [
       part({
@@ -813,7 +815,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
         name: 'Multiplier and pivot',
         symbol: 'm_i',
         latex: String.raw`m_i = B_i - w_i\,U_{i-1}`,
-        meaning: 'The forward sweep removes the lower entry of each row. Every pivot is at least one plus the size of the upper entry, so none is zero and every multiplier is below one.',
+        meaning: 'The forward sweep removes the lower entry of each row. Every pivot is at least one plus the size of the upper entry of its row (the matrix properties of the final formulation), so none is zero, and the back-substitution factors, the size of the upper entry divided by the pivot, are below one.',
         units: [U_LBU],
         assumptions: ['Positive pivots follow from the sign pattern of the matrix; no pivoting is needed.'],
         derivation: doc1(D1_9),
@@ -839,10 +841,10 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
     ],
     implementation: {
       equations: [F20],
-      code: [CODE.solve, CODE.step, CODE.run],
+      code: [CODE.thomas, CODE.thomasNew, CODE.thomasSolve, CODE.step, CODE.run, CODE.crossCheck],
       pseudocode: [PSEUDO.thomas, PSEUDO.step, PSEUDO.run],
       derivation: [doc2('6.3 Solution of the linear system'), TRACE],
-      note: 'The links point at the solver branch. The tridiagonal routine linked here is the general Thomas solve; the production routine coded exactly in the form of the equation above is the planned replacement, so the link moves with it.',
+      note: 'The links point at the solver branch. The routine that solves each step is ThomasFactors, coded in the form of the equation above. solve_in_place is the general Thomas solve, kept only as a cross-check utility.',
     },
     live: 'The solver of the current run is this algorithm once the website runs the BTCS solver; the engine and version are listed in the diagnostics under the live simulation.',
   },
@@ -943,7 +945,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       derivation: [doc2(D2_8), TRACE],
       note: 'Document 2, Section 8 lists each property with its hypotheses and its label: proved, proof outline, observed or not proven. The tests of the solver branch check them. Nothing on this page claims an accuracy against experimental data.',
     },
-    live: 'The verification results of this build are reported in the Verify section of the site; they verify the numerical method and are not experimental validation.',
+    live: 'Until the website switch, the Verify section of the site still reports the verification of the previous finite-volume solver, not of the BTCS solver. The checks of the BTCS solver are the tests in tests/btcs_verification.rs on the solver branch. Both verify the numerical method and are not experimental validation.',
   },
   14: {
     stage: 14,
@@ -1152,7 +1154,7 @@ export function balanceFor(stage: Stage): { equations: ShownEquation[]; note: st
   const equations = [F29, F30].filter((e) => !shown.has(key(e)));
   return {
     equations,
-    note: 'The values of each term and the residual for the current run are under “Inventory balance” in the live simulation below, as the Rust wrapper returns them; nothing is computed in the browser.',
+    note: 'The values of each term and the residual for the current run are under â€œInventory balanceâ€ in the live simulation below, as the Rust wrapper returns them; nothing is computed in the browser.',
   };
 }
 

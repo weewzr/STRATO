@@ -1,4 +1,4 @@
-// The progressive equation builder (block A) and the mechanism switches of block C:
+﻿// The progressive equation builder (block A) and the mechanism switches of block C:
 // step picking, the banner, the part card, no numbers in block A, and
 // "no active toggle without solver support" (prompt/TESTING_AND_VALIDATION.md Section 3.2).
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
@@ -175,8 +175,8 @@ describe('equation and parts', () => {
     await user.click(screen.getByTestId('more-implementation'));
     const impl = screen.getByTestId('more-panel-implementation');
     expect(impl.hidden).toBe(false);
-    expect(impl.textContent).toContain('solve_in_place');
-    expect(within(impl).getByText(/solve_in_place, the tridiagonal solve/).closest('a')?.getAttribute('href')).toMatch(/src\/numerical\/tridiagonal\.rs#L79$/);
+    expect(impl.textContent).toContain('ThomasFactors');
+    expect(within(impl).getByText(/ThomasFactors::solve, the back substitution/).closest('a')?.getAttribute('href')).toMatch(/src\/numerical\/tridiagonal\.rs#L230$/);
     expect(within(impl).getByText(/PS-10, tridiagonal solution/).closest('a')?.getAttribute('href')).toMatch(/03_rust_pseudocode\.md#ps-10-thomasfactors--tridiagonal-solution$/);
     await user.click(screen.getByTestId('more-conditions'));
     expect(impl.hidden).toBe(true);

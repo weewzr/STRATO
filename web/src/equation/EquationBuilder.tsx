@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+﻿import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { statusOf, useCatalogue, type Catalogue, type MechanismRow } from '../research/catalogue';
 import { distinctStatuses, entryHref, rowKey } from '../research/entries';
 import { CatalogueSwitch, RowChip } from '../research/parts';
@@ -48,11 +48,38 @@ function withTag(latex: string, tag: string | null): string {
   return tag ? `${latex} \\tag{${tag}}` : latex;
 }
 
+/** An equation that does not fit beside its number gets the number on its own line, now and when the box is resized or opened. */
+function useTagPlacement(ref: { current: HTMLElement | null }, dep: unknown) {
+  useEffect(() => {
+    const box = ref.current;
+    if (!box) return;
+    const place = () => {
+      for (const display of Array.from(box.querySelectorAll<HTMLElement>('.katex-display'))) {
+        display.classList.remove('eq-tag-below');
+        const html = display.querySelector<HTMLElement>(':scope > .katex > .katex-html');
+        const tag = html?.querySelector<HTMLElement>(':scope > .katex-tag');
+        const bases = html ? Array.from(html.querySelectorAll<HTMLElement>(':scope > .katex-base')) : [];
+        if (!html || !tag || bases.length === 0) continue;
+        const width = bases.reduce((sum, b) => sum + b.getBoundingClientRect().width, 0);
+        // The equation is centred, so it needs room for the number on both sides.
+        if (width + 2 * tag.getBoundingClientRect().width + 16 > display.clientWidth) display.classList.add('eq-tag-below');
+      }
+    };
+    place();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(place);
+    ro.observe(box);
+    return () => ro.disconnect();
+  }, [ref, dep]);
+}
+
 function ShownEq({ eq }: { eq: ShownEquation }) {
+  const box = useRef<HTMLDivElement>(null);
+  useTagPlacement(box, eq.id);
   return (
     <figure className="shown-eq" data-eq={eq.id}>
       <figcaption className="shown-eq__label">{eq.label}</figcaption>
-      <div className="eq-box">
+      <div className="eq-box" ref={box}>
         <Tex display latex={withTag(eq.latex, equationNumber(eq))} />
       </div>
       {eq.note ? <p className="shown-eq__note">{eq.note}</p> : null}
@@ -161,7 +188,7 @@ function TermCard({ term, catalogue, id, floating }: { term: TermId; catalogue: 
       <p className="term-card__meaning">{def.meaning}</p>
       <p className="term-card__links">
         <DocLink refTo={def.derivation} prefix="Derivation:" />
-        <span aria-hidden="true"> · </span>
+        <span aria-hidden="true"> Â· </span>
         <a href={`#term-${term}`}>Units and assumptions in the explanation</a>
       </p>
     </div>
@@ -302,7 +329,7 @@ function Stage6Catalogue({ rows, catalogue }: { rows: MechanismRow[]; catalogue:
   return (
     <div className="stage6" data-testid="stage6">
       <button type="button" className="stage6__toggle" aria-expanded={open} aria-controls={panel} onClick={() => setOpen(!open)} data-testid="stage6-toggle">
-        <span className="stage6__title">Species-specific catalogue entries</span>
+        <span className="stage6__title">Species-specific catalogue entries (research list, not part of this step)</span>
         <span className="stage6__counts">
           <span className="stage6__n">{distinctStatuses(rows).length === 1 ? 'every row at' : 'rows at'}</span>
           {distinctStatuses(rows).map((s) => (
@@ -431,7 +458,7 @@ function Banner({ stage, method, catalogue }: { stage: Stage; method: Simulation
   if (stage === 13) {
     return (
       <p className="live-note" data-testid="live-note">
-        Numerical verification checks that the code solves its own equations. It is not experimental validation.
+        Numerical verification checks that the code solves its own equations. It is not experimental validation. The website switch is pending: the Verify section still reports the previous solver; the BTCS checks are in tests/btcs_verification.rs.
       </p>
     );
   }
@@ -495,26 +522,7 @@ export function EquationBuilder({ compact }: { compact: boolean }) {
   }, [shown, stage]);
 
   // An equation that does not fit beside its number gets the number on its own line.
-  useEffect(() => {
-    const box = eqBox.current;
-    if (!box) return;
-    const place = () => {
-      for (const display of Array.from(box.querySelectorAll<HTMLElement>('.katex-display'))) {
-        display.classList.remove('eq-tag-below');
-        const html = display.querySelector<HTMLElement>(':scope > .katex > .katex-html');
-        const tag = html?.querySelector<HTMLElement>(':scope > .katex-tag');
-        const bases = html ? Array.from(html.querySelectorAll<HTMLElement>(':scope > .katex-base')) : [];
-        if (!html || !tag || bases.length === 0) continue;
-        const width = bases.reduce((sum, b) => sum + b.getBoundingClientRect().width, 0);
-        if (width + tag.getBoundingClientRect().width + 16 > display.clientWidth) display.classList.add('eq-tag-below');
-      }
-    };
-    place();
-    if (typeof ResizeObserver === 'undefined') return;
-    const ro = new ResizeObserver(place);
-    ro.observe(box);
-    return () => ro.disconnect();
-  }, [stage]);
+  useTagPlacement(eqBox, stage);
 
   return (
     <div className="builder" data-testid="equation-builder" data-stage={stage}>

@@ -1,4 +1,4 @@
-import katex from 'katex';
+﻿import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { useMemo } from 'react';
 
@@ -21,7 +21,8 @@ export function renderTex(latex: string, display: boolean): string {
   const key = `${display ? 'D' : 'I'}${latex}`;
   let html = cache.get(key);
   if (html === undefined) {
-    html = katex.renderToString(latex, { ...KATEX_OPTIONS, displayMode: display });
+    // A matrix row is a little taller than the default so that subscripts and superscripts of neighbouring rows do not touch (rendering option only; the LaTeX is unchanged).
+    html = katex.renderToString(latex, { ...KATEX_OPTIONS, displayMode: display, macros: { '\\arraystretch': '1.3' } });
     cache.set(key, html);
   }
   return html;

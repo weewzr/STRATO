@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+﻿import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Page } from '@playwright/test';
 import { expect, gotoSection, horizontalOverflow, solverRequests, test, waitForRun } from './fixtures';
@@ -240,12 +240,12 @@ for (const colorScheme of ['light', 'dark'] as const) {
 }
 
 /** Pairs of an equation number and an equation glyph run that overlap inside block A's equation box. */
-async function tagOverlaps(page: Page): Promise<string[]> {
-  return page.getByTestId('equation').evaluate((box) => {
+async function tagOverlaps(page: Page, testId = 'equation'): Promise<string[]> {
+  return page.getByTestId(testId).evaluate((box) => {
     const hits: string[] = [];
     const tags = box.querySelectorAll('.katex-tag').length;
     // A step whose lines are all untagged has no number to cover anything.
-    if (tags === 0 && (box.getAttribute('data-tag') ?? '') !== '') hits.push('no katex-tag found: the selector no longer matches KaTeX');
+    if (box.hasAttribute('data-tag') && tags === 0 && (box.getAttribute('data-tag') ?? '') !== '') hits.push('no katex-tag found: the selector no longer matches KaTeX');
     for (const html of Array.from(box.querySelectorAll('.katex-display > .katex > .katex-html'))) {
       // KaTeX 0.19 names the parts katex-tag and katex-base.
       const tag = html.querySelector(':scope > .katex-tag');
@@ -281,6 +281,18 @@ for (const vp of [
         else await pickStage(page, s);
         await expect(page.getByTestId('equation-builder')).toHaveAttribute('data-stage', String(s));
         expect(await tagOverlaps(page), `step ${s}`).toEqual([]);
+        // The equations of the open disclosures are shown with their numbers too.
+        for (const panel of ['implementation', 'conditions', 'balance']) {
+          const toggle = page.getByTestId(`more-${panel}`);
+          if ((await toggle.count()) === 0 || !(await toggle.isEnabled())) continue;
+          await toggle.click();
+          await expect(page.getByTestId(`more-panel-${panel}`)).toBeVisible();
+          await page.evaluate(() => document.fonts.ready);
+          // The builder places the numbers after the box is resized; wait two frames for it.
+          await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+          expect(await tagOverlaps(page, `more-panel-${panel}`), `step ${s} ${panel}`).toEqual([]);
+          await toggle.click();
+        }
       }
     });
   });
