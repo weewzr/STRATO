@@ -483,7 +483,7 @@ After R1 to R4 and the Phase 2 ports, counted TypeScript is 653,217 bytes and st
 | Plus the three overlapping references retired (owner's word) | 21.4% | 33.9% | 40.2% |
 | Plus a further 50,000 bytes of TypeScript logic moved behind the wrapper (assumed upper bound; Section 2.4 finds about 15,000) | 21.2% | 31.1% | 43.2% |
 
-So the honest expectation: about 19% after R1 to R4, about 25 to 30% once Phase 2 is implemented in Rust with its checks ported, and about 40% at the most with every legitimate move. From the fifth row on, Rust is the largest language of the repository, and by computational responsibility it is so much earlier: after R1 every generated file, check and build step of the web demo is Rust, and after R2 every number the visitor downloads is written by Rust.
+So the honest expectation: about 19% after R1 to R4, about 25 to 30% once Phase 2 is implemented in Rust with its checks ported, and about 40% at the most with every legitimate move. From the sixth row on, Rust is the largest language of the repository. By computational responsibility it is so much earlier: after R1 every generator, data check and WebAssembly build step of the web demo is Rust, and after R2 every file the visitor downloads is written by Rust.
 
 Legitimate moves that raise the share further, in order of value:
 
