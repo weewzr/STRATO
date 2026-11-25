@@ -6,7 +6,7 @@
 
 [workspace]
 resolver = "2"
-members = ["strato-docsite"]
+members = ["strato-docsite", "strato-data"]
 exclude = ["strato-wasm"]
 
 [workspace.package]

@@ -14,6 +14,18 @@ The five layers of a TRISO particle and their outer radii $R_1$ to $R_5$. The fi
 
 **v1.0 (Phase 1).** Constant temperature, constant diffusivity in each layer, initial inventory in the kernel. Radioactive decay, fission-product generation and temperature-dependent diffusivity are the v2.0 scope and are outside this release. See [Development status](#development-status).
 
+## Web demonstration
+
+**Live: https://weewzr.github.io/STRATO/**
+
+The page shows the governing equation first and the live simulation directly under it, then the controls, an explanation of each active term and the research catalogue. The simulation is computed in the browser by the verified v1.0 Rust solver compiled to WebAssembly; no equation is re-implemented in JavaScript.
+
+- **Verified:** five-layer spherical diffusion with a constant diffusivity per layer, on the synthetic five-layer case. The live simulation runs that synthetic case and says so; AGR-1 UCO TRISO is shown as the reference fuel by its registered geometry only.
+- **Researched, not implemented:** fission-product generation, radioactive decay and temperature-dependent diffusivity (derived in the Phase 2 documents). Their switches are visible and disabled.
+- **Pending:** every other mechanism of the research catalogue, Materials Studio calculations, and FLiBe and cover-gas transport, planned for a future phase. Nothing on the page is validated against measurements yet.
+
+The site also publishes the derivation and register documents with the mathematics typeset: https://weewzr.github.io/STRATO/docs/index.html. Build, test and deployment commands: [`web/README.md`](web/README.md).
+
 ## Scientific objective
 
 The objective is a transparent and verifiable model of fission-product release from a single TRISO particle. Every equation, numerical method and parameter should be traceable to a derivation or a published source. v1.0 provides the verified numerical foundation. Physical inputs from the literature are added in later versions.
@@ -176,7 +188,9 @@ This is **verification**: it shows that the code solves its equations correctly.
 | `docs/mathematics/` | v1.0 derivations, Phase 2 derivations and pseudocode, Phase 1 historical record |
 | `docs/development/` | Provenance, Phase 2 review package and the list of v1.0 to v2.0 changes |
 | `scripts/` | Python derivation checks, figure scripts and parameter-register tools (versions pinned in `requirements.lock.txt`) |
-| `prompt/` | Instruction package for the planned web demo |
+| `web/` | Web demonstration (React, TypeScript, KaTeX, Plotly, three.js); see [`web/README.md`](web/README.md) |
+| `crates/` | WebAssembly wrapper of the solver (`strato-wasm`) and the tools workspace (`Cargo.toml`, with `strato-docsite`, which renders the documents into the site) |
+| `prompt/` | Instruction package for the web demo |
 
 ## Documentation
 
