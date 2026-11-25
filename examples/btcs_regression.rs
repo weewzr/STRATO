@@ -50,13 +50,16 @@ fn main() -> Result<()> {
         println!("case={} reference={}", case.id, report.reference_text);
         for r in &report.rows {
             println!(
-                "  t={:e} F_run={:e} F_ref={:e} |diff|={:e} tolerance={:e} ratio={:.3e} passed={}",
+                "  t={:e} F_run={:e} F_ref={:e} |F_run-F_ref|={:e} orders (time, space)=({:.3}, {:.3}) |F_ref-F_limit|={:e} tolerance={:e} ratio={:.3e} passed={}",
                 r.t,
                 r.f_run,
                 r.f_reference,
                 r.abs_difference,
+                r.time_order,
+                r.space_order,
+                r.limit_difference,
                 r.tolerance,
-                r.abs_difference / r.tolerance,
+                r.limit_difference / r.tolerance,
                 r.passed()
             );
         }

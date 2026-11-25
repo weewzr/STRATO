@@ -2,6 +2,14 @@
 //! cover: Document 2 properties P2, P3 (weighted norm), P5, P7, P8a, P11, P12, P15, P16
 //! (negative controls) and the centre value of (F12). Document 4 lists each of them.
 //!
+//! Scope: in these tests the five layers share one diffusivity, so the layer interfaces are
+//! artificial and the jump of the diffusivity across an interface is NOT exercised by P8a, P11,
+//! P12, P15 and P16. A wrong diffusivity on one side of an interface (mutation M14) passes all of
+//! them. The jump is verified by tests A and E of `tests/btcs_verification.rs` (hand-assembled
+//! matrix, flux continuity across unequal diffusivities) and by the independent check of the
+//! regression suite (test I, `tests/btcs_regression.rs`), which compares the five-layer run with
+//! the Sturm-Liouville series.
+//!
 //! These tests check the numerical solution of the stated model against closed forms that
 //! contain no BTCS code. They are NOT experimental validation.
 //!
@@ -50,8 +58,18 @@
 //!   computed by Gaussian elimination with partial pivoting, whose entries carry
 //!   `8 N u ||A||_inf` (since `||A^-1||_inf <= 1`, `cond(A) <= ||A||_inf`); the F24 columns must
 //!   be non-negative exactly (P6).
-//! * P3 weighted norm: `sum V_i C_i^2` may rise by rounding only, by at most
-//!   `2 (N + 1) u + 16 u ||A||_inf` relative to its value.
+//! * P3 weighted norm: `W(C) = sum V_i C_i^2` may rise by rounding only (in exact arithmetic it
+//!   does not: Document 1). Two rounding sources. (i) The sums: each of the two sums has
+//!   `N` positive terms (two products and `N - 1` additions), so each carries a relative
+//!   error of at most `gamma_(N+1)` and the relative rise is overstated by at most
+//!   `2 gamma_(N+1)`, `gamma_k = k u / (1 - k u)`. (ii) The solve: the computed `C_new` equals
+//!   the exact solution plus `delta` with `||delta||_inf <= gamma_5 ||A||_inf ||x||_inf`
+//!   (a backward error `gamma_5 |A|` of the solve, as in the test of the production solve, and
+//!   `||A^-1||_inf <= 1`). With `eps = ||delta||_V / sqrt(W(C_old))`,
+//!   `||delta||_V <= ||delta||_inf sqrt(sum V_i)`, the triangle inequality in the weighted norm
+//!   gives `W(C_new) <= W(C_exact) (1 + eps)^2` and the allowed relative rise is
+//!   `(1 + 2 gamma_(N+1)) (1 + eps)^2 - 1`, evaluated at every step from the actual
+//!   `C_old` and `C_new` (`||x||_inf` is the largest new value). No other constant enters.
 //! * P5: `m_i >= (B_i - |L_i|) - 4 u B_i` (derived in `numerical::tridiagonal` tests) and a
 //!   multiplier `|U_i| / m_i < 1`.
 //! * P16 negative controls: a wrong kernel-surface value (1/2, 0, 1) is expected to reduce the
@@ -169,7 +187,7 @@ fn order_rounding(errs: &[f64], floors: &[f64], k: usize) -> f64 {
     (floors[k] / errs[k] + floors[k + 1] / errs[k + 1]) / std::f64::consts::LN_2
 }
 
-/// Orders of the last three pairs, asserted as derived in the header of this file; returns the
+/// Orders of the last two pairs, asserted as derived in the header of this file; returns the
 /// number of pairs asserted. `trend` also asserts that the deviation `|o - p|` does not grow
 /// beyond the rounding uncertainty from one asserted pair to the next.
 fn assert_orders(label: &str, errs: &[f64], floors: &[f64], theory: f64) -> usize {
@@ -720,13 +738,20 @@ fn weighted_norm_does_not_grow_p3() {
         let norm = (0..grid.n)
             .map(|i| a.diag[i].abs() + a.lower[i].abs() + a.upper[i].abs())
             .fold(0.0, f64::max);
-        let slack = 2.0 * (grid.n as f64 + 1.0) * U + 16.0 * U * norm;
+        let total_volume: f64 = (1..grid.n).map(|i| grid.v[i]).sum();
+        let gamma = |k: f64| k * U / (1.0 - k * U);
+        let sum_slack = 2.0 * gamma(grid.n as f64 + 1.0);
         let (mut c_old, _, _) = initial_vector(&grid, 1.0);
         let mut c_new = vec![0.0; grid.n + 1];
         let mut worst_rise: f64 = f64::NEG_INFINITY;
+        let mut max_slack: f64 = 0.0;
         for step in 0..steps {
             stepper.step(&c_old, &mut c_new).unwrap();
             let (before, after) = (weighted_sq(&grid, &c_old), weighted_sq(&grid, &c_new));
+            let xmax = c_new[..grid.n].iter().cloned().fold(0.0, f64::max);
+            let eps = gamma(5.0) * norm * xmax * total_volume.sqrt() / before.sqrt();
+            let slack = (1.0 + sum_slack) * (1.0 + eps) * (1.0 + eps) - 1.0;
+            max_slack = max_slack.max(slack);
             let rise = (after - before) / before;
             worst_rise = worst_rise.max(rise);
             assert!(
@@ -740,7 +765,7 @@ fn weighted_norm_does_not_grow_p3() {
             &format!("worst_relative_change_weighted_norm_n{n}_dt{dt:e}"),
             worst_rise,
         );
-        report("P3", &format!("rounding_slack_n{n}_dt{dt:e}"), slack);
+        report("P3", &format!("rounding_slack_n{n}_dt{dt:e}"), max_slack);
     }
 }
 

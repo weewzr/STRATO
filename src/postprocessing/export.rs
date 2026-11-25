@@ -148,7 +148,7 @@ pub const PROFILE_COLUMNS: [Column; 6] = [
 ];
 
 /// Columns of the independent-check CSV of the regression suite.
-pub const CHECK_COLUMNS: [Column; 10] = [
+pub const CHECK_COLUMNS: [Column; 17] = [
     ("t_s", "Time (s)"),
     (
         "f_btcs",
@@ -163,25 +163,49 @@ pub const CHECK_COLUMNS: [Column; 10] = [
         "Absolute difference of the release fractions (dimensionless)",
     ),
     (
-        "time_error_estimate",
-        "Time-discretisation error estimate (dimensionless)",
+        "time_error",
+        "Estimated time-discretisation error of the BTCS run (dimensionless)",
+    ),
+    ("time_order", "Observed order in time (dimensionless)"),
+    (
+        "time_uncertainty",
+        "Uncertainty of the time-error estimate (dimensionless)",
     ),
     (
-        "space_error_estimate",
-        "Space-discretisation error estimate (dimensionless)",
+        "space_error",
+        "Estimated space-discretisation error of the BTCS run (dimensionless)",
+    ),
+    ("space_order", "Observed order in space (dimensionless)"),
+    (
+        "space_uncertainty",
+        "Uncertainty of the space-error estimate (dimensionless)",
     ),
     (
-        "reference_floor_3x",
-        "Three times the reference accuracy floor (dimensionless)",
+        "cross_error",
+        "Estimated cross term of the time and space errors (dimensionless)",
     ),
-    ("tolerance", "Derived tolerance (dimensionless)"),
     (
-        "abs_difference_over_tolerance",
-        "Absolute difference divided by tolerance (dimensionless)",
+        "f_limit",
+        "Estimated numerical limit of the release fraction (dimensionless)",
+    ),
+    (
+        "limit_difference",
+        "Absolute difference of the reference and the estimated limit (dimensionless)",
+    ),
+    (
+        "reference_floor",
+        "Accuracy floor of the independent reference (dimensionless)",
+    ),
+    (
+        "tolerance",
+        "Convention fraction of the difference plus reference floor (dimensionless)",
+    ),
+    (
+        "limit_difference_over_tolerance",
+        "Limit difference divided by tolerance (dimensionless)",
     ),
     ("passed", "Check passed (true or false)"),
 ];
-
 /// The CSV header line of a column table.
 pub fn header_line(columns: &[Column]) -> String {
     let mut s = columns.iter().map(|c| c.1).collect::<Vec<_>>().join(",");

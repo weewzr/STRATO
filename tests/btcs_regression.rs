@@ -3,8 +3,8 @@
 //! The files in `tests/golden/btcs/` are regression references: the output of the BTCS solver
 //! itself at the commit written in their headers. They are NOT truth and are never edited by
 //! hand. Truth is established by `independent_check.csv` beside each case (agreement with the
-//! Sturm-Liouville series or the closed form of the homogeneous sphere, to a tolerance derived
-//! from the run's own refinement; see `src/validation/regression.rs`), and by
+//! Sturm-Liouville series or the closed form of the homogeneous sphere, by an error estimate from the run's own
+//! refinements and a stated convention (not a derived bound); see `src/validation/regression.rs`), and by
 //! `tests/btcs_verification.rs`. The finite-volume golden files of `tests/golden/v1.0/` are not
 //! used here.
 //!
@@ -17,7 +17,7 @@ use std::{fs, path::PathBuf};
 use strato::{
     config::Config,
     postprocessing::export::key_of_header,
-    validation::regression::{generate, independent_check, Case, CASES, RTOL},
+    validation::regression::{generate, independent_check, Case, CASES, EXPLAINED_FRACTION, RTOL},
 };
 
 fn root() -> PathBuf {
@@ -203,23 +203,20 @@ fn independent_checks_pass_live_and_match_the_recorded_ones() {
         for r in &report.rows {
             assert!(
                 r.passed(),
-                "{}: t={} |F_run - F_ref| = {:e} > tolerance {:e}",
+                "{}: t={} |F_ref - F_limit| = {:e} > tolerance {:e}",
                 case.id,
                 r.t,
-                r.abs_difference,
+                r.limit_difference,
                 r.tolerance
             );
-            // The tolerance is exactly the sum of the three derived terms of rule R2 (no
-            // other constant enters; the sum is evaluated in the same order, so it is
-            // bit-identical) and every term is non-negative.
-            assert!(r.time_error_estimate >= 0.0 && r.space_error_estimate >= 0.0);
-            assert!(r.reference_floor_3x >= 0.0);
+            // The criterion is the convention of the module documentation, nothing else.
             assert_eq!(
                 r.tolerance.to_bits(),
-                (r.time_error_estimate + r.space_error_estimate + r.reference_floor_3x).to_bits(),
-                "{}: tolerance is not the derived sum",
+                (EXPLAINED_FRACTION * r.abs_difference + r.reference_floor).to_bits(),
+                "{}: tolerance is not the stated convention",
                 case.id
             );
+            assert!(r.reference_floor >= 0.0);
         }
         // The recorded independent check is the same computation: same reference values.
         let frozen = fs::read_to_string(golden(case, "independent_check.csv")).unwrap();
@@ -230,6 +227,9 @@ fn independent_checks_pass_live_and_match_the_recorded_ones() {
             assert!(close(row[col("t_s")], live.t, 1.0));
             assert!(close(row[col("f_reference")], live.f_reference, 1.0));
             assert!(close(row[col("f_btcs")], live.f_run, 1.0));
+            assert!(close(row[col("f_limit")], live.f_limit, 1.0));
+            assert!(close(row[col("time_order")], live.time_order, 1.0));
+            assert!(close(row[col("space_order")], live.space_order, 1.0));
             assert_eq!(row[col("passed")], 1.0, "recorded check must have passed");
         }
     }

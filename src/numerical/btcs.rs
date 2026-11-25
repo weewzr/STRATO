@@ -592,8 +592,8 @@ mod tests {
         // Decision 5: the production path is the F24 form; the general module is the
         // cross-check. Bound: each of the two solves has backward error |dA| <= gamma_5 |A|
         // (Higham, Section 9.6; see one_step_matches_dense_solve), so with ||A^-1||_inf <= 1
-        // they differ by at most 2 gamma_5 ||A||_inf ||x||_inf, i.e. 10 u ||A|| ||x|| to first
-        // order; the constant 16 u used here has a margin of 1.6 over that.
+        // they differ by at most 2 gamma_5 ||A||_inf ||x||_inf, which is the tolerance used (with
+        // gamma_5 = 5u / (1 - 5u) exactly, no margin).
         for (counts, dt) in [([6, 5, 4, 5, 4], 200.0), ([20, 20, 20, 20, 20], 1.0e5)] {
             let (g, mut s) = stepper_for(counts, dt);
             let (mut c_old, _, _) = initial_vector(&g, 1.0);
@@ -609,7 +609,8 @@ mod tests {
                     .map(|i| a.diag[i].abs() + a.lower[i].abs() + a.upper[i].abs())
                     .fold(0.0, f64::max);
                 let xmax = general.iter().cloned().fold(0.0, f64::max);
-                let tol = 16.0 * (f64::EPSILON / 2.0) * norm * xmax;
+                let u = f64::EPSILON / 2.0;
+                let tol = 2.0 * (5.0 * u / (1.0 - 5.0 * u)) * norm * xmax;
                 for i in 0..n {
                     assert!(
                         (c_new[i] - general[i]).abs() <= tol,

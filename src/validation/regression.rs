@@ -16,25 +16,60 @@
 //! * the Sturm-Liouville eigenfunction series of `analytical::sturm_liouville` (five layers), or
 //! * the closed-form series of the homogeneous sphere of `analytical::homogeneous_sphere`.
 //!
-//! At each checkpoint time `t_k` the run's release fraction `F_run` must agree with the reference
-//! `F_ref` to a tolerance that is derived from the run itself, by the error estimate of rule R2
-//! of the verification plan, written for the run being checked (the coarse member of a pair):
+//! At each checkpoint time `t_k` the run's release fraction `F_run` is compared with the reference
+//! `F_ref` by an error estimate that comes from refinements of the same case; the pass/fail
+//! criterion is a stated convention (see below). Notation: the run `F_0 = F_run`, then `F_1`, `F_2`, `F_3` with
+//! half, a quarter and an eighth of the step (`dt/2`, `dt/4`, `dt/8` in time; `2n`, `4n`, `8n`
+//! intervals in every material in space). The two directions are treated separately.
+//!
+//! *Leading order.* If the error of order `q` (`q = 1` Backward Euler, `q = 2` central
+//! differences) is `e(h) = a h^q`, then `F_0 - F_1 = e (1 - 2^-q)`.
+//!
+//! *Observed order.* Let `D_1 = F_0 - F_1` and `D_2 = F_1 - F_2`. If the error is asymptotic with
+//! some order `p`, then `D_2 / D_1 = 2^-p`. This gives `p = log2(D_1 / D_2)` and the estimate of
+//! the error of `F_0`, `e_0 = D_1 / (1 - D_2 / D_1)`, in which the order is read from the data and
+//! not assumed. The estimate of the limit along that direction is `L_0 = F_0 - e_0`.
+//!
+//! *Remainder of the estimate.* The same formula applied to `(F_1, F_2, F_3)` gives `e_1`, the
+//! error of `F_1`, and a second estimate `L_1 = F_1 - e_1` of the same limit. `u = |L_0 - L_1|`
+//! measures how much the estimate still moves between successive refinements; it is recorded for
+//! each direction. If `D_2 / D_1` (or the ratio of the finer triple) is not in `(0, 1)`, no order
+//! can be read; the leading-order estimate `D_1 / (1 - 2^-q)` replaces `e` and `u` is that whole
+//! estimate.
+//!
+//! *Cross term.* For an error expansion `a dt + b h^2 + c dt h^2`, the mixed difference of the
+//! four runs `(dt, h)`, `(dt/2, h)`, `(dt, h/2)`, `(dt/2, h/2)` is `c dt h^2 (1 - 1/2)(1 - 1/4)`,
+//! so `e_x = (8/3)(F_0 - F_t - F_h + F_th)`.
+//!
+//! The estimate of the numerical limit of the case is `F_lim = F_0 - e_t - e_h - e_x`.
+//!
+//! # What is measured, and what is a convention
+//!
+//! Measured and recorded in every check file: the observed orders (about 1 in time, 2.000 in
+//! space), the uncertainties `u`, and `|F_ref - F_lim|`. On the three cases `|F_ref - F_lim|` is
+//! between 0.01 % and 2.1 % of `|F_run - F_ref|`: the refinement analysis explains the difference
+//! between the run and the reference to that fraction, the rest is left unexplained. It is **not**
+//! proved to be a bound: the kernel-step start is not smooth, the time orders read 0.93 to 1.02
+//! rather than 1, and `u` (which only measures how much the estimate moves) is in several rows
+//! smaller than the remaining difference, so it is not a bound either.
+//!
+//! The pass/fail criterion of the generator is therefore a **convention**, not a derived
+//! tolerance:
 //!
 //! ```text
-//! tolerance_k = 2.5 |F_run - F_(dt/2)| + (5/3) |F_run - F_(2n)| + 3 floor
+//! |F_ref - F_lim| <= EXPLAINED_FRACTION |F_run - F_ref| + floor,   EXPLAINED_FRACTION = 0.05
 //! ```
 //!
-//! `F_(dt/2)` is the same case with half the step, `F_(2n)` the same case with twice the intervals
-//! in every material. For a first-order time error `e` the finer run has error `e/2`, so
-//! `|F_run - F_(dt/2)| = e/2` and `e = 2 |F_run - F_(dt/2)|`; the factor 2.5 is that 2 times the
-//! safety factor 1.25 of rule R2. For a second-order space error the finer run has `e/4`, so
-//! `e = (4/3) |F_run - F_(2n)|` and the factor is `(4/3) 1.25 = 5/3`. `floor` is the accuracy
-//! floor of the reference (`ModalRelease::accuracy_floor`, or the tail bound plus `1e-15` of the
-//! homogeneous series). The orders 1 and 2 are the theoretical orders of Backward Euler and of
-//! central differences; the observed orders on the synthetic case are in
-//! `tests/btcs_verification.rs`. A failed check refuses the file: nothing is written.
-//!
-//! Numerical verification only: agreement with these references is not experimental validation.
+//! "The discretisation error that the refinements estimate explains the difference from the
+//! independent reference to within 5 %." The 5 % is a round number chosen above the 2.1 % that was
+//! measured; it is not derived from Document 1, and a smaller measured value would not justify
+//! lowering it. `floor` is the accuracy estimate of the reference (`ModalRelease::accuracy_floor`,
+//! or the tail bound plus `1e-15` of the homogeneous series); its documentation says the true
+//! error is about 10 to 20 times below it, so one times the floor is used. What the criterion
+//! protects against is a gross disagreement (an error in the BTCS run or in the reference that is
+//! much larger than the discretisation error); it does not certify the last digits of the run. A
+//! failed check refuses the file: nothing is written.
+//!//! Numerical verification only: agreement with these references is not experimental validation.
 
 use crate::{
     analytical::{
@@ -51,6 +86,10 @@ use crate::{
 };
 use anyhow::{anyhow, bail, Result};
 use std::fmt::Write as _;
+
+/// Convention of the independent check: the part of `|F_run - F_ref|` that the refinement analysis
+/// may leave unexplained (see the module documentation; not derived).
+pub const EXPLAINED_FRACTION: f64 = 0.05;
 
 /// Relative tolerance of the comparison with the frozen files: the existing regression tolerance
 /// of `tests/phase1_regression.rs` (`|a - b| <= RTOL max(scale, |a|, |b|)`).
@@ -122,20 +161,33 @@ pub struct CheckRow {
     pub f_reference: f64,
     /// `|F_run - F_ref|`.
     pub abs_difference: f64,
-    /// `2.5 |F_run - F_(dt/2)|`.
-    pub time_error_estimate: f64,
-    /// `(5/3) |F_run - F_(2n)|`.
-    pub space_error_estimate: f64,
-    /// `3 floor` of the reference.
-    pub reference_floor_3x: f64,
-    /// Sum of the three terms above.
+    /// Estimated error of the run in time, `e_0` (signed).
+    pub time_error: f64,
+    /// Observed order in time from `(F_0, F_1, F_2)`; NaN if it cannot be read.
+    pub time_order: f64,
+    /// Uncertainty `u` of the time estimate, `|L_0 - L_1|`.
+    pub time_uncertainty: f64,
+    /// Estimated error of the run in space, `e_0` (signed).
+    pub space_error: f64,
+    /// Observed order in space from `(F_0, F_1, F_2)`; NaN if it cannot be read.
+    pub space_order: f64,
+    /// Uncertainty of the space estimate.
+    pub space_uncertainty: f64,
+    /// Estimated cross term of the time and space errors (signed).
+    pub cross_error: f64,
+    /// Estimated numerical limit `F_lim = F_run - e_t - e_h - e_x`.
+    pub f_limit: f64,
+    /// `|F_ref - F_lim|`.
+    pub limit_difference: f64,
+    /// Accuracy floor of the reference.
+    pub reference_floor: f64,
+    /// `EXPLAINED_FRACTION |F_run - F_ref| + floor` (a convention; see the module documentation).
     pub tolerance: f64,
 }
-
 impl CheckRow {
-    /// The check passes if `abs_difference <= tolerance`.
+    /// The check passes if `limit_difference <= tolerance`.
     pub fn passed(&self) -> bool {
-        self.abs_difference <= self.tolerance
+        self.limit_difference <= self.tolerance
     }
 }
 
@@ -175,6 +227,39 @@ fn refined(input: &ValidatedInput, space: usize, time: usize) -> ValidatedInput 
     r
 }
 
+/// Result of `estimate`.
+struct Estimate {
+    error: f64,
+    order: f64,
+    uncertainty: f64,
+}
+
+/// Error estimate of one refinement direction from the runs `f = [F_0, F_1, F_2, F_3]` (each with
+/// half the step of the previous one) for a leading order `q`; see the module documentation.
+fn estimate(f: [f64; 4], q: f64) -> Estimate {
+    let leading = |a: f64, b: f64| (a - b) / (1.0 - 0.5_f64.powf(q));
+    // Error of `a` from the triple (a, b, c) with the order read from the data, and that order.
+    let observed = |a: f64, b: f64, c: f64| -> Option<(f64, f64)> {
+        let (d1, d2) = (a - b, b - c);
+        let r = d2 / d1;
+        (r > 0.0 && r < 1.0).then(|| (d1 / (1.0 - r), -r.log2()))
+    };
+    match (observed(f[0], f[1], f[2]), observed(f[1], f[2], f[3])) {
+        (Some((e0, order)), Some((e1, _))) => Estimate {
+            error: e0,
+            order,
+            uncertainty: ((f[0] - e0) - (f[1] - e1)).abs(),
+        },
+        (first, _) => {
+            let e = leading(f[0], f[1]);
+            Estimate {
+                error: e,
+                order: first.map_or(f64::NAN, |(_, p)| p),
+                uncertainty: e.abs(),
+            }
+        }
+    }
+}
 /// Runs the independent check of a case on its configuration.
 ///
 /// # Errors
@@ -186,6 +271,11 @@ pub fn independent_check(cfg: &Config, case: &Case) -> Result<CheckReport> {
     let base = run_input(&input, &[])?;
     let fine_t = run_input(&refined(&input, 1, 2), &[])?;
     let fine_h = run_input(&refined(&input, 2, 1), &[])?;
+    let finer_t = run_input(&refined(&input, 1, 4), &[])?;
+    let finer_h = run_input(&refined(&input, 4, 1), &[])?;
+    let mixed = run_input(&refined(&input, 2, 2), &[])?;
+    let finest_t = run_input(&refined(&input, 1, 8), &[])?;
+    let finest_h = run_input(&refined(&input, 8, 1), &[])?;
     let t_min = case
         .checkpoints
         .iter()
@@ -256,18 +346,47 @@ pub fn independent_check(cfg: &Config, case: &Case) -> Result<CheckReport> {
     let mut rows = Vec::new();
     for (k, &t) in case.checkpoints.iter().enumerate() {
         let f_run = f_at(&base.series, t)?;
-        let time_error_estimate = 2.5 * (f_run - f_at(&fine_t.series, t)?).abs();
-        let space_error_estimate = 5.0 / 3.0 * (f_run - f_at(&fine_h.series, t)?).abs();
-        let reference_floor_3x = 3.0 * floor;
+        let time = estimate(
+            [
+                f_run,
+                f_at(&fine_t.series, t)?,
+                f_at(&finer_t.series, t)?,
+                f_at(&finest_t.series, t)?,
+            ],
+            1.0,
+        );
+        let space = estimate(
+            [
+                f_run,
+                f_at(&fine_h.series, t)?,
+                f_at(&finer_h.series, t)?,
+                f_at(&finest_h.series, t)?,
+            ],
+            2.0,
+        );
+        // Cross term of the error expansion `a dt + b h^2 + c dt h^2`: the mixed second difference
+        // of the four runs (dt, h), (dt/2, h), (dt, h/2), (dt/2, h/2) equals `c dt h^2 (1 - 1/2)
+        // (1 - 1/4)`, hence the factor 8/3.
+        let cross = 8.0 / 3.0
+            * (f_run - f_at(&fine_t.series, t)? - f_at(&fine_h.series, t)?
+                + f_at(&mixed.series, t)?);
+        let f_limit = f_run - time.error - space.error - cross;
         rows.push(CheckRow {
             t,
             f_run,
             f_reference: reference[k],
             abs_difference: (f_run - reference[k]).abs(),
-            time_error_estimate,
-            space_error_estimate,
-            reference_floor_3x,
-            tolerance: time_error_estimate + space_error_estimate + reference_floor_3x,
+            time_error: time.error,
+            time_order: time.order,
+            time_uncertainty: time.uncertainty,
+            space_error: space.error,
+            space_order: space.order,
+            space_uncertainty: space.uncertainty,
+            cross_error: cross,
+            f_limit,
+            limit_difference: (reference[k] - f_limit).abs(),
+            reference_floor: floor,
+            tolerance: EXPLAINED_FRACTION * (f_run - reference[k]).abs() + floor,
         });
     }
     Ok(CheckReport {
@@ -317,9 +436,9 @@ pub fn generate(cfg: &Config, case: &Case, input_file: &str, commit: &str) -> Re
     let report = independent_check(cfg, case)?;
     if let Some(bad) = report.rows.iter().find(|r| !r.passed()) {
         bail!(
-            "independent check failed at t = {} s: |F_run - F_ref| = {:e} > tolerance {:e}",
+            "independent check failed at t = {} s: |F_ref - F_limit| = {:e} > tolerance {:e}",
             bad.t,
-            bad.abs_difference,
+            bad.limit_difference,
             bad.tolerance
         );
     }
@@ -337,7 +456,7 @@ pub fn generate(cfg: &Config, case: &Case, input_file: &str, commit: &str) -> Re
     let _ = writeln!(check, "# reference: {}", report.reference_text);
     let _ = writeln!(
         check,
-        "# tolerance_k = 2.5 |F_run - F_(dt/2)| + (5/3) |F_run - F_(2n)| + 3 floor (rule R2 of the verification plan, written for the coarse run of a pair; see validation::regression)"
+        "# check: |F_reference - F_limit| <= 0.05 |F_btcs - F_reference| + floor, where F_limit = F_btcs - e_time - e_space - e_cross is the limit estimated from the dt/2, dt/4, dt/8, 2n, 4n, 8n and (dt/2, 2n) refinements with the order read from the data. The 0.05 is a convention, not a derived tolerance; the orders, the uncertainties u of the estimates and the limit difference are measurements. See the module documentation of validation::regression."
     );
     if let (Some((ta, fa)), Some(diff)) = (case.anchor, report.anchor_difference) {
         let _ = writeln!(
@@ -352,20 +471,26 @@ pub fn generate(cfg: &Config, case: &Case, input_file: &str, commit: &str) -> Re
     for r in &report.rows {
         let _ = writeln!(
             check,
-            "{:e},{:e},{:e},{:e},{:e},{:e},{:e},{:e},{:e},{}",
+            "{:e},{:e},{:e},{:e},{:e},{:e},{:e},{:e},{:e},{:e},{:e},{:e},{:e},{:e},{:e},{:e},{}",
             r.t,
             r.f_run,
             r.f_reference,
             r.abs_difference,
-            r.time_error_estimate,
-            r.space_error_estimate,
-            r.reference_floor_3x,
+            r.time_error,
+            r.time_order,
+            r.time_uncertainty,
+            r.space_error,
+            r.space_order,
+            r.space_uncertainty,
+            r.cross_error,
+            r.f_limit,
+            r.limit_difference,
+            r.reference_floor,
             r.tolerance,
-            r.abs_difference / r.tolerance,
+            r.limit_difference / r.tolerance,
             r.passed()
         );
     }
-
     let ts = timeseries_csv(&prov, &run.series, run.meta.initial_inventory)?;
     let pr = profile_csv(&prov, &run.grid, &run.snapshots)?;
     Ok(Generated {
