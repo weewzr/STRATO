@@ -1,5 +1,5 @@
 # REGRESSION REFERENCE, NOT TRUTH.
-# These values were produced by the BTCS solver itself at commit 6724587a1dc7bd956bc825ac6bf45d90dcf3cec9. A mismatch with a later run means that the code changed; the file is never edited by hand.
+# These values were produced by the BTCS solver itself at commit b948870. A mismatch with a later run means that the code changed; the file is never edited by hand.
 # Why the values are believable: independent_check.csv beside this file compares the release fraction of this case with a reference that contains no BTCS code.
 # case: mild_contrast_n40_dt10
 # input: inputs/btcs_regression/synthetic_mild_contrast.toml
@@ -7,7 +7,7 @@
 # reference: multilayer Sturm-Liouville eigenfunction series (analytical::sturm_liouville), 7 modes, accuracy floor 4.0234989325342656e-15
 # tolerance_k = 2.5 |F_run - F_(dt/2)| + (5/3) |F_run - F_(2n)| + 3 floor (rule R2 of the verification plan, written for the coarse run of a pair; see validation::regression)
 # numerical solution of the stated model; not experimental validation
-t_s,f_btcs,f_reference,abs_difference,time_error_estimate,space_error_estimate,reference_floor_3x,tolerance,abs_difference_over_tolerance,passed
+Time (s),Release fraction computed by BTCS (dimensionless),Release fraction of the independent reference (dimensionless),Absolute difference of the release fractions (dimensionless),Time-discretisation error estimate (dimensionless),Space-discretisation error estimate (dimensionless),Three times the reference accuracy floor (dimensionless),Derived tolerance (dimensionless),Absolute difference divided by tolerance (dimensionless),Check passed (true or false)
 5e2,2.2262658706300453e-1,2.231102660122456e-1,4.8367894924106203e-4,6.335636984182436e-4,4.9332919962868926e-5,1.2070496797602797e-14,6.82896618393183e-4,7.082755079079629e-1,true
 1e3,5.308917610745086e-1,5.333503118982696e-1,2.4585508237610076e-3,3.0710864665972615e-3,9.929335565613448e-6,1.2070496797602797e-14,3.0810158021749457e-3,7.979676125080148e-1,true
 2e3,8.349369812898313e-1,8.367453526796711e-1,1.8083713898398024e-3,2.24902129475818e-3,9.581741508002395e-6,1.2070496797602797e-14,2.258603036278253e-3,8.006592397129039e-1,true

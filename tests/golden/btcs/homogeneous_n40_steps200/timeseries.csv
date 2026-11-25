@@ -1,5 +1,5 @@
 # REGRESSION REFERENCE, NOT TRUTH.
-# These values were produced by the BTCS solver itself at commit 6724587a1dc7bd956bc825ac6bf45d90dcf3cec9. A mismatch with a later run means that the code changed; the file is never edited by hand.
+# These values were produced by the BTCS solver itself at commit b948870. A mismatch with a later run means that the code changed; the file is never edited by hand.
 # Why the values are believable: independent_check.csv beside this file compares the release fraction of this case with a reference that contains no BTCS code.
 # case: homogeneous_n40_steps200
 # input: inputs/btcs_regression/synthetic_homogeneous_sphere.toml
@@ -7,12 +7,14 @@
 # STRATO BTCS five-layer spherical finite difference: time series
 # label: numerical solution of the stated model; not experimental validation
 # solver_package_version: 1.0.1
-# commit: 6724587a1dc7bd956bc825ac6bf45d90dcf3cec9
+# commit: b948870
 # case: synthetic-homogeneous-sphere
 # species: synthetic
 # input_file: synthetic_homogeneous_sphere.toml
 # input_sha256: d7853d4b78a8407140269eec66f15a420ed034ef09daf6298a7526f25edaaaaa
-t_s,inventory_mol,cumulative_release_mol,release_fraction,release_rate_mol_s,balance_residual_mol,balance_residual_relative,balance_residual_bound_mol,min_concentration_mol_m3,max_concentration_mol_m3
+# parameter_source: synthetic benchmark, not literature data
+# parameter_class: synthetic benchmark
+Time (s),Remaining inventory (mol),Cumulative release (mol),Release fraction (dimensionless),Release rate (mol/s),Mass-balance residual (mol),Relative mass-balance residual (dimensionless),Derived a-posteriori rounding bound of the mass-balance residual (mol),Minimum concentration over all nodes (mol/m^3),Maximum concentration over all nodes (mol/m^3)
 0e0,3.351032163829113e-11,0e0,0e0,,0e0,0e0,7.738417574248485e-25,0e0,1e0
 2.53125e1,3.3455597610629353e-11,5.4724027661864536e-14,1.6330499078031292e-3,5.943729679947215e-15,9.04728794979874e-26,2.699851122724142e-15,5.406804741298558e-23,0e0,9.335197424697278e-1
 5.0625e1,3.29171988126557e-11,5.931228256357253e-13,1.7699705542604628e-2,3.376240900061314e-14,2.972680326362443e-25,8.870939403236465e-15,1.4606413369400962e-22,0e0,7.419108449382411e-1

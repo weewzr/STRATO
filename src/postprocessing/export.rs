@@ -801,7 +801,7 @@ mod tests {
         }
         assert!(json.contains("\"commit\":\"abc1234\""));
         assert!(json.contains("\"t_s\":\"Time (s)\""));
-        assert!(json.contains("\"name\":\"Diffusion coefficient in the Kernel region (m^2/s)\""));
+        assert!(json.contains("\"name\":\"Diffusion coefficient in the kernel region (m^2/s)\""));
         assert!(json.contains("\"class\":\"user-supplied value, no source class recorded\""));
         let synthetic = prov
             .clone()

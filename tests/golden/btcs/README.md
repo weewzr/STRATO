@@ -23,3 +23,7 @@ Each case directory holds:
 All three cases are synthetic numerical benchmarks, not literature data. Agreement with the
 references is numerical verification of the stated model; it is not experimental validation. The
 finite-volume files in `tests/golden/v1.0/` are not used here.
+
+## Regeneration record
+
+The files were regenerated once, at the commit named in their headers, for one reason: the exported column headers now carry the full physical name with its unit and the header comments carry the source row and class of the parameters (decisions 30 and 31). The data rows were compared before and after: every numerical value is identical to the last digit, including after the merge of the upstream solver tip, so the regression level of 1e-12 was not touched and no solver output changed.

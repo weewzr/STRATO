@@ -1,5 +1,5 @@
 # REGRESSION REFERENCE, NOT TRUTH.
-# These values were produced by the BTCS solver itself at commit 6724587a1dc7bd956bc825ac6bf45d90dcf3cec9. A mismatch with a later run means that the code changed; the file is never edited by hand.
+# These values were produced by the BTCS solver itself at commit b948870. A mismatch with a later run means that the code changed; the file is never edited by hand.
 # Why the values are believable: independent_check.csv beside this file compares the release fraction of this case with a reference that contains no BTCS code.
 # case: s5_n40_dt200
 # input: inputs/synthetic/synthetic_five_layer.toml
@@ -8,7 +8,7 @@
 # tolerance_k = 2.5 |F_run - F_(dt/2)| + (5/3) |F_run - F_(2n)| + 3 floor (rule R2 of the verification plan, written for the coarse run of a pair; see validation::regression)
 # separate-language anchor: F(2e5 s) = 4.325556390930383e-1 from the Python oracle pinned in tests/finite_volume_vs_analytical.rs; |series - anchor| = 4.625189120588402e-13
 # numerical solution of the stated model; not experimental validation
-t_s,f_btcs,f_reference,abs_difference,time_error_estimate,space_error_estimate,reference_floor_3x,tolerance,abs_difference_over_tolerance,passed
+Time (s),Release fraction computed by BTCS (dimensionless),Release fraction of the independent reference (dimensionless),Absolute difference of the release fractions (dimensionless),Time-discretisation error estimate (dimensionless),Space-discretisation error estimate (dimensionless),Three times the reference accuracy floor (dimensionless),Derived tolerance (dimensionless),Absolute difference divided by tolerance (dimensionless),Check passed (true or false)
 2e4,6.535241291671755e-3,6.263902211739669e-3,2.713390799320859e-4,3.0311864045619004e-4,3.3726899606916286e-5,1.1991389360386309e-11,3.368455520544957e-4,8.055296508359059e-1,true
 5e4,7.580053201810895e-2,7.572821318351808e-2,7.23188345908704e-5,4.8240175708341715e-5,4.237968301563459e-5,1.1991389360386309e-11,9.061987071536566e-5,7.980461020301136e-1,true
 1e5,2.1280543186298717e-1,2.128698512122137e-1,6.441934922651882e-5,1.0074147165840819e-4,2.0309236045124024e-5,1.1991389360386309e-11,1.2105071969492157e-4,5.321682464083805e-1,true
