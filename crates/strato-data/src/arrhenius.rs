@@ -164,6 +164,10 @@ string_enum! {
         IsothermalHeatingTests => "isothermal heating tests (p. 162)",
         /// Fitted to the 1600 and 1800 C AGR-1 heating tests (Schappel 2020).
         FittedToAgr1HeatingTests => "none printed; fitted to the 1600 and 1800 C post-irradiation heating tests (printed p. 13-14)",
+        /// The source prints no range; the fit used the 1600 and 1800 C heating tests and the typed range is that fitted range (Schappel 2020, rows S20-01 to S20-03).
+        FittedRange1600To1800 => "no range is printed; fitted range 1600 to 1800 C (the 1600 and 1800 C post-irradiation heating tests, printed p. 13-14)",
+        /// A hypothesis, not a fit (Schappel 2020, row S20-04).
+        HypothesisNotFitted => "none printed; no fit: a hypothesis (pre-factor and activation energy follow from two assumed values, see the notes), not fitted to a measured temperature range",
     }
 }
 
@@ -350,6 +354,35 @@ pub struct Diffusivity {
 }
 
 impl ArrheniusRow {
+    /// The class as printed in the file.
+    pub fn coefficient_class_text(&self) -> &'static str {
+        use crate::table::Vocabulary;
+        self.coefficient_class.as_str()
+    }
+
+    /// The species label as printed.
+    pub fn nuclide_text(&self) -> &str {
+        &self.species_text
+    }
+
+    /// `D0` (or the constant) as printed, when the row has one.
+    pub fn d0_value(&self) -> Option<&str> {
+        match &self.law {
+            Law::Arrhenius { d0, .. } => Some(d0.text.as_str()),
+            Law::Constant { d, .. } => Some(d.text.as_str()),
+            Law::Instantaneous => None,
+        }
+    }
+
+    /// `Q` as printed, when the row has one.
+    pub fn q_value(&self) -> Option<&str> {
+        match &self.law {
+            Law::Arrhenius { q_kj_mol, .. } => Some(q_kj_mol.text.as_str()),
+            Law::Constant { q_kj_mol, .. } => q_kj_mol.as_ref().map(|q| q.text.as_str()),
+            Law::Instantaneous => None,
+        }
+    }
+
     /// The coefficient of this one term at `t_kelvin`, for gas constant `r_gas` (J mol-1 K-1) and
     /// fluence `gamma` in 1e25 m-2. The fluence factor multiplies the term only when the row
     /// documents it as used; pass 0 to evaluate without fluence. An instantaneous row has no
