@@ -9,6 +9,9 @@ Work toward v2.0 (Phase 2). The order is mathematics first, then pseudocode, the
 - Planned: radioactive decay, fission-product generation, inventory accounting, Arrhenius diffusivity and temperature histories.
 - The list of v1.0 to v2.0 changes (design only, no Phase 2 code yet) is kept in [docs/development/v1_to_v2_changes.md](docs/development/v1_to_v2_changes.md).
 
+### Added
+- Property functions and closed-form references for the Phase G mechanisms in `src/physics/` (Arrhenius diffusivity, decay constant, volumetric fission source, well-mixed and homogeneous-sphere references), derived in `docs/mathematics/STRATO_Property_Functions.md`. They are not coupled to any solver, and the document is not yet published on the site.
+
 ### Changed
 - Licence changed from MIT to AGPL-3.0-only, the licence of the Outram Park project that the planned web demo builds on. Releases v1.0.0 and v1.0.1 remain available under MIT.
 - GitHub Pages is built and deployed by `.github/workflows/web.yml` instead of the Jekyll render of the repository. The derivation and register documents stay at their earlier addresses, now with rendered mathematics; the three links of the earlier home page that returned 404 (`.github/workflows/ci.yml`, `docs/mathematics/v1.0.0/`, `tests/golden/v1.0/`) are replaced by a GitHub link and two list pages. `prompt/`, the README, this changelog and `docs/development/` are not published on the site.
