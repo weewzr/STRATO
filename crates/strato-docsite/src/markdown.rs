@@ -17,7 +17,7 @@
 //! The mathematics is passed through as TeX; nothing is evaluated.
 
 use pulldown_cmark::{
-    html, CodeBlockKind, CowStr, Event, HeadingLevel, Options, Parser, Tag, TagEnd,
+    html, CodeBlockKind, CowStr, Event, HeadingLevel, Options, Parser, Tag, TagEnd, TextMergeStream,
 };
 use std::collections::HashMap;
 
@@ -130,7 +130,7 @@ struct State {
 /// Renders `text` (Markdown). `link(destination, is_image)` decides what each link becomes.
 pub fn render(text: &str, link: &mut dyn FnMut(&str, bool) -> Target) -> Rendered {
     let text = text.replace("\r\n", "\n");
-    let events: Vec<Event<'_>> = Parser::new_ext(&text, options()).collect();
+    let events: Vec<Event<'_>> = TextMergeStream::new(Parser::new_ext(&text, options())).collect();
     let mut st = State {
         slugger: Slugger::default(),
         title: String::new(),

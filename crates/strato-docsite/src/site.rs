@@ -651,10 +651,10 @@ pub fn build(cfg: &Config) -> Result<Report, String> {
             problems.push(format!("{}: a $ that is not mathematics: {s}", d.src));
         }
         let source_tags = text.matches("\\tag{").count();
-        if source_tags != r.tags_in_math {
+        if source_tags != r.tags_in_math + r.tags_in_code {
             problems.push(format!(
-                "{}: {source_tags} \\tag{{ in the source but {} inside mathematics",
-                d.src, r.tags_in_math
+                "{}: {source_tags} \\tag{{ in the source but {} inside mathematics and {} in code",
+                d.src, r.tags_in_math, r.tags_in_code
             ));
         }
         let pdf = site.pdf_of(d);
@@ -863,7 +863,12 @@ mod tests {
                 d.src,
                 r.stray_dollars
             );
-            assert_eq!(text.matches("\\tag{").count(), r.tags_in_math, "{}", d.src);
+            assert_eq!(
+                text.matches("\\tag{").count(),
+                r.tags_in_math + r.tags_in_code,
+                "{}",
+                d.src
+            );
             assert!(problems.is_empty(), "{}: {problems:?}", d.src);
             assert!(!r.title.is_empty(), "{} has a level-1 heading", d.src);
         }
