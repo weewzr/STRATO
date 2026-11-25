@@ -7,9 +7,11 @@
 
 use std::path::Path;
 
-use strato::physics::arrhenius::GasConstant as SiGas;
-use strato_data::arrhenius::{ArrheniusRow, BoundKind, DiffusionLayer, Form, GasConstant};
+use strato_data::arrhenius::{BoundKind, DiffusionLayer, Form, GasConstant};
 use strato_data::geometry::GeometryValue;
+use strato_data::select::{
+    ParticleLayer, Phase, Selection, Selector, Variant, GAS_CONSTANT_ASSUMED,
+};
 use strato_data::table::Vocabulary;
 use strato_data::temperature::TemperaturePoint;
 use strato_data::Register;
@@ -145,110 +147,119 @@ pub struct DiffusivitySet {
     pub sic_class: String,
     /// Phase of use of the SiC rows, as the register states it.
     pub sic_phase: String,
+    /// Statements the selection function attaches to the coefficients (decision 47), per layer.
+    pub labels: Vec<String>,
 }
 
-fn rows_of<'a>(
-    reg: &'a Register,
-    set: &str,
-    species: Species,
-    layer: DiffusionLayer,
-) -> Vec<&'a ArrheniusRow> {
-    reg.arrhenius
-        .rows
-        .iter()
-        .filter(|r| r.set_id == set && r.species_text == species.label() && r.layer == layer)
-        .collect()
-}
+const LAYERS: [(&str, ParticleLayer); 5] = [
+    ("kernel", ParticleLayer::Kernel),
+    ("buffer", ParticleLayer::Buffer),
+    ("IPyC", ParticleLayer::IPyC),
+    ("SiC", ParticleLayer::SiC),
+    ("OPyC", ParticleLayer::OPyC),
+];
 
-fn ids(rows: Vec<&ArrheniusRow>) -> Vec<String> {
-    rows.into_iter().map(|r| r.id.clone()).collect()
-}
-
-/// The default set of an element: the published heating-test correlation as printed, kernel and
-/// PyC and SiC by element, buffer common to all species (decision 39: heating-test runs use the
-/// published two-term rows).
-pub fn default_set(reg: &Register, species: Species) -> Result<DiffusivitySet, String> {
-    let kernel = rows_of(reg, HEATING_SET, species, DiffusionLayer::Kernel);
-    let pyc = rows_of(reg, HEATING_SET, species, DiffusionLayer::PyC);
-    let sic = rows_of(reg, HEATING_SET, species, DiffusionLayer::SiC);
-    let buffer: Vec<&ArrheniusRow> = reg
-        .arrhenius
-        .rows
-        .iter()
-        .filter(|r| r.set_id == BUFFER_SET && r.layer == DiffusionLayer::Buffer)
-        .collect();
-    if kernel.is_empty() || pyc.is_empty() || sic.is_empty() || buffer.len() != 1 {
-        return Err(format!(
-            "the register lacks a complete {HEATING_SET} set for {}",
-            species.label()
-        ));
+fn selector(reg: &Register) -> Selector<'_> {
+    Selector {
+        arrhenius: &reg.arrhenius,
+        irradiation: &reg.irradiation,
     }
-    let sic_class = sic[0].coefficient_class.as_str().to_string();
-    let sic_phase = sic[0].phase_of_use.as_str().to_string();
-    let pyc_ids = ids(pyc);
+}
+
+fn select_layer<'a>(
+    reg: &'a Register,
+    species: Species,
+    layer: ParticleLayer,
+    variant: Variant,
+) -> Result<Selection<'a>, String> {
+    selector(reg)
+        .select(species.label(), layer, Phase::HeatingTest, variant)
+        .map_err(|e| e.to_string())
+}
+
+/// The default set of an element, chosen by the selection function of `strato-data` (decisions 39,
+/// 40 and 47): the published heating-test correlation as printed, with the second term where the
+/// source prints one.
+pub fn default_set(reg: &Register, species: Species) -> Result<DiffusivitySet, String> {
+    let mut ids: [Vec<String>; 5] = Default::default();
+    let mut labels = Vec::new();
+    let mut sic_class = String::new();
+    let mut sic_phase = String::new();
+    for (k, (name, layer)) in LAYERS.iter().enumerate() {
+        let sel = select_layer(reg, species, *layer, Variant::Default)?;
+        ids[k] = sel.row_ids().iter().map(|s| s.to_string()).collect();
+        labels.extend(sel.labels.iter().map(|l| format!("{name}: {l}")));
+        if *layer == ParticleLayer::SiC {
+            sic_class = sel.class.as_str().to_string();
+            sic_phase = sel.rows[0].phase_of_use.as_str().to_string();
+        }
+    }
     Ok(DiffusivitySet {
         id: format!("{HEATING_SET}-published"),
         label: format!(
-            "published heating-test correlation as printed ({HEATING_SET} and {BUFFER_SET})"
+            "published heating-test correlation as printed (Collin 2016 Table 2, rows {HEATING_SET} and {BUFFER_SET}), chosen by the strato-data selection function"
         ),
-        ids: [ids(kernel), ids(buffer), pyc_ids.clone(), ids(sic), pyc_ids],
+        ids,
         kernel_scale: 1.0,
         sic_class,
         sic_phase,
+        labels,
     })
 }
 
-/// The labelled alternatives of an element (sensitivity cases, never defaults): the AGR-1 fitted
-/// SiC rows of Schappel 2020 (decision 40), other registered heating-test SiC rows, and the
-/// kernel-radius variant of decision 41.
+/// The labelled alternatives of an element (sensitivity cases, never defaults): the kernel-radius
+/// variant of decision 41 and the AGR-1 fitted SiC row of Schappel 2020 (decision 40), both from
+/// the selection function, and further registered SiC rows named by id.
 pub fn variant_sets(reg: &Register, species: Species) -> Result<Vec<DiffusivitySet>, String> {
     let base = default_set(reg, species)?;
     let mut out = vec![base.clone()];
-    // Kernel coefficients of the register refer to a reference radius (um); the variant scales them
-    // by (r_kernel / r_reference)^2 (decision 41). The factor comes from the registers.
-    let radii = radii(reg)?;
-    let reference_um = reg
-        .arrhenius
-        .rows
-        .iter()
-        .find(|r| base.ids[0].contains(&r.id))
-        .and_then(|r| r.reference_radius_um.as_ref())
-        .map(|p| p.value)
-        .ok_or("the kernel rows carry no reference radius")?;
-    let ratio = radii.outer_m[0] * 1e6 / reference_um;
+    let kernel = select_layer(
+        reg,
+        species,
+        ParticleLayer::Kernel,
+        Variant::KernelScaledSensitivity,
+    )?;
+    let scale = kernel
+        .kernel_scale
+        .ok_or("the kernel-scaled selection carries no scale")?;
     let mut scaled = base.clone();
     scaled.id = "kernel-radius-scaled".to_string();
     scaled.label = format!(
-        "kernel coefficient scaled by (kernel radius / {reference_um} um)^2 = {:.3} (decision 41)",
-        ratio * ratio
+        "kernel coefficient scaled by (kernel radius {} µm / reference radius {} µm)^2 = {:.3} (decision 41; sensitivity case, not a published coefficient)",
+        scale.agr1_radius_um, scale.reference_radius_um, scale.factor
     );
-    scaled.kernel_scale = ratio * ratio;
+    scaled.kernel_scale = scale.factor;
     out.push(scaled);
-    // Fitted SiC rows (form "1T (fitted)") of each Schappel set.
-    for set in ["S20-T6", "S20-T3"] {
-        let rows: Vec<&ArrheniusRow> = reg
-            .arrhenius
-            .rows
-            .iter()
-            .filter(|r| {
-                r.set_id == set
-                    && r.species_text == species.label()
-                    && r.layer == DiffusionLayer::SiC
-                    && r.form == Form::Fitted
-            })
-            .collect();
-        if rows.len() == 1 {
-            let mut v = base.clone();
-            v.id = format!("{set}-fitted-SiC");
-            v.label = format!(
-                "SiC replaced by the AGR-1 fitted row {} ({set}); labelled alternative, not the default",
-                rows[0].id
-            );
-            v.sic_class = rows[0].coefficient_class.as_str().to_string();
-            v.sic_phase = rows[0].phase_of_use.as_str().to_string();
-            v.ids[3] = vec![rows[0].id.clone()];
-            out.push(v);
-        }
+    // The AGR-1 fitted SiC row of Schappel 2020, offered by the selection function.
+    let fitted = select_layer(reg, species, ParticleLayer::SiC, Variant::SchappelFitted)?;
+    let mut v = base.clone();
+    v.id = "S20-fitted-SiC".to_string();
+    v.label = format!(
+        "SiC replaced by the AGR-1 fitted row {} (Schappel 2020, fitted to the 1600 and 1800 °C heating tests); labelled alternative, never the default; it disagrees with Collin's correction factors by 4 to 220 times (decision 40)",
+        fitted.row_ids().join("+")
+    );
+    v.sic_class = fitted.class.as_str().to_string();
+    v.sic_phase = fitted.rows[0].phase_of_use.as_str().to_string();
+    v.ids[3] = fitted.row_ids().iter().map(|s| s.to_string()).collect();
+    out.push(v);
+    // The single-particle fit of Schappel 2020 (set S20-T3), registered but not offered by the
+    // selection function.
+    for row in reg.arrhenius.rows.iter().filter(|r| {
+        r.set_id == "S20-T3"
+            && r.species_text == species.label()
+            && r.layer == DiffusionLayer::SiC
+            && r.form == Form::Fitted
+    }) {
+        let mut v = base.clone();
+        v.id = "S20-T3-fitted-SiC".to_string();
+        v.label = format!(
+            "SiC replaced by the AGR-1 single-particle fit row {} (S20-T3); labelled alternative, not the default",
+            row.id
+        );
+        v.sic_class = row.coefficient_class.as_str().to_string();
+        v.sic_phase = row.phase_of_use.as_str().to_string();
+        v.ids[3] = vec![row.id.clone()];
+        out.push(v);
     }
     // Other registered heating-test or wide-range SiC rows.
     let extra: &[&str] = match species {
@@ -261,7 +272,7 @@ pub fn variant_sets(reg: &Register, species: Species) -> Result<Vec<DiffusivityS
             let mut v = base.clone();
             v.id = format!("{id}-SiC");
             v.label = format!(
-                "SiC replaced by register row {id} ({}; printed range {}-{} degC)",
+                "SiC replaced by register row {id} ({}; printed range {}-{} °C)",
                 row.origin,
                 row.t_min_c
                     .as_ref()
@@ -278,7 +289,6 @@ pub fn variant_sets(reg: &Register, species: Species) -> Result<Vec<DiffusivityS
     }
     Ok(out)
 }
-
 /// The five coefficients in m2/s at a temperature, with a note on the printed temperature ranges.
 #[derive(Debug, Clone)]
 pub struct Evaluated {
@@ -292,7 +302,7 @@ pub struct Evaluated {
     pub any_upper_bound: bool,
 }
 
-/// Evaluate a set at a temperature in degC.
+/// Evaluate a set at a temperature in °C.
 pub fn evaluate(reg: &Register, set: &DiffusivitySet, t_c: f64) -> Result<Evaluated, String> {
     let mut d = [0.0; 5];
     let (mut outside, mut any_range, mut any_ub) = (false, false, false);
@@ -303,7 +313,7 @@ pub fn evaluate(reg: &Register, set: &DiffusivitySet, t_c: f64) -> Result<Evalua
             .ok_or("unknown diffusivity row id")?;
         let r_gas = match &first.gas_constant {
             GasConstant::Printed(p) => p.value,
-            GasConstant::NotPrinted => SiGas::SI.value(),
+            GasConstant::NotPrinted => GAS_CONSTANT_ASSUMED,
         };
         let refs: Vec<&str> = row_ids.iter().map(String::as_str).collect();
         let v = reg

@@ -322,3 +322,64 @@ fn generated_files_carry_provenance_and_no_private_paths() {
     }
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+#[test]
+fn the_default_sets_are_the_selection_function_of_strato_data() {
+    // Decision 47: the coefficient rows come from the selection function. The evaluation of the
+    // set must equal the selection's own evaluation (same rows, same gas constant).
+    use strato_data::select::{ParticleLayer, Phase, Selector, Variant};
+    let reg = register();
+    let sel = Selector {
+        arrhenius: &reg.arrhenius,
+        irradiation: &reg.irradiation,
+    };
+    let layers = [
+        ParticleLayer::Kernel,
+        ParticleLayer::Buffer,
+        ParticleLayer::IPyC,
+        ParticleLayer::SiC,
+        ParticleLayer::OPyC,
+    ];
+    for sp in Species::ALL {
+        let set = default_set(&reg, sp).unwrap();
+        for t in [1600.0, 1700.0, 1800.0] {
+            let ev = evaluate(&reg, &set, t).unwrap();
+            for (k, layer) in layers.iter().enumerate() {
+                let s = sel
+                    .select(sp.label(), *layer, Phase::HeatingTest, Variant::Default)
+                    .unwrap();
+                let d = s.diffusivity_extrapolated(t).diffusivity.m2_per_s;
+                // The same rows summed in the same order give the same number up to the rounding
+                // of one addition and one exponential (about 1e-15 relative).
+                assert!(
+                    ((ev.d_m2_s[k] - d) / d).abs() < 1e-12,
+                    "{sp:?} {layer:?} {t}: {} vs {d}",
+                    ev.d_m2_s[k]
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn the_analytical_series_exports_no_unresolved_or_negative_value() {
+    // Cs at 1600 degC releases very little at 1 to 50 h: the series' own cancellation floor is
+    // above the true value there, and those values must be left empty, never exported.
+    let reg = register();
+    let geometry = radii(&reg).unwrap();
+    for sp in Species::ALL {
+        let set = default_set(&reg, sp).unwrap();
+        for t in [1600.0, 1700.0, 1800.0] {
+            let ev = evaluate(&reg, &set, t).unwrap();
+            let r = strato_compare::studies::analytical_series(
+                &geometry,
+                &ev.d_m2_s,
+                &[1.0, 2.0, 5.0, 10.0, 50.0, 100.0, 400.0],
+            );
+            let floor = r.accuracy_floor.expect("the series is built");
+            for v in r.values.iter().flatten() {
+                assert!(*v > 0.0 && *v > floor, "{sp:?} {t}: {v} floor {floor}");
+            }
+        }
+    }
+}

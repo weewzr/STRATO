@@ -3,7 +3,7 @@
 //! Each row gets a status from [`crate::status::classify`]. Rows with a model plan are run through
 //! the solver; bound rows become WITHIN or EXCEEDS REPORTED UPPER BOUND from the inequality; point
 //! rows get the deviations of section 13. Rows whose denominator is not established get a model value for scale
-//! only (a provisional value): it never enters a status or an aggregate.
+//! only (a provisional value): no deviation is formed for it, and it never enters a status or an aggregate.
 
 use std::collections::BTreeMap;
 
@@ -61,12 +61,14 @@ pub enum Eval {
         /// The deviations.
         dev: PointDeviation,
     },
-    /// A model value for scale only.
+    /// A model value shown for scale only: the denominator of the measured fraction is not
+    /// established (decision 22), so no deviation, relative deviation or aggregate is formed; only
+    /// the measured value, the model value and their log10 ratio are kept.
     Provisional {
         /// The measured value.
         value: f64,
-        /// The deviations, never aggregated into a status.
-        dev: PointDeviation,
+        /// Signed log10 ratio, model over measurement, for scale only.
+        log10_ratio: Option<f64>,
     },
 }
 
@@ -226,7 +228,13 @@ fn evaluate_row(
         Plan::Provisional { value, .. } => {
             let dev = point_deviation(f_window, *value, None)
                 .ok_or_else(|| format!("row {}: no deviation", row.id))?;
-            (Eval::Provisional { value: *value, dev }, verdict.status)
+            (
+                Eval::Provisional {
+                    value: *value,
+                    log10_ratio: dev.log10_ratio,
+                },
+                verdict.status,
+            )
         }
         Plan::NoModel => (Eval::None, verdict.status),
     };
@@ -254,8 +262,6 @@ pub struct Dataset {
     pub point: Option<PointAggregate>,
     /// Aggregates of the bound comparisons.
     pub bound: Option<BoundAggregate>,
-    /// Aggregates of the provisional values, kept apart: they are not a comparison.
-    pub provisional: Option<PointAggregate>,
     /// Temperatures of the rows, degC, sorted and unique.
     pub temperatures_c: Vec<f64>,
     /// Largest test duration among the compared rows, hours.
@@ -286,7 +292,6 @@ pub fn datasets(records: &[RowRecord]) -> Vec<Dataset> {
             let mut counts: BTreeMap<Status, usize> = BTreeMap::new();
             let mut points = Vec::new();
             let mut margins = Vec::new();
-            let mut provisional = Vec::new();
             let mut temps: Vec<f64> = Vec::new();
             let mut max_dur: Option<f64> = None;
             for r in rows {
@@ -302,9 +307,7 @@ pub fn datasets(records: &[RowRecord]) -> Vec<Dataset> {
                 match (&r.eval, &r.model) {
                     (Eval::Point { value, .. }, Some(m)) => points.push((m.f_window, *value)),
                     (Eval::Bound { margin, .. }, _) => margins.push(*margin),
-                    (Eval::Provisional { value, .. }, Some(m)) => {
-                        provisional.push((m.f_window, *value))
-                    }
+
                     _ => {}
                 }
             }
@@ -319,7 +322,6 @@ pub fn datasets(records: &[RowRecord]) -> Vec<Dataset> {
                 counts,
                 point: point_aggregate(&points),
                 bound: bound_aggregate(&margins),
-                provisional: point_aggregate(&provisional),
                 temperatures_c: temps,
                 max_duration_h: max_dur,
             }

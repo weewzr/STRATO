@@ -15,6 +15,9 @@ use crate::model::Curve;
 use crate::status::{measured_text, Status, CATEGORIES, MODEL_LIMITATIONS};
 use crate::studies::{AnalyticSeries, ConvergenceRow, ProfileRow, SensitivityRow};
 
+/// The statement made wherever a row labelled with the element only is compared (decision 21).
+pub const ELEMENT_ONLY_STATEMENT: &str = "the row names the element only: compared as elemental caesium with the caesium coefficient rows and without decay (decision 21)";
+
 /// Where every file came from.
 #[derive(Debug, Clone)]
 pub struct Prov {
@@ -185,7 +188,7 @@ pub fn eval_kind(e: &Eval) -> &'static str {
         Eval::Bound { .. } => "upper bound (inequality)",
         Eval::Point { .. } => "point value",
         Eval::Provisional { .. } => {
-            "provisional point value (denominator not established; not a comparison)"
+            "measured and model value for scale only (denominator not established; no deviation formed)"
         }
     }
 }
@@ -199,7 +202,7 @@ pub fn rows_csv(prov: &Prov, records: &[RowRecord]) -> String {
         "Fuel type",
         "Group of particles",
         "Nuclide or element as registered",
-        "Test temperature (degC)",
+        "Test temperature (°C)",
         "Time at temperature stated by the row (h)",
         "Time basis",
         "Quantity as registered",
@@ -235,6 +238,7 @@ pub fn rows_csv(prov: &Prov, records: &[RowRecord]) -> String {
         "Model value over bound (dimensionless)",
         "Excess of the model over the bound (dimensionless)",
         "Uncertainty-normalised residual (dimensionless)",
+        "Statement for a row that names the element only (decision 21)",
         "Model limitations",
     ];
     let mut csv = Csv::new(
@@ -298,7 +302,14 @@ pub fn rows_csv(prov: &Prov, records: &[RowRecord]) -> String {
                 c.push(num(margin.excess));
                 c.push(String::new());
             }
-            Eval::Point { dev, .. } | Eval::Provisional { dev, .. } => {
+            Eval::Provisional { log10_ratio, .. } => {
+                // for scale only: no signed, absolute, relative deviation and no residual
+                c.push(String::new());
+                c.extend(std::iter::repeat_n(String::new(), 3));
+                c.push(onum(*log10_ratio));
+                c.extend(std::iter::repeat_n(String::new(), 3));
+            }
+            Eval::Point { dev, .. } => {
                 c.push(String::new());
                 c.push(num(dev.signed));
                 c.push(num(dev.absolute));
@@ -309,6 +320,10 @@ pub fn rows_csv(prov: &Prov, records: &[RowRecord]) -> String {
                 c.push(onum(dev.normalised_residual));
             }
         }
+        c.push(match &r.model {
+            Some(m) if m.spec.element_label_only => ELEMENT_ONLY_STATEMENT.to_string(),
+            _ => String::new(),
+        });
         c.push(if r.model.is_some() {
             MODEL_LIMITATIONS.to_string()
         } else {
@@ -334,7 +349,7 @@ pub fn datasets_csv(prov: &Prov, sets: &[Dataset]) -> String {
     }
     cols.extend(
         [
-            "Test temperatures (degC)",
+            "Test temperatures (°C)",
             "Longest compared test duration (h)",
             "Point comparisons: number",
             "Point comparisons: RMSE (dimensionless)",
@@ -348,11 +363,6 @@ pub fn datasets_csv(prov: &Prov, sets: &[Dataset]) -> String {
             "Upper bounds: exceeded",
             "Upper bounds: smallest model value over bound (dimensionless)",
             "Upper bounds: largest model value over bound (dimensionless)",
-            "Provisional values (not a comparison): number",
-            "Provisional values: RMSE (dimensionless)",
-            "Provisional values: MAE (dimensionless)",
-            "Provisional values: maximum absolute deviation (dimensionless)",
-            "Provisional values: RMSE of log10 ratio (dimensionless)",
             "Row identifiers",
         ]
         .map(String::from),
@@ -411,19 +421,7 @@ pub fn datasets_csv(prov: &Prov, sets: &[Dataset]) -> String {
                 c.extend(std::iter::repeat_n(String::new(), 4));
             }
         }
-        match &d.provisional {
-            Some(p) => {
-                c.push(p.n.to_string());
-                c.push(num(p.rmse));
-                c.push(num(p.mae));
-                c.push(num(p.max_absolute));
-                c.push(onum(p.rmse_log10));
-            }
-            None => {
-                c.push("0".into());
-                c.extend(std::iter::repeat_n(String::new(), 4));
-            }
-        }
+
         c.push(d.row_ids.join(" "));
         csv.row(c);
     }
@@ -435,19 +433,25 @@ pub fn curves_csv(
     prov: &Prov,
     curves: &[(Species, f64, &Curve, String)],
     analytic: &AnalyticSeries,
+    floors: &BTreeMap<(Species, i64), f64>,
     stride: usize,
 ) -> String {
     let cols = [
         "Nuclide",
-        "Test temperature (degC)",
+        "Test temperature (°C)",
         "Diffusion coefficient set",
         "Time at temperature (h)",
         "Release fraction, BTCS base run (dimensionless)",
         "Release fraction, BTCS refined run (dimensionless)",
         "Release fraction, independent analytical series (dimensionless)",
+        "Estimated absolute accuracy of the analytical series for this case (dimensionless)",
     ];
     let mut csv = Csv::new(
-        &prov.header("release fraction versus time, kernel-only start, constant temperature"),
+        &(prov.header("release fraction versus time, kernel-only start, constant temperature")
+            + &format!(
+                "# analytical series validity criterion: {}\n",
+                crate::studies::ANALYTIC_CRITERION
+            )),
         &cols,
     );
     for (s, t_c, c, set) in curves {
@@ -467,6 +471,7 @@ pub fn curves_csv(
                 num(c.f[k]),
                 onum(c.at_refined(t)),
                 onum(a),
+                onum(floors.get(&(*s, (*t_c * 10.0).round() as i64)).copied()),
             ]);
         }
     }
@@ -480,7 +485,7 @@ pub fn deviation_csv(prov: &Prov, records: &[RowRecord]) -> String {
         "Comparison status",
         "Kind of evaluation",
         "Nuclide",
-        "Test temperature (degC)",
+        "Test temperature (°C)",
         "Time at temperature (h)",
         "Measured value or bound (dimensionless)",
         "Model value compared (dimensionless)",
@@ -491,7 +496,7 @@ pub fn deviation_csv(prov: &Prov, records: &[RowRecord]) -> String {
         "Excess of the model over a bound (dimensionless)",
     ];
     let mut csv = Csv::new(
-        &prov.header("deviation of the model from the measurement versus time; provisional rows are marked and are not comparisons"),
+        &prov.header("deviation of the model from the measurement versus time; rows whose denominator is not established (DATA INCOMPLETE) carry the measured value, the model value and the log10 ratio for scale only, with no deviation"),
         &cols,
     );
     let mut items: Vec<&RowRecord> = records
@@ -528,12 +533,20 @@ pub fn deviation_csv(prov: &Prov, records: &[RowRecord]) -> String {
                 onum(margin.log10_ratio),
                 num(margin.excess),
             ),
-            Eval::Point { value, dev } | Eval::Provisional { value, dev } => (
+            Eval::Point { value, dev } => (
                 num(*value),
                 num(dev.signed),
                 num(dev.absolute),
                 onum(dev.relative_percent),
                 onum(dev.log10_ratio),
+                String::new(),
+            ),
+            Eval::Provisional { value, log10_ratio } => (
+                num(*value),
+                String::new(),
+                String::new(),
+                String::new(),
+                onum(*log10_ratio),
                 String::new(),
             ),
             Eval::None => continue,
@@ -561,10 +574,10 @@ pub fn deviation_csv(prov: &Prov, records: &[RowRecord]) -> String {
 pub fn profiles_csv(prov: &Prov, rows: &[ProfileRow]) -> String {
     let cols = [
         "Nuclide",
-        "Test temperature (degC)",
+        "Test temperature (°C)",
         "Time at temperature (h)",
         "Node index (dimensionless)",
-        "Radius (um)",
+        "Radius (µm)",
         "Material region",
         "Concentration over initial kernel concentration (dimensionless)",
     ];
@@ -594,7 +607,7 @@ pub fn balance_csv(
 ) -> String {
     let cols = [
         "Nuclide",
-        "Test temperature (degC)",
+        "Test temperature (°C)",
         "Time at temperature (h)",
         "Remaining inventory over initial inventory (dimensionless)",
         "Cumulative release over initial inventory (dimensionless)",
@@ -630,12 +643,12 @@ pub fn sensitivity_csv(prov: &Prov, rows: &[SensitivityRow]) -> String {
         "Variant description",
         "Class of the SiC coefficient",
         "Phase of use of the SiC coefficient",
-        "Test temperature (degC)",
-        "Kernel diffusion coefficient (m^2/s)",
-        "Buffer diffusion coefficient (m^2/s)",
-        "IPyC diffusion coefficient (m^2/s)",
-        "SiC diffusion coefficient (m^2/s)",
-        "OPyC diffusion coefficient (m^2/s)",
+        "Test temperature (°C)",
+        "Kernel diffusion coefficient (m²/s)",
+        "Buffer diffusion coefficient (m²/s)",
+        "IPyC diffusion coefficient (m²/s)",
+        "SiC diffusion coefficient (m²/s)",
+        "OPyC diffusion coefficient (m²/s)",
         "Release fraction at 24 h (dimensionless)",
         "Release fraction at 100 h (dimensionless)",
         "Release fraction at 300 h (dimensionless)",
@@ -712,10 +725,10 @@ fn row_assumptions(r: &RowRecord, m: &crate::compare::ModelValue) -> Vec<String>
         "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise".to_string(),
     ];
     if m.spec.element_label_only {
-        a.push("the row names the element only: compared as elemental caesium with the caesium coefficient rows and without decay (decision 21)".to_string());
+        a.push(ELEMENT_ONLY_STATEMENT.to_string());
     }
     if matches!(r.eval, Eval::Provisional { .. }) {
-        a.push("provisional: the denominator is not established, so this model value is shown for scale and is not a comparison".to_string());
+        a.push("provisional: the denominator is not established, so this model value is shown for scale only; no deviation, relative deviation or aggregate is formed from it".to_string());
     }
     a
 }
@@ -826,7 +839,7 @@ pub fn comparison_json(
                         ("log10_ratio", J::opt(margin.log10_ratio)),
                     ]),
                 )),
-                Eval::Point { value, dev } | Eval::Provisional { value, dev } => o.push((
+                Eval::Point { value, dev } => o.push((
                     "deviation",
                     J::obj(vec![
                         ("measured_value", J::Num(*value)),
@@ -835,9 +848,16 @@ pub fn comparison_json(
                         ("relative_percent", J::opt(dev.relative_percent)),
                         ("log10_ratio", J::opt(dev.log10_ratio)),
                         ("normalised_residual", J::opt(dev.normalised_residual)),
+                    ]),
+                )),
+                Eval::Provisional { value, log10_ratio } => o.push((
+                    "for_scale_only",
+                    J::obj(vec![
+                        ("measured_value", J::Num(*value)),
+                        ("log10_ratio", J::opt(*log10_ratio)),
                         (
-                            "provisional",
-                            J::Bool(matches!(r.eval, Eval::Provisional { .. })),
+                            "note",
+                            J::s("denominator not established (decision 22): no deviation, relative deviation or aggregate is formed"),
                         ),
                     ]),
                 )),
@@ -895,10 +915,7 @@ pub fn comparison_json(
                     ])
                 }),
             ));
-            o.push((
-                "provisional_metrics_not_a_comparison",
-                d.provisional.as_ref().map_or(J::Null, pa),
-            ));
+
             J::obj(o)
         })
         .collect();

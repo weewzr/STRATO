@@ -15,7 +15,7 @@ use crate::model::{Curve, Runner, Settings};
 use crate::outputs::{self, Prov};
 use crate::report::{self, ReportInput};
 use crate::studies::{
-    analytical_reference, homogeneous_case_description, profiles, sensitivity, spatial_convergence,
+    analytical_series, homogeneous_case_description, profiles, sensitivity, spatial_convergence,
     spatial_floor, temporal_convergence, AnalyticSeries, ConvergenceRow, ProfileRow,
     SensitivityRow,
 };
@@ -117,11 +117,17 @@ pub fn generate(opts: &Options) -> Result<Outcome, String> {
             .collect();
         set_notes.push((
             format!("{} ({})", d.id, s.label()),
-            format!("{} - {}: {}", s.label(), d.label, rows.join("; ")),
+            format!(
+                "{} - {}: {}. Statements of the selection function: {}",
+                s.label(),
+                d.label,
+                rows.join("; "),
+                d.labels.join("; ")
+            ),
         ));
     }
     let parameter_source = format!(
-        "geometry design {} (register rows {}); diffusion coefficients of register sets C16-T2 and C16-BUF evaluated at the test temperature, class published PARFUME correlation, phase heating test (the kernel rows are UO2 surrogates: no UCO measurement exists, decision 40); every coefficient row and its class are in the sensitivity file and in comparison.json",
+        "geometry design {} (register rows {}); diffusion coefficients chosen by the strato-data selection function (decision 47) for the heating-test phase, that is the rows of register sets C16-T2 and C16-BUF as printed, evaluated at the test temperature, class published PARFUME correlation, phase heating test (the kernel rows are UO2 surrogates: no UCO measurement exists, decision 40); every coefficient row and its class are in the sensitivity file and in comparison.json",
         crate::data::GEOMETRY_DESIGN,
         geometry.row_ids.join(" ")
     );
@@ -150,11 +156,16 @@ pub fn generate(opts: &Options) -> Result<Outcome, String> {
         })
         .collect();
     let mut analytic: AnalyticSeries = BTreeMap::new();
+    let mut analytic_floor: BTreeMap<(Species, i64), f64> = BTreeMap::new();
     for (s, t, c, _) in &curves {
-        let (vals, _err) = analytical_reference(&geometry, &c.d_m2_s, &ANALYTIC_TIMES_H);
+        let r = analytical_series(&geometry, &c.d_m2_s, &ANALYTIC_TIMES_H);
+        let key = (*s, (*t * 10.0).round() as i64);
+        if let Some(f) = r.accuracy_floor {
+            analytic_floor.insert(key, f);
+        }
         analytic.insert(
-            (*s, (*t * 10.0).round() as i64),
-            ANALYTIC_TIMES_H.iter().copied().zip(vals).collect(),
+            key,
+            ANALYTIC_TIMES_H.iter().copied().zip(r.values).collect(),
         );
     }
 
@@ -184,7 +195,7 @@ pub fn generate(opts: &Options) -> Result<Outcome, String> {
     let floor = spatial_floor(&geometry, tm_mesh, sp_steps)?;
     let (dh, end_h, big_r) = homogeneous_case_description(&geometry);
     let homogeneous_note = format!(
-        "all five regions share the diffusion coefficient {dh:.3e} m^2/s, the outer radius is {:.1} um, the kernel radius {:.1} um, the end time {end_h} h, so the mesh Fourier number D t / R^2 is 0.1; the reference is the exact series of a sphere with the same diffusivity everywhere.",
+        "all five regions share the diffusion coefficient {dh:.3e} m²/s, the outer radius is {:.1} µm, the kernel radius {:.1} µm, the end time {end_h} h, so the Fourier number D t / R^2, with R the outer radius, is 0.1 for the whole sphere; the reference is the exact series of a sphere with the same diffusivity everywhere.",
         big_r * 1e6,
         geometry.outer_m[0] * 1e6
     );
@@ -201,7 +212,7 @@ pub fn generate(opts: &Options) -> Result<Outcome, String> {
     )?;
     write(
         &out.join("release_curves.csv"),
-        &outputs::curves_csv(&prov, &curves, &analytic, 10),
+        &outputs::curves_csv(&prov, &curves, &analytic, &analytic_floor, 10),
     )?;
     write(
         &out.join("deviation_curves.csv"),

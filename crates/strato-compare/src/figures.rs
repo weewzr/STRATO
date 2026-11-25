@@ -368,7 +368,15 @@ fn footer(root: &Root<'_>, y: i32, width_chars: usize, text: &str) -> Result<(),
 
 fn provenance_line(prov: &Prov) -> String {
     format!(
-        "Model: STRATO BTCS five-layer spherical finite difference, package version {}, commit {}; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients of register set C16-T2 with buffer C16-BUF, evaluated at the test temperature; kernel-only start; constant temperature; decay and generation are not in the solver. This is a numerical comparison, not an experimental validation.",
+        "Model: STRATO BTCS five-layer spherical finite difference, package version {}, commit {}; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at the test temperature; kernel-only start; constant temperature; decay and generation are not in the solver. This is a numerical comparison, not an experimental validation.",
+        prov.solver_version, prov.commit
+    )
+}
+
+/// Footer text of the verification figures F and G: a synthetic homogeneous sphere, not AGR-1.
+fn verification_line(prov: &Prov) -> String {
+    format!(
+        "Solver: STRATO BTCS five-layer spherical finite difference, package version {}, commit {}. The case is a numerical verification case on the registered AGR1-B-M16 radii with the same synthetic diffusion coefficient in all five regions, kernel-only start, absorbing outer surface; the reference is the exact series of a homogeneous sphere. It uses no AGR-1 diffusion coefficient and no measurement, and it is not an experimental validation.",
         prov.solver_version, prov.commit
     )
 }
@@ -389,7 +397,12 @@ fn range_of(values: impl Iterator<Item = f64>, floor: f64) -> (f64, f64) {
 }
 
 fn panel_title(species: Species) -> String {
-    species.nuclide().to_string()
+    match species {
+        Species::Ag => "Silver (Ag)",
+        Species::Cs => "Caesium (Cs)",
+        Species::Sr => "Strontium (Sr)",
+    }
+    .to_string()
 }
 
 fn finish(root: Root<'_>) -> Result<(), String> {
@@ -403,7 +416,7 @@ pub struct Placed {
     pub id: String,
     /// Element panel.
     pub species: Species,
-    /// Test temperature, degC.
+    /// Test temperature, °C.
     pub t_c: f64,
     /// Time at temperature, hours.
     pub t_h: f64,
@@ -417,6 +430,12 @@ pub struct Placed {
     pub source: String,
     /// Programme.
     pub program: String,
+    /// The nuclide or element as the register names it (the model has no decay, so it computes
+    /// the element).
+    pub nuclide: String,
+    /// The model release over the window of the measurement, when the measurement covers a window
+    /// that does not start at the beginning of the test (matrix-corrected values).
+    pub model_window: Option<f64>,
 }
 
 /// Rows that can be placed on the release-versus-time panels: a fraction (unit 1), a point,
@@ -438,8 +457,10 @@ pub fn placed_rows(reg: &Register, records: &[RowRecord]) -> Vec<Placed> {
             strato_data::release::Measured::Element(e) => e.clone(),
             strato_data::release::Measured::NotApplicable => continue,
         };
+        // The panel is the element: every nuclide of the element (Cs-134, Cs-137) and an element-only
+        // label are drawn in the panel of the element; the nuclide of each row is listed in the
+        // panel (`Placed::nuclide`). The model has no decay, so it computes the element.
         let Some(species) = Species::of_element(&element) else {
-            // Cs-137 is caesium; the nuclide label differs from the modelled one but the element is Cs.
             continue;
         };
         let (y, is_bound) = match &r.row.value {
@@ -466,6 +487,12 @@ pub fn placed_rows(reg: &Register, records: &[RowRecord]) -> Vec<Placed> {
             is_bound,
             source: r.row.source.clone(),
             program: r.row.program.as_str().to_string(),
+            nuclide: measured_text(&r.row),
+            model_window: r
+                .model
+                .as_ref()
+                .filter(|m| m.spec.window_start_h > 0.0)
+                .map(|m| m.f_window),
         });
     }
     out
@@ -519,7 +546,7 @@ fn temperature_legend() -> Vec<Entry> {
         .iter()
         .map(|t| {
             entry(
-                format!("BTCS model, {t:.0} degC (marker colour is the test temperature)"),
+                format!("BTCS model, {t:.0} °C (marker colour is the test temperature)"),
                 Glyph::Line {
                     c: temp_colour(*t),
                     dash: temp_dash(*t),
@@ -641,6 +668,32 @@ pub fn figure_a(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
                 }
             }
         }
+        // The model's own value over the window of a matrix-corrected measurement, beside it.
+        for p in placed.iter().filter(|p| p.species == *species) {
+            if let Some(w) = p.model_window.filter(|w| *w > 1e-10) {
+                mark!(
+                    chart,
+                    Glyph::Square {
+                        c: temp_colour(p.t_c)
+                    },
+                    vec![(p.t_h, w)]
+                );
+            }
+        }
+        let mut nuclides: Vec<String> = placed
+            .iter()
+            .filter(|p| p.species == *species)
+            .map(|p| p.nuclide.clone())
+            .collect();
+        nuclides.sort();
+        nuclides.dedup();
+        chart
+            .draw_series(std::iter::once(Text::new(
+                format!("measured: {}", nuclides.join(", ")),
+                (4.0, 1.4),
+                ts_pos(13, HPos::Left, VPos::Top),
+            )))
+            .map_err(pe)?;
         let n_here = placed.iter().filter(|p| p.species == *species).count();
         let comparable = placed
             .iter()
@@ -669,14 +722,19 @@ pub fn figure_a(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
     }
     let mut items = temperature_legend();
     items.push(entry(
-        "Plus: independent analytical series (five-layer eigenfunction expansion), where it is usable",
+        "Plus: independent analytical series, only where valid (criterion in the footnote)",
         Glyph::Plus { c: INK },
+    ));
+    items.push(entry(
+        "Hollow square: model over the same 24 h-to-end window as a matrix-corrected value",
+        Glyph::Square { c: INK },
     ));
     items.extend(status_legend());
     let y = legend(&root, 40, 520, 760, 2, &items)?;
     let mut text = format!(
-        "Experimental values: {}. Digitised values carry the reading uncertainty of the register; the sources report no measurement uncertainty for these rows, so no error bars are drawn. Compact values are not single-particle values. Rows with several times per compact are drawn at their own times; values without a time are drawn at the registered end of test. ",
-        sources_of(&placed)
+        "Experimental values: {}. Digitised values carry the reading uncertainty of the register; the sources report no measurement uncertainty for these rows, so no error bars are drawn. Compact values are not single-particle values. Rows with several times per compact are drawn at their own times; values without a time are drawn at the registered end of test. Matrix-corrected values are releases over a window that starts at 24 h and ends at the plotted time, so they are drawn beside the model's value over the same window, not against the cumulative curve. The model has no decay: every panel is the element, and the nuclides measured are listed in the panel. Analytical-series values are drawn only where the criterion holds: {} ",
+        sources_of(&placed),
+        crate::studies::ANALYTIC_CRITERION
     );
     text.push_str(&provenance_line(inp.prov));
     footer(&root, y + 14, 215, &text)?;
@@ -697,12 +755,11 @@ fn deviation_figure(
     title(&root, name, sub)?;
     let areas = root.margin(70, 240, 10, 10).split_evenly((1, 2));
 
-    // Left: point deviations (provisional or comparisons).
+    // Left: point deviations of the rows with a point comparison only. A row whose denominator
+    // is not established (DATA INCOMPLETE) has no deviation and is not drawn here.
     let mut pts: Vec<(&RowRecord, f64, f64)> = Vec::new();
     for r in inp.records {
-        if let (Eval::Point { dev, .. } | Eval::Provisional { dev, .. }, Some(m)) =
-            (&r.eval, &r.model)
-        {
+        if let (Eval::Point { dev, .. }, Some(m)) = (&r.eval, &r.model) {
             let y = if relative {
                 dev.relative_percent
             } else {
@@ -759,19 +816,10 @@ fn deviation_figure(
             .map_err(pe)?;
         for (r, t, y) in &pts {
             let c = temp_colour(r.model.as_ref().map_or(1600.0, |m| m.spec.t_c));
-            let g = if matches!(r.eval, Eval::Provisional { .. }) {
-                if measured_text(&r.row).starts_with("Cs") {
-                    Glyph::Ring { c }
-                } else {
-                    Glyph::Square { c }
-                }
-            } else {
-                Glyph::Dot { c }
-            };
-            mark!(chart, g, vec![(*t, *y)]);
+            mark!(chart, Glyph::Dot { c }, vec![(*t, *y)]);
         }
         let msg = if n_comparisons == 0 {
-            "NO ROW HAS A POINT COMPARISON AVAILABLE".to_string()
+            "NO ROW HAS A POINT COMPARISON AVAILABLE (DATA INCOMPLETE rows have no deviation, decision 22)".to_string()
         } else {
             format!("{n_comparisons} point comparisons")
         };
@@ -855,31 +903,42 @@ fn deviation_figure(
     }
     let mut items = vec![
         entry(
-            "Hollow ring: Cs-134, DATA INCOMPLETE (denominator not established): value shown for scale, no status of comparison",
-            Glyph::Ring { c: INK },
-        ),
-        entry(
-            "Hollow square: Ag-110m, DATA INCOMPLETE, shown for scale",
-            Glyph::Square { c: INK },
+            "Filled circle: a point comparison (COMPARISON AVAILABLE)",
+            Glyph::Dot { c: INK },
         ),
         entry(
             "Filled triangle pointing down: upper bound satisfied by the model",
-            Glyph::BoundDown { c: INK, filled: true },
+            Glyph::BoundDown {
+                c: INK,
+                filled: true,
+            },
         ),
         entry(
             "Hollow vermilion triangle pointing down: upper bound exceeded by the model",
-            Glyph::BoundDown { c: VERMILION, filled: false },
+            Glyph::BoundDown {
+                c: VERMILION,
+                filled: false,
+            },
         ),
     ];
+    // Only the temperatures of marks actually drawn get a legend entry.
+    let drawn: Vec<f64> = pts
+        .iter()
+        .map(|p| p.0)
+        .chain(bounds.iter().map(|b| b.0))
+        .filter_map(|r| r.model.as_ref().map(|m| m.spec.t_c))
+        .collect();
     for t in TEMPERATURES {
-        items.push(entry(
-            format!("Colour: {t:.0} degC test temperature"),
-            Glyph::Dot { c: temp_colour(t) },
-        ));
+        if drawn.iter().any(|d| (d - t).abs() < 1.0) {
+            items.push(entry(
+                format!("Colour: {t:.0} °C test temperature"),
+                Glyph::Dot { c: temp_colour(t) },
+            ));
+        }
     }
     let y = legend(&root, 40, 480, 760, 2, &items)?;
     let mut text = String::from(
-        "Relative deviation is undefined for a measured value that is not positive and no near-zero floor is applied, because no row states a detection floor (decision 17); no accuracy threshold is used. Provisional values never enter an aggregate or a status. Upper bounds are inequalities and never enter a deviation. ",
+        "Relative deviation is undefined for a measured value that is not positive and no near-zero floor is applied, because no row states a detection floor (decision 17); no accuracy threshold is used. A row whose denominator is not established (DATA INCOMPLETE, decision 22) has no deviation and is not drawn; its measured and model values are in figure A. Upper bounds are inequalities and never enter a deviation. ",
     );
     text.push_str(&provenance_line(inp.prov));
     footer(&root, y + 14, 215, &text)?;
@@ -915,7 +974,7 @@ pub fn figure_d(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
     title(
         &root,
         "D. Radial concentration profiles through the five layers",
-        "BTCS, 1600 degC, kernel-only start; concentration over the initial kernel concentration; shaded bands are the layers",
+        "BTCS, 1600 °C, kernel-only start; concentration over the initial kernel concentration; shaded bands are the layers",
     )?;
     let areas = root.margin(70, 190, 10, 10).split_evenly((1, 3));
     let times = [1.0, 10.0, 24.0, 100.0, 300.0];
@@ -932,7 +991,7 @@ pub fn figure_d(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
             .map_err(pe)?;
         chart
             .configure_mesh()
-            .x_desc("Radius (um)")
+            .x_desc("Radius (µm)")
             .y_desc("Concentration over initial kernel concentration (dimensionless)")
             .x_labels(8)
             .y_labels(14)
@@ -1020,10 +1079,7 @@ pub fn figure_e(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
         .map(|(_, _, c)| *c);
     if let Some(c) = sample {
         let mut chart = ChartBuilder::on(&areas[0])
-            .caption(
-                "Ag-110m, 1800 degC: remaining and released fractions",
-                ts(19),
-            )
+            .caption("Ag-110m, 1800 °C: remaining and released fractions", ts(19))
             .margin(8)
             .x_label_area_size(44)
             .y_label_area_size(70)
@@ -1114,7 +1170,7 @@ pub fn figure_e(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
         let (lo, hi) = range_of(all, 1e-20);
         let mut chart = ChartBuilder::on(&areas[1])
             .caption(
-                "Relative balance residual (solid) and its derived bound (dashed), 1600 degC",
+                "Relative balance residual (solid) and its derived bound (dashed), 1600 °C",
                 ts(19),
             )
             .margin(8)
@@ -1273,7 +1329,7 @@ fn convergence_figure(
     let text = format!(
         "Verification case: {} It is a numerical verification case, not physical data. The orders printed are observed between neighbouring levels; they are reported, not required to meet a target (decision 7). {}",
         inp.homogeneous_note,
-        provenance_line(inp.prov)
+        verification_line(inp.prov)
     );
     footer(&root, y + 12, 170, &text)?;
     finish(root)
@@ -1313,7 +1369,7 @@ pub fn figure_g(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
 
 /// Figure H: temperature sensitivity.
 pub fn figure_h(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
-    let root = SVGBackend::new(path, (1560, 790)).into_drawing_area();
+    let root = SVGBackend::new(path, (1560, 860)).into_drawing_area();
     root.fill(&WHITE).map_err(pe)?;
     title(
         &root,
@@ -1321,15 +1377,24 @@ pub fn figure_h(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
         "Release fraction at 300 h at temperature against test temperature, one curve per registered coefficient variant; log scale",
     )?;
     let areas = root.margin(70, 320, 10, 10).split_evenly((1, 3));
-    let palette = [BLUE, VERMILION, GREEN, ORANGE, PURPLE, SKY];
-    let dashes: [Option<(u32, u32)>; 6] = [
-        None,
-        Some((10, 6)),
-        Some((2, 5)),
-        Some((14, 4)),
-        Some((6, 3)),
-        Some((3, 3)),
+    // One style per variant, unique over the whole figure: eight colour and dash pairs, none
+    // repeated, so no two variants of any panel share a style.
+    let styles: [(RGBColor, Option<(u32, u32)>); 8] = [
+        (BLUE, None),
+        (VERMILION, Some((10, 6))),
+        (GREEN, Some((2, 5))),
+        (ORANGE, Some((14, 4))),
+        (PURPLE, None),
+        (SKY, Some((6, 3))),
+        (INK, Some((10, 6))),
+        (GREY, None),
     ];
+    let mut variant_ids: Vec<String> = Vec::new();
+    for r in inp.sensitivity {
+        if !variant_ids.contains(&r.variant_id) {
+            variant_ids.push(r.variant_id.clone());
+        }
+    }
     let mut legend_entries: Vec<Entry> = Vec::new();
     let mut seen: Vec<String> = Vec::new();
     for (k, species) in Species::ALL.iter().enumerate() {
@@ -1351,7 +1416,7 @@ pub fn figure_h(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
             .map_err(pe)?;
         chart
             .configure_mesh()
-            .x_desc("Test temperature (degC)")
+            .x_desc("Test temperature (°C)")
             .y_desc("Fraction released after 300 h (dimensionless)")
             .x_labels(6)
             .x_label_formatter(&|v| format!("{v:.0}"))
@@ -1373,8 +1438,9 @@ pub fn figure_h(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
                 .filter(|r| &r.variant_id == id && r.f_300 > 0.0)
                 .map(|r| (r.t_c, r.f_300))
                 .collect();
-            let c = palette[j % palette.len()];
-            let dash = dashes[j % dashes.len()];
+            let _ = j;
+            let g = variant_ids.iter().position(|v| v == id).unwrap_or(0);
+            let (c, dash) = styles[g % styles.len()];
             line!(chart, pts.clone(), c, dash, 3);
             mark!(chart, Glyph::Dot { c }, pts);
             if !seen.contains(id) {
@@ -1389,15 +1455,24 @@ pub fn figure_h(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
         }
     }
     let y = legend(&root, 40, 490, 1500, 1, &legend_entries)?;
+    let has_s20 = inp
+        .sensitivity
+        .iter()
+        .any(|r| r.variant_id.starts_with("S20-fitted"));
     let outside = inp
         .sensitivity
         .iter()
         .filter(|r| r.outside_printed_range)
         .count();
     let text = format!(
-        "The default correlation prints no validity range, so the sweep covers the registered heating-test temperatures 1600 to 1800 degC; of {} sweep points, {} lie outside a printed range of a row they use. Variants other than the published default are labelled alternatives, never defaults (decisions 40 and 41); the class of each coefficient is in the sensitivity file. {}",
+        "The default correlation prints no validity range, so the sweep covers the registered heating-test temperatures 1600 to 1800 °C; of {} sweep points, {} lie outside a printed range of a row they use. Variants other than the published default are labelled alternatives, never defaults (decisions 40 and 41); the class of each coefficient is in the sensitivity file. {}{}",
         inp.sensitivity.len(),
         outside,
+        if has_s20 {
+            "The AGR-1 fitted silicon-carbide rows of Schappel (2020, S20-fitted-SiC) are fitted to AGR-1 heating-test data and disagree with the correction factors of Collin (2016) by 4 to 220 times (decision 40). "
+        } else {
+            ""
+        },
         provenance_line(inp.prov)
     );
     footer(&root, y + 12, 215, &text)?;
