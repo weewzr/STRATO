@@ -1,4 +1,4 @@
-﻿// Step and part table of the progressive equation builder for the BTCS solver (directive Section 16:
+// Step and part table of the progressive equation builder for the BTCS solver (directive Section 16:
 // the fourteen steps, then three labelled previews). Display only: nothing here is evaluated. No
 // research status is written here; the builder reads every status from the generated catalogue.
 //
@@ -225,8 +225,8 @@ const F28 = eq('release_fraction', 'Release fraction', 'd2', 'F28', D2_7, L`F^j 
 const F29 = eq('balance', 'Balance identity: what leaves the particle is what the inventory lost', 'd2', 'F29', D2_7, L`M^{j+1} - M^j = -\Delta t\,\Phi^{j+1}, \qquad M^j + M_{\mathrm{rel}}^j = M^0 \quad \text{for every } j \ge 0 \ \text{(exact arithmetic)}`);
 const F30 = eq('residual', 'Balance residual, reported at every output step', 'd2', 'F30', D2_7, L`\varepsilon^j = M^j + M_{\mathrm{rel}}^j - M^0, \qquad \frac{\varepsilon^j}{M^0} = F^j - \left(1 - \frac{M^j}{M^0}\right)`);
 const F31 = eq('interface_flow', 'Outward flow at an interface node, from the inner and from the outer side', 'd2', 'F31', D2_7, L`\Phi_{R}^{j+1} = 4\pi K_{i,\mathrm{inner}}\left(C_{i-1}^{j+1} - C_i^{j+1}\right) - 4\pi\left(R\right)^2\frac{\Delta r_{i,\mathrm{inner}}}{2}\,\frac{C_i^{j+1} - C_i^j}{\Delta t} = 4\pi K_{i,\mathrm{outer}}\left(C_i^{j+1} - C_{i+1}^{j+1}\right) + 4\pi\left(R\right)^2\frac{\Delta r_{i,\mathrm{outer}}}{2}\,\frac{C_i^{j+1} - C_i^j}{\Delta t}`);
-const P13 = eq('order_one_material', 'Convergence for one material, proved', 'd2', null, D2_8, L`\max_j\left\lVert \mathbf{e}^j\right\rVert _\infty = O\left(\Delta t + \left(\Delta r\right)^2\right)`, { numberAs: 'P13' });
-const P14 = eq('order_five_layers', 'Convergence for five layers, a proof outline: the constants are not tracked', 'd2', null, D2_8, L`\max_j\left\lVert \mathbf{e}^j\right\rVert _V = O\left(\left(\Delta r\right)^2 + \Delta t\right)`, { numberAs: 'P14' });
+const P13 = eq('order_one_material', 'Convergence for one material, proved', 'd2', null, D2_8, L`\max_j\left\lVert \mathbf{e}^j\right\rVert _\infty = O\left(\Delta t + \left(\Delta r\right)^2\right)`, { numberAs: 'P13', note: 'Hypotheses (Document 2, Section 8): one material, a uniform grid, and a smooth solution on the whole time interval from the start to T. Proved.' });
+const P14 = eq('order_five_layers', 'Convergence for five layers, a proof outline: the constants are not tracked', 'd2', null, D2_8, L`\max_j\left\lVert \mathbf{e}^j\right\rVert _V = O\left(\left(\Delta r\right)^2 + \Delta t\right)`, { numberAs: 'P14', note: 'Valid on [t_*, T], not from the first step: for a solution four times continuously differentiable in r on each layer and twice in t on [t_*, T], with the error at t_* of order (Δr) squared. The discontinuous start profile does not satisfy the smoothness hypothesis near the start. A proof outline.' });
 const OUTER_CONT = eq('outer_continuous', 'Outer surface: absorbing', 'd2', null, D2_1, L`C(R_5, t) = 0`);
 const G1_RHS = eq('g1_rhs', 'Right-hand side with the place of a source term', 'd2', null, D2_9, L`b_i^j = C_i^j + \left[\text{G1 source term}\right]`, { note: 'Not derived: the term is a placeholder that is zero until the derivation, review and verification of this mechanism exist.' });
 const G1_BAL = eq('g1_balance', 'Balance with a generated amount', 'd2', null, D2_9, L`M^0 + M_{\mathrm{gen}}^j = M^j + M_{\mathrm{rel}}^j + \left[\text{G2 decayed amount}\right]`);
@@ -251,8 +251,8 @@ const U_RI = u('r_i', 'radius of node i', String.raw`\mathrm{m}`);
 const U_DT = u(String.raw`\Delta t`, 'time step', String.raw`\mathrm{s}`);
 const U_CIJ = u('C_i^j', 'concentration at node i and time step j', CONC);
 const U_FO = u(String.raw`\mathrm{Fo} = D\,\Delta t/\left(\Delta r\right)^2`, 'mesh Fourier number', NONE);
-const U_K = u(String.raw`K_{i,\mathrm{outer}}`, 'conductance of the interval between node i and node i+1, divided by 4Ï€', String.raw`\mathrm{m^3\ s^{-1}}`);
-const U_V = u('V_i', 'storage weight of node i (nodal volume divided by 4Ï€)', String.raw`\mathrm{m^3}`);
+const U_K = u(String.raw`K_{i,\mathrm{outer}}`, 'conductance of the interval between node i and node i+1, divided by 4π', String.raw`\mathrm{m^3\ s^{-1}}`);
+const U_V = u('V_i', 'storage weight of node i (nodal volume divided by 4π)', String.raw`\mathrm{m^3}`);
 const U_LBU = u('L_i, B_i, U_i', 'lower, diagonal and upper coefficient of matrix row i', NONE);
 const U_M = u(String.raw`M^j`, 'discrete inventory', String.raw`\mathrm{mol}`);
 const U_PHI = u(String.raw`\Phi^{j}`, 'discrete release rate through the outer surface', String.raw`\mathrm{mol\ s^{-1}}`);
@@ -426,7 +426,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
     short: 'Spherical eq.',
     kind: 'step',
     mechanism: null,
-    summary: 'Fickâ€™s law put into the local balance gives the equation that the solver discretises. Inside one material, where the diffusivity is constant, it takes the familiar second-derivative form.',
+    summary: 'Fick’s law put into the local balance gives the equation that the solver discretises. Inside one material, where the diffusivity is constant, it takes the familiar second-derivative form.',
     main: [D1_EQ4],
     parts: [
       part({
@@ -519,7 +519,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
     short: 'Differences',
     kind: 'step',
     mechanism: null,
-    summary: 'On the grid of nodes, the first and second derivative are replaced by central differences from Taylorâ€™s theorem. Both are second-order accurate.',
+    summary: 'On the grid of nodes, the first and second derivative are replaced by central differences from Taylor’s theorem. Both are second-order accurate.',
     main: [D1_EQ9],
     parts: [
       part({
@@ -926,7 +926,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
         name: 'Order for one material',
         symbol: String.raw`\left\lVert \mathbf{e}^j\right\rVert _\infty`,
         latex: '',
-        meaning: 'First order in time and second order in space, proved for one material with a uniform grid and a smooth solution.',
+        meaning: 'First order in time and second order in space, proved for one material with a uniform grid and a smooth solution on the whole time interval from the start to T.',
         derivation: doc2(D2_8),
       }),
       part({
@@ -934,7 +934,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
         name: 'Order for five layers',
         symbol: String.raw`\left\lVert \mathbf{e}^j\right\rVert _V`,
         latex: '',
-        meaning: 'The same orders for five layers in a weighted norm, with the constants not tracked (a proof outline). The second order of the computed release is observed, not proved.',
+        meaning: 'The same orders for five layers in a weighted norm, with the constants not tracked (a proof outline), on [t_*, T] only, for a solution four times continuously differentiable in r on each layer and twice in t on [t_*, T], with the error at t_* of order (Δr) squared. The second order of the computed release is observed, not proved.',
         derivation: doc2(D2_8),
       }),
     ],
@@ -1154,7 +1154,7 @@ export function balanceFor(stage: Stage): { equations: ShownEquation[]; note: st
   const equations = [F29, F30].filter((e) => !shown.has(key(e)));
   return {
     equations,
-    note: 'The values of each term and the residual for the current run are under â€œInventory balanceâ€ in the live simulation below, as the Rust wrapper returns them; nothing is computed in the browser.',
+    note: 'The values of each term and the residual for the current run are under “Inventory balance” in the live simulation below, as the Rust wrapper returns them; nothing is computed in the browser.',
   };
 }
 

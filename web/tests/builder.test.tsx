@@ -1,4 +1,4 @@
-﻿// The progressive equation builder (block A) and the mechanism switches of block C:
+// The progressive equation builder (block A) and the mechanism switches of block C:
 // step picking, the banner, the part card, no numbers in block A, and
 // "no active toggle without solver support" (prompt/TESTING_AND_VALIDATION.md Section 3.2).
 import { act, fireEvent, render, screen, within } from '@testing-library/react';

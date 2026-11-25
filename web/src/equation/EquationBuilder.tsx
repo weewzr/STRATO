@@ -1,4 +1,4 @@
-﻿import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { statusOf, useCatalogue, type Catalogue, type MechanismRow } from '../research/catalogue';
 import { distinctStatuses, entryHref, rowKey } from '../research/entries';
 import { CatalogueSwitch, RowChip } from '../research/parts';
@@ -188,7 +188,7 @@ function TermCard({ term, catalogue, id, floating }: { term: TermId; catalogue: 
       <p className="term-card__meaning">{def.meaning}</p>
       <p className="term-card__links">
         <DocLink refTo={def.derivation} prefix="Derivation:" />
-        <span aria-hidden="true"> Â· </span>
+        <span aria-hidden="true"> · </span>
         <a href={`#term-${term}`}>Units and assumptions in the explanation</a>
       </p>
     </div>

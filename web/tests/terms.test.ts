@@ -1,9 +1,9 @@
-﻿// @vitest-environment node
+// @vitest-environment node
 // Progressive equation builder for the BTCS solver: every equation against the BTCS documents,
 // KaTeX rendering, the notation rules of directive Section 5, and the documentation and code anchors
 // (prompt/TESTING_AND_VALIDATION.md Section 3 row 2).
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -31,6 +31,8 @@ import { renderTex } from '../src/equation/Tex';
 const REPO = fileURLToPath(new URL('../..', import.meta.url));
 const docText = (doc: DocId) => readFileSync(join(REPO, DOCS[doc].path), 'utf8');
 const TEXT: Record<DocId, string> = { d1: docText('d1'), d2: docText('d2'), d3: docText('d3'), d4: docText('d4') };
+/** What UTF-8 text looks like after a wrong read as Windows-1252: a lead character followed by its continuation. */
+const MOJIBAKE = ['Ã¢â‚¬', 'Ãƒ', 'Ã‚', 'Ãâ‚¬', 'ï¿½'];
 const squash = (s: string) => s.replace(/\s+/g, '');
 const MATHS = squash(TEXT.d1 + TEXT.d2);
 
@@ -134,34 +136,74 @@ export function atTopLevelSeparator(text: string, at: number, start: boolean): b
   const ch = start ? text[at - 1]! : text[at]!;
   return ch === '=' || ch === ',' || ch === ';';
 }
+/** Every math span of a section ($$...$$ first, then $...$), as whole equations without tag, boxed wrapper or final punctuation. */
+export function mathSpans(section: string): string[] {
+  const out: string[] = [];
+  const rest = section.replace(/\$\$([\s\S]*?)\$\$/g, (_m, inner: string) => {
+    out.push(inner);
+    return ' ';
+  });
+  for (const m of rest.matchAll(/\$([^$\n]+?)\$/g)) out.push(m[1]!);
+  return out.map((b) => squash(wholeEquation(b)));
+}
+
+/** The text around each occurrence of `name` in a section: its own line, extended through the next display block when that line holds no math. */
+export function namedWindows(section: string, name: string): string {
+  const lines = section.split(/\r?\n/);
+  const out: string[] = [];
+  lines.forEach((line, i) => {
+    if (!line.includes(name)) return;
+    if (line.includes('$')) {
+      out.push(line);
+      return;
+    }
+    const rest = lines.slice(i).join('\n');
+    const open = rest.indexOf('$$');
+    const close = open < 0 ? -1 : rest.indexOf('$$', open + 2);
+    out.push(close < 0 ? line : rest.slice(0, close + 2));
+  });
+  return out.join('\n');
+}
+/** Entries that may show a declared piece of a longer tagged equation (each is checked against the rules below). */
+export const PIECE_ALLOWED = ['d1:5'];
+
 function checkSource(src: EqSource, displayed: string, what: string, numberAs?: string) {
+  const v = squash(src.verbatim);
+  const key = `${src.doc}:${src.tag ?? src.section}`;
+  if (src.piece) expect(PIECE_ALLOWED, `${what}: ${key} is not an allowed piece`).toContain(key);
   const block = src.tag ? taggedBlock(src.doc, src.tag) : sectionText(src.doc, src.section);
   if (src.tag) {
     // A tagged equation is the whole block, so a copy with terms or qualifiers cut off fails; a piece needs an explicit declaration.
     const whole = squash(wholeEquation(block));
     if (src.piece) {
-      const v = squash(src.verbatim);
       const inner = boxedInner(whole);
-      if (inner !== null && v === squash(inner)) return;
-      const at = whole.indexOf(v);
-      expect(at, `${what}: declared piece not found in (${src.tag})`).toBeGreaterThanOrEqual(0);
-      expect(v, `${what}: a piece must differ from the whole equation`).not.toBe(whole);
-      expect(atTopLevelSeparator(whole, at, true), `${what}: the piece does not start at a top-level separator`).toBe(true);
-      expect(atTopLevelSeparator(whole, at + v.length, false), `${what}: the piece does not end at a top-level separator`).toBe(true);
+      const isBoxedPiece = inner !== null && v === squash(inner);
+      if (!isBoxedPiece) {
+        const at = whole.indexOf(v);
+        expect(at, `${what}: declared piece not found in (${src.tag})`).toBeGreaterThanOrEqual(0);
+        expect(v, `${what}: a piece must differ from the whole equation`).not.toBe(whole);
+        expect(atTopLevelSeparator(whole, at, true), `${what}: the piece does not start at a top-level separator`).toBe(true);
+        expect(atTopLevelSeparator(whole, at + v.length, false), `${what}: the piece does not end at a top-level separator`).toBe(true);
+        // A piece never drops the right-hand side: it does not end just before a top-level "=".
+        expect(whole[at + v.length], `${what}: the piece ends before an equals sign`).not.toBe('=');
+      }
     } else {
-      expect(squash(src.verbatim), `${what}: copy differs from the whole block of (${src.tag})`).toBe(whole);
+      expect(v, `${what}: copy differs from the whole block of (${src.tag})`).toBe(whole);
     }
   } else {
-    expect(squash(block), `${what}: verbatim copy not found in ${src.section}`).toContain(squash(src.verbatim));
+    // An untagged equation is one whole math span of the cited section, not a part of it.
+    expect(src.piece, `${what}: an untagged line is never a piece`).toBeFalsy();
+    // With a name from the text (P14, F16a), the span must lie at the place of that name: its table row, or the line and the display that follows it.
+    const scope = numberAs ? namedWindows(block, numberAs) : block;
+    expect(mathSpans(scope), `${what}: no whole math span ${numberAs ? `at ${numberAs} ` : ''}of ${src.section} equals the copy`).toContain(v);
   }
   // The tagged equation also lies in the cited section.
   if (src.tag) expect(sectionText(src.doc, src.section), `${what}: (${src.tag}) is not in section "${src.section}"`).toContain(`\\tag{${src.tag}}`);
   // An untagged line that the page numbers by a name from the text: the section must use that name.
   if (!src.tag && numberAs) expect(sectionText(src.doc, src.section), `${what}: the name ${numberAs} is not in the section`).toContain(numberAs);
   // Nothing is rewritten: the displayed LaTeX is the copy.
-  expect(squash(stripHtmlClass(displayed)), `${what}: displayed LaTeX differs from the document text`).toBe(squash(src.verbatim));
+  expect(squash(stripHtmlClass(displayed)), `${what}: displayed LaTeX differs from the document text`).toBe(v);
 }
-
 describe('the fourteen steps and the three previews', () => {
   it('has the fourteen steps of directive Section 16 in order, then three previews', () => {
     expect(CORE_STAGES.map((s) => STEP_DEFS[s].name)).toEqual([
@@ -241,6 +283,30 @@ describe('every equation is the text of Document 1 or Document 2', () => {
       const e = find(tag);
       expect(() => checkSource(e.source, e.latex, tag)).not.toThrow();
     }
+  });
+  it('untagged equations are whole spans: a truncated or swapped copy is refused', () => {
+    const find = (id: string) => allEquations().map(([, e]) => e).find((e) => e.id === id)!;
+    const refuse = (id: string, latex: string) => {
+      const e = find(id);
+      expect(() => checkSource({ ...e.source, verbatim: latex }, latex, id, e.numberAs), `${id} mutated`).toThrow();
+    };
+    const f16a = find('interface_row_a').source.verbatim;
+    refuse('interface_row_a', f16a.slice(0, f16a.indexOf(', \\qquad U_')));
+    refuse('order_five_layers', String.raw`\max_j\left\lVert \mathbf{e}^j\right\rVert _\infty = O\left(\Delta t + \Delta r\right)`);
+    refuse('order_five_layers', String.raw`\max_j\left\lVert \mathbf{e}^j\right\rVert _V`);
+    for (const id of ['interface_row_a', 'order_five_layers', 'order_one_material']) {
+      const e = find(id);
+      expect(() => checkSource(e.source, e.latex, id, e.numberAs)).not.toThrow();
+    }
+  });
+
+  it('a piece that drops the right-hand side, or an undeclared piece, is refused', () => {
+    const e = allEquations().map(([, x]) => x).find((x) => x.source.tag === 'F11')!;
+    const cutAtEquals = e.source.verbatim.slice(0, e.source.verbatim.lastIndexOf(' = 1 - L_i - U_i')) + ' = 1 - L_i - U_i';
+    expect(() => checkSource({ ...e.source, verbatim: cutAtEquals, piece: true }, cutAtEquals, 'F11')).toThrow();
+    const dropsRhs = e.source.verbatim.slice(0, e.source.verbatim.indexOf(', \\qquad B_i = 1 - L_i - U_i') + ', \\qquad B_i'.length);
+    expect(() => checkSource({ ...e.source, verbatim: dropsRhs, piece: true }, dropsRhs, 'F11')).toThrow();
+    expect(PIECE_ALLOWED).toEqual(['d1:5']);
   });
   it('the equation number shown is the number printed in the document', () => {
     for (const [what, e] of allEquations()) {
@@ -441,6 +507,34 @@ describe('documentation and code anchors resolve', () => {
     for (const s of STAGES) {
       expect(conditionsFor(s).note.length).toBeGreaterThan(0);
       expect(balanceFor(s).note.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('text encoding of the builder', () => {
+  const SRC = join(REPO, 'web');
+  const walk = (dir: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((d) => (d.isDirectory() ? (d.name === 'node_modules' ? [] : walk(join(dir, d.name))) : [join(dir, d.name)]));
+
+  it('no builder string contains a mojibake sequence', () => {
+    const strings: string[] = [];
+    for (const s of STAGES) {
+      const d = STEP_DEFS[s];
+      strings.push(d.name, d.short, d.summary, d.implementation.note ?? '', d.live ?? '');
+      for (const e of d.main) strings.push(e.label, e.note ?? '', e.latex);
+      for (const p of d.parts) strings.push(p.name, p.meaning, p.symbol, ...p.units.flatMap((u) => [u.symbol, u.unit]));
+      strings.push(conditionsFor(s).note, balanceFor(s).note);
+    }
+    for (const t of strings) for (const bad of MOJIBAKE) expect(t.includes(bad), `"${t.slice(0, 60)}" contains ${bad}`).toBe(false);
+  });
+
+  it('no source file of the page starts with a byte-order mark or holds a mojibake sequence', () => {
+    for (const dir of ['src', 'tests', 'e2e']) {
+      for (const f of walk(join(SRC, dir)).filter((p) => /\.(ts|tsx|css)$/.test(p))) {
+        const b = readFileSync(f);
+        expect(b[0] === 0xef && b[1] === 0xbb && b[2] === 0xbf, `${f} starts with a byte-order mark`).toBe(false);
+        if (!f.endsWith('terms.test.ts')) for (const bad of MOJIBAKE) expect(b.toString('utf8').includes(bad), `${f} contains ${bad}`).toBe(false);
+      }
     }
   });
 });
