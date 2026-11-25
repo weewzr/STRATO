@@ -81,7 +81,9 @@ Phases 1 to 8, including Phase 5.5 (research catalogue interface) added by owner
 
 Screenshots of the served build at 1440 x 900 and 390 px (both themes, Explore, Compare, Verify, Data, Validate) were inspected (`stage-b/shots/strato-phase-5`, outside the repository); corrected on the way: the Verify orders list and the long reference links overflowed sideways at 375 px; the Plotly tool bar covered the legend on a phone (removed); the phone plot switcher was pushed to the right; the temporal convergence plot had crowded minor tick labels; the provenance status column repeated the case file's note in capitals in every row.
 
-Not done in Phase 5: the `verification_report.json` of `prompt/TESTING_AND_VALIDATION.md` Section 6 (not a Phase 5 acceptance item; the Verify section shows the precomputed files and the evidence table); the stage comparison of block A stays "not offered" because no stage above 1 is solved (design specification 3.2); the CI frame rate with the plots is measured by the next `Web demo` run.
+Not done in Phase 5: the `verification_report.json` of `prompt/TESTING_AND_VALIDATION.md` Section 6 (not a Phase 5 acceptance item; the Verify section shows the precomputed files and the evidence table); the stage comparison of block A stays "not offered" because no stage above 1 is solved (design specification 3.2).
+
+**Continuous integration**: `Web demo` run 45527171234 (commit efd389d) passed: unit tests 374, browser tests 120 passed and 4 skipped (screenshot tests without `SHOTS_DIR`), frame-rate tests 2 passed with the plots following playback (2D 56.9 fps, 3D 59.0 fps, SwiftShader, antialias off), the new `figures --check` step SAME.
 
 ## Phase 4 record (2026-11-25)
 
