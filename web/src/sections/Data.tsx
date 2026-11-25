@@ -152,7 +152,9 @@ export function Data() {
         The precomputed files are written by <code>scripts/web/precompute.sh</code> from the native release build of STRATO; each starts with
         a provenance header (generator, STRATO version, commit, input file and its SHA-256, command, toolchain), and continuous integration
         regenerates them and fails if they differ. In every generated file, including the AGR-1 geometry file, the commit in the header is
-        the source commit the file was generated from: a file cannot record the commit that contains it.
+        the source commit the file was generated from: a file cannot record the commit that contains it. The AGR-1 geometry file also
+        records the SHA-256 of the generator that wrote it, and its commit carries the suffix <code>+modified</code> if the generator or
+        the register file differed from that commit.
       </p>
 
       <h2>References</h2>

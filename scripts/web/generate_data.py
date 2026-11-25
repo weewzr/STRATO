@@ -47,7 +47,12 @@ geometry
          coating thicknesses of each AGR-1 set with row ids, register status and
          source, and each layer's outer radius (sums of the registered values,
          checked against the register's own radius column where it has one).
-         The reference particle is geometry only (rule E2).
+         The reference particle is geometry only (rule E2). Its header records
+         the HEAD commit (with "+modified" if the generator or the input file
+         differed from it) and generator_sha256, the SHA-256 of this file, so
+         the generator that wrote the files is identified even when the tree
+         was not clean. Regenerate from a clean tree after committing a change
+         to the generator, so that the commit reproduces the files.
 
 Options
 -------
@@ -59,7 +64,9 @@ Options
          input file is compared and pins the content. For the precomputed
          files ``commit`` and ``rustc`` (the toolchain) are ignored as well,
          and in the native wrapper response its stamped ``engine.commit``;
-         every value of the data is compared exactly.
+         every value of the data is compared exactly. For the colour tables
+         and the AGR-1 geometry ``commit`` and ``generator_sha256`` (which
+         describe the run) are ignored as well.
 --root   (catalogue only) Repository root to read from and write to; the
          default is this repository. Used by the fixture tests of
          scripts/web/check_catalogue.py.
@@ -660,7 +667,9 @@ def cmd_precomputed(args: argparse.Namespace) -> int:
 COLORMAP_DIR = "data/colormaps"
 COLORMAP_NAMES = ("cividis", "viridis")
 COLORMAP_JSON = "web/src/generated/colormaps.json"
-VOLATILE = ("created_utc", "commit")
+# generator_sha256 records which generator wrote a file; like the commit it describes the run and
+# is not compared by --check (the check compares the content with what this generator writes now).
+VOLATILE = ("created_utc", "commit", "generator_sha256")
 
 
 def _head_commit(root: pathlib.Path = ROOT) -> str:
@@ -668,6 +677,26 @@ def _head_commit(root: pathlib.Path = ROOT) -> str:
         return _git("rev-parse", "HEAD", cwd=root) if (root / ".git").exists() else "unknown"
     except (OSError, subprocess.CalledProcessError):
         return "unknown"
+
+
+def _source_commit(paths: tuple[str, ...], root: pathlib.Path = ROOT) -> str:
+    """HEAD, with "+modified" appended when any of ``paths`` differs from HEAD.
+
+    The commit then reproduces the file only when it carries no suffix: the
+    generator and its inputs were the committed ones when the file was written.
+    """
+    head = _head_commit(root)
+    if head == "unknown":
+        return head
+    try:
+        dirty = _git("status", "--porcelain", "--", *paths, cwd=root)
+    except (OSError, subprocess.CalledProcessError):
+        return f"{head}+unknown-tree"
+    return f"{head}+modified" if dirty else head
+
+
+def _generator_sha256() -> str:
+    return hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest()
 
 
 def _now() -> str:
@@ -882,7 +911,8 @@ def build_geometry() -> tuple[dict, str]:
         "kind": "reference_geometry",
         "generator": f"{GENERATOR} v{GENERATOR_VERSION}",
         "strato_version": _strato_version(),
-        "commit": _head_commit(),
+        "commit": _source_commit((GENERATOR, GEOMETRY_CSV)),
+        "generator_sha256": _generator_sha256(),
         "input_file": GEOMETRY_CSV,
         "input_sha256": hashlib.sha256(raw).hexdigest(),
         "command": f"python -I -X utf8 {GENERATOR} geometry",
@@ -892,13 +922,16 @@ def build_geometry() -> tuple[dict, str]:
             "never combined with the diffusivities of the synthetic case. REGISTER marks register data; it is not "
             "a result label. Outer radii are sums of the registered diameter and thicknesses. location is the "
             "register's source location without its local file names and text-extract indices; link is given only "
-            "where the register holds a public http(s) URL. commit is the source commit the file was generated from."
+            "where the register holds a public http(s) URL. commit is the HEAD commit the generator ran on; it "
+            "carries the suffix +modified when the generator or the input file differed from that commit. "
+            "generator_sha256 is the SHA-256 of the generator file that wrote this file."
         ),
     }
     doc = {**header, "data": {"default_set": GEOMETRY_DEFAULT, "sets": sets}}
 
     buf = io.StringIO()
-    for key in ("label", "kind", "generator", "strato_version", "commit", "input_file", "input_sha256", "command", "created_utc"):
+    for key in ("label", "kind", "generator", "strato_version", "commit", "generator_sha256", "input_file", "input_sha256",
+                "command", "created_utc"):
         buf.write(f"# {key}: {header[key]}\n")
     buf.write(f"# note: {header['note']}\n")
     w = csv.writer(buf, lineterminator="\n")
