@@ -6,8 +6,14 @@ name: Web demo
 # wasm build with its export and size check, the precomputed-data regeneration check (which also
 # compares the native CLI output with tests/golden/v1.0 as docs/development/provenance.md Section 3
 # describes), lint, type check, unit tests, build, content check, browser tests (including the
-# browser parity tests and the self-test) and the build artefact. The Pages deployment comes with
-# web phase 8.
+# browser parity tests and the self-test) and the build artefact.
+#
+# Deployment: on main (push or manual run) the build that passed every step above is published to
+# GitHub Pages by the deploy job. The job needs the repository's Pages source set to
+# "GitHub Actions" (Settings > Pages > Build and deployment); while the source is still
+# "Deploy from a branch" the job fails at its only step and a manual run after the switch
+# publishes the site. The published site is the demonstration only; the rendered derivation
+# documents follow with web phase 8.
 
 on:
   push:
@@ -147,3 +153,27 @@ jobs:
         with:
           name: web-dist
           path: web/dist/
+      # Only a build of main that passed every step above becomes the Pages artefact.
+      - name: Upload the Pages artefact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: web/dist/
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: web
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # Fails here while the Pages source is "Deploy from a branch"; see the note at the top.
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5
