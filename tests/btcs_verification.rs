@@ -6,7 +6,9 @@
 //!
 //! # Tolerances, fixed before the first run
 //!
-//! None of these was changed after seeing a result.
+//! They were fixed before the first run, except the three revisions listed under "Revisions"
+//! below and the later replacement of underived bounds by derived ones (R5, and the unit
+//! tests of `numerical::btcs`). No tolerance was loosened to make a check pass.
 //!
 //! * R1 (series floor): a difference is "resolved" only if it exceeds 3 x the accuracy floor
 //!   of the reference. `ModalRelease::accuracy_floor` for the layered series; for the
@@ -24,8 +26,9 @@
 //!
 //! # Revisions after the first run (recorded, not hidden)
 //!
-//! The first run failed two checks for reasons that lay in the test design, not in the
-//! tolerances; no tolerance was loosened to pass.
+//! Items 1 to 3 followed first-run failures whose cause lay in the test design (a bound
+//! without the Fourier number, a step outside the asymptotic range, a slack that left out
+//! the rounding of the solve); the replacements are derived, none merely loosened.
 //!
 //! 1. R4 as first written was `u N sqrt(steps)` (the heuristic of the verification plan). It
 //!    failed at n = 20 (observed 2.3e-11 against 3.5e-13) because it contains no Fourier
@@ -43,9 +46,15 @@
 //!    against 3.6e-13) because it left out the rounding error of the solve itself, which
 //!    is the per-step increment of the balance bound of item 1; the slack is that increment
 //!    plus `2 (N+1) u`.
+//! 4. R5 (below) first read `max C <= C_init (1 + 10 N u)` with no derivation (observed
+//!    excess 1.1e-14, far inside it). It was replaced by the derived bound that follows.
+//!
+//! # Positivity and maximum principle
+//!
 //! * R5 (positivity): `min C >= 0` exactly (property P6: all operations in the solve add
-//!   non-negative numbers), `max C <= C_init (1 + 10 N u)` (maximum principle P3, P4, slack
-//!   from rounding).
+//!   non-negative numbers), `max C <= C_init (1 - kappa)^-k` after k steps (maximum
+//!   principle P3, P4; the rounding bound and `kappa = (4 u + 2 gamma_5) B_max` are derived
+//!   in the test).
 //! * Time error is removed from space studies by Richardson extrapolation over `dt, dt/2,
 //!   dt/4`: `(8 F(dt/4) - 6 F(dt/2) + F(dt)) / 3`, which cancels the `dt` and `dt^2` terms.
 //!
@@ -751,6 +760,20 @@ fn positivity_maximum_principle_and_monotone_release() {
         let mut c_new = vec![0.0; grid.n + 1];
         let mut min_seen = f64::INFINITY;
         let mut max_excess: f64 = 0.0;
+        let b_max = stepper
+            .assembly()
+            .matrix
+            .diag
+            .iter()
+            .cloned()
+            .fold(0.0, f64::max);
+        let gamma5 = 5.0 * U / (1.0 - 5.0 * U);
+        let kappa = (4.0 * U + 2.0 * gamma5) * b_max;
+        assert!(
+            kappa < 1e-3,
+            "{label}: kappa {kappa} too large for the bound"
+        );
+        let mut steps_done: i32 = 0;
         for _ in 0..steps {
             stepper.step(&c_old, &mut c_new).unwrap();
             let rep = check_step_properties(&c_old, &c_new);
@@ -759,9 +782,18 @@ fn positivity_maximum_principle_and_monotone_release() {
                 "{label}: negative concentration {}",
                 rep.min_new
             );
+            // Derived maximum-principle bound. The computed x solves (A + dA) x = c_old with
+            // |dA| <= gamma_5 |A| (operation count in btcs::tests::one_step_matches_dense_solve)
+            // and signs preserved. At the node of largest x, row i gives
+            // x_max (rowsum_i(A) - sum_j |dA_ij|) <= (A+dA)x ... <= max c_old, where
+            // rowsum_i(A) >= 1 - 4 u B_max (P1 margin, tested below) and
+            // sum_j |dA_ij| <= gamma_5 (2 B_max - 1) because B = 1 + |L| + |U|. Hence per step
+            // max x <= max c_old / (1 - kappa), kappa = (4 u + 2 gamma_5) B_max, and after k
+            // steps max C <= C_init (1 - kappa)^-k.
+            steps_done += 1;
             assert!(
-                rep.max_new <= 1.0 * (1.0 + 10.0 * grid.n as f64 * U),
-                "{label}: max {} exceeds C_init",
+                rep.max_new <= (1.0 - kappa).powi(-steps_done),
+                "{label}: max {} exceeds C_init (1-kappa)^-k",
                 rep.max_new
             );
             min_seen = min_seen.min(rep.min_new);
