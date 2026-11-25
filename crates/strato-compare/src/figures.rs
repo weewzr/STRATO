@@ -561,7 +561,7 @@ fn curve_points(c: &Curve) -> Vec<(f64, f64)> {
     c.t_h
         .iter()
         .zip(&c.f)
-        .filter(|(t, f)| **t > 0.0 && **f > 0.0)
+        .filter(|(t, f)| **t > 0.0 && **f > 1.0e-10)
         .map(|(t, f)| (*t, *f))
         .collect()
 }
@@ -1302,7 +1302,7 @@ pub fn figure_g(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
         inp,
         (
             "G. Temporal convergence",
-            "Error of the release fraction against the time step on a fixed fine mesh; the flat part is the spatial error of that mesh",
+            "Error of the release fraction against the time step on a fixed fine mesh; the dotted line is the spatial error of that mesh, the level the curve approaches",
         ),
         inp.temporal,
         "Time step (s)",

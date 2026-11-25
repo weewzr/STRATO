@@ -699,6 +699,26 @@ pub fn convergence_csv(
     csv.finish()
 }
 
+/// The assumptions that belong to one model value, in words.
+fn row_assumptions(r: &RowRecord, m: &crate::compare::ModelValue) -> Vec<String> {
+    let mut a = vec![
+        "kernel-only start: all inventory in the kernel at the start of the window clock (decision 20)".to_string(),
+        format!(
+            "compared window {} to {} h at temperature; time counted from reaching the test temperature; origin of the end time: {}",
+            m.spec.window_start_h, m.spec.t_end_h, m.spec.time_source
+        ),
+        "constant diffusion coefficients at the test temperature; heating ramps are not modelled".to_string(),
+        "no radioactive decay and no fission-product generation in the solver".to_string(),
+        "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise".to_string(),
+    ];
+    if m.spec.element_label_only {
+        a.push("the row names the element only: compared as elemental caesium with the caesium coefficient rows and without decay (decision 21)".to_string());
+    }
+    if matches!(r.eval, Eval::Provisional { .. }) {
+        a.push("provisional: the denominator is not established, so this model value is shown for scale and is not a comparison".to_string());
+    }
+    a
+}
 /// The JSON file for the website panel.
 pub fn comparison_json(
     prov: &Prov,
@@ -754,6 +774,7 @@ pub fn comparison_json(
                     "reading_uncertainty",
                     J::s(reading_text(&r.row.reading_uncertainty)),
                 ),
+                ("reported_measurement_uncertainty", J::Null),
                 ("denominator", J::s(r.row.denominator.as_str())),
                 ("source", J::s(&r.row.source)),
                 ("source_location", J::s(&r.row.source_location)),
@@ -777,6 +798,10 @@ pub fn comparison_json(
                         ("value_compared", J::Num(m.f_window)),
                         ("numerical_difference", J::Num(m.numerical_difference)),
                         ("coefficient_set", J::s(&m.set_id)),
+                        (
+                            "assumptions",
+                            J::Arr(row_assumptions(r, m).iter().map(J::s).collect()),
+                        ),
                         (
                             "diffusion_coefficients_m2_s",
                             J::Arr(m.d_m2_s.iter().map(|d| J::Num(*d)).collect()),

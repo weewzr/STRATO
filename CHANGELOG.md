@@ -10,6 +10,7 @@ Work toward v2.0 (Phase 2). The order is mathematics first, then pseudocode, the
 - The list of v1.0 to v2.0 changes (design only, no Phase 2 code yet) is kept in [docs/development/v1_to_v2_changes.md](docs/development/v1_to_v2_changes.md).
 
 ### Added
+- Experimental comparison of the BTCS solver with the AGR-1 release register: the tool crate `crates/strato-compare` (status rules, BTCS runs at the test temperature, metrics, CSV and JSON files with provenance headers in `data/comparison/`, static SVG figures A to H, and the report `docs/validation/experimental_comparison.md`). It is a comparison of release behaviour, not an experimental validation; decay and generation are not yet in the solver.
 - Property functions and closed-form references for the Phase G mechanisms in `src/physics/` (Arrhenius diffusivity, decay constant, volumetric fission source, well-mixed and homogeneous-sphere references), derived in `docs/mathematics/STRATO_Property_Functions.md`. They are not coupled to any solver, and the document is not yet published on the site.
 
 ### Changed

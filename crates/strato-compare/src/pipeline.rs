@@ -116,7 +116,7 @@ pub fn generate(opts: &Options) -> Result<Outcome, String> {
             .map(|(ids, name)| format!("{name}: {}", ids.join("+")))
             .collect();
         set_notes.push((
-            d.id.clone(),
+            format!("{} ({})", d.id, s.label()),
             format!("{} - {}: {}", s.label(), d.label, rows.join("; ")),
         ));
     }
