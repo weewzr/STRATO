@@ -13,8 +13,9 @@ import { cellColours, cellOfBins } from './colormap';
 // mesh cell that contains it). Loaded lazily, only when the reader picks the 3D view. The scene is
 // rendered on demand: playback updates a texture and asks for one frame, and React does not
 // re-render per frame. Orbit by dragging, arrow keys rotate, + and - zoom, 0 resets the view.
-// Multisampling is used only with a GPU below a device pixel ratio of 2 (see useAntialias); it
-// changes edge smoothing only, never a colour of the cut faces.
+// Multisampling is used only when WebGL runs on a GPU (see useAntialias); it changes edge smoothing
+// only, never a colour of the cut faces. The cut faces are drawn with a polygon offset so that the
+// layer-boundary lines lying on them are never hidden by depth-buffer rounding.
 
 /** Radius bins of the cut-face texture. */
 const BINS = 1024;
@@ -31,8 +32,7 @@ const MAX_DIST = 8;
  * Whether this browser renders WebGL in software (SwiftShader, llvmpipe and similar): Chromium then
  * refuses a context that asks for `failIfMajorPerformanceCaveat`, and the renderer string names the
  * rasteriser. Multisampling multiplies the fragment work of a software rasteriser, so the view
- * draws without it there; with a GPU it keeps multisampling below a device pixel ratio of 2 (at 2 or
- * more the denser pixels already smooth the edges).
+ * draws without it there and keeps it with a GPU.
  */
 export function softwareWebGL(): boolean {
   try {
@@ -49,7 +49,7 @@ export function softwareWebGL(): boolean {
 }
 
 export function useAntialias(): boolean {
-  return useMemo(() => !softwareWebGL() && (window.devicePixelRatio || 1) < 2, []);
+  return useMemo(() => !softwareWebGL(), []);
 }
 
 export interface OrbitState {
@@ -112,7 +112,17 @@ function Scene({ run, orbit, onFrame }: { run: RunOk; orbit: { current: OrbitSta
   }, []);
   const bins = useMemo(() => cellOfBins(faces, BINS), [faces]);
   const material = useMemo(
-    () => new THREE.ShaderMaterial({ uniforms: { lut: { value: texture } }, vertexShader: vertex, fragmentShader: fragment, side: THREE.DoubleSide }),
+    () =>
+      new THREE.ShaderMaterial({
+        uniforms: { lut: { value: texture } },
+        vertexShader: vertex,
+        fragmentShader: fragment,
+        side: THREE.DoubleSide,
+        // Pushes the faces slightly back in depth, so the boundary lines drawn on them always pass the depth test.
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1,
+      }),
     [texture],
   );
 
