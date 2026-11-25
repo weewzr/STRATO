@@ -48,8 +48,8 @@ pub const CAPABILITIES_BTCS: &[&str] = &["diffusion_btcs_layered"];
 pub const SOLVER_ID: &str = "btcs_five_layer";
 
 /// Wrapper limit: total grid intervals over the five layers (the library's `N`). Not a
-/// physical parameter. Native timing and Node/V8 WebAssembly timing are recorded in
-/// `stage-b/btcs/wasm-interface.md`; no browser measurement of the page was made.
+/// physical parameter. Native timing is measured by `examples/limits_timing.rs`; no browser
+/// measurement of the page was made.
 pub const MAX_TOTAL_INTERVALS: usize = 2_000;
 /// Wrapper limit: `ceil(end_time_s / dt_s)`, the number of Backward Euler steps.
 pub const MAX_STEPS_BTCS: usize = 20_000;

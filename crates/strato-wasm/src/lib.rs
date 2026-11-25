@@ -142,7 +142,7 @@ pub fn compare_v1(request_json: &str) -> String {
 }
 
 // The BTCS interface (ABI 2): method-neutral names. See `btcs_api` and
-// stage-b/btcs/wasm-interface.md for the fields.
+// the module documentation of `btcs_api.rs` for the fields.
 
 /// Validates a configuration (TOML or JSON, a bare configuration or a request) for the BTCS
 /// solver and returns the plan, the grid and the limits.

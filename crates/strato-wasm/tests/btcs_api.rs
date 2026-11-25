@@ -3,7 +3,7 @@
 //!   `numerical::btcs::run` for the same configuration (same platform);
 //! - the grid block is the library grid, with exact interface radii;
 //! - the balance terms are the library's, the residual lies within the a-posteriori bound and
-//!   the bound reproduces the values recorded in stage-b/btcs/solver-core-results.md;
+//!   the bound reproduces the values recorded in the solver-core results (section F);
 //! - layer inventories sum to the inventory, shares are their quotients;
 //! - the two expressions of the interface flux agree within the rounding-level tolerance;
 //! - requested profile times map to the nearest step and are never interpolated;
@@ -227,16 +227,20 @@ fn balance_terms_and_residual_bound() {
     );
     let max_rel = b["max_abs_residual_relative"].as_f64().unwrap();
     assert!(max_rel <= b["tolerance"]["final_bound_relative"].as_f64().unwrap());
-    // The residual is the rounding quantity recorded for this case (n = 40, dt = 200 s):
-    // worst |eps|/M0 = 9.45e-11 and final bound 2.62e-8 (solver-core-results.md, section F).
-    assert!(equals_printed(max_rel, 9.45e-11), "{max_rel:e}");
+    // The residual is a rounding quantity: its value depends on the order of floating-point
+    // operations in the solver (it changed when the Thomas stepper was recoded in the F24 form),
+    // so it is asserted only through the derived bound above (|eps| <= bound, already checked
+    // per row and for the maximum), never against a printed value. The bound itself is derived
+    // from the inputs (n = 40, dt = 200 s: final bound 2.62e-8, solver-core-results.md, section F).
+    assert!(max_rel.is_finite() && max_rel >= 0.0, "{max_rel:e}");
     let fb = b["tolerance"]["final_bound_relative"].as_f64().unwrap();
     assert!(equals_printed(fb, 2.62e-8), "{fb:e}");
 }
 
 #[test]
 fn the_bound_reproduces_the_recorded_values_at_n20() {
-    // Recorded for n = 20, dt = 200 s: worst |eps|/M0 = 2.30e-11, final bound 6.56e-9.
+    // Recorded for n = 20, dt = 200 s: final bound 6.56e-9. The observed residual is a rounding
+    // quantity and is only required to stay within that derived bound.
     let mut cfg = synthetic_config_value();
     for r in cfg["regions"].as_array_mut().unwrap() {
         r["cells"] = json!(20);
@@ -245,7 +249,7 @@ fn the_bound_reproduces_the_recorded_values_at_n20() {
     let b = &v["balance"];
     let max_rel = b["max_abs_residual_relative"].as_f64().unwrap();
     let fb = b["tolerance"]["final_bound_relative"].as_f64().unwrap();
-    assert!(equals_printed(max_rel, 2.30e-11), "{max_rel:e}");
+    assert!(max_rel.is_finite() && max_rel >= 0.0 && max_rel <= fb, "{max_rel:e} vs {fb:e}");
     assert!(equals_printed(fb, 6.56e-9), "{fb:e}");
 }
 
