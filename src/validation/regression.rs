@@ -47,7 +47,7 @@
 //!
 //! Measured and recorded in every check file: the observed orders (about 1 in time, 2.000 in
 //! space), the uncertainties `u`, and `|F_ref - F_lim|`. On the three cases `|F_ref - F_lim|` is
-//! between 0.01 % and 2.1 % of `|F_run - F_ref|`: the refinement analysis explains the difference
+//! between 0.01 % and 2.04 % of `|F_run - F_ref|`: the refinement analysis explains the difference
 //! between the run and the reference to that fraction, the rest is left unexplained. It is **not**
 //! proved to be a bound: the kernel-step start is not smooth, the time orders read 0.93 to 1.02
 //! rather than 1, and `u` (which only measures how much the estimate moves) is in several rows
@@ -61,7 +61,7 @@
 //! ```
 //!
 //! "The discretisation error that the refinements estimate explains the difference from the
-//! independent reference to within 5 %." The 5 % is a round number chosen above the 2.1 % that was
+//! independent reference to within 5 %." The 5 % is a round number chosen above the 2.04 % that was
 //! measured; it is not derived from Document 1, and a smaller measured value would not justify
 //! lowering it. `floor` is the accuracy estimate of the reference (`ModalRelease::accuracy_floor`,
 //! or the tail bound plus `1e-15` of the homogeneous series); its documentation says the true
