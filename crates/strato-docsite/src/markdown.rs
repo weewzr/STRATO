@@ -45,6 +45,9 @@ pub struct Rendered {
     pub display_math: usize,
     /// Number of `\tag{` inside the mathematics (numbered equations).
     pub tags_in_math: usize,
+    /// Number of `\tag{` written as code (inline code or a code block), which is text, not an
+    /// equation number.
+    pub tags_in_code: usize,
     /// Text outside code and mathematics that still holds a `$` (mathematics the parser did not
     /// recognise); each entry is a short excerpt.
     pub stray_dollars: Vec<String>,
@@ -120,6 +123,7 @@ struct State {
     inline_math: usize,
     display_math: usize,
     tags_in_math: usize,
+    tags_in_code: usize,
     stray: Vec<String>,
 }
 
@@ -134,6 +138,7 @@ pub fn render(text: &str, link: &mut dyn FnMut(&str, bool) -> Target) -> Rendere
         inline_math: 0,
         display_math: 0,
         tags_in_math: 0,
+        tags_in_code: 0,
         stray: Vec::new(),
     };
     let out = transform(&events, &mut st, link);
@@ -146,6 +151,7 @@ pub fn render(text: &str, link: &mut dyn FnMut(&str, bool) -> Target) -> Rendere
         inline_math: st.inline_math,
         display_math: st.display_math,
         tags_in_math: st.tags_in_math,
+        tags_in_code: st.tags_in_code,
         stray_dollars: st.stray,
     }
 }
@@ -408,9 +414,15 @@ fn transform<'a>(
                 out.push(ev[i].clone());
             }
             Event::Text(t) => {
-                if !in_code_block && t.contains('$') {
+                if in_code_block {
+                    st.tags_in_code += t.matches("\\tag{").count();
+                } else if t.contains('$') {
                     st.stray.push(excerpt(t));
                 }
+                out.push(ev[i].clone());
+            }
+            Event::Code(t) => {
+                st.tags_in_code += t.matches("\\tag{").count();
                 out.push(ev[i].clone());
             }
             _ => out.push(ev[i].clone()),
