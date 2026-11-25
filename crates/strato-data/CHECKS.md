@@ -153,9 +153,11 @@ The generator itself (writing `web/src/generated/agr1_reference.json` and the ge
 | `DI.select.refuses-outside-range` | Kr in SiC (C16-20, 1400 to 1750 C) is refused at 1800 and 1399 C, an extrapolation is marked, rows without a printed range give a value anywhere | `di_select_refuses_outside_range` |
 | `DI.select.alternative` | Schappel rows S20-01 to S20-03 only for heating-test Ag, Cs, Sr in SiC, never the default, refused for irradiation | `di_select_alternative` |
 | `DI.select.default-class` | every default selection is `published PARFUME correlation` except A1-05 (transferred) | `di_select_default_class` |
-| `DI.select.unavailable` | Eu, Kr in SiC during irradiation and the Schappel set for the kernel return DATA UNAVAILABLE | `di_select_unavailable` |
+| `DI.select.unavailable` | Eu, Kr in SiC during irradiation and the Schappel set for the kernel (Err, no fallback to the default rows) return DATA UNAVAILABLE; Xe has a row only where it is printed for Xe (A1-05, labelled) | `di_select_unavailable` |
+| `DI.select.schappel-range` | the Schappel rows S20-01 to S20-03 carry the typed fitted range 1600 to 1800 C; 1000 C is refused or marked; the label says R is not printed | `di_select_schappel_range` |
+| `DI.select.scaling-labels` | no selection with the kernel scaling carries a label saying unscaled and each says it is scaled; default kernel selections say unscaled | `di_select_scaling_labels` |
 | `DI.select.kernel-scale` | the sensitivity factor equals (174.85/250)^2 = 0.4892 (decision text 0.489) and scales the evaluated coefficient exactly | `di_select_kernel_scale` |
-| `DI.release.reading-uncertainty` | empty exactly for rows not read from a figure; 148 stated and 71 not recorded among the 219 digitised rows | `di_release_reading_uncertainty` |
+| `DI.release.reading-uncertainty` | empty exactly for rows not read from a figure; 187 stated and 32 not recorded (Morris 2016 vector figures) among the 219 digitised rows, every digitised Collin 2016 row stated | `di_release_reading_uncertainty` |
 | `DI.release.non-detect` | class M-ND on exactly E-217, E-220, E-221, E-225, E-228, E-231, each an upper bound | `di_release_non_detect` |
 | `DI.release.group-label` | the group label for no counted failure but a releasing particle on exactly E-406 and E-417 | `di_release_group_label` |
 | `DI.release.withdrawn-ids` | E-316 to E-373 absent, ids unique | `di_release_withdrawn_ids` |
@@ -168,5 +170,8 @@ The generator itself (writing `web/src/generated/agr1_reference.json` and the ge
 | `DI.irr.step8` | time-average fission-rate density for eight burnups (5.27e19 to 9.13e19) to the printed three figures | `di_irr_step8` |
 | `DI.irr.step9` | all 78 capsule-average cycle values equal the printed table (half a unit of the last printed digit) | `di_irr_step9` |
 | `DI.irr.derived-series` | weighted means 8.709e19 (capsule 3) and 6.240e19 (capsule 6), extremes 2.485e19 and 1.269e20, label text | `di_irr_derived_series` |
+| `DI.register-md.matches-csv` | every `| E-xxx |` row of `STRATO_Parameter_Register.md` restates class, qualifier, value and notes of `release_measurements.csv`, and every coefficient row restates pre-factor, activation energy, source, temperature range and class of `arrhenius.csv` | `di_register_md_matches_csv` |
 
-Failure tests added in `tests/failures.rs`: an unknown class, a wrong class for a set, a lost printed range, a changed C15 value, a non-detect that loses its class, a digitised row without reading uncertainty, a malformed reading uncertainty, a reused withdrawn id, a falling burnup, a changed particle count.
+Failure tests added in `tests/failures.rs`: a register row that drifts from the CSV (class, value, range), an unknown class, a wrong class for a set, a lost printed range, a changed C15 value, a non-detect that loses its class, a digitised row without reading uncertainty, a malformed reading uncertainty, a reused withdrawn id, a falling burnup, a changed particle count.
+
+Workspace: the Rust tests and checks belong to the workspace of `crates/Cargo.toml`. At the repository root `cargo test` runs only the `strato` package; run `cargo test --locked --manifest-path crates/Cargo.toml` for the `strato-data` tests (155 check tests, 29 failure tests, 17 and 22 in the type and reader tests, 16 unit tests at the time of writing) and `cargo run --locked --manifest-path crates/Cargo.toml -p strato-data -- check --repo .` for the checks.

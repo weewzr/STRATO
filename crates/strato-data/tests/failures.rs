@@ -290,3 +290,75 @@ fn a_changed_particle_count_changes_the_derived_rate() {
         mutate_line(&t.irradiation_conditions, "IRR-456,", ",4154,", ",4145,");
     assert_fails(&t, "DI.irr.inventory");
 }
+
+#[test]
+fn a_register_row_that_drifts_from_the_csv_fails() {
+    // the old wording of the non-detect rows: class M-UB and the obsolete note
+    let mut t = real_texts();
+    let md = t
+        .register_markdown
+        .clone()
+        .expect("the register document exists");
+    let lines: Vec<&str> = md.split('\n').collect();
+    let n = lines.iter().filter(|l| l.starts_with("| E-217 |")).count();
+    assert_eq!(n, 1);
+    let drifted = md.replace(
+        lines.iter().find(|l| l.starts_with("| E-217 |")).unwrap(),
+        &lines
+            .iter()
+            .find(|l| l.starts_with("| E-217 |"))
+            .unwrap()
+            .replace("| M-ND; t =", "| M-UB; t ="),
+    );
+    t.register_markdown = Some(drifted);
+    assert_fails(&t, "DI.register-md.matches-csv");
+}
+
+#[test]
+fn a_changed_register_value_or_range_fails() {
+    let md = real_texts()
+        .register_markdown
+        .expect("the register document exists");
+    for (prefix, from, to) in [
+        ("| E-001 |", "$2.0\\times10^{-4}$", "$2.1\\times10^{-4}$"),
+        (
+            "| C16-20 | Term",
+            "| 1400 to 1750 (printed",
+            "| accident conditions (printed",
+        ),
+    ] {
+        let mut t = real_texts();
+        let line = md
+            .split('\n')
+            .find(|l| l.starts_with(prefix) && l.contains(from))
+            .unwrap();
+        assert!(line.contains(from), "{prefix}: {from}");
+        t.register_markdown = Some(md.replacen(line, &line.replacen(from, to, 1), 1));
+        assert_fails(&t, "DI.register-md.matches-csv");
+    }
+}
+
+#[test]
+fn a_kernel_label_that_says_unscaled_for_the_scaled_case_fails_the_labels_check_by_design() {
+    // the selection of the sensitivity case never carries the label "unscaled"
+    let r = common::real_register();
+    let sel = strato_data::select::Selector {
+        arrhenius: &r.arrhenius,
+        irradiation: &r.irradiation,
+    };
+    use strato_data::select::{ParticleLayer, Phase, Variant};
+    let s = sel
+        .select(
+            "Cs",
+            ParticleLayer::Kernel,
+            Phase::HeatingTest,
+            Variant::KernelScaledSensitivity,
+        )
+        .unwrap();
+    assert!(s.kernel_scale.is_some());
+    assert!(
+        !s.labels.iter().any(|l| l.contains("unscaled")),
+        "{:?}",
+        s.labels
+    );
+}

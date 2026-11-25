@@ -152,6 +152,8 @@ const ALL_IDS: &[&str] = &[
     "DI.select.alternative",
     "DI.select.default-class",
     "DI.select.unavailable",
+    "DI.select.schappel-range",
+    "DI.select.scaling-labels",
     "DI.select.kernel-scale",
     "DI.release.reading-uncertainty",
     "DI.release.non-detect",
@@ -166,6 +168,7 @@ const ALL_IDS: &[&str] = &[
     "DI.irr.step8",
     "DI.irr.step9",
     "DI.irr.derived-series",
+    "DI.register-md.matches-csv",
 ];
 
 #[test]
@@ -939,4 +942,19 @@ fn di_irr_step9() {
 #[test]
 fn di_irr_derived_series() {
     passes("DI.irr.derived-series");
+}
+
+#[test]
+fn di_select_schappel_range() {
+    passes("DI.select.schappel-range");
+}
+
+#[test]
+fn di_select_scaling_labels() {
+    passes("DI.select.scaling-labels");
+}
+
+#[test]
+fn di_register_md_matches_csv() {
+    passes("DI.register-md.matches-csv");
 }

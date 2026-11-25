@@ -164,6 +164,10 @@ string_enum! {
         IsothermalHeatingTests => "isothermal heating tests (p. 162)",
         /// Fitted to the 1600 and 1800 C AGR-1 heating tests (Schappel 2020).
         FittedToAgr1HeatingTests => "none printed; fitted to the 1600 and 1800 C post-irradiation heating tests (printed p. 13-14)",
+        /// The source prints no range; the fit used the 1600 and 1800 C heating tests and the typed range is that fitted range (Schappel 2020, rows S20-01 to S20-03).
+        FittedRange1600To1800 => "no range is printed; fitted range 1600 to 1800 C (the 1600 and 1800 C post-irradiation heating tests, printed p. 13-14)",
+        /// A hypothesis, not a fit (Schappel 2020, row S20-04).
+        HypothesisNotFitted => "none printed; no fit: a hypothesis (pre-factor and activation energy follow from two assumed values, see the notes), not fitted to a measured temperature range",
     }
 }
 

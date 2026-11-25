@@ -422,22 +422,92 @@ fn selection_checks(rep: &mut Report, reg: &Register) {
             ParticleLayer::Kernel,
             Phase::HeatingTest,
             Variant::SchappelFitted,
-        )
-        .and_then(|s| {
-            if s.rows[0].set_id.starts_with("S20") {
-                Ok(s)
-            } else {
-                Err(crate::select::Unavailable {
-                    reason: "default rows".into(),
-                })
-            }
-        }),
+        ),
+        sel.select(
+            "Ag-110m",
+            ParticleLayer::Kernel,
+            Phase::HeatingTest,
+            Variant::SchappelFitted,
+        ),
+        sel.select(
+            "Xe-133",
+            ParticleLayer::SiC,
+            Phase::HeatingTest,
+            Variant::Default,
+        ),
     ];
+    let xe = sel.select(
+        "Xe-133",
+        ParticleLayer::Kernel,
+        Phase::Irradiation,
+        Variant::Default,
+    );
+    let xe_ok = matches!(&xe, Ok(s) if s.row_ids() == ["A1-05"]
+        && s.element == "Xe"
+        && s.labels.iter().any(|l| l.contains("printed for I, Kr and Xe")));
     rep.add(
         "DI.select.unavailable",
-        un.iter().all(|r| r.is_err()),
-        "no coefficient is invented: Eu has none, Kr in SiC is not used during irradiation, and the Schappel set offers nothing for the kernel",
+        un.iter().all(|r| r.is_err()) && xe_ok,
+        "no coefficient is invented: Eu has none, Kr in SiC is not used during irradiation, the Schappel set offers nothing for the kernel (an Err, not a fallback to the default rows), Xe has a row only where the row is printed for Xe (A1-05, kernel, irradiation, labelled)",
         "",
+    );
+    // fitted range of the Schappel rows is typed, so the selector marks 1000 C as outside it
+    let sch = sel.select(
+        "Cs",
+        ParticleLayer::SiC,
+        Phase::HeatingTest,
+        Variant::SchappelFitted,
+    );
+    let ok = match &sch {
+        Ok(s) => {
+            s.published_range_c == Some((1600.0, 1800.0))
+                && s.diffusivity_at(1000.0).is_err()
+                && s.diffusivity_at(1700.0).is_ok()
+                && matches!(
+                    s.diffusivity_extrapolated(1000.0).range,
+                    crate::select::RangeStatus::Extrapolated { .. }
+                )
+                && s.labels.iter().any(|l| l.contains("R not printed"))
+        }
+        Err(_) => false,
+    };
+    rep.add(
+        "DI.select.schappel-range",
+        ok,
+        "the Schappel rows S20-01 to S20-03 carry the typed fitted range 1600 to 1800 C, the selection refuses or marks a temperature outside it, and says that the source prints no gas constant",
+        "",
+    );
+    // labels of the sensitivity case
+    let mut bad = Vec::new();
+    for el in ["Ag", "Cs", "Sr", "Kr"] {
+        for ph in [Phase::Irradiation, Phase::HeatingTest] {
+            if let Ok(s) = sel.select(
+                el,
+                ParticleLayer::Kernel,
+                ph,
+                Variant::KernelScaledSensitivity,
+            ) {
+                let scaled = s.kernel_scale.is_some();
+                let unscaled = s.labels.iter().any(|l| l.contains("unscaled"));
+                let says_scaled = s.labels.iter().any(|l| l.contains("is scaled by"));
+                if scaled && (unscaled || !says_scaled) {
+                    bad.push(format!("{el} {}", ph.as_str()));
+                }
+            }
+            if let Ok(s) = sel.select(el, ParticleLayer::Kernel, ph, Variant::Default) {
+                if s.kernel_scale.is_some()
+                    || !s.labels.iter().any(|l| l.contains("applied unscaled"))
+                {
+                    bad.push(format!("{el} {} default", ph.as_str()));
+                }
+            }
+        }
+    }
+    rep.add(
+        "DI.select.scaling-labels",
+        bad.is_empty(),
+        "no selection with the kernel scaling set carries a label saying the coefficient is unscaled and each says it is scaled; the default kernel selections say they are applied unscaled",
+        format!("{bad:?}"),
     );
     // kernel scaling (decision 41)
     let scaled = sel.select(
@@ -498,11 +568,19 @@ fn release_checks(rep: &mut Report, reg: &Register) {
         .iter()
         .filter(|r| matches!(r.reading_uncertainty, ReadingUncertainty::Stated { .. }))
         .count();
+    let collin_unstated: Vec<&str> = rows
+        .iter()
+        .filter(|r| r.source.starts_with("Collin et al. (2016)") && digitised(r))
+        .filter(|r| !matches!(r.reading_uncertainty, ReadingUncertainty::Stated { .. }))
+        .map(|r| r.id.as_str())
+        .collect();
     rep.add(
         "DI.release.reading-uncertainty",
-        bad.is_empty() && n_stated == 148 && n_rec == 71,
-        "reading_uncertainty is empty exactly for the rows that were not read from a figure; each of the 219 digitised rows states it (148) or says not recorded (71)",
-        format!("{n_stated} stated, {n_rec} not recorded; wrong: {bad:?}"),
+        bad.is_empty() && n_stated == 187 && n_rec == 32 && collin_unstated.is_empty(),
+        "reading_uncertainty is empty exactly for the rows that were not read from a figure; each of the 219 digitised rows states it (187) or says not recorded (32, the visually read rows of Morris et al. 2016, whose figures are vector drawings that were not re-read); every digitised row of Collin et al. (2016) states it (decision 31)",
+        format!(
+            "{n_stated} stated, {n_rec} not recorded; wrong: {bad:?}; Collin rows without it: {collin_unstated:?}"
+        ),
     );
     let nd: Vec<&str> = rows
         .iter()
@@ -826,4 +904,232 @@ fn irradiation_checks(rep: &mut Report, irr: &Irradiation) {
         "the cycle-length-weighted mean of the derived series is 8.709e19 (capsule 3) and 6.240e19 (capsule 6), the extremes over the 72 compacts and 13 cycles are 2.485e19 and 1.269e20, and the series is labelled derived from published AGR-1 burnup (calculated)",
         format!("min {lo:.4e}, max {hi:.4e}"),
     );
+}
+
+// ------------------------------------------------- register document against the CSV files
+
+/// The cells of a markdown table row written as `| a | b | c |`.
+fn md_cells(line: &str) -> Option<Vec<&str>> {
+    let inner = line.strip_prefix("| ")?.strip_suffix(" |")?;
+    Some(inner.split(" | ").collect())
+}
+
+/// The qualifier text and the number of a value cell such as `~ $8.4\times10^{-6}$`,
+/// `< $10^{-6}$` or `$2.0\times10^{-4}$`.
+fn parse_value_cell(cell: &str) -> Option<(String, f64)> {
+    let cell = cell.trim();
+    let Some(first) = cell.find('$') else {
+        return Some((String::new(), cell.parse().ok()?));
+    };
+    let last = cell.rfind('$')?;
+    if last <= first {
+        return None;
+    }
+    let qualifier = cell[..first].trim().to_string();
+    let math = cell[first + 1..last].trim();
+    let number = if let Some((m, e)) = math.split_once("\\times10^{") {
+        let exp: i32 = e.strip_suffix('}')?.parse().ok()?;
+        m.trim().parse::<f64>().ok()? * 10f64.powi(exp)
+    } else if let Some(e) = math.strip_prefix("10^{") {
+        10f64.powi(e.strip_suffix('}')?.parse().ok()?)
+    } else {
+        math.parse().ok()?
+    };
+    Some((qualifier, number))
+}
+
+/// Compare the rows of `STRATO_Parameter_Register.md` with the two CSV files they restate: every
+/// `| E-xxx |` row against `release_measurements.csv` (class, qualifier, value, notes), and every
+/// coefficient row of the diffusivity tables against `arrhenius.csv` (pre-factor, activation
+/// energy, source, temperature range, class). Returns the differences found.
+pub fn register_document_differences(
+    markdown: &str,
+    release_csv: &str,
+    arrhenius_csv: &str,
+) -> Vec<String> {
+    let mut diffs = Vec::new();
+    let table = |name: &str, text: &str| -> Option<(Vec<String>, Vec<Vec<String>>)> {
+        let mut recs = crate::csv::parse(name, text).ok()?;
+        if recs.is_empty() {
+            return None;
+        }
+        let head = recs.remove(0).cells;
+        Some((head, recs.into_iter().map(|r| r.cells).collect()))
+    };
+    let (Some((rh, rrows)), Some((ah, arows))) = (
+        table("release_measurements.csv", release_csv),
+        table("arrhenius.csv", arrhenius_csv),
+    ) else {
+        return vec!["a CSV file cannot be read".to_string()];
+    };
+    let col = |h: &[String], n: &str| h.iter().position(|x| x == n);
+    let mut md_rows: BTreeMap<&str, Vec<Vec<&str>>> = BTreeMap::new();
+    for line in markdown.lines() {
+        if let Some(cells) = md_cells(line) {
+            if let Some(id) = cells.first() {
+                md_rows.entry(*id).or_default().push(cells);
+            }
+        }
+    }
+    // ---- release rows
+    let (Some(i_id), Some(i_q), Some(i_v), Some(i_c), Some(i_n), Some(i_vmin), Some(i_vmax)) = (
+        col(&rh, "id"),
+        col(&rh, "qualifier"),
+        col(&rh, "value"),
+        col(&rh, "value_class"),
+        col(&rh, "notes"),
+        col(&rh, "value_min"),
+        col(&rh, "value_max"),
+    ) else {
+        return vec!["release_measurements.csv lacks a column".to_string()];
+    };
+    for r in &rrows {
+        let id = r[i_id].as_str();
+        let Some(rows) = md_rows.get(id) else {
+            diffs.push(format!("{id}: no row in the register document"));
+            continue;
+        };
+        let Some(c) = rows.iter().find(|c| c.len() == 16) else {
+            diffs.push(format!("{id}: the register row does not have 16 cells"));
+            continue;
+        };
+        let class_cell = c[7].split(';').next().unwrap_or("").trim();
+        if class_cell != r[i_c] {
+            diffs.push(format!("{id}: class `{class_cell}` against `{}`", r[i_c]));
+        }
+        if c[9] != r[i_n].replace('|', "\\|") {
+            diffs.push(format!("{id}: notes differ"));
+        }
+        let num = |s: &str| s.parse::<f64>().ok();
+        let (vmin, vmax) = (num(&r[i_vmin]), num(&r[i_vmax]));
+        let cell = c[3];
+        if r[i_q] == "range" {
+            // `A to B` against value_min and value_max
+            let ok = cell
+                .split_once(" to ")
+                .and_then(|(a, b)| Some((parse_value_cell(a)?.1, parse_value_cell(b)?.1)));
+            match (ok, vmin, vmax) {
+                (Some((a, b)), Some(lo), Some(hi)) => {
+                    if rel(a, lo) > 1e-12 || rel(b, hi) > 1e-12 {
+                        diffs.push(format!(
+                            "{id}: range cell `{cell}` against {lo:e} to {hi:e}"
+                        ));
+                    }
+                }
+                _ => diffs.push(format!("{id}: range cell `{cell}` is not readable")),
+            }
+        } else if let Some((a, b)) = cell.split_once(" of ") {
+            // a count `N of M` against value and value_max
+            match (num(a), num(b), num(&r[i_v]), vmax) {
+                (Some(n), Some(m), Some(v), Some(w)) if n == v && m == w => {}
+                _ => diffs.push(format!(
+                    "{id}: count cell `{cell}` differs from value and value_max"
+                )),
+            }
+        } else if r[i_v].is_empty() {
+            if !cell.is_empty() {
+                diffs.push(format!("{id}: value cell `{cell}` against an empty value"));
+            }
+        } else {
+            let want_q = if r[i_q] == "=" { "" } else { r[i_q].as_str() };
+            match (parse_value_cell(cell), num(&r[i_v])) {
+                (Some((q, v)), Some(w)) => {
+                    if q != want_q {
+                        diffs.push(format!("{id}: qualifier `{q}` against `{want_q}`"));
+                    }
+                    if rel(v, w) > 1e-12 {
+                        diffs.push(format!("{id}: value {v:e} against {w:e}"));
+                    }
+                }
+                _ => diffs.push(format!("{id}: value cell `{cell}` is not readable")),
+            }
+        }
+    } // ---- diffusivity rows
+    let idx = |n: &str| col(&ah, n);
+    let (Some(a_id), Some(a_d0), Some(a_d0e), Some(a_q), Some(a_src), Some(a_loc)) = (
+        idx("id"),
+        idx("D0_m2_s"),
+        idx("D0_expression"),
+        idx("Q_kJ_mol"),
+        idx("source"),
+        idx("source_location"),
+    ) else {
+        return vec!["arrhenius.csv lacks a column".to_string()];
+    };
+    let (Some(a_tmin), Some(a_tmax), Some(a_note), Some(a_cls)) = (
+        idx("T_min_C"),
+        idx("T_max_C"),
+        idx("T_range_note"),
+        idx("coefficient_class"),
+    ) else {
+        return vec!["arrhenius.csv lacks a column".to_string()];
+    };
+    for r in &arows {
+        let id = r[a_id].as_str();
+        let Some(rows) = md_rows.get(id) else {
+            diffs.push(format!("{id}: no row in the register document"));
+            continue;
+        };
+        let Some(c) = rows.iter().find(|c| c.len() == 10) else {
+            diffs.push(format!("{id}: no coefficient row of 10 cells"));
+            continue;
+        };
+        let d0 = if r[a_d0].is_empty() {
+            r[a_d0e].as_str()
+        } else {
+            r[a_d0].as_str()
+        };
+        if !(c[2].starts_with(d0) || d0.starts_with(c[2])) {
+            diffs.push(format!("{id}: pre-factor `{}` against `{d0}`", c[2]));
+        }
+        let q = if r[a_q].is_empty() {
+            "-"
+        } else {
+            r[a_q].as_str()
+        };
+        if c[3] != q {
+            diffs.push(format!("{id}: activation energy `{}` against `{q}`", c[3]));
+        }
+        let src = format!("{}, {}", r[a_src], r[a_loc]);
+        if c[4] != src {
+            diffs.push(format!("{id}: source cell differs"));
+        }
+        let typed = !r[a_tmin].is_empty() && !r[a_tmax].is_empty() && r[a_tmin] != r[a_tmax];
+        if typed {
+            let want = format!("{} to {}", r[a_tmin], r[a_tmax]);
+            if !c[5].starts_with(&want) {
+                diffs.push(format!("{id}: range `{}` against `{want}`", c[5]));
+            }
+        } else if c[5] != r[a_note] {
+            diffs.push(format!("{id}: range `{}` against `{}`", c[5], r[a_note]));
+        }
+        if c[7] != r[a_cls] {
+            diffs.push(format!("{id}: class `{}` against `{}`", c[7], r[a_cls]));
+        }
+    }
+    diffs
+}
+
+/// The check that the register document restates the CSV files without drift.
+pub fn register_text_checks(rep: &mut Report, t: &crate::register::RegisterTexts) {
+    let id = "DI.register-md.matches-csv";
+    let desc = "every | E-xxx | row of STRATO_Parameter_Register.md restates its row of release_measurements.csv (class, qualifier, value, notes) and every coefficient row restates its row of arrhenius.csv (pre-factor, activation energy, source, temperature range, class)";
+    match &t.register_markdown {
+        None => rep.add(
+            id,
+            true,
+            desc,
+            "skipped: the register document is absent from this data folder",
+        ),
+        Some(md) => {
+            let d = register_document_differences(md, &t.release, &t.arrhenius);
+            let shown: Vec<&str> = d.iter().take(8).map(String::as_str).collect();
+            rep.add(
+                id,
+                d.is_empty(),
+                desc,
+                format!("{} differences {shown:?}", d.len()),
+            );
+        }
+    }
 }

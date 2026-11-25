@@ -26,6 +26,10 @@ use crate::arrhenius::{
 };
 use crate::irradiation::{ConditionValue, Irradiation};
 
+/// The gas constant, J mol-1 K-1, used for rows whose source prints none (the value printed by
+/// Collin 2016 for its own set); a selection carrying such a row says so in its labels.
+pub const GAS_CONSTANT_ASSUMED: f64 = 8.3145;
+
 /// The phase of the AGR-1 experiment a run represents.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Phase {
@@ -209,7 +213,7 @@ impl Selection<'_> {
         for r in &self.rows {
             let rg = match &r.gas_constant {
                 crate::arrhenius::GasConstant::Printed(p) => p.value,
-                crate::arrhenius::GasConstant::NotPrinted => 8.3145,
+                crate::arrhenius::GasConstant::NotPrinted => GAS_CONSTANT_ASSUMED,
             };
             // fluence 0: the fluence factor is never applied (decision 39, GAP-04)
             if let Some(d) = r.diffusivity(t_celsius + 273.15, rg, 0.0) {
@@ -505,6 +509,26 @@ impl<'a> Selector<'a> {
             return unavailable("no diffusion coefficient of Eu in any source opened (register GAP-26 and the diffusivity research report)".into());
         }
         let reg_layer = layer.register_layer();
+        let requested = element.to_string();
+        let mut xe_label = None;
+        let element = if element == "Xe" {
+            // The Kr rows of the modelling sets are printed for Kr only (Collin 2015, 2016), except
+            // the UO2 kernel row A1-05 of TECDOC-978, which is printed for I, Kr and Xe.
+            if reg_layer == DiffusionLayer::Kernel && phase == Phase::Irradiation {
+                xe_label = Some(
+                    "Xe: the row A1-05 is printed for I, Kr and Xe (TECDOC-978 Table A-1), so the Kr selection applies to Xe"
+                        .to_string(),
+                );
+                "Kr"
+            } else {
+                return unavailable(format!(
+                    "no Xe row is offered for the {reg_layer:?} layer in the {} phase: the Kr rows of the published AGR-1 modelling are printed for Kr only, and only the UO2 kernel row A1-05 of the irradiation phase is printed for Xe as well",
+                    phase.as_str()
+                ));
+            }
+        } else {
+            element
+        };
         let entry = TABLE
             .iter()
             .find(|e| e.elements.contains(&element) && e.layer == reg_layer && e.phase == phase);
@@ -525,29 +549,37 @@ impl<'a> Selector<'a> {
         let mut ids: Vec<&str> = entry.ids.to_vec();
         let mut labels: Vec<String> = entry.labels.iter().map(|s| s.to_string()).collect();
         let mut kernel_scale = None;
+        if let Some(l) = xe_label {
+            labels.push(l);
+        }
         match variant {
             Variant::Default => {}
             Variant::SchappelFitted => {
                 if phase != Phase::HeatingTest {
                     return unavailable("the fitted set of Schappel (2020) refers to the 1600 and 1800 C heating tests only".into());
                 }
-                if reg_layer == DiffusionLayer::SiC {
-                    if let Some((_, id)) = SCHAPPEL.iter().find(|(e, _)| *e == element) {
-                        ids = vec![id];
-                        labels = SCHAPPEL_LABELS.iter().map(|s| s.to_string()).collect();
-                    } else {
-                        return unavailable(format!(
-                            "Schappel (2020) fitted no {element} coefficient in SiC"
-                        ));
-                    }
+                if reg_layer != DiffusionLayer::SiC {
+                    return unavailable(format!(
+                        "the fitted set of Schappel (2020) covers Ag, Cs and Sr in SiC only; it offers nothing for the {reg_layer:?} layer"
+                    ));
+                }
+                if let Some((_, id)) = SCHAPPEL.iter().find(|(e, _)| *e == element) {
+                    ids = vec![id];
+                    labels = SCHAPPEL_LABELS.iter().map(|s| s.to_string()).collect();
+                } else {
+                    return unavailable(format!(
+                        "Schappel (2020) fitted no {element} coefficient in SiC"
+                    ));
                 }
             }
             Variant::KernelScaledSensitivity => {
                 if reg_layer == DiffusionLayer::Kernel {
                     let ks = self.kernel_scale(ids[0])?;
+                    // the published-modelling statement "applied unscaled" is false for this case
+                    labels.retain(|l| !l.contains("unscaled"));
                     labels.push(format!(
-                        "sensitivity case, not a published coefficient: the published kernel coefficient multiplied by ({} um / {} um)^2 = {:.4}",
-                        ks.agr1_radius_um, ks.reference_radius_um, ks.factor
+                        "sensitivity case, not a published coefficient: the published kernel coefficient, referred to a {} um kernel radius, is scaled by ({} um / {} um)^2 = {:.4} (AGR-1 kernel radius over reference radius)",
+                        ks.reference_radius_um, ks.agr1_radius_um, ks.reference_radius_um, ks.factor
                     ));
                     kernel_scale = Some(ks);
                 }
@@ -562,6 +594,14 @@ impl<'a> Selector<'a> {
                 }
             }
         }
+        if rows
+            .iter()
+            .any(|r| matches!(r.gas_constant, crate::arrhenius::GasConstant::NotPrinted))
+        {
+            labels.push(format!(
+                "R not printed by the source; {GAS_CONSTANT_ASSUMED} J/(mol K) used"
+            ));
+        }
         let class = rows[0].coefficient_class;
         let range =
             rows.iter()
@@ -573,7 +613,7 @@ impl<'a> Selector<'a> {
                     })
                 });
         Ok(Selection {
-            element: element.to_string(),
+            element: requested,
             layer,
             phase,
             variant,
