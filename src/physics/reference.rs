@@ -7,40 +7,40 @@
 //! Well-mixed volume (no spatial dependence), concentration `C(t)` in any unit with
 //! `G` in that unit per second and `lambda` in s^-1:
 //!
-//! - decay only: `C = C0 exp(-lambda t)`;
-//! - source only: `C = C0 + G t`;
-//! - source with decay: `C = C0 exp(-lambda t) + (G / lambda)(1 - exp(-lambda t))`.
+//! - decay only: `C = C_init exp(-lambda t)`;
+//! - source only: `C = C_init + G t`;
+//! - source with decay: `C = C_init exp(-lambda t) + (G / lambda)(1 - exp(-lambda t))`.
 //!
 //! Homogeneous sphere of radius `R`, diffusivity `D`, decay `lambda`, uniform initial
-//! concentration `C0`, `C(R, t) = 0` (absorbing surface), no source: the diffusion series
+//! concentration `C_init`, `C(R, t) = 0` (absorbing surface), no source: the diffusion series
 //! times `exp(-lambda t)`. Series are truncated at `n_terms`; the tail is bounded in
 //! [`series_terms_for_tolerance`].
 
 use super::{non_negative, positive, PhysicsError};
 use std::f64::consts::PI;
 
-/// Decay only, well mixed: `C0 exp(-lambda t)`.
-pub fn decay_only(c0: f64, lambda: f64, t: f64) -> Result<f64, PhysicsError> {
-    non_negative("initial concentration", c0)?;
+/// Decay only, well mixed: `C_init exp(-lambda t)`.
+pub fn decay_only(c_init: f64, lambda: f64, t: f64) -> Result<f64, PhysicsError> {
+    non_negative("initial concentration", c_init)?;
     non_negative("decay constant", lambda)?;
     non_negative("time", t)?;
-    Ok(c0 * (-lambda * t).exp())
+    Ok(c_init * (-lambda * t).exp())
 }
 
-/// Source only, well mixed: `C0 + G t` (linear growth).
-pub fn source_only(c0: f64, g: f64, t: f64) -> Result<f64, PhysicsError> {
-    non_negative("initial concentration", c0)?;
+/// Source only, well mixed: `C_init + G t` (linear growth).
+pub fn source_only(c_init: f64, g: f64, t: f64) -> Result<f64, PhysicsError> {
+    non_negative("initial concentration", c_init)?;
     non_negative("source", g)?;
     non_negative("time", t)?;
-    Ok(c0 + g * t)
+    Ok(c_init + g * t)
 }
 
 /// Source with decay, well mixed:
-/// `C0 exp(-lambda t) + (G / lambda)(1 - exp(-lambda t))`; for `lambda = 0` this is
+/// `C_init exp(-lambda t) + (G / lambda)(1 - exp(-lambda t))`; for `lambda = 0` this is
 /// [`source_only`]. The factor `(1 - exp(-lambda t)) / lambda` is formed with `expm1`, so it
 /// stays accurate for small `lambda t` and is exactly `t` at `lambda = 0`.
-pub fn source_with_decay(c0: f64, g: f64, lambda: f64, t: f64) -> Result<f64, PhysicsError> {
-    non_negative("initial concentration", c0)?;
+pub fn source_with_decay(c_init: f64, g: f64, lambda: f64, t: f64) -> Result<f64, PhysicsError> {
+    non_negative("initial concentration", c_init)?;
     non_negative("source", g)?;
     non_negative("decay constant", lambda)?;
     non_negative("time", t)?;
@@ -49,7 +49,7 @@ pub fn source_with_decay(c0: f64, g: f64, lambda: f64, t: f64) -> Result<f64, Ph
     } else {
         -(-lambda * t).exp_m1() / lambda
     };
-    Ok(c0 * (-lambda * t).exp() + g * growth)
+    Ok(c_init * (-lambda * t).exp() + g * growth)
 }
 
 /// The equilibrium `G / lambda` that [`source_with_decay`] approaches as `t` grows
@@ -60,13 +60,23 @@ pub fn equilibrium_concentration(g: f64, lambda: f64) -> Result<f64, PhysicsErro
     Ok(g / lambda)
 }
 
+/// Largest term count [`series_terms_for_tolerance`] will return (1e9); a tolerance that needs
+/// more is refused, so a later series sum cannot run for ever.
+pub const MAX_SERIES_TERMS: usize = 1_000_000_000;
+
 /// Number of series terms `N` such that the neglected tail of every series below is at most
 /// `tol` (absolute, on a fraction of the initial inventory). Tail bound: each term is at
 /// most `(6 / pi^2) / n^2` in magnitude, and `sum_{n>N} 1/n^2 < 1/N`, so
 /// `N = ceil(6 / (pi^2 tol))` suffices for the three inventory fractions.
 pub fn series_terms_for_tolerance(tol: f64) -> Result<usize, PhysicsError> {
     positive("tolerance", tol)?;
-    Ok((6.0 / (PI * PI * tol)).ceil().max(1.0) as usize)
+    let n = (6.0 / (PI * PI * tol)).ceil().max(1.0);
+    if n > MAX_SERIES_TERMS as f64 {
+        return Err(PhysicsError::OutOfRange(
+            "tolerance needs more than MAX_SERIES_TERMS series terms",
+        ));
+    }
+    Ok(n as usize)
 }
 
 /// A homogeneous sphere with an absorbing surface and a uniform initial concentration.
@@ -150,7 +160,7 @@ impl HomogeneousSphere {
         6.0 / (PI * PI) * s
     }
 
-    /// Concentration ratio `C(r, t) / C0` at radius `r` in `[0, R]`:
+    /// Concentration ratio `C(r, t) / C_init` at radius `r` in `[0, R]`:
     /// `2 exp(-lambda t) sum_n (-1)^(n+1) sinc(n pi r / R) exp(-a_n t)` with
     /// `sinc(x) = sin(x) / x`, `sinc(0) = 1` (so the centre needs no special case).
     /// Gibbs oscillation near `t = 0` needs many terms; the pointwise tail is not bounded
@@ -189,7 +199,7 @@ mod tests {
         assert_eq!(decay_only(8.0, l, 0.0).unwrap(), 8.0);
         assert!(rel(decay_only(8.0, l, 10.0).unwrap(), 4.0) < 1e-15);
         assert!(rel(decay_only(8.0, l, 30.0).unwrap(), 1.0) < 1e-15);
-        // Limits: lambda = 0 keeps C0; C0 = 0 stays 0.
+        // Limits: lambda = 0 keeps C_init; C_init = 0 stays 0.
         assert_eq!(decay_only(5.0, 0.0, 1.0e9).unwrap(), 5.0);
         assert_eq!(decay_only(0.0, l, 10.0).unwrap(), 0.0);
         assert!(decay_only(8.0, l, 1.0e6).unwrap() < 1e-300);
@@ -205,7 +215,7 @@ mod tests {
 
     #[test]
     fn source_with_decay_hand_values_and_limits() {
-        // G = 2, lambda = ln2 / 10: at one half-life, C = (G / lambda) / 2 from C0 = 0.
+        // G = 2, lambda = ln2 / 10: at one half-life, C = (G / lambda) / 2 from C_init = 0.
         let l = std::f64::consts::LN_2 / 10.0;
         let c = source_with_decay(0.0, 2.0, l, 10.0).unwrap();
         assert!(rel(c, 0.5 * 2.0 / l) < 1e-15);
@@ -239,13 +249,13 @@ mod tests {
     #[test]
     fn source_with_decay_satisfies_its_ode() {
         // dC/dt = G - lambda C, checked by a centred difference of the closed form.
-        let (c0, g, l) = (0.7, 1.3, 0.21);
+        let (c_init, g, l) = (0.7, 1.3, 0.21);
         let t = 2.4;
         let h = 1.0e-5;
-        let d = (source_with_decay(c0, g, l, t + h).unwrap()
-            - source_with_decay(c0, g, l, t - h).unwrap())
+        let d = (source_with_decay(c_init, g, l, t + h).unwrap()
+            - source_with_decay(c_init, g, l, t - h).unwrap())
             / (2.0 * h);
-        let c = source_with_decay(c0, g, l, t).unwrap();
+        let c = source_with_decay(c_init, g, l, t).unwrap();
         assert!((d - (g - l * c)).abs() < 1e-9);
     }
 
@@ -272,6 +282,14 @@ mod tests {
         assert_eq!(n, (6.0e6 / (PI * PI)).ceil() as usize);
         assert_eq!(series_terms_for_tolerance(10.0).unwrap(), 1);
         assert!(series_terms_for_tolerance(0.0).is_err());
+        // Beyond the documented limit the request is refused, never saturated.
+        assert!(matches!(
+            series_terms_for_tolerance(1.0e-300),
+            Err(PhysicsError::OutOfRange(_))
+        ));
+        // 6 / (pi^2 tol) = 1e9 at tol = 6e-10 / pi^2 is the boundary: just inside succeeds.
+        assert!(series_terms_for_tolerance(1.0e-9).is_ok());
+        assert!(series_terms_for_tolerance(1.0e-10).is_err());
     }
 
     #[test]
@@ -356,7 +374,7 @@ mod tests {
 
     #[test]
     fn sphere_profile_integrates_to_retained_fraction() {
-        // Independent check: Simpson quadrature of 4 pi r^2 C(r, t) / (4/3 pi R^3 C0).
+        // Independent check: Simpson quadrature of 4 pi r^2 C(r, t) / (4/3 pi R^3 C_init).
         let s = sphere(0.4);
         let t = 0.08;
         let n = 400;

@@ -14,7 +14,7 @@
 //!   report (never a clamp);
 //! - [`decay`]: `lambda = ln 2 / t_half` and the reverse, with time units;
 //! - [`source`]: `S = F_dot y / N_A`, with typed yield and product kinds;
-//! - [`reference`]: closed-form solutions for later verification of the coupled solver.
+//! - [`mod@reference`]: closed-form solutions for later verification of the coupled solver.
 //!
 //! Nothing in this module is coupled into a solver.
 

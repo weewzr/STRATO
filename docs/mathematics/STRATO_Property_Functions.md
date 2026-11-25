@@ -49,7 +49,7 @@ $$
 \lambda = \frac{\ln 2}{t_{1/2}},\qquad t_{1/2} = \frac{\ln 2}{\lambda},\qquad \bar t = \frac1\lambda .
 $$
 
-Units: the half-life is converted to seconds first, so `lambda` is in s^-1. Minute, hour and day are exact (60, 3600, 86400 s). A year has no single length, so `TimeUnit::Years(seconds_per_year)` takes it as an argument; `JULIAN_YEAR_S = 31 557 600 s` (365.25 d) is offered for convenience, and a source that uses another year length (the register's nuclear data say which one) must pass that. A half-life must be finite and strictly positive; a stable nuclide has `lambda = 0` and no half-life, and is handled by the caller. Decay is a loss of atoms; the module has no notion of release, and decay loss is reported separately from physical release (Section 5.3).
+Units: the half-life is converted to seconds first, so `lambda` is in s^-1. Minute, hour and day are exact (60, 3600, 86400 s). A year has no single length, so `TimeUnit::Years(seconds_per_year)` takes it as an argument; `JULIAN_YEAR_S = 31 557 600 s` (365.25 d) is offered for convenience. The register's LiveChart half-lives use 1 y = 31 556 925.97 s (register line 631), which differs by 2.1e-5 in relative terms (Cs-137, 30.08 y: 7.302031e-10 s^-1 with the Julian year, 7.302187e-10 s^-1 from the `half_life_s` column of `decay.csv`). To reproduce the register, pass `TimeUnit::Years(31_556_925.97)` or, better, the `half_life_s` column with `TimeUnit::Seconds`. A half-life must be finite and strictly positive; a stable nuclide has `lambda = 0` and no half-life, and is handled by the caller. Decay is a loss of atoms; the module has no notion of release, and decay loss is reported separately from physical release (Section 5.3).
 
 Tests: `t_half = 1 s` gives `exp(-lambda) = 1/2`; 1440 min, 24 h, 1 d and 86400 s give the same `lambda`; `t_half = 10 s` gives `lambda = 0.0693147... s^-1`; round trip in both directions.
 
@@ -64,7 +64,7 @@ $$
 
 The yield is typed as independent or cumulative (`YieldKind`) and the product as direct fission product or activation product (`ProductKind`). Which yield a model must use is the modelling rule of P21.11 and P21.12: the cumulative yield when the precursors are not separate species, the independent yield when they are. The module checks no data and only carries the label with the number.
 
-**Activation products are refused.** Ag-110m, Cs-134 and Eu-154 are made by neutron capture on Ag-109, Cs-133 and Eu-153 (P21.13 and P21.14), not by fission chains; their tiny fission yields must not be used as a source (decision 15, directive section 7). `source_*` returns `PhysicsError::DirectYieldForActivationProduct` for `ProductKind::ActivationProduct` whatever the yield kind or value, so no number can leak. A capture production model (cross sections, spectrum, isomeric fraction, flux history) is not approved and is not implemented.
+**Activation products are refused.** Ag-110m, Cs-134 and Eu-154 are made by neutron capture on Ag-109, Cs-133 and Eu-153 (P21.13 and P21.14), not by fission chains; their tiny fission yields must not be used as a source (decision 15, directive section 7). `source_*` returns `PhysicsError::DirectYieldForActivationProduct` for `ProductKind::ActivationProduct` whatever the yield kind or value, so no number can leak. The function returns an error, not zero: mapping the refusal to a zero source for these nuclides (decision 15) is the caller's job. The refusal depends on the caller supplying the right `ProductKind`; the data layer must derive it only from the `product_class` column of `decay.csv`, never from user input, and test it for Ag-110m, Cs-134 and Eu-154. A capture production model (cross sections, spectrum, isomeric fraction, flux history) is not approved and is not implemented.
 
 The fission-rate density is not in the register (GAP-28). The function takes it as an argument and no default exists.
 
@@ -76,74 +76,74 @@ These verify the coupled solver later. Each is the exact solution of the problem
 
 ### 4.1 Decay only, well mixed
 
-`dC/dt = -lambda C`, `C(0) = C0`. Separating variables, `dC/C = -lambda dt`, so
+`dC/dt = -lambda C`, `C(0) = C_init`. Separating variables, `dC/C = -lambda dt`, so
 
 $$
-C(t) = C_0\,e^{-\lambda t}.
+C(t) = C_{\mathrm{init}}\,e^{-\lambda t}.
 $$
 
-Limits: `lambda = 0` gives `C0`; `t = t_half` gives `C0/2`, two half-lives `C0/4`; `C0 = 0` stays 0.
+Limits: `lambda = 0` gives `C_init`; `t = t_half` gives `C_init/2`, two half-lives `C_init/4`; `C_init = 0` stays 0.
 
 ### 4.2 Source only, well mixed
 
-`dC/dt = G`, `C(0) = C0` with constant `G` (same amount unit per volume per second):
+`dC/dt = G`, `C(0) = C_init` with constant `G` (same amount unit per volume per second):
 
 $$
-C(t) = C_0 + G\,t .
+C(t) = C_{\mathrm{init}} + G\,t .
 $$
 
-Limits: `G = 0` gives `C0`; `t = 0` gives `C0`.
+Limits: `G = 0` gives `C_init`; `t = 0` gives `C_init`.
 
 ### 4.3 Source with decay, well mixed
 
 `dC/dt = G - lambda C`. Multiply by the integrating factor `e^{lambda t}`: `d(C e^{lambda t})/dt = G e^{lambda t}`, integrate from 0 to `t`:
 
 $$
-C(t) = C_0 e^{-\lambda t} + \frac{G}{\lambda}\left(1-e^{-\lambda t}\right)
+C(t) = C_{\mathrm{init}} e^{-\lambda t} + \frac{G}{\lambda}\left(1-e^{-\lambda t}\right)
 \;\xrightarrow{\,t\to\infty\,}\; \frac G\lambda .
 $$
 
-The code forms `(1 - e^{-lambda t})/lambda` with `expm1`, so it is accurate for small `lambda t` and equals `t` exactly at `lambda = 0`, where the formula reduces to 4.2 (`(1-e^{-x})/lambda -> t - lambda t^2/2 + ...`). With `G = 0` it reduces to 4.1. Starting at `C0 = G/lambda` the concentration stays there. The half-life of the approach to `G/lambda` is `t_half` of the nuclide: at `t = t_half` and `C0 = 0`, `C = G/(2 lambda)`.
+The code forms `(1 - e^{-lambda t})/lambda` with `expm1`, so it is accurate for small `lambda t` and equals `t` exactly at `lambda = 0`, where the formula reduces to 4.2 (`(1-e^{-x})/lambda -> t - lambda t^2/2 + ...`). With `G = 0` it reduces to 4.1. Starting at `C_init = G/lambda` the concentration stays there. The half-life of the approach to `G/lambda` is `t_half` of the nuclide: at `t = t_half` and `C_init = 0`, `C = G/(2 lambda)`.
 
 ### 4.4 Decay with diffusion in a homogeneous sphere
 
-Problem: sphere of radius `R`, constant `D`, decay `lambda`, no source, uniform `C(r,0) = C0`, absorbing surface `C(R,t) = 0`:
+Problem: sphere of radius `R`, constant `D`, decay `lambda`, no source, uniform `C(r,0) = C_init`, absorbing surface `C(R,t) = 0`:
 
 $$
-\frac{\partial C}{\partial t} = \frac1{r^2}\frac{\partial}{\partial r}\!\left(r^2 D\frac{\partial C}{\partial r}\right) - \lambda C .
+\frac{\partial C}{\partial t} = \frac1{\left(r\right)^2}\frac{\partial}{\partial r}\!\left(\left(r\right)^2 D\frac{\partial C}{\partial r}\right) - \lambda C .
 $$
 
-Write `C = e^{-lambda t} W`. Then `dC/dt = e^{-lambda t}(W_t - lambda W)`, so `W_t = (1/r^2)(r^2 D W_r)_r` with the same boundary and initial conditions: pure diffusion. With `u = r W`, `u_t = D u_rr`, `u(0,t) = 0` (finite `W`), `u(R,t) = 0`, `u(r,0) = C0 r`. The sine series `u = sum_n b_n sin(n pi r/R) e^{-a_n t}`, `a_n = n^2 pi^2 D / R^2`, has
+The factorisation used here is exact only because the decay term is linear, `lambda` is constant in `r` and `t`, and there is no source: then `e^{-lambda t}` multiplies the whole equation uniformly and drops out of the spatial operator. With a source `G` that is not 0 the term `G e^{lambda t}` remains and the product form fails (Section 4.3 covers the well-mixed case only), and so it does if `lambda` varies in `r` or `t`. Write `C = e^{-lambda t} W`. Then `dC/dt = e^{-lambda t}(W_t - lambda W)`, so `W_t = (1/r^2)(r^2 D W_r)_r` with the same boundary and initial conditions: pure diffusion. With `u = r W`, `u_t = D u_rr`, `u(0,t) = 0` (finite `W`), `u(R,t) = 0`, `u(r,0) = C_init r`. The sine series `u = sum_n b_n sin(n pi r/R) e^{-a_n t}`, with the decay rate of mode `n`
 
 $$
-b_n = \frac2R\int_0^R C_0\,r\sin\frac{n\pi r}R\,dr = \frac{2R\,C_0\,(-1)^{n+1}}{n\pi},
+a_n = \frac{\left(n\right)^2\left(\pi\right)^2 D}{\left(R\right)^2},\qquad b_n = \frac2R\int_0^R C_{\mathrm{init}}\,r\sin\frac{n\pi r}R\,dr = \frac{2R\,C_{\mathrm{init}}\,(-1)^{n+1}}{n\pi},
 $$
 
 so, with `sinc(x) = sin x / x` (`sinc(0) = 1`, which removes the singularity at the centre),
 
 $$
-\boxed{\;\frac{C(r,t)}{C_0}
+\boxed{\;\frac{C(r,t)}{C_{\mathrm{init}}}
 = 2\,e^{-\lambda t}\sum_{n\ge1}(-1)^{n+1}\,\mathrm{sinc}\!\left(\frac{n\pi r}{R}\right)e^{-a_n t}\;}
 $$
 
 (the centre value is `2 e^{-lambda t} sum (-1)^{n+1} e^{-a_n t}`). Integrating over the volume, with `int_0^R r sin(n pi r/R) dr = (-1)^{n+1} R^2/(n pi)`, the inventory still inside as a fraction of the initial one is the diffusion series times `exp(-lambda t)`:
 
 $$
-\boxed{\;f_\mathrm{ret}(t) = \frac6{\pi^2}\,e^{-\lambda t}\sum_{n\ge1}\frac{e^{-a_n t}}{n^2}\;}
+\boxed{\;f_\mathrm{ret}(t) = \frac6{\left(\pi\right)^2}\,e^{-\lambda t}\sum_{n\ge1}\frac{e^{-a_n t}}{\left(n\right)^2}\;}
 $$
 
 **Release and decay loss, kept apart.** The flux through the surface of `W` is the pure-diffusion flux `J_W`, so the physical release rate is `J = e^{-lambda t} J_W` and `J_W = -d f_W/dt` times the initial inventory, with `f_W = (6/pi^2) sum e^{-a_n t}/n^2`; hence the rate per mode is `(6/pi^2) a_n e^{-(a_n+lambda) t}/n^2`. Integrating from 0 to `t`, and likewise for the decay loss rate `lambda f_ret`:
 
 $$
-f_\mathrm{rel}(t) = \frac6{\pi^2}\sum_n\frac{a_n}{a_n+\lambda}\,\frac{1-e^{-(a_n+\lambda)t}}{n^2},\qquad
-f_\mathrm{dec}(t) = \frac6{\pi^2}\sum_n\frac{\lambda}{a_n+\lambda}\,\frac{1-e^{-(a_n+\lambda)t}}{n^2}.
+f_\mathrm{rel}(t) = \frac6{\left(\pi\right)^2}\sum_n\frac{a_n}{a_n+\lambda}\,\frac{1-e^{-(a_n+\lambda)t}}{\left(n\right)^2},\qquad
+f_\mathrm{dec}(t) = \frac6{\left(\pi\right)^2}\sum_n\frac{\lambda}{a_n+\lambda}\,\frac{1-e^{-(a_n+\lambda)t}}{\left(n\right)^2}.
 $$
 
 Per mode, `e^{-x} + (a/(a+lambda))(1-e^{-x}) + (lambda/(a+lambda))(1-e^{-x}) = 1` with `x = (a+lambda)t`, so `f_ret + f_rel + f_dec = (6/pi^2) sum_n 1/n^2 = 1` term by term, with the truncated sums adding to the truncated `(6/pi^2) sum_{n<=N} 1/n^2`. Here `f_rel` counts atoms that left the sphere before decaying; it is not the decay-corrected quantity `F_B` of Section 3.7.3 of the Phase 2 derivations (which divides by the surviving production).
 
 **Limits tested.** `lambda = 0` gives the Booth series and `f_dec = 0`; at long time only `n = 1` survives, `f_ret -> (6/pi^2) e^{-(pi^2 D/R^2 + lambda) t}` and the centre ratio `2 e^{-(pi^2 D/R^2 + lambda)t}`; `D = 0` gives pure decay, `f_ret = e^{-lambda t}`, `f_rel = 0`, `f_dec = 1 - e^{-lambda t}`; `t = 0` gives `f_ret = 1` up to the truncation; the small-time law `f_rel = 6 sqrt(D t/(pi R^2)) - 3 D t/R^2` (lambda = 0); the concentration profile integrates (by Simpson quadrature, independently of the formulas above) to `f_ret`; the surface value is 0; `d f_dec/dt = lambda f_ret`; `C(r,t;lambda) = e^{-lambda t} C(r,t;0)`.
 
-**Truncation.** Every inventory fraction above is a sum of terms bounded by `(6/pi^2)/n^2`, and `sum_{n>N} 1/n^2 < 1/N`, so keeping `N = ceil(6/(pi^2 tol))` terms leaves a tail below `tol` (absolute, on a fraction of the initial inventory). `series_terms_for_tolerance` returns it. The bound is slow at `t -> 0` (it is `10^6` terms for `10^-6`); for later times far fewer terms suffice because `e^{-a_n t}` cuts the series off. The bound does not cover the pointwise profile, whose series alternates and shows Gibbs oscillation at early times; use many terms there.
+**Truncation.** The term count is limited to `MAX_SERIES_TERMS = 1e9`; a smaller tolerance is refused with `OutOfRange` instead of looping for ever. Every inventory fraction above is a sum of terms bounded by `(6/pi^2)/n^2`, and `sum_{n>N} 1/n^2 < 1/N`, so keeping `N = ceil(6/(pi^2 tol))` terms leaves a tail below `tol` (absolute, on a fraction of the initial inventory). `series_terms_for_tolerance` returns it. The bound is slow at `t -> 0` (it is `10^6` terms for `10^-6`); for later times far fewer terms suffice because `e^{-a_n t}` cuts the series off. The bound does not cover the pointwise profile, whose series alternates and shows Gibbs oscillation at early times; use many terms there.
 
 ## 5 What this does not do
 
