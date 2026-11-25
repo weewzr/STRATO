@@ -11,9 +11,12 @@ Work toward v2.0 (Phase 2). The order is mathematics first, then pseudocode, the
 
 ### Changed
 - Licence changed from MIT to AGPL-3.0-only, the licence of the Outram Park project that the planned web demo builds on. Releases v1.0.0 and v1.0.1 remain available under MIT.
+- GitHub Pages is built and deployed by `.github/workflows/web.yml` instead of the Jekyll render of the repository. The derivation and register documents stay at their earlier addresses, now with rendered mathematics; the three links of the earlier home page that returned 404 (`.github/workflows/ci.yml`, `docs/mathematics/v1.0.0/`, `tests/golden/v1.0/`) are replaced by a GitHub link and two list pages. `prompt/`, the README, this changelog and `docs/development/` are not published on the site.
 
 ### Added
 - `prompt/`: the instruction package for building the interactive STRATO web demo, including cross-project engineering references from NUS-H2.
+- Interactive web demonstration, live at https://weewzr.github.io/STRATO/ (`web/`, `crates/strato-wasm/`, `.github/workflows/web.yml`): the governing equation with a staged builder at the top and the live simulation under it, computed in the browser by the verified v1.0 solver compiled to WebAssembly; particle cross-section and 3D cutaway, radial profile, release curves, inventory balance and numerical diagnostics; comparison, verification and data sections with downloads; the research catalogue (three transport regimes, nine species, Materials Studio gallery placeholders, brick roadmap) with the five-level research status. Five-layer diffusion with constant diffusivity is VERIFIED on the synthetic case; generation, decay and temperature-dependent diffusivity are RESEARCHED and their switches are disabled; nothing is VALIDATED.
+- `crates/strato-docsite`, the first member of the tools workspace `crates/Cargo.toml`: renders the derivation and register documents (`docs/mathematics/`, `data/reference/`) into the published site with the mathematics typeset by the KaTeX copy the site ships, and checks every link of the built site.
 
 ## [1.0.1] - 2026-11-06
 
