@@ -13,6 +13,8 @@ import { cellColours, cellOfBins } from './colormap';
 // mesh cell that contains it). Loaded lazily, only when the reader picks the 3D view. The scene is
 // rendered on demand: playback updates a texture and asks for one frame, and React does not
 // re-render per frame. Orbit by dragging, arrow keys rotate, + and - zoom, 0 resets the view.
+// Multisampling is used only with a GPU below a device pixel ratio of 2 (see useAntialias); it
+// changes edge smoothing only, never a colour of the cut faces.
 
 /** Radius bins of the cut-face texture. */
 const BINS = 1024;
@@ -24,6 +26,31 @@ const ROTATE_STEP = Math.PI / 18;
 const ZOOM_STEP = 1.15;
 const MIN_DIST = 1.8;
 const MAX_DIST = 8;
+
+/**
+ * Whether this browser renders WebGL in software (SwiftShader, llvmpipe and similar): Chromium then
+ * refuses a context that asks for `failIfMajorPerformanceCaveat`, and the renderer string names the
+ * rasteriser. Multisampling multiplies the fragment work of a software rasteriser, so the view
+ * draws without it there; with a GPU it keeps multisampling below a device pixel ratio of 2 (at 2 or
+ * more the denser pixels already smooth the edges).
+ */
+export function softwareWebGL(): boolean {
+  try {
+    const probe = document.createElement('canvas');
+    const fast = probe.getContext('webgl2', { failIfMajorPerformanceCaveat: true });
+    if (!fast) return true;
+    const ext = fast.getExtension('WEBGL_debug_renderer_info');
+    const name = String(fast.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : fast.RENDERER));
+    fast.getExtension('WEBGL_lose_context')?.loseContext();
+    return /swiftshader|llvmpipe|softpipe|software/i.test(name);
+  } catch {
+    return true;
+  }
+}
+
+export function useAntialias(): boolean {
+  return useMemo(() => !softwareWebGL() && (window.devicePixelRatio || 1) < 2, []);
+}
 
 export interface OrbitState {
   azimuth: number;
@@ -207,6 +234,7 @@ export default function Particle3D({ run, label, onError }: { run: RunOk; label:
   const redraw = useRef<() => void>(() => undefined);
   const drag = useRef<{ x: number; y: number } | null>(null);
   const frames = useRef(0);
+  const antialias = useAntialias();
 
   const stamp = () => {
     const el = wrap.current;
@@ -274,6 +302,7 @@ export default function Particle3D({ run, label, onError }: { run: RunOk; label:
           aria-label={label}
           aria-describedby="p3d-keys"
           data-testid="p3d-canvas"
+          data-antialias={antialias ? 'on' : 'off'}
           onKeyDown={onKeyDown}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
@@ -285,7 +314,7 @@ export default function Particle3D({ run, label, onError }: { run: RunOk; label:
             flat
             dpr={[1, 2]}
             camera={{ fov: 35, near: 0.1, far: 50 }}
-            gl={{ antialias: true, alpha: true, powerPreference: 'default' }}
+            gl={{ antialias, alpha: true, powerPreference: 'default' }}
             onCreated={({ gl }) => {
               if (!gl.getContext()) onError('WebGL context not created');
             }}

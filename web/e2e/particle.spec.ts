@@ -119,7 +119,7 @@ async function measurePlayback(page: Page, testId: string, attr: string): Promis
 }
 
 function recordFrameRate(info: { annotations: { type: string; description?: string }[] }, name: string, r: FrameRate, extra: Record<string, unknown> = {}): void {
-  const line = `${name}: ${r.fps.toFixed(1)} fps (${r.frames} frames in ${r.ms.toFixed(0)} ms; median interval ${r.medianIntervalMs.toFixed(1)} ms, longest ${r.maxIntervalMs.toFixed(1)} ms; idle animation frames ${r.idleRafHz.toFixed(1)} per s; renderer ${r.renderer})`;
+  const line = `${name}: ${r.fps.toFixed(1)} fps (${r.frames} frames in ${r.ms.toFixed(0)} ms; median interval ${r.medianIntervalMs.toFixed(1)} ms, longest ${r.maxIntervalMs.toFixed(1)} ms; idle animation frames ${r.idleRafHz.toFixed(1)} per s; renderer ${r.renderer}${Object.entries(extra).map(([k, v]) => `; ${k} ${String(v)}`).join('')})`;
   info.annotations.push({ type: name, description: line });
   // Printed so that the workflow log of continuous integration carries the measurement.
   process.stdout.write(`${line}\n`);
@@ -311,7 +311,8 @@ test.describe('3D cutaway', () => {
     await expect.poll(async () => Number((await c.getAttribute('data-frames')) ?? '0'), { timeout: 20_000 }).toBeGreaterThan(0);
     // One rendered frame per new row: 101 rows in 1.25 s at 8x, so at most about 80 new rows per second arrive.
     const r = await measurePlayback(page, 'p3d-canvas', 'data-frames');
-    recordFrameRate(info, 'fps-3d', r, { rows: NATIVE.profiles.length });
+    // The view draws without multisampling on a software WebGL renderer (Particle3D.tsx, softwareWebGL); recorded with the rate.
+    recordFrameRate(info, 'fps-3d', r, { rows: NATIVE.profiles.length, antialias: await c.getAttribute('data-antialias') });
     expect(r.ms, 'measured over most of the window').toBeGreaterThanOrEqual(0.8 * PERF_WINDOW_MS);
     expect(r.fps).toBeGreaterThanOrEqual(30);
   });
