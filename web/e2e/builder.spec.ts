@@ -52,7 +52,7 @@ test.describe('progressive equation builder at 1440 x 900', () => {
       if (s === 14 || PREVIEWS.includes(s)) await expect(page.getByTestId('preview-banner')).toBeVisible();
       else if (s === 13) await expect(page.getByTestId('live-note')).toContainText('not experimental validation');
       else await expect(page.getByTestId('live-note')).toContainText('does not run the BTCS solver yet');
-      await expect(page.getByTestId('strip-stage')).toHaveText(`Equation shown: step ${s}; simulation: previous solver, not BTCS`);
+      await expect(page.getByTestId('strip-stage')).toHaveText(`Step ${s} shown; simulation: previous solver, not BTCS`);
       expect(await simulationSnapshot(page)).toEqual(before);
     }
     await page.waitForTimeout(400);

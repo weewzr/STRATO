@@ -94,7 +94,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
                 : 'Solver: loading'}
           </span>
           <span className="strip__item" data-testid="strip-stage">
-            Equation shown: step {stage}; simulation: {method === 'btcs' ? 'BTCS solver' : method === 'loading' ? 'solver loading' : 'previous solver, not BTCS'}
+            Step {stage} shown; simulation: {method === 'btcs' ? 'BTCS solver' : method === 'loading' ? 'solver loading' : 'previous solver, not BTCS'}
           </span>
           <Playback />
           {compact ? (

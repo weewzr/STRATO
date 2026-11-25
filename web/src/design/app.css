@@ -1701,6 +1701,19 @@ select.field__input {
     text-align: right;
   }
 }
+/* A matrix or a multi-line system is tall; the tag's own strut is as tall as the whole equation, so
+   with the number on its own line the strut would double the height. The number needs one line. */
+.eq-box .katex-tag .katex-strut {
+  display: none;
+}
+/* A step with two equations stacked in one box packs them closer, so that the simulation stays in the first screen. */
+.eq-box--main:has(.eq-system) .katex-display {
+  margin: 0;
+}
+/* A matrix is set at body size (the heading size would not leave the simulation in the first screen). */
+.eq-box--main .katex-display:has(.mtable) > .katex {
+  font-size: 1em;
+}
 .eq-box .katex-display {
   margin: var(--space-2) 0;
 }

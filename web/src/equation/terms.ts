@@ -852,7 +852,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
     short: 'Inventory',
     kind: 'step',
     mechanism: null,
-    summary: 'The inventory is a weighted sum over the nodes. The release rate is the flow through the last interval, and the cumulative release adds it step by step. The release fraction is the released amount over the start inventory.',
+    summary: 'The inventory is a weighted sum over the nodes; the release adds the outer flow step by step and is divided by the start inventory.',
     main: [F25, F27],
     parts: [
       part({
@@ -898,7 +898,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
     short: 'Verification',
     kind: 'step',
     mechanism: null,
-    summary: 'Verification asks whether the code solves its own equations: the balance holds to rounding, and the error falls at the proved or observed order. It does not ask whether the model matches a measurement.',
+    summary: 'Does the code solve its own equations? The balance holds to rounding and the error falls at the proved order. No measurement is involved.',
     main: [F29],
     parts: [
       part({
@@ -1030,7 +1030,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
     short: 'Temperature',
     kind: 'preview',
     mechanism: 'diffusivity_temperature',
-    summary: 'Preview only. Each diffusivity would become a function of the temperature, every coefficient that depends on it would use the same values, and the matrix would be assembled again whenever the temperature changes. The law is not derived in the documents of this build, and the solver does not implement it.',
+    summary: 'Preview only. Each diffusivity would depend on the temperature. The law is not derived, and the solver does not implement it.',
     main: [G3_D],
     parts: [
       part({
