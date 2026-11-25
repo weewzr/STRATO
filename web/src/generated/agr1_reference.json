@@ -4,12 +4,13 @@
   "kind": "reference_geometry",
   "generator": "scripts/web/generate_data.py v1",
   "strato_version": "1.0.1",
-  "commit": "3afb131e07caddb51aee805e1d1c206908451877",
+  "commit": "113e28d51f8046d3115c21f7dbc48bdc5851df53",
+  "generator_sha256": "094b59731ee444abedbabd6088c451e23dcdd0af30a583b3bfd263ca9a11c94b",
   "input_file": "data/geometry/geometry.csv",
   "input_sha256": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
   "command": "python -I -X utf8 scripts/web/generate_data.py geometry",
-  "created_utc": "2026-11-24T23:41:51Z",
-  "note": "Registered geometry of the AGR-1 UCO TRISO particle (rule E2): geometry only, not a simulation and never combined with the diffusivities of the synthetic case. REGISTER marks register data; it is not a result label. Outer radii are sums of the registered diameter and thicknesses. location is the register's source location without its local file names and text-extract indices; link is given only where the register holds a public http(s) URL. commit is the source commit the file was generated from.",
+  "created_utc": "2026-11-25T00:18:33Z",
+  "note": "Registered geometry of the AGR-1 UCO TRISO particle (rule E2): geometry only, not a simulation and never combined with the diffusivities of the synthetic case. REGISTER marks register data; it is not a result label. Outer radii are sums of the registered diameter and thicknesses. location is the register's source location without its local file names and text-extract indices; link is given only where the register holds a public http(s) URL. commit is the HEAD commit the generator ran on; it carries the suffix +modified when the generator or the input file differed from that commit. generator_sha256 is the SHA-256 of the generator file that wrote this file.",
   "data": {
     "default_set": "AGR1-B-M16",
     "sets": [
