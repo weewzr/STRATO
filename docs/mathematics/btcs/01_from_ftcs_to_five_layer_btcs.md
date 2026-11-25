@@ -1,8 +1,20 @@
 # STRATO: From Original FTCS Derivation to Five-Layer BTCS
 
-**Status.** This is the Phase A derivation (directive items A1 to A6, with the matrix properties that A1 to A6 depend on). It still needs the independent review that directive item A7 makes mandatory. It is a mathematical derivation. The numbers quoted from scratch experiments are numerical checks of the algebra. They are not verification of a production solver, and they are not experimental validation.
+**Status.** This is Document 1 of directive Section 9: the full derivation of the five-layer BTCS scheme (directive items A1 to A7). Two agents derived the scheme independently: derivation A from the owner's original documents, and derivation B from first principles. The two were compared equation by equation, and every difference was resolved by algebra or by a scratch experiment. The record of that comparison is [reconciliation.md](reconciliation.md). This document is derivation A with the results of derivation B and of the reconciliation integrated. Derivation B is kept unchanged as a record in [archive/independent_derivation_b.md](archive/independent_derivation_b.md).
 
-**Companion document.** [00_original_documents.md](00_original_documents.md) is the account and algebra check of the owner's two original documents. It is cited as "document 00". Its equation labels (H1) to (H27), (T1) to (T30) and (C1) to (C4) are used here unchanged.
+It is a mathematical derivation. The numbers quoted from scratch experiments are numerical checks of the algebra. They are not verification of a production solver, and they are not experimental validation.
+
+**Companion documents.**
+
+- [00_original_documents.md](00_original_documents.md) is the account and algebra check of the owner's two original documents. It is cited as "document 00". Its equation labels (H1) to (H27), (T1) to (T30) and (C1) to (C4) are used here unchanged.
+- [02_final_formulation.md](02_final_formulation.md) is Document 2: the final system, row by row, with nothing left to choose. Its equations are numbered (F1), (F2), and so on. Where this document and Document 2 differ in presentation, Document 2 is the normative statement for the pseudocode and the Rust code.
+
+**Classification of statements.** Each property in Section 9 carries one of these labels:
+
+- **PROVED**: a complete proof is given here, under the stated hypotheses.
+- **PROOF OUTLINE**: every step of the argument is given and was checked in the reconciliation, but the constants are not tracked.
+- **OBSERVED**: shown only by scratch computations.
+- **NOT PROVEN**: stated as open.
 
 ---
 
@@ -40,15 +52,17 @@ Directive Section 5 is binding:
 | $i = 0, 1, \dots, N$ | global radial node index; node $0$ at the centre, node $N$ at $R_5$ | dimensionless |
 | $r_i$ | radius of node $i$, with $0 = r_0 < r_1 < \dots < r_N = R_5$ | $\mathrm{m}$ |
 | $N_{\mathrm{kernel}}, N_{\mathrm{buffer}}, N_{\mathrm{IPyC}}, N_{\mathrm{SiC}}, N_{\mathrm{OPyC}} = N$ | index of the node on $R_1, R_2, R_3, R_4, R_5$ | dimensionless |
-| $\Delta r_{i+\frac12} = r_{i+1} - r_i$ | length of the interval between nodes $i$ and $i+1$ | $\mathrm{m}$ |
+| $\Delta r_{i,\mathrm{outer}} = r_{i+1} - r_i$ | spacing on the outer side of node $i$: the length of the interval between nodes $i$ and $i+1$ | $\mathrm{m}$ |
+| $\Delta r_{i,\mathrm{inner}} = r_i - r_{i-1}$ | spacing on the inner side of node $i$; $\Delta r_{i,\mathrm{inner}} = \Delta r_{i-1,\mathrm{outer}}$ | $\mathrm{m}$ |
 | $\Delta r$ | uniform spacing, where the grid is uniform | $\mathrm{m}$ |
 | $\Delta r_{\mathrm{kernel}}, \dots, \Delta r_{\mathrm{OPyC}}$ | uniform spacing inside each layer (Section 8) | $\mathrm{m}$ |
-| $D_{i+\frac12}$ | diffusivity of the material filling the interval $(r_i, r_{i+1})$ | $\mathrm{m^2\ s^{-1}}$ |
+| $D_{i,\mathrm{outer}}$ | diffusivity of the material filling the interval $(r_i, r_{i+1})$ | $\mathrm{m^2\ s^{-1}}$ |
+| $D_{i,\mathrm{inner}}$ | diffusivity of the material filling $(r_{i-1}, r_i)$; $D_{i,\mathrm{inner}} = D_{i-1,\mathrm{outer}}$ | $\mathrm{m^2\ s^{-1}}$ |
 | $j = 0, 1, 2, \dots$ | time-step index; $t^j = j\,\Delta t$ | dimensionless |
 | $\Delta t$ | time step | $\mathrm{s}$ |
 | $C_i^j$ | concentration at node $i$ and time step $j$ | $\mathrm{mol\ m^{-3}}$ |
 | $\mathrm{Fo} = D\,\Delta t/\left(\Delta r\right)^2$ | mesh Fourier number; $\mathrm{Fo}_{\mathrm{kernel}} = D_{\mathrm{kernel}}\Delta t/\left(\Delta r_{\mathrm{kernel}}\right)^2$, and likewise for the other layers | dimensionless |
-| $K_{i+\frac12}$ | interval conductance divided by $4\pi$, Eq. (19) | $\mathrm{m^3\ s^{-1}}$ |
+| $K_{i,\mathrm{outer}}$ | conductance of the interval $(r_i, r_{i+1})$ divided by $4\pi$, Eq. (19); $K_{i,\mathrm{inner}} = K_{i-1,\mathrm{outer}}$ | $\mathrm{m^3\ s^{-1}}$ |
 | $V_i$ | nodal storage weight divided by $4\pi$, Eqs. (29) and (43) | $\mathrm{m^3}$ |
 | $L_i, B_i, U_i$ | lower, diagonal and upper coefficients of row $i$ of the tridiagonal matrix | dimensionless |
 | $M^j$ | discrete inventory at time step $j$ | $\mathrm{mol}$ |
@@ -56,8 +70,11 @@ Directive Section 5 is binding:
 | $M_{\mathrm{rel}}^j$ | cumulative release up to time step $j$ | $\mathrm{mol}$ |
 | $F^j$ | release fraction | dimensionless |
 | $\theta$ | initial value at the kernel-surface node as a fraction of $C_{\mathrm{init}}$ | dimensionless |
+| $\varepsilon^j = M^j + M_{\mathrm{rel}}^j - M^0$ | balance residual at time step $j$ | $\mathrm{mol}$ |
 
 **A clash in the directive's notation.** Directive item A5 writes the initial kernel concentration as $C_0$. With the binding notation $C_i^j$, $C_0$ is also the concentration at the centre node $i = 0$. This document therefore writes the initial kernel concentration as $C_{\mathrm{init}}$.
+
+**Inner and outer subscripts instead of half indices.** Directive Section 5 asks for full `inner` and `outer` subscripts where a geometric boundary must be named. The interval between nodes $i$ and $i+1$ is therefore named from node $i$ as its outer interval, and from node $i+1$ as its inner interval: $\Delta r_{i,\mathrm{outer}} = \Delta r_{i+1,\mathrm{inner}}$, $D_{i,\mathrm{outer}} = D_{i+1,\mathrm{inner}}$ and $K_{i,\mathrm{outer}} = K_{i+1,\mathrm{inner}}$. No half-integer node index and no finite-volume face is used.
 
 ### 0.3 Map of the transitions
 
@@ -274,6 +291,12 @@ $$
 
 The scheme is therefore first order in time and second order in space at interior nodes. Near the centre, $C'''/r_i$ stays bounded, because $C'''$ is odd in $r$ and vanishes at $r = 0$.
 
+**Node 1, the node next to the centre.** For an even field, $C''' = r\,C''''(0) + O\left(\left(r\right)^3\right)$ (Eq. (22) below), so at $r_1 = \Delta r_{\mathrm{kernel}}$ the bracket of Eq. (17) is $\frac{1}{12}C''''(0) + \frac{1}{3}C''''(0) = \frac{5}{12}C''''(0)$. A direct check: row 1 has $L_1 = 0$ (Section 4.3), so its spatial part is $2D_{\mathrm{kernel}}\left(C_2 - C_1\right)/\left(\Delta r_{\mathrm{kernel}}\right)^2$. Inserting Eq. (22) gives $3D_{\mathrm{kernel}}C''(0) + \frac{15}{12}D_{\mathrm{kernel}}\left(\Delta r_{\mathrm{kernel}}\right)^2C''''(0)$, while the exact operator at $r_1$ is $3D_{\mathrm{kernel}}C''(0) + \frac{10}{12}D_{\mathrm{kernel}}\left(\Delta r_{\mathrm{kernel}}\right)^2C''''(0)$. The residual of row 1 is therefore
+$$
+\tau_1^{j+1} = -\frac{\Delta t}{2}\ddot C - \frac{5}{12}D_{\mathrm{kernel}}\left(\Delta r_{\mathrm{kernel}}\right)^2C''''(0) + O\left(\left(\Delta t\right)^2 + \left(\Delta r_{\mathrm{kernel}}\right)^4\right), \tag{17a}
+$$
+second order, uniformly up to the centre (both derivations obtained this value independently).
+
 ### 3.5 The owner's regrouped form as a difference of flows (coordinator's hypothesis 1)
 
 **Claim.** On a uniform grid inside one layer, multiplying the spatial operator of Eq. (12) by $\left(r_i\right)^2\Delta r$ gives a difference of two interval flows:
@@ -308,29 +331,29 @@ $$
 Eliminating $b$ gives the exact steady flow through the shell:
 
 $$
-\Phi = -4\pi\,\frac{D\,r_i\,r_{i+1}}{r_{i+1} - r_i}\left(C_{i+1} - C_i\right) = -4\pi K_{i+\frac12}\left(C_{i+1} - C_i\right), \qquad K_{i+\frac12} = \frac{D_{i+\frac12}\,r_i\,r_{i+1}}{\Delta r_{i+\frac12}}. \tag{19}
+\Phi = -4\pi\,\frac{D\,r_i\,r_{i+1}}{r_{i+1} - r_i}\left(C_{i+1} - C_i\right) = -4\pi K_{i,\mathrm{outer}}\left(C_{i+1} - C_i\right), \qquad K_{i,\mathrm{outer}} = \frac{D_{i,\mathrm{outer}}\,r_i\,r_{i+1}}{\Delta r_{i,\mathrm{outer}}}. \tag{19}
 $$
 
-So the face factor $r_i r_{i+1}$ in Eq. (18) is not an approximation of an area. It is the exact steady-state conductance of a spherical shell. This is why the owner's stencil reproduces $C = a + b/r$ exactly, and why Eq. (19) can be used unchanged on non-uniform grids and next to interfaces (Sections 5 and 8). $K_{i+\frac12}$ has units $\mathrm{m^2\ s^{-1}}\times\mathrm{m}\times\mathrm{m}/\mathrm{m} = \mathrm{m^3\ s^{-1}}$.
+So the face factor $r_i r_{i+1}$ in Eq. (18) is not an approximation of an area. It is the exact steady-state conductance of a spherical shell. This is why the owner's stencil reproduces $C = a + b/r$ exactly, and why Eq. (19) can be used unchanged on non-uniform grids and next to interfaces (Sections 5 and 8). $K_{i,\mathrm{outer}}$ has units $\mathrm{m^2\ s^{-1}}\times\mathrm{m}\times\mathrm{m}/\mathrm{m} = \mathrm{m^3\ s^{-1}}$.
 
 **Discrete conservation.** With $V_i = \left(r_i\right)^2\Delta r$ on a uniform grid, Eqs. (12) and (18) give the BTCS step in balance form:
 
 $$
-V_i\,\frac{C_i^{j+1} - C_i^j}{\Delta t} = K_{i+\frac12}\left(C_{i+1}^{j+1} - C_i^{j+1}\right) - K_{i-\frac12}\left(C_i^{j+1} - C_{i-1}^{j+1}\right). \tag{20}
+V_i\,\frac{C_i^{j+1} - C_i^j}{\Delta t} = K_{i,\mathrm{outer}}\left(C_{i+1}^{j+1} - C_i^{j+1}\right) - K_{i,\mathrm{inner}}\left(C_i^{j+1} - C_{i-1}^{j+1}\right). \tag{20}
 $$
 
-The amount gained by node $i$ through its outer interval is exactly the amount lost by node $i+1$ through its inner interval, because both use the same $K_{i+\frac12}$. Summing Eq. (20) over $i = 1, \dots, N-1$, every inner interval flow appears once with $+$ and once with $-$, and only the two end terms remain:
+The amount gained by node $i$ through its outer interval is exactly the amount lost by node $i+1$ through its inner interval, because both use the same $K_{i,\mathrm{outer}}$. Summing Eq. (20) over $i = 1, \dots, N-1$, every inner interval flow appears once with $+$ and once with $-$, and only the two end terms remain:
 
 $$
-\sum_{i=1}^{N-1}V_i\left(C_i^{j+1} - C_i^j\right) = \Delta t\left[K_{N-\frac12}\left(C_N^{j+1} - C_{N-1}^{j+1}\right) - K_{\frac12}\left(C_1^{j+1} - C_0^{j+1}\right)\right]. \tag{21}
+\sum_{i=1}^{N-1}V_i\left(C_i^{j+1} - C_i^j\right) = \Delta t\left[K_{N-1,\mathrm{outer}}\left(C_N^{j+1} - C_{N-1}^{j+1}\right) - K_{0,\mathrm{outer}}\left(C_1^{j+1} - C_0^{j+1}\right)\right]. \tag{21}
 $$
 
-$K_{\frac12} = D_{\mathrm{kernel}}\,r_0\,r_1/\Delta r_{\frac12} = 0$ because $r_0 = 0$, so nothing flows through the centre. Eq. (21) holds for every $\Delta t > 0$, in exact arithmetic. Hypothesis (1) is therefore **proved**: the conserved quantity is $4\pi\sum_{i=1}^{N-1}V_i C_i^j$, the centre node has weight zero, and the only exchange with the outside is the flow through the last interval (Section 6).
+$K_{0,\mathrm{outer}} = D_{\mathrm{kernel}}\,r_0\,r_1/\Delta r_{0,\mathrm{outer}} = 0$ because $r_0 = 0$, so nothing flows through the centre. Eq. (21) holds for every $\Delta t > 0$, in exact arithmetic. Hypothesis (1) is therefore **proved**: the conserved quantity is $4\pi\sum_{i=1}^{N-1}V_i C_i^j$, the centre node has weight zero, and the only exchange with the outside is the flow through the last interval (Section 6).
 
 **What the conserved inventory approximates.** The trapezoidal rule for $\int_0^{R_5}4\pi\left(r\right)^2 C\,dr$ on the nodes $r_0, \dots, r_N$ is
 
 $$
-\sum_{i=0}^{N-1}\frac{\Delta r_{i+\frac12}}{2}\left[4\pi\left(r_i\right)^2 C_i + 4\pi\left(r_{i+1}\right)^2 C_{i+1}\right] = 4\pi\sum_{i=1}^{N-1}\left(r_i\right)^2\frac{\Delta r_{i-\frac12} + \Delta r_{i+\frac12}}{2}C_i + 2\pi\left[\Delta r_{\frac12}\left(r_0\right)^2 C_0 + \Delta r_{N-\frac12}\left(r_N\right)^2 C_N\right].
+\sum_{i=0}^{N-1}\frac{\Delta r_{i,\mathrm{outer}}}{2}\left[4\pi\left(r_i\right)^2 C_i + 4\pi\left(r_{i+1}\right)^2 C_{i+1}\right] = 4\pi\sum_{i=1}^{N-1}\left(r_i\right)^2\frac{\Delta r_{i,\mathrm{inner}} + \Delta r_{i,\mathrm{outer}}}{2}C_i + 2\pi\left[\Delta r_{0,\mathrm{outer}}\left(r_0\right)^2 C_0 + \Delta r_{N-1,\mathrm{outer}}\left(r_N\right)^2 C_N\right].
 $$
 
 The last bracket is zero, because $r_0 = 0$ and $C_N = 0$ (Section 6). The conserved sum is therefore exactly the trapezoidal rule: a second-order approximation of the true inventory for a smooth profile.
@@ -363,13 +386,13 @@ This confirms the owner's L'Hôpital result (H14) and (T18), and answers his que
 
 ### 4.2 Ghost node and the BTCS centre row
 
-With the centre at $i = 0$ (the numbering of Document T), the ghost value $C_{-1}$ sits at $r = -\Delta r_{\frac12}$. By the even symmetry of Eq. (22), $C_{-1} = C_1$, which is (T15). The central second difference collapses as in (T16):
+With the centre at $i = 0$ (the numbering of Document T), the ghost value $C_{-1}$ sits at $r = -\Delta r_{0,\mathrm{outer}}$. By the even symmetry of Eq. (22), $C_{-1} = C_1$, which is (T15). The central second difference collapses as in (T16):
 
 $$
-\left.\frac{\partial^2 C}{\partial r^2}\right|_{r=0} \approx \frac{C_1 - 2C_0 + C_{-1}}{\left(\Delta r_{\frac12}\right)^2} = \frac{2\left(C_1 - C_0\right)}{\left(\Delta r_{\frac12}\right)^2}. \tag{24}
+\left.\frac{\partial^2 C}{\partial r^2}\right|_{r=0} \approx \frac{C_1 - 2C_0 + C_{-1}}{\left(\Delta r_{0,\mathrm{outer}}\right)^2} = \frac{2\left(C_1 - C_0\right)}{\left(\Delta r_{0,\mathrm{outer}}\right)^2}. \tag{24}
 $$
 
-By Eq. (22), $2\left(C_1 - C_0\right)/\left(\Delta r_{\frac12}\right)^2 = C''(0) + \frac{\left(\Delta r_{\frac12}\right)^2}{12}C''''(0) + \dots$, so this is second order. Backward Euler with Eqs. (23) and (24), all at $t^{j+1}$:
+By Eq. (22), $2\left(C_1 - C_0\right)/\left(\Delta r_{0,\mathrm{outer}}\right)^2 = C''(0) + \frac{\left(\Delta r_{0,\mathrm{outer}}\right)^2}{12}C''''(0) + \dots$, so this is second order. Backward Euler with Eqs. (23) and (24), all at $t^{j+1}$:
 
 $$
 \frac{C_0^{j+1} - C_0^j}{\Delta t} = 3D_{\mathrm{kernel}}\cdot\frac{2\left(C_1^{j+1} - C_0^{j+1}\right)}{\left(\Delta r_{\mathrm{kernel}}\right)^2}.
@@ -381,18 +404,24 @@ $$
 \boxed{\left(1 + 6\,\mathrm{Fo}_{\mathrm{kernel}}\right)C_0^{j+1} - 6\,\mathrm{Fo}_{\mathrm{kernel}}\,C_1^{j+1} = C_0^j}, \qquad B_0 = 1 + 6\,\mathrm{Fo}_{\mathrm{kernel}}, \quad U_0 = -6\,\mathrm{Fo}_{\mathrm{kernel}}. \tag{25}
 $$
 
+**Truncation error of the centre row.** Multiplying the expansion above by $3D_{\mathrm{kernel}}$:
+$$
+\frac{6D_{\mathrm{kernel}}\left(C_1 - C_0\right)}{\left(\Delta r_{\mathrm{kernel}}\right)^2} = 3D_{\mathrm{kernel}}C''(0) + \frac{D_{\mathrm{kernel}}\left(\Delta r_{\mathrm{kernel}}\right)^2}{4}C''''(0) + O\left(\left(\Delta r_{\mathrm{kernel}}\right)^4\right),
+$$
+so the residual of row 0 is $\tau_0^{j+1} = -\frac{\Delta t}{2}\ddot C(0) - \frac{1}{4}D_{\mathrm{kernel}}\left(\Delta r_{\mathrm{kernel}}\right)^2C''''(0) + O\left(\left(\Delta t\right)^2 + \left(\Delta r_{\mathrm{kernel}}\right)^4\right)$. **(PROVED** for a field that is smooth and even near the centre.)
+
 **Check against the owner's treatment.** Eq. (25) is the implicit counterpart of (T20), $C_0^{j+1} = (1 - 6\mathrm{Fo})C_0^j + 6\mathrm{Fo}\,C_1^j$, with the same factor $6 = 3 \times 2$. In Document H the same row appears with inconsistent indices, (H15). The consistent forms are (C2) in document 00. Two of the owner's slips must not be carried over: the time difference across two spatial nodes, and the factor 3 at the outer surface (H17).
 
 ### 4.3 The centre value does not feed back (coordinator's hypothesis 2)
 
 **Claim.** In the interior row of node 1, the coefficient of $C_0^{j+1}$ is zero.
 
-**Proof.** By Eq. (16) with $i = 1$: $L_1 = -\mathrm{Fo}_{\mathrm{kernel}}\left(1 - \frac{1}{1}\right) = 0$. Equivalently, by Eq. (20), node 1 is coupled to node 0 through $K_{\frac12} = D_{\mathrm{kernel}}\,r_0\,r_1/\Delta r_{\frac12} = 0$. $\square$
+**Proof.** By Eq. (16) with $i = 1$: $L_1 = -\mathrm{Fo}_{\mathrm{kernel}}\left(1 - \frac{1}{1}\right) = 0$. Equivalently, by Eq. (20), node 1 is coupled to node 0 through $K_{0,\mathrm{outer}} = D_{\mathrm{kernel}}\,r_0\,r_1/\Delta r_{0,\mathrm{outer}} = 0$. $\square$
 
 **Consequences.**
 
 1. **One-way coupling.** Rows $1, \dots, N-1$ contain only $C_1^{j+1}, \dots, C_{N-1}^{j+1}$ and form a closed system. $C_0^{j+1}$ is then fixed by Eq. (25) from $C_1^{j+1}$. Node 0 receives information from node 1 but sends none back. In the matrix this is the zero in position $(1,0)$. The matrix stays tridiagonal, and the Thomas algorithm (Section 9.3) needs no special case.
-2. **Zero weight in the inventory.** Node 0 does not appear in the conserved sum (21); its trapezoidal weight would be $\left(r_0\right)^2\Delta r_{\frac12}/2 = 0$. This is the trapezoidal rule's zero weight at $r = 0$, where the integrand $4\pi\left(r\right)^2 C$ vanishes.
+2. **Zero weight in the inventory.** Node 0 does not appear in the conserved sum (21); its trapezoidal weight would be $\left(r_0\right)^2\Delta r_{0,\mathrm{outer}}/2 = 0$. This is the trapezoidal rule's zero weight at $r = 0$, where the integrand $4\pi\left(r\right)^2 C$ vanishes.
 3. **Conservation.** Eq. (25) is not part of the balance (21). It is a consistent diagnostic equation: $C_0^j$ converges to $C(0, t^j)$, at second order in space and first order in time, but no amount is stored in or released from node 0.
 4. **Physical consistency.** The true flow through a sphere of radius $r$ is $4\pi\left(r\right)^2 J$, which tends to zero as $r \to 0$ (v1.0.0 Part III, Eq. (3.1)). A zero conductance between nodes 0 and 1 is the exact discrete statement of that condition.
 5. **The ghost-node row and finite volumes.** The ghost-node row (25) is the same equation that a finite-volume balance gives on a small ball of radius $\Delta r/2$ around the centre. The ball's storage weight is $\frac{1}{3}\left(\frac{\Delta r}{2}\right)^3$ (volume divided by $4\pi$), its surface factor is $\left(\frac{\Delta r}{2}\right)^2$, and the flux is $D\,(C_1 - C_0)/\Delta r$:
@@ -403,6 +432,12 @@ $$
    - Dropping row 0 and setting $C_0 = (4C_1 - C_2)/3$ (even quadratic extrapolation) is also second order, but it discards the owner's L'Hôpital derivation.
 
    **Decision:** keep Eq. (25).
+7. **What a wrong centre row would damage (from derivation B).** Because of items 1 and 2, the rows $i \ge 1$, the inventory, the release and the balance identity (37) do not depend on row 0 at all. A wrong centre row therefore damages only the value $C_0^j$ itself and any diagnostic that includes node 0. Two wrong rows are instructive:
+   - dropping the factor 3 of Eq. (23) gives $U_0 = -2\,\mathrm{Fo}_{\mathrm{kernel}}$ instead of $-6\,\mathrm{Fo}_{\mathrm{kernel}}$;
+   - imposing $C_0 = C_1$ gives a first-order Neumann row.
+
+   Row 0 relaxes $C_0$ towards $C_1$ on the time scale $\left(\Delta r_{\mathrm{kernel}}\right)^2/D_{\mathrm{kernel}}$. For a smooth solution, Eq. (25) gives $C_1 - C_0 \approx \left(\Delta r_{\mathrm{kernel}}\right)^2\,\partial_t C(0)/\left(6D_{\mathrm{kernel}}\right)$, correct to leading order. The row without the factor 3 gives three times that difference and $C_0 = C_1$ gives zero, so both wrong rows still leave $C_0$ within $O\left(\left(\Delta r_{\mathrm{kernel}}\right)^2\right)$ of the exact value. In derivation B's scratch runs on the homogeneous sphere (archive, Section 10.4), the error at $i \ge 1$ was identical to all printed digits for the three rows, and all three centre errors converged at second order. Eq. (25) is kept because it is the only one of the three that is consistent with Eq. (23); the observation shows only that a centre-row mistake cannot hide in the inventory or the release, so a test of $C_0$ itself is needed to detect it.
+8. **Error bound at the centre.** Row 0 reads $C_0^{j+1} = \left(C_0^j + 6\,\mathrm{Fo}_{\mathrm{kernel}}C_1^{j+1}\right)/\left(1 + 6\,\mathrm{Fo}_{\mathrm{kernel}}\right)$, a convex combination. Its error therefore satisfies $\left|e_0^{j}\right| \le \max\left(\left|e_0^0\right|, \max_{k \le j}\left|e_1^k\right|\right) + t^j\max\left|\tau_0\right|$: the centre error follows the pointwise error at node 1.
 
 ---
 
@@ -438,8 +473,8 @@ and likewise $D_{\mathrm{buffer}}\,\partial_r C|_{R_2^-} = D_{\mathrm{IPyC}}\,\p
 
 Let node $i$ lie on an interface at radius $r_i = R$, with:
 
-- the inner material, diffusivity $D_{\mathrm{in}}$, filling $(r_{i-1}, r_i)$, of length $\Delta r_- = \Delta r_{i-\frac12}$;
-- the outer material, diffusivity $D_{\mathrm{out}}$, filling $(r_i, r_{i+1})$, of length $\Delta r_+ = \Delta r_{i+\frac12}$.
+- the inner material, diffusivity $D_{\mathrm{in}}$, filling $(r_{i-1}, r_i)$, of length $\Delta r_- = \Delta r_{i,\mathrm{inner}}$;
+- the outer material, diffusivity $D_{\mathrm{out}}$, filling $(r_i, r_{i+1})$, of length $\Delta r_+ = \Delta r_{i,\mathrm{outer}}$.
 
 For the kernel-buffer interface, $D_{\mathrm{in}} = D_{\mathrm{kernel}}$, $D_{\mathrm{out}} = D_{\mathrm{buffer}}$, $\Delta r_- = \Delta r_{\mathrm{kernel}}$ and $\Delta r_+ = \Delta r_{\mathrm{buffer}}$.
 
@@ -448,7 +483,7 @@ The interface row is built from the two ingredients of Section 3.5, which do not
 **Flow through each adjacent interval.** Each interval lies inside one material, so the exact steady shell conductance (19) applies with that material's diffusivity, and no averaging of $D$ is needed:
 
 $$
-K_{i-\frac12} = \frac{D_{\mathrm{in}}\,r_{i-1}\,r_i}{\Delta r_-}, \qquad K_{i+\frac12} = \frac{D_{\mathrm{out}}\,r_i\,r_{i+1}}{\Delta r_+}. \tag{28}
+K_{i,\mathrm{inner}} = \frac{D_{\mathrm{in}}\,r_{i-1}\,r_i}{\Delta r_-}, \qquad K_{i,\mathrm{outer}} = \frac{D_{\mathrm{out}}\,r_i\,r_{i+1}}{\Delta r_+}. \tag{28}
 $$
 
 **Storage at the node.** By the trapezoidal rule (Section 3.5), node $i$ carries half of each adjacent interval:
@@ -462,7 +497,7 @@ This uses the inner material's half-interval on the left and the outer material'
 **The balance.** Storage change equals inflow from the inner interval minus outflow through the outer interval, at $t^{j+1}$:
 
 $$
-V_i\,\frac{C_i^{j+1} - C_i^j}{\Delta t} = K_{i+\frac12}\left(C_{i+1}^{j+1} - C_i^{j+1}\right) - K_{i-\frac12}\left(C_i^{j+1} - C_{i-1}^{j+1}\right). \tag{30}
+V_i\,\frac{C_i^{j+1} - C_i^j}{\Delta t} = K_{i,\mathrm{outer}}\left(C_{i+1}^{j+1} - C_i^{j+1}\right) - K_{i,\mathrm{inner}}\left(C_i^{j+1} - C_{i-1}^{j+1}\right). \tag{30}
 $$
 
 Eq. (30) has the same form as Eq. (20). The two differ only in where $V_i$ and $K$ come from. The interface row is therefore tridiagonal and fits into the telescoping sum (21) without change.
@@ -470,7 +505,7 @@ Eq. (30) has the same form as Eq. (20). The two differ only in where $V_i$ and $
 **Its coefficients.** Multiply by $\Delta t/V_i$ and collect as in Section 3.4:
 
 $$
-L_i = -\frac{\Delta t\,K_{i-\frac12}}{V_i}, \qquad U_i = -\frac{\Delta t\,K_{i+\frac12}}{V_i}, \qquad B_i = 1 - L_i - U_i. \tag{31}
+L_i = -\frac{\Delta t\,K_{i,\mathrm{inner}}}{V_i}, \qquad U_i = -\frac{\Delta t\,K_{i,\mathrm{outer}}}{V_i}, \qquad B_i = 1 - L_i - U_i. \tag{31}
 $$
 
 Inserting Eqs. (28) and (29), with $r_{i-1} = R - \Delta r_-$ and $r_{i+1} = R + \Delta r_+$:
@@ -492,21 +527,33 @@ where $\mathrm{Fo}_{\mathrm{in}} = D_{\mathrm{in}}\Delta t/\left(\Delta r_-\righ
 The discrete outward flows on the two sides of the interface node are
 
 $$
-\Phi_{i-\frac12} = 4\pi K_{i-\frac12}\left(C_{i-1} - C_i\right) \ \text{(arriving from the inner material)}, \qquad \Phi_{i+\frac12} = 4\pi K_{i+\frac12}\left(C_i - C_{i+1}\right) \ \text{(leaving into the outer material)}.
+\Phi_{i,\mathrm{inner}} = 4\pi K_{i,\mathrm{inner}}\left(C_{i-1} - C_i\right) \ \text{(arriving from the inner material)}, \qquad \Phi_{i,\mathrm{outer}} = 4\pi K_{i,\mathrm{outer}}\left(C_i - C_{i+1}\right) \ \text{(leaving into the outer material)}.
 $$
 
-By Eq. (30), $\Phi_{i-\frac12}^{j+1} - \Phi_{i+\frac12}^{j+1} = 4\pi V_i\,(C_i^{j+1} - C_i^j)/\Delta t$: they differ by exactly the storage term. As the grid is refined, $V_i \to 0$ while $\partial C/\partial t$ stays bounded, so the two flows become equal: the discrete form of Eq. (27). The difference is the amount stored in the two half-intervals during the step. It is not a loss, because Eq. (21) accounts for it. A post-processor that reports the interface flux should report the two one-sided values and their difference, or their storage-corrected mean.
+By Eq. (30), $\Phi_{i,\mathrm{inner}}^{j+1} - \Phi_{i,\mathrm{outer}}^{j+1} = 4\pi V_i\,(C_i^{j+1} - C_i^j)/\Delta t$: they differ by exactly the storage term. As the grid is refined, $V_i \to 0$ while $\partial C/\partial t$ stays bounded, so the two flows become equal: the discrete form of Eq. (27). The difference is the amount stored in the two half-intervals during the step. It is not a loss, because Eq. (21) accounts for it.
+
+**The flow at the interface radius itself (from derivation B).** Split the storage term between the two half-intervals, in the same proportions as $V_i$ in Eq. (29). The outward flow at $r = R$, reconstructed from the inner side and from the outer side, is
+
+$$
+\Phi_{R,\mathrm{inner}}^{j+1} = \Phi_{i,\mathrm{inner}}^{j+1} - 4\pi\left(R\right)^2\frac{\Delta r_-}{2}\,\frac{C_i^{j+1} - C_i^j}{\Delta t}, \qquad \Phi_{R,\mathrm{outer}}^{j+1} = \Phi_{i,\mathrm{outer}}^{j+1} + 4\pi\left(R\right)^2\frac{\Delta r_+}{2}\,\frac{C_i^{j+1} - C_i^j}{\Delta t}. \tag{30a}
+$$
+
+**Claim (PROVED).** $\Phi_{R,\mathrm{inner}}^{j+1} = \Phi_{R,\mathrm{outer}}^{j+1}$ exactly.
+
+**Proof.** $\Phi_{R,\mathrm{inner}} - \Phi_{R,\mathrm{outer}} = \Phi_{i,\mathrm{inner}} - \Phi_{i,\mathrm{outer}} - 4\pi\left(R\right)^2\frac{\Delta r_- + \Delta r_+}{2}\,\frac{C_i^{j+1} - C_i^j}{\Delta t} = \Phi_{i,\mathrm{inner}} - \Phi_{i,\mathrm{outer}} - 4\pi V_i\,\frac{C_i^{j+1} - C_i^j}{\Delta t} = 0$, by the statement after Eq. (30). $\square$
+
+**Accuracy.** Let $m_- = R - \Delta r_-/2$ be the midpoint of the inner interval. $\Phi_{i,\mathrm{inner}}$ approximates the exact outward flow at $m_-$ to second order: its conductance factor is $r_{i-1}r_i = \left(m_-\right)^2 - \frac{1}{4}\left(\Delta r_-\right)^2$, and the difference quotient is the derivative at $m_-$ up to $O\left(\left(\Delta r_-\right)^2\right)$. Integrating Eq. (2) from $m_-$ to $R$ gives $\Phi(R) = \Phi(m_-) - 4\pi\left(R\right)^2\frac{\Delta r_-}{2}\,\partial_t C(R) + O\left(\left(\Delta r_-\right)^2\right)$. So the reconstructed value (30a) approximates the exact interface flow $\Phi(R, t^{j+1})$ to $O\left(\left(\Delta r\right)^2 + \Delta t\right)$, from either side, while the raw one-sided values $\Phi_{i,\mathrm{inner}}$ and $\Phi_{i,\mathrm{outer}}$ are only first-order approximations of it. In derivation B's synthetic run (archive, Section 10.2) the raw values differed by up to 6% at $R_1$, and the two reconstructed values agreed to a relative $7.4\times10^{-11}$ or better, rounding. **Decision:** a post-processor that reports the flux at an interface reports Eq. (30a). This is the quantity that directive Phase D, test E, can use.
 
 ### 5.5 Consistency of the interface row
 
 Expand $C_{i\pm1}$ about $r_i = R$ on each side separately. Write $C'_\pm$ and $C''_\pm$ for the one-sided derivatives at $R^\pm$:
 
 $$
-K_{i+\frac12}\left(C_{i+1} - C_i\right) = D_{\mathrm{out}}\,R\left(R + \Delta r_+\right)\left[C'_+ + \frac{\Delta r_+}{2}C''_+ + O\left(\left(\Delta r_+\right)^2\right)\right],
+K_{i,\mathrm{outer}}\left(C_{i+1} - C_i\right) = D_{\mathrm{out}}\,R\left(R + \Delta r_+\right)\left[C'_+ + \frac{\Delta r_+}{2}C''_+ + O\left(\left(\Delta r_+\right)^2\right)\right],
 $$
 
 $$
-K_{i-\frac12}\left(C_i - C_{i-1}\right) = D_{\mathrm{in}}\,R\left(R - \Delta r_-\right)\left[C'_- - \frac{\Delta r_-}{2}C''_- + O\left(\left(\Delta r_-\right)^2\right)\right].
+K_{i,\mathrm{inner}}\left(C_i - C_{i-1}\right) = D_{\mathrm{in}}\,R\left(R - \Delta r_-\right)\left[C'_- - \frac{\Delta r_-}{2}C''_- + O\left(\left(\Delta r_-\right)^2\right)\right].
 $$
 
 Subtracting and ordering by powers of the spacing:
@@ -521,7 +568,7 @@ $$
 - By Eq. (5) on each side, $D_{\mathrm{out}}\left[C''_+ + \frac{2}{R}C'_+\right]$ and $D_{\mathrm{in}}\left[C''_- + \frac{2}{R}C'_-\right]$ are the one-sided limits of $\partial C/\partial t$ at $R$. They are equal, because $C$ is continuous at $R$ for all $t$ (Eq. (26)), and so is its time derivative.
 - The difference of flows is therefore $\left(R\right)^2\frac{\Delta r_- + \Delta r_+}{2}\,\frac{\partial C}{\partial t} + O\left(\left(\Delta r\right)^2\right) = V_i\,\frac{\partial C}{\partial t} + O\left(\left(\Delta r\right)^2\right)$.
 
-Dividing by $V_i$: the interface row approximates $\partial C/\partial t$ with a local truncation error of order $\Delta r$. A first-order local error confined to isolated nodes is the usual situation at interfaces, and it does not reduce the global order. In scratch runs of the synthetic five-layer case (Section 11), the global error in the release fraction converged at order $1.99$ to $2.05$.
+Dividing by $V_i$: the interface row approximates $\partial C/\partial t$ with a local truncation error of order $\Delta r$. The surviving $O\left(\left(\Delta r\right)^2\right)$ terms of the difference of flows contain $C'''_\pm$ and the second-order Taylor terms on each side; they do not cancel in general (both derivations reached this conclusion independently). A first-order local error confined to isolated nodes is the usual situation at interfaces. That it does not reduce the global order is shown in the weighted $L^2$ norm by the proof outline of Section 9.5, and observed: in scratch runs of the synthetic five-layer case (Section 11), the global error in the release fraction converged at order $1.99$ to $2.05$.
 
 ### 5.6 Alternatives, and why the half-interval balance is chosen (coordinator's hypothesis 3)
 
@@ -547,7 +594,9 @@ $$
 The two differ only in the weights of the curvature term:
 
 - **Equal spacing.** For $\Delta r_- = \Delta r_+$ they are identical. The owner's ghost-node method and the flux balance give the same interface row.
-- **Unequal spacing.** For $\Delta r_- \ne \Delta r_+$, (33a) interpolates the node flux more accurately, but it is not a difference of interval flows, so it loses discrete conservation. In a scratch run (synthetic case, 40 intervals per layer, $\Delta t = 200\ \mathrm{s}$, 1000 steps), the largest relative balance residual was $3.15\times10^{-4}$ with (33a) at the four interface nodes, against $3.75\times10^{-11}$ with (33b).
+- **Unequal spacing.** For $\Delta r_- \ne \Delta r_+$, (33a) is not a difference of interval flows, so it loses discrete conservation. Multiplied by $V_i$, its coefficient of $\left(C_{i+1} - C_i\right)$ is $D_{\mathrm{out}}\,R\left(R + \Delta r_-\right)/\Delta r_+$, while row $i+1$ uses $D_{\mathrm{out}}\,R\left(R + \Delta r_+\right)/\Delta r_+$ for the same interval, so the sum (21) does not telescope. Its local truncation error is also $O(\Delta r)$, like that of (33b). Its coefficient of $C_{i-1}$, $2D_{\mathrm{in}}\left(R - \Delta r_+\right)/\left(R\,\Delta r_-\left(\Delta r_- + \Delta r_+\right)\right)$, has the wrong sign when $\Delta r_+ > R$. Scratch runs:
+  - balance residual (synthetic case, 40 intervals per layer, $\Delta t = 200\ \mathrm{s}$): the largest relative residual was $3.15\times10^{-4}$ with (33a) at the four interface nodes, against rounding level ($\sim10^{-11}$) with (33b). Derivation B obtained the same $3.15\times10^{-4}$ independently, with 200 steps, and $1.25\times10^{-3}$ at 20 intervals per layer;
+  - accuracy (derivation B, archive Section 10.3): on the slowest five-layer eigenvalue both rows converge at second order, and the error of (33a) is about 2.4 times smaller than that of (33b). Accuracy on this measure does not separate the two rows; conservation and the sign pattern do.
 
 **(b) One-sided second-order differences.** Replace the interface row by the algebraic flux-matching condition
 
@@ -559,11 +608,11 @@ Three defects:
 
 - The row has five entries, so the matrix is no longer tridiagonal.
 - $C_{i\pm2}$ enter with the sign opposite to that of $C_{i\pm1}$, so the off-diagonal sign pattern needed for an M-matrix (Section 9) is lost.
-- The node has no storage. The system becomes differential-algebraic, and the inventory loses the interface node's weight (29), so the balance (21) no longer closes.
+- The node has no storage. The system becomes differential-algebraic, and the inventory loses the interface node's weight (29), so the balance (21) no longer closes. Row $i$ is also not diagonally dominant: its off-diagonal magnitudes sum to $\frac{5}{2}\left(D_{\mathrm{in}}/\Delta r_- + D_{\mathrm{out}}/\Delta r_+\right)$, against the diagonal $\frac{3}{2}\left(D_{\mathrm{in}}/\Delta r_- + D_{\mathrm{out}}/\Delta r_+\right)$. In derivation B's scratch runs the relative inventory drift was $3.0\times10^{-2}$, $8.8\times10^{-3}$ and $2.4\times10^{-3}$ at 20, 40 and 80 intervals per layer.
 
 **(c) One-sided first-order differences.** The condition $D_{\mathrm{in}}(C_i - C_{i-1})/\Delta r_- = D_{\mathrm{out}}(C_{i+1} - C_i)/\Delta r_+$ is tridiagonal and has the right signs. It is Eq. (30) with $V_i = 0$ and with planar instead of spherical conductances. Its flux is only first-order accurate. It also removes the storage of two half-intervals, so the trapezoidal inventory is not conserved.
 
-**(d) Nodes off the interfaces, with harmonic-mean diffusivities.** This works, but it requires a series conductance for every interval that straddles an interface. It is in substance the finite-volume layout the directive retires. With nodes on the interfaces, every interval lies in one material and no averaging is needed.
+**(d) Nodes off the interfaces, with harmonic-mean diffusivities.** This works, but it requires a series conductance for every interval that straddles an interface, $K = r_i r_{i+1}\big/\left[\left(R - r_i\right)/D_{\mathrm{in}} + \left(r_{i+1} - R\right)/D_{\mathrm{out}}\right]$. It is tridiagonal, conservative and second order (derivation B observed order 2.0 on the slowest eigenvalue). But $C(R)$ is not an unknown and must be reconstructed, and it is in substance the finite-volume layout the directive retires. With nodes on the interfaces, every interval lies in one material and no averaging is needed.
 
 **Decision.** Use the half-interval flux balance (30) to (32). It keeps nodal unknowns and continuity of concentration. It keeps the tridiagonal structure and the M-matrix sign pattern (Section 9). It conserves the trapezoidal inventory exactly, gives the owner's ghost-node row on equal spacing, and never applies a constant-$D$ stencil across a jump. Hypothesis (3) is **proved**.
 
@@ -587,7 +636,7 @@ $$
 
 $B_{N-1}$ keeps the full value $1 - L_{N-1} - U_{N-1}$. The coupling to the boundary remains in the diagonal; only the off-diagonal entry is removed. The unknowns are $C_0^{j+1}, \dots, C_{N-1}^{j+1}$: $N$ unknowns and $N$ rows.
 
-**The release rate, from the discrete balance.** Insert $C_N^{j+1} = 0$ and $K_{\frac12} = 0$ into Eq. (21), and multiply by $4\pi$. With the inventory
+**The release rate, from the discrete balance.** Insert $C_N^{j+1} = 0$ and $K_{0,\mathrm{outer}} = 0$ into Eq. (21), and multiply by $4\pi$. With the inventory
 
 $$
 M^j = 4\pi\sum_{i=1}^{N-1}V_i\,C_i^j, \tag{34c}
@@ -596,16 +645,16 @@ $$
 the balance becomes
 
 $$
-\frac{M^{j+1} - M^j}{\Delta t} = -4\pi K_{N-\frac12}\,C_{N-1}^{j+1} \equiv -\Phi^{j+1}. \tag{35}
+\frac{M^{j+1} - M^j}{\Delta t} = -4\pi K_{N-1,\mathrm{outer}}\,C_{N-1}^{j+1} \equiv -\Phi^{j+1}. \tag{35}
 $$
 
 The release rate is therefore
 
 $$
-\boxed{\Phi^{j+1} = 4\pi\,\frac{D_{\mathrm{OPyC}}\,r_{N-1}\,R_5}{\Delta r_{N-\frac12}}\,C_{N-1}^{j+1}} \qquad \left(\mathrm{m^3\ s^{-1}}\times\mathrm{mol\ m^{-3}} = \mathrm{mol\ s^{-1}}\right). \tag{36}
+\boxed{\Phi^{j+1} = 4\pi\,\frac{D_{\mathrm{OPyC}}\,r_{N-1}\,R_5}{\Delta r_{N-1,\mathrm{outer}}}\,C_{N-1}^{j+1}} \qquad \left(\mathrm{m^3\ s^{-1}}\times\mathrm{mol\ m^{-3}} = \mathrm{mol\ s^{-1}}\right). \tag{36}
 $$
 
-It is the discrete counterpart of $\Phi_R = -4\pi\left(R_5\right)^2 D_{\mathrm{OPyC}}\,\partial_r C(R_5, t)$ (v1.0.0 Part III, Eq. (3.7)). The one-sided gradient $(0 - C_{N-1})/\Delta r_{N-\frac12}$ and the factor $r_{N-1}R_5$ in place of $\left(R_5\right)^2$ come from the exact shell conductance (19).
+It is the discrete counterpart of $\Phi_R = -4\pi\left(R_5\right)^2 D_{\mathrm{OPyC}}\,\partial_r C(R_5, t)$ (v1.0.0 Part III, Eq. (3.7)). The one-sided gradient $(0 - C_{N-1})/\Delta r_{N-1,\mathrm{outer}}$ and the factor $r_{N-1}R_5$ in place of $\left(R_5\right)^2$ come from the exact shell conductance (19).
 
 **Cumulative release, balance and release fraction.**
 
@@ -617,9 +666,25 @@ With a variable time step, $\Delta t$ in the sum is the length of step $k$. The 
 
 **Sign and bounds.** Section 9 proves $C_{N-1}^{j+1} \ge 0$, so $\Phi^{j+1} \ge 0$: the release never runs backwards, and $F^j$ never decreases. Since $M^j \ge 0$, $F^j \le 1$.
 
-**Accuracy of the release rate.** $\Phi^{j+1}$ is the flow through the last interval, not exactly at $R_5$. The two differ by the rate of change of the amount stored between $r_{N-1}$ and $R_5$. Because $\partial C/\partial t = 0$ at $R_5$, this difference is of second order in the spacing; this is a heuristic argument, not a proof.
+**Accuracy of the release rate.** $\Phi^{j+1}$ is the flow through the last interval, not exactly at $R_5$. Two statements must be kept apart: the consistency of formula (36), which is proved, and the convergence of the computed release rate, which is observed.
 
-A scratch check on the homogeneous sphere supports it. Setup: $R_5 = 1$, $D = 1$, uniform start, semi-discrete solution integrated exactly in time, with the rate normalised by the exact initial inventory. The error in $\Phi/M^0$ fell from $-2.7\times10^{-1}$ to $-1.0\times10^{-3}$ at $t = 0.01$ as $N$ went from 20 to 320, and from $-1.7\times10^{-3}$ to $-6.5\times10^{-6}$ at $t = 0.2$. The observed orders were $2.00$ to $2.03$.
+*Consistency (PROVED, from derivation B, for a solution that is smooth in the OPyC near $R_5$, with no source).* Write $h = \Delta r_{N-1,\mathrm{outer}}$ and insert the exact solution into Eq. (36). Taylor's theorem about $R_5$, with $C(R_5, t) = 0$, gives $C(r_{N-1}) = -h\,C'(R_5) + \frac{\left(h\right)^2}{2}C''(R_5) + O\left(\left(h\right)^3\right)$, so
+
+$$
+\frac{r_{N-1}R_5\,C(r_{N-1})}{h} = R_5\left(R_5 - h\right)\left[-C' + \frac{h}{2}C''\right] + O\left(\left(h\right)^2\right) = \left(R_5\right)^2\left[-C' + h\left(\frac{1}{2}C'' + \frac{1}{R_5}C'\right)\right] + O\left(\left(h\right)^2\right),
+$$
+
+with all derivatives at $R_5^-$. Because $C(R_5, t) = 0$ for every $t$, $\partial C/\partial t = 0$ at $R_5$, and Eq. (5) there gives $C'' = -\frac{2}{R_5}C'$. The bracket multiplying $h$ is therefore zero, and
+
+$$
+4\pi D_{\mathrm{OPyC}}\,\frac{r_{N-1}R_5\,C(r_{N-1}, t)}{\Delta r_{N-1,\mathrm{outer}}} = \Phi_R(t) + O\left(\left(\Delta r_{N-1,\mathrm{outer}}\right)^2\right). \tag{36a}
+$$
+
+The cancellation uses $\partial_t C(R_5) = 0$ and the absence of a source at $R_5$. With a source that is non-zero at $R_5$ (Phase G1), the bracket is $-G(R_5)/\left(2D_{\mathrm{OPyC}}\right)$, not zero, and the release formula must be revisited in the G1 derivation (Section 11).
+
+*Convergence of the computed release rate (OBSERVED, not proven).* Eq. (36) divides the computed $C_{N-1}^{j+1}$ by $\Delta r_{N-1,\mathrm{outer}}$. A nodal error of order $\left(\Delta r\right)^2$ at node $N-1$ would therefore allow only first order in $\Phi$. Second order requires the nodal error itself to vanish linearly towards the Dirichlet node. That is what scratch runs show, but it is not proved here.
+
+A scratch check on the homogeneous sphere supports second order. Setup: $R_5 = 1$, $D = 1$, uniform start, semi-discrete solution integrated exactly in time, with the rate normalised by the exact initial inventory. The error in $\Phi/M^0$ fell from $-2.7\times10^{-1}$ to $-1.0\times10^{-3}$ at $t = 0.01$ as $N$ went from 20 to 320, and from $-1.7\times10^{-3}$ to $-6.5\times10^{-6}$ at $t = 0.2$. The observed orders were $2.00$ to $2.03$. A separate scratch program written for the reconciliation reproduced these numbers to the digits printed, and gave orders $2.00$ to $2.01$ at $t = 0.05$.
 
 ---
 
@@ -659,13 +724,21 @@ $$
 \boxed{\theta = \frac{\Delta r_{\mathrm{kernel}} - \dfrac{\left(\Delta r_{\mathrm{kernel}}\right)^2}{3R_1}}{\Delta r_{\mathrm{kernel}} + \Delta r_{\mathrm{buffer}}}} \tag{41}
 $$
 
+Since $\Delta r_{\mathrm{kernel}}/R_1 = 1/N_{\mathrm{kernel}}$, Eq. (41) can also be written
+
+$$
+\theta = \frac{\Delta r_{\mathrm{kernel}}}{\Delta r_{\mathrm{kernel}} + \Delta r_{\mathrm{buffer}}}\left(1 - \frac{1}{3N_{\mathrm{kernel}}}\right), \tag{41a}
+$$
+
+which is the form derivation B reached independently: the kernel's share of the node's two half-intervals, times a factor that corrects the trapezoidal-rule error of the kernel sum. For the synthetic grid with 40 intervals per layer, $\theta = \frac{2}{3}\left(1 - \frac{1}{120}\right) = 0.66\overline{1}$.
+
 On a general kernel grid, θ is computed directly from Eq. (40). Three properties:
 
 - **Range.** $0 < \theta < 1$: the numerator is positive because $\Delta r_{\mathrm{kernel}} \le R_1$, and it is smaller than the denominator.
 - **Exact inventory.** $M^0$ equals the exact initial inventory to round-off, so the two forms of $F^j$ in Eq. (37) need no further normalisation choice.
 - **Limit.** As the grid is refined, $\theta \to \Delta r_{\mathrm{kernel}}/(\Delta r_{\mathrm{kernel}} + \Delta r_{\mathrm{buffer}})$: the share of the interface node's storage that lies on the kernel side. This limit is $\frac{1}{2}$ only when the kernel and buffer spacings are equal. With equal spacings, Eq. (41) gives $\theta = \frac{1}{2} - \frac{\Delta r}{6R_1}$.
 
-**Why it matters (scratch experiments).** Synthetic five-layer case, $m$ intervals in every layer, so that $\Delta r_{\mathrm{kernel}} = 2\Delta r_{\mathrm{buffer}}$. The semi-discrete system was integrated exactly in time, and the error is in $F$ at $t = 2\times10^5\ \mathrm{s}$ against the existing high-precision reference $F = 0.43255563909304$ (v1.0.0 Part IV):
+**Why it matters (scratch experiments).** Synthetic five-layer case, $m$ intervals in every layer, so that $\Delta r_{\mathrm{kernel}} = 2\Delta r_{\mathrm{buffer}}$. The semi-discrete system was integrated exactly in time, and the error is in $F$ at $t = 2\times10^5\ \mathrm{s}$ against the existing high-precision reference $F = 0.43255563909304$ (v1.0.0 Part IV). In this table $F$ is $1 - M^j/M^0_{\mathrm{exact}}$, normalised by the exact initial inventory $M^0_{\mathrm{exact}} = \frac{4\pi}{3}\left(R_1\right)^3C_{\mathrm{init}}$, so that the inventory error of each choice of $\theta$ is visible (the reconciliation reproduced every entry of the first three columns to the digits printed with this normalisation):
 
 | $\theta$ | error, $m = 10$ | $m = 20$ | $m = 40$ | $m = 80$ | $m = 160$ | observed order |
 |---|---|---|---|---|---|---|
@@ -674,7 +747,15 @@ On a general kernel grid, θ is computed directly from Eq. (40). Three propertie
 | $1$ (kernel value) | $-4.51\times10^{-2}$ | $-2.18\times10^{-2}$ | $-1.07\times10^{-2}$ | $-5.32\times10^{-3}$ | $-2.65\times10^{-3}$ | $1.0$ |
 | $0$ (buffer value) | $+8.15\times10^{-2}$ | $+4.15\times10^{-2}$ | $+2.09\times10^{-2}$ | $+1.05\times10^{-2}$ | $+5.26\times10^{-3}$ | $1.0$ |
 
-Only the inventory-matched value keeps second-order convergence. Any fixed choice, including the "obvious" mean $\frac{1}{2}$, puts an initial inventory error of order $\Delta r$ into every later value of $F$. **Decision:** use Eq. (40), or Eq. (41) on a uniform kernel grid. The centre value is $C_0^0 = C_{\mathrm{init}}$.
+On this grid only the inventory-matched value keeps second-order convergence. The reason is algebraic. A choice $\theta$ changes the initial inventory by $4\pi\left(\theta - \theta_{(41)}\right)V_{N_{\mathrm{kernel}}}C_{\mathrm{init}}$, a relative error of
+$$
+3\left(\theta - \theta_{(41)}\right)\frac{\Delta r_{\mathrm{kernel}} + \Delta r_{\mathrm{buffer}}}{2R_1}, \tag{41b}
+$$
+and the scheme conserves that wrong inventory for ever (Eq. (37)). The error is $O(\Delta r)$ whenever $\theta - \theta_{(41)}$ does not tend to zero, that is, whenever $\theta$ does not tend to the limit $\Delta r_{\mathrm{kernel}}/\left(\Delta r_{\mathrm{kernel}} + \Delta r_{\mathrm{buffer}}\right)$.
+
+**Correction from the reconciliation: $\theta = \frac{1}{2}$ on equal spacing.** An earlier version of this section said that any fixed choice, including $\frac{1}{2}$, gives first order. That holds only when $\Delta r_{\mathrm{kernel}} \ne \Delta r_{\mathrm{buffer}}$. With equal spacings, $\theta_{(41)} = \frac{1}{2} - \frac{1}{6N_{\mathrm{kernel}}}$, so $\theta = \frac{1}{2}$ gives by Eq. (41b) a relative inventory error of $1/\left(2\left(N_{\mathrm{kernel}}\right)^2\right)$: second order. Derivation B observed this order (homogeneous sphere, archive Section 10.5), and a reconciliation run on the synthetic case with equal spacings at $R_1$ (kernel $2m$ intervals, the other layers $m$) gave orders $2.00$, $2.00$, $2.00$, $1.96$ for $\theta = \frac{1}{2}$ and $2.00$, $2.00$, $2.00$, $1.95$ for Eq. (41), against $1.10$ to $1.01$ for $\theta = 1$. Eq. (41) is the only choice that is second order on every grid, and it makes $M^0$ exact.
+
+**Decision:** use Eq. (40), or Eq. (41) on a uniform kernel grid. The centre value is $C_0^0 = C_{\mathrm{init}}$.
 
 **Early times.** The jump at $R_1$ makes the solution non-smooth at $t = 0$. Two effects are visible in the scratch runs (synthetic case, $\theta$ from Eq. (41)).
 
@@ -718,24 +799,25 @@ Fully graded grids, for example geometric refinement towards $R_1$ for early tim
 
 ### 8.2 Coefficients on a general non-uniform grid
 
-The uniform formulas (15) must not be reused when $\Delta r_{i-\frac12} \ne \Delta r_{i+\frac12}$. The general row is the balance (30), with $D_{i\pm\frac12}$ the diffusivity of each adjacent interval:
+The uniform formulas (15) must not be reused when $\Delta r_{i,\mathrm{inner}} \ne \Delta r_{i,\mathrm{outer}}$. The general row is the balance (30), with $D_{i,\mathrm{inner}}$ and $D_{i,\mathrm{outer}}$ the diffusivities of the two adjacent intervals:
 
 $$
-K_{i\pm\frac12} = \frac{D_{i\pm\frac12}\,r_i\,r_{i\pm1}}{\Delta r_{i\pm\frac12}}, \qquad V_i = \left(r_i\right)^2\,\frac{\Delta r_{i-\frac12} + \Delta r_{i+\frac12}}{2}, \qquad L_i = -\frac{\Delta t\,K_{i-\frac12}}{V_i},\quad U_i = -\frac{\Delta t\,K_{i+\frac12}}{V_i},\quad B_i = 1 - L_i - U_i. \tag{43}
+K_{i,\mathrm{inner}} = \frac{D_{i,\mathrm{inner}}\,r_{i-1}\,r_i}{\Delta r_{i,\mathrm{inner}}}, \qquad K_{i,\mathrm{outer}} = \frac{D_{i,\mathrm{outer}}\,r_i\,r_{i+1}}{\Delta r_{i,\mathrm{outer}}}, \qquad V_i = \left(r_i\right)^2\,\frac{\Delta r_{i,\mathrm{inner}} + \Delta r_{i,\mathrm{outer}}}{2}, \qquad L_i = -\frac{\Delta t\,K_{i,\mathrm{inner}}}{V_i},\quad U_i = -\frac{\Delta t\,K_{i,\mathrm{outer}}}{V_i},\quad B_i = 1 - L_i - U_i. \tag{43}
 $$
 
 Eq. (43) covers every node $1 \le i \le N-1$: interior nodes of a layer, interface nodes, and nodes of a graded grid. On a piecewise-uniform grid it reduces to Eq. (15) inside each layer (with $\Delta r = \Delta r_{\mathrm{layer}}$) and to Eqs. (32a) and (32b) at the interfaces.
 
-**Consistency of Eq. (43) where the spacing changes inside one material.** Set $D_{i\pm\frac12} = D$ and $\Delta r_\pm = \Delta r_{i\pm\frac12}$, and expand with Eq. (6) using the one-sided spacings:
+**Consistency of Eq. (43) where the spacing changes inside one material.** Set $D_{i,\mathrm{inner}} = D_{i,\mathrm{outer}} = D$, $\Delta r_- = \Delta r_{i,\mathrm{inner}}$ and $\Delta r_+ = \Delta r_{i,\mathrm{outer}}$, and expand with Eq. (6) using the one-sided spacings:
 
 $$
-\frac{K_{i+\frac12}\left(C_{i+1} - C_i\right) - K_{i-\frac12}\left(C_i - C_{i-1}\right)}{V_i} = D\left[C_i'' + \frac{2}{r_i}C_i' + \frac{\Delta r_+ - \Delta r_-}{r_i}C_i'' + \frac{\Delta r_+ - \Delta r_-}{3}C_i'''\right] + O\left(\left(\Delta r\right)^2\right). \tag{44}
+\frac{K_{i,\mathrm{outer}}\left(C_{i+1} - C_i\right) - K_{i,\mathrm{inner}}\left(C_i - C_{i-1}\right)}{V_i} = D\left[C_i'' + \frac{2}{r_i}C_i' + \frac{\Delta r_+ - \Delta r_-}{r_i}C_i'' + \frac{\Delta r_+ - \Delta r_-}{3}C_i'''\right] + O\left(\left(\Delta r\right)^2\right). \tag{44}
 $$
 
 The error is of order $\Delta r_+ - \Delta r_-$:
 
 - On a uniform or smoothly graded grid, $\Delta r_+ - \Delta r_- = O\left(\left(\Delta r\right)^2\right)$, and the scheme is second order.
-- At an isolated jump in spacing, the local error is first order. As at the interfaces, this did not reduce the global order in the scratch runs.
+- At an isolated jump in spacing, the local error is first order. As at the interfaces, this did not reduce the global order in the scratch runs. On a piecewise-uniform grid (Section 8.1) the spacing jumps only at the interface nodes, which already carry a first-order local error from the kink, so the jump adds no new kind of error.
+- Derivation B observed second order for the homogeneous eigenvalue even on a grid whose spacing alternates between $h$ and $2h$ at every node (archive, Section 10.6), where every node has a first-order local error. This is an instance of the known superconvergence of conservative three-point schemes; it is OBSERVED, not proved here, and production grids do not rely on it.
 
 **Comparison with the standard non-uniform three-point formulas.** The Lagrange three-point approximations of $C''$ and $C'$ on unequal spacing give
 
@@ -745,7 +827,7 @@ $$
 
 with $F_+ = D\left(C_{i+1} - C_i\right)/\Delta r_+$ and $F_- = D\left(C_i - C_{i-1}\right)/\Delta r_-$, as in Section 5.6. This is formula (33a) again. It is formally more accurate at a spacing jump, but it is not conservative.
 
-Its coefficient of $C_{i-1}$ is $\frac{2D\left(r_i - \Delta r_+\right)}{r_i\,\Delta r_-\left(\Delta r_- + \Delta r_+\right)}$, which becomes negative, giving a wrong-sign off-diagonal, whenever $\Delta r_{i+\frac12} > r_i$. On a grid that grows outward from the centre this already happens at node 1, if $\Delta r_{\frac32} > \Delta r_{\frac12}$. The corresponding coefficient in Eq. (43) is $\frac{2D\left(r_i - \Delta r_-\right)}{r_i\,\Delta r_-\left(\Delta r_- + \Delta r_+\right)} = \frac{2D\,r_{i-1}}{r_i\,\Delta r_-\left(\Delta r_- + \Delta r_+\right)} \ge 0$ for every grid. This is one of the reasons Eq. (43) is chosen.
+Its coefficient of $C_{i-1}$ is $\frac{2D\left(r_i - \Delta r_+\right)}{r_i\,\Delta r_-\left(\Delta r_- + \Delta r_+\right)}$, which becomes negative, giving a wrong-sign off-diagonal, whenever $\Delta r_{i,\mathrm{outer}} > r_i$. On a grid that grows outward from the centre this already happens at node 1, if $\Delta r_{1,\mathrm{outer}} > \Delta r_{0,\mathrm{outer}}$. The corresponding coefficient in Eq. (43) is $\frac{2D\left(r_i - \Delta r_-\right)}{r_i\,\Delta r_-\left(\Delta r_- + \Delta r_+\right)} = \frac{2D\,r_{i-1}}{r_i\,\Delta r_-\left(\Delta r_- + \Delta r_+\right)} \ge 0$ for every grid. This is one of the reasons Eq. (43) is chosen.
 
 **Temperature-dependent diffusivity (Phase G3, forward pointer).** Eq. (43) needs one diffusivity per interval. With a temperature that is uniform within the particle, each interval takes $D_{\mathrm{layer}}(T)$ of its material. The matrix is reassembled whenever $T$ changes, and no structural change is needed.
 
@@ -761,7 +843,7 @@ For every $\Delta t > 0$, every grid with positive spacings, and every set of po
 
 1. **Off-diagonals are non-positive.**
    - Row 0: $U_0 = -6\,\mathrm{Fo}_{\mathrm{kernel}} < 0$.
-   - Rows $1 \le i \le N-1$: $L_i = -\Delta t\,K_{i-\frac12}/V_i \le 0$ and $U_i = -\Delta t\,K_{i+\frac12}/V_i < 0$, because $K_{i\pm\frac12} = D\,r_i\,r_{i\pm1}/\Delta r_{i\pm\frac12} \ge 0$ (zero only for $K_{\frac12}$, where $r_0 = 0$) and $V_i > 0$.
+   - Rows $1 \le i \le N-1$: $L_i = -\Delta t\,K_{i,\mathrm{inner}}/V_i \le 0$ and $U_i = -\Delta t\,K_{i,\mathrm{outer}}/V_i < 0$, because $K_{i,\mathrm{inner}} = D_{i,\mathrm{inner}}\,r_{i-1}\,r_i/\Delta r_{i,\mathrm{inner}} \ge 0$ and $K_{i,\mathrm{outer}} = D_{i,\mathrm{outer}}\,r_i\,r_{i+1}/\Delta r_{i,\mathrm{outer}} > 0$ (zero only for $K_{1,\mathrm{inner}} = K_{0,\mathrm{outer}}$, where $r_0 = 0$) and $V_i > 0$.
 2. **Diagonals are positive, with excess at least one.** $B_i = 1 + |L_i| + |U_i|$ in rows $0$ to $N-2$; for row 0, read $|L_0| = 0$. In row $N-1$ the entry $U_{N-1}$ is removed but $B_{N-1}$ keeps it, so $B_{N-1} - |L_{N-1}| = 1 + |U_{N-1}|$. Every row therefore satisfies
    $$B_i - \left(|L_i| + |U_i|_{\text{in matrix}}\right) \ge 1. \tag{45}$$
 
@@ -770,7 +852,7 @@ These hold with no grid condition: at interface nodes, at the centre, on any non
 By contrast:
 
 - FTCS needs $\mathrm{Fo} \le \frac{1}{6}$ for non-negative coefficients (document 00).
-- The Lagrange form needs $\Delta r_{i+\frac12} \le r_i$ (Section 8.2).
+- The Lagrange form needs $\Delta r_{i,\mathrm{outer}} \le r_i$ (Section 8.2).
 - Generation and decay (Phase G) keep both properties. Decay adds $\lambda\,\Delta t \ge 0$ to each $B_i$. A generation term $G_i \ge 0$ (in $\mathrm{mol\ m^{-3}\ s^{-1}}$) adds $\Delta t\,G_i \ge 0$ to the right-hand side.
 
 ### 9.2 Solvability, stability in the maximum norm, and non-negativity
@@ -798,7 +880,23 @@ which by Eq. (45) gives $x_k \ge 0$, a contradiction. Hence $\mathbf{C}^j \ge \m
 
 **(iii) Discrete maximum principle.** Every row sums to $1$, except row $N-1$, whose sum $1 + |U_{N-1}|$ exceeds $1$. Combining (i) and (ii): for non-negative data, $0 \le C_i^{j+1} \le \max_k C_k^j$. No new maximum and no negative value can be created in a step.
 
-Hypothesis (4) is therefore **proved, with no grid condition**, for the scheme of Sections 3 to 8. "Unconditionally stable" here means stable in the maximum norm. The scratch runs also showed no negative values.
+**(iv) Inverse-positivity (from derivation B).** Write $\mathbf{A} = \mathcal{D}\left(\mathbf{I} - \mathbf{E}\right)$ with $\mathcal{D} = \mathrm{diag}(B_i) > 0$. The matrix $\mathbf{E} = \mathbf{I} - \mathcal{D}^{-1}\mathbf{A}$ has zero diagonal, off-diagonal entries $|L_i|/B_i \ge 0$ and $|U_i|/B_i \ge 0$, and row sums $\left(|L_i| + |U_i|_{\text{in matrix}}\right)/B_i < 1$ by Eq. (45). So $\left\|\mathbf{E}\right\|_\infty < 1$, the Neumann series $\left(\mathbf{I} - \mathbf{E}\right)^{-1} = \sum_{k \ge 0}\mathbf{E}^k$ converges and is entrywise non-negative, and
+$$
+\mathbf{A}^{-1} = \left(\mathbf{I} - \mathbf{E}\right)^{-1}\mathcal{D}^{-1} \ge 0 \ \text{(entrywise)}, \qquad \left\|\mathbf{A}^{-1}\right\|_\infty \le 1. \tag{46a}
+$$
+$\mathbf{A}$ is therefore a non-singular M-matrix. Column 0 of $\mathbf{A}^{-1}$ is zero below the diagonal: this is the one-way coupling of Section 4.3 seen in the inverse (derivation B observed these exact zeros).
+
+**(v) Weighted energy (PROVED, from derivation B).** Let $\left\|\mathbf{C}^j\right\|_V^2 = \sum_{i=1}^{N-1}V_i\left(C_i^j\right)^2$. Multiply the balance (30) (in its general form (43)) by $C_i^{j+1}$ and sum over $i = 1, \dots, N-1$. Summation by parts, with $K_{0,\mathrm{outer}} = 0$ and $C_N^{j+1} = 0$, gives
+$$
+\sum_{i=1}^{N-1}V_i\left(C_i^{j+1} - C_i^j\right)C_i^{j+1} = -\Delta t\sum_{i=0}^{N-1}K_{i,\mathrm{outer}}\left(C_{i+1}^{j+1} - C_i^{j+1}\right)^2 \le 0. \tag{46b}
+$$
+With $\left(x - y\right)x = \frac{1}{2}\left(\left(x\right)^2 - \left(y\right)^2\right) + \frac{1}{2}\left(x - y\right)^2 \ge \frac{1}{2}\left(\left(x\right)^2 - \left(y\right)^2\right)$, this gives $\left\|\mathbf{C}^{j+1}\right\|_V \le \left\|\mathbf{C}^j\right\|_V$ for every $\Delta t > 0$.
+
+**(vi) Non-negativity in floating point (PROVED, from derivation B).** Code the Thomas algorithm of Section 9.3 as $m_i = B_i - \left(L_i/m_{i-1}\right)U_{i-1}$, $b'_i = b_i - \left(L_i/m_{i-1}\right)b'_{i-1}$ and $x_i = \left(b'_i - U_i\,x_{i+1}\right)/m_i$, with $L_i \le 0$ and $U_i \le 0$ stored with their signs. If every computed pivot $m_i$ is positive, then $\mathbf{b} \ge \mathbf{0}$ gives a computed $\mathbf{x} \ge \mathbf{0}$ in IEEE arithmetic. Proof: $L_i/m_{i-1} \le 0$ and $b'_{i-1} \ge 0$, so $b'_i$ is a sum of non-negative numbers; likewise $-U_i\,x_{i+1} \ge 0$; each operation acts on non-negative operands, and rounding a non-negative exact result gives a non-negative number. $\square$ The hypothesis on the computed pivots holds whenever rounding does not destroy the margin of Section 9.3, which is at least $1$ in exact arithmetic. This statement is for the Thomas algorithm in this form only; for another linear solver, positivity under rounding is not claimed.
+
+Hypothesis (4) is therefore **proved, with no grid condition**, for the scheme of Sections 3 to 8. "Unconditionally stable" here means stable in the maximum norm and in the weighted norm $\left\|\cdot\right\|_V$. The scratch runs also showed no negative values, including a single step of $\Delta t = 10^9\ \mathrm{s}$ on the synthetic grid.
+
+**Generation and decay (forward pointer).** Decay adds $\lambda\,\Delta t$ to every $B_i$ and raises the margin of Eq. (45) to $1 + \lambda\,\Delta t$, so $\left\|\mathbf{A}^{-1}\right\|_\infty \le 1/\left(1 + \lambda\,\Delta t\right)$ and (i) to (vi) hold unchanged. A non-negative generation term keeps the right-hand side non-negative, so (ii) holds, but the upper bound of (iii) does not. These are statements about the matrix only; the derivation of the source and decay terms is Phase G (Document 2, Section 9).
 
 ### 9.3 The Thomas algorithm, and why it replaces "making $C_{i+1}$ the subject"
 
@@ -822,23 +920,81 @@ Consequences:
 
 The owner's attempt to make $C_{i+1}$ the subject (document 00, (H21) to (H26)) is the same elimination run in the unstable direction: it divides by $U_i$, whose magnitude can be smaller than the other terms of the row. In a scratch run of that marching on 60 nodes with $\mathrm{Fo} = 3.6$, a relative perturbation of $10^{-15}$ grew to $4.3\times10^{-4}$.
 
-### 9.4 Accuracy summary
+### 9.4 Conservation in floating point
 
-| Property | Result | Basis |
+Eqs. (21), (35) and (37) are exact in exact arithmetic. In floating point the residual $\varepsilon^j = M^j + M_{\mathrm{rel}}^j - M^0$ is not zero. Each solve has a backward error proportional to the unit roundoff $u = 2^{-53}$ times the matrix entries, and the entries grow with the largest $\mathrm{Fo}$; the computed margin $B_i - |L_i| - |U_i|$ itself differs from $1$ by rounding of order $u\,B_i$ (a scratch run with $\Delta t = 10^9\ \mathrm{s}$, where $B_i$ reaches about $10^{11}$, gave a smallest computed margin of $0.999992$). The three scratch programs gave, for the same case (synthetic, 40 intervals per layer, $\Delta t = 200\ \mathrm{s}$, 1000 steps), the following largest relative residuals $\max_j\left|\varepsilon^j\right|/M^0$:
+
+| Implementation | Largest relative residual |
+|---|---|
+| derivation A, rows divided by $V_i$, plain Thomas algorithm | $3.75\times10^{-11}$ |
+| derivation B, rows divided by $V_i$ | $9.45\times10^{-11}$ |
+| derivation B, rows multiplied by $V_i$ (symmetric for $i \ge 1$), compensated summation of $M_{\mathrm{rel}}$ | $4.27\times10^{-12}$ |
+| derivation B, rows divided by $V_i$, $\Delta t = 2\ \mathrm{s}$ | $3.26\times10^{-13}$ |
+| reconciliation, rows divided by $V_i$ | $6.91\times10^{-12}$ |
+| reconciliation, rows multiplied by $V_i$, plain summation | $1.27\times10^{-11}$ |
+
+The spread over a factor of about 20 for the same equations, and the opposite ranking of the two row scalings in two programs, show that the residual is rounding and depends on summation order and implementation details. No row scaling is shown to be better. The residual is larger than the $2.8\times10^{-13}$ of the retired finite-volume code (v1.0.0 Part V, Section 5.10.3) and smaller at smaller mesh ratios. **No exact conservation in floating point is claimed.** The Phase D test tolerance must be derived from an analysis of the rounding in the Rust implementation (the mesh ratio and the step count enter), not chosen to pass and not taken from this table.
+
+### 9.5 Convergence
+
+**Consistency (PROVED).** Every row residual tends to zero as $\Delta r, \Delta t \to 0$. For a solution that is four times continuously differentiable in $r$ on each closed layer and twice continuously differentiable in $t$:
+
+| Row | Spatial residual | Order |
 |---|---|---|
-| Spatial order, interior nodes | $2$ | Eq. (17) |
-| Spatial order, local, at interface and spacing-jump nodes | $1$ | Eqs. (44) and Section 5.5 |
-| Spatial order, global, release fraction | observed $1.99$ to $2.05$ (synthetic case, $m = 5$ to $160$) | Scratch runs, Section 7 |
-| Temporal order | $1$; observed $0.998$ to $1.000$ for $F$ at $2\times10^5\ \mathrm{s}$, $\Delta t = 2000$ to $125\ \mathrm{s}$, $m = 40$ | Eq. (11), scratch runs |
-| Conservation | exact in exact arithmetic, Eqs. (21), (35) and (37) | Section 3.5 |
-| Conservation in floating point | largest relative residual $3.75\times10^{-11}$ in a scratch run ($m = 40$, $\Delta t = 200\ \mathrm{s}$, 1000 steps, plain Thomas algorithm) | Observed, not analysed |
-| Positivity, maximum principle, solvability | for all $\Delta t > 0$ and all grids | Section 9.2 |
+| interior, uniform spacing | Eq. (17) | 2 |
+| node 1 | Eq. (17a), $-\frac{5}{12}D_{\mathrm{kernel}}\left(\Delta r_{\mathrm{kernel}}\right)^2C''''(0)$ | 2 |
+| centre, row 0 | $-\frac{1}{4}D_{\mathrm{kernel}}\left(\Delta r_{\mathrm{kernel}}\right)^2C''''(0)$ (Section 4.2) | 2 |
+| spacing change inside one material | Eq. (44): $O\left(\left\lvert \Delta r_{i,\mathrm{outer}} - \Delta r_{i,\mathrm{inner}}\right\rvert \right) + O\left(\left(\Delta r\right)^2\right)$ | 1; 2 on a smoothly graded grid |
+| interface node | Section 5.5: $O(\Delta r)$ | 1 |
+| row $N-1$ | as interior; $C_N = 0$ is exact | 2 |
+| release formula (36) | Eq. (36a) | 2 |
 
-The floating-point residual is larger than the $2.8\times10^{-13}$ of the retired finite-volume code, which used a "subtraction-free" elimination (v1.0.0 Part V, Section 5.10.3). Floating-point conservation of the BTCS scheme has not been analysed here. The Phase B/C design should do that analysis and derive the test tolerance from it, rather than take this number as a target.
+In time every row is first order, with residual $-\frac{\Delta t}{2}\ddot C$.
+
+**Homogeneous sphere, maximum norm (PROVED, from derivation B).** One material, uniform grid, solution four times continuously differentiable in $r$ and twice continuously differentiable in $t$ on $[0, T]$. The nodal error $\mathbf{e}^j = \mathbf{C}(t^j) - \mathbf{C}^j$ satisfies $\mathbf{A}\,\mathbf{e}^{j+1} = \mathbf{e}^j + \Delta t\,\boldsymbol{\tau}^{j+1}$. By Eq. (46a), $\left\|\mathbf{e}^{j+1}\right\|_\infty \le \left\|\mathbf{e}^j\right\|_\infty + \Delta t\left\|\boldsymbol{\tau}^{j+1}\right\|_\infty$, and summing over the steps,
+$$
+\max_j\left\|\mathbf{e}^j\right\|_\infty \le \left\|\mathbf{e}^0\right\|_\infty + T\max_j\left\|\boldsymbol{\tau}^j\right\|_\infty = O\left(\Delta t + \left(\Delta r\right)^2\right), \tag{46c}
+$$
+because every row, including rows 0 and 1, is second order in space. The same argument on the five-layer grid gives only $O\left(\Delta t + \Delta r\right)$ in the maximum norm, because of the first-order interface residuals: proved, but pessimistic.
+
+**Five layers, weighted $L^2$ norm, second order (PROOF OUTLINE, from derivation B, steps checked in the reconciliation).** Hypotheses: (a) on $[t_*, T]$, $t_* \ge 0$, the solution is four times continuously differentiable in $r$ on each closed layer and twice continuously differentiable in $t$; (b) the grid is piecewise uniform with the interfaces at nodes, with largest spacing $h$; (c) $\left\|\mathbf{e}(t_*)\right\|_V = O\left(\left(h\right)^2\right)$. Claim: $\max_j\left\|\mathbf{e}^j\right\|_V = O\left(\left(h\right)^2 + \Delta t\right)$ on $[t_*, T]$. Steps:
+
+1. Multiply the error equation of row $i \ge 1$ by $V_i$. At the non-interface nodes the residual is $V_i\tau_i$ with $\left|\tau_i\right| \le c\left(\left(h\right)^2 + \Delta t\right)$. At the four interface nodes it is $\rho_i$, with $\left|\rho_i\right| \le c\left(r_i\right)^2\left(\left(h\right)^2 + h\,\Delta t\right)$: the $O\left(\left(h\right)^2\right)$ remainder of Section 5.5 before the division by $V_i$, plus $V_i$ times the time residual.
+2. Multiply by $e_i^{j+1}$ and sum as in Eq. (46b). With $\left|\mathbf{e}\right|_K^2 = \sum_{i=0}^{N-1}K_{i,\mathrm{outer}}\left(e_{i+1} - e_i\right)^2$ and $e_N = 0$, and the Cauchy-Schwarz inequality on the first kind of residual,
+   $$\frac{\left\|\mathbf{e}^{j+1}\right\|_V^2 - \left\|\mathbf{e}^j\right\|_V^2}{2\Delta t} + \left|\mathbf{e}^{j+1}\right|_K^2 \le c\left(\left(h\right)^2 + \Delta t\right)\left\|\mathbf{e}^{j+1}\right\|_V + \sum_{\text{interfaces}}\left|\rho_i\right|\left|e_i^{j+1}\right|.$$
+3. A discrete Sobolev bound at an interface node $i \ge N_{\mathrm{kernel}}$: since $e_N = 0$, $\left|e_i\right| = \left|\sum_{k \ge i}\left(e_k - e_{k+1}\right)\right| \le \left|\mathbf{e}\right|_K\left(\sum_{k \ge i}1/K_{k,\mathrm{outer}}\right)^{1/2}$. For $k \ge N_{\mathrm{kernel}}$, $1/K_{k,\mathrm{outer}} = \Delta r_{k,\mathrm{outer}}/\left(D_{k,\mathrm{outer}}r_kr_{k+1}\right) \le \Delta r_{k,\mathrm{outer}}/\left(D_{\min}\left(R_1\right)^2\right)$, so the sum is at most $S = R_5/\left(D_{\min}\left(R_1\right)^2\right)$, independent of $h$. (The reconciliation noted that this bound needs no condition on the ratio of spacings.) The centre is not involved.
+4. Young's inequality: $\sum\left|\rho_i\right|\left|e_i\right| \le \left|\mathbf{e}\right|_K^2 + \frac{S}{4}\left(\sum\left|\rho_i\right|\right)^2$, and the $\left|\mathbf{e}\right|_K^2$ term cancels against the left side.
+5. Summing over the steps with $X = \max_j\left\|\mathbf{e}^j\right\|_V$: $\left(X\right)^2 \le \left\|\mathbf{e}^0\right\|_V^2 + 2Tc\left(\left(h\right)^2 + \Delta t\right)X + T\,O\left(\left(\left(h\right)^2 + h\,\Delta t\right)^2\right)$, so $X = O\left(\left(h\right)^2 + \Delta t\right)$.
+
+The constants are not tracked, hence the label PROOF OUTLINE. It gives no pointwise second-order bound on the five-layer grid, and it does not cover the discontinuous start on $[0, T]$, because hypothesis (a) fails at $t = 0$.
+
+**Discontinuous start (OBSERVED).** With the start (39) and $\theta$ from Eq. (40), both derivations and the reconciliation observed second order in space for the release fraction at fixed $t > 0$ and for the nodal profile once $\Delta r_{\mathrm{kernel}}$ is small compared with $\sqrt{D_{\mathrm{kernel}}\,t}$ (Section 7), and first order in time. The classical theory of parabolic discretisations with non-smooth data, mainly for finite elements, predicts errors that behave like $\left(\Delta r\right)^2/t$ and $\Delta t/t$; the observations agree with it qualitatively. The corresponding statement for this scheme is **NOT PROVEN**.
+
+### 9.6 Summary of properties
+
+| Property | Result | Status |
+|---|---|---|
+| Solvability, M-matrix, $\mathbf{A}^{-1} \ge 0$ | every $\Delta t > 0$, every grid with nodes at $0, R_1, \dots, R_5$, every positive diffusivity | PROVED (Section 9.2) |
+| Stability | $\left\lVert \mathbf{C}^{j+1}\right\rVert _\infty \le \left\lVert \mathbf{C}^j\right\rVert _\infty$ and $\left\lVert \mathbf{C}^{j+1}\right\rVert _V \le \left\lVert \mathbf{C}^j\right\rVert _V$, every $\Delta t > 0$ | PROVED (Eqs. (46), (46a), (46b)) |
+| Positivity and maximum principle | $0 \le C_i^{j+1} \le \max_k C_k^j$, every $\Delta t > 0$; also in floating point for the Thomas algorithm of Section 9.2 (vi) | PROVED |
+| Thomas algorithm | pivots $m_i \ge 1 + \vert U_i\vert$, multipliers below one, no pivoting | PROVED (Section 9.3) |
+| Interface continuity | concentration exact (one shared node value); reconstructed flux (30a) equal from both sides, second order | PROVED (Section 5.4) |
+| Conservation | $M^j + M_{\mathrm{rel}}^j = M^0$ exactly in exact arithmetic, any grid, any $\Delta t$, any centre row | PROVED (Eqs. (21), (35), (37)) |
+| Conservation in floating point | rounding residual $10^{-13}$ to $10^{-10}$ relative | OBSERVED (Section 9.4) |
+| Consistency | all rows; local order 2, except 1 at interface nodes and spacing jumps | PROVED (Section 9.5) |
+| Release formula | consistent to second order | PROVED (Eq. (36a)) |
+| Computed release rate | second order | OBSERVED (Section 6) |
+| Temporal order | 1; observed $0.998$ to $1.000$ ($F$ at $2\times10^5\ \mathrm{s}$, $\Delta t = 2000$ to $125\ \mathrm{s}$, 40 intervals per layer; reproduced in the reconciliation) | PROVED for smooth solutions (Eq. (46c), Section 9.5); OBSERVED for the discontinuous start |
+| Spatial order, homogeneous sphere | 2, maximum norm | PROVED (Eq. (46c)) |
+| Spatial order, five layers | 2, weighted $L^2$ norm | PROOF OUTLINE (Section 9.5) |
+| Spatial order, release fraction, synthetic case | observed $1.99$ to $2.05$ | OBSERVED (Section 7) |
+| Spatial order, discontinuous start | 2 at fixed $t > 0$ | OBSERVED; NOT PROVEN |
 
 ---
 
 ## 10. The assembled tridiagonal system, row by row
+
+This section collects the rows in the owner's $\mathrm{Fo}$ form, as a summary of the derivation. The normative statement, with every quantity defined and every equation numbered for the pseudocode and the Rust code, is [Document 2](02_final_formulation.md).
 
 **Unknowns:** $C_0^{j+1}, C_1^{j+1}, \dots, C_{N-1}^{j+1}$. The boundary value $C_N^{j+1} = 0$ is not an unknown. **Right-hand side:** $C_0^j, \dots, C_{N-1}^j$. All $\mathrm{Fo}$ use the layer's own diffusivity and spacing, $\mathrm{Fo}_{\mathrm{layer}} = D_{\mathrm{layer}}\Delta t/\left(\Delta r_{\mathrm{layer}}\right)^2$.
 
@@ -903,8 +1059,7 @@ B_0 & U_0 & & & & \\
  & & & L_{N-2} & B_{N-2} & U_{N-2} \\
  & & & & L_{N-1} & B_{N-1}
 \end{pmatrix}
-\begin{pmatrix} C_0^{j+1} \\ C_1^{j+1} \\ C_2^{j+1} \\ \vdots \\ C_{N-2}^{j+1} \\ C_{N-1}^{j+1} \end{pmatrix}
-=
+\begin{pmatrix} C_0^{j+1} \\ C_1^{j+1} \\ C_2^{j+1} \\ \vdots \\ C_{N-2}^{j+1} \\ C_{N-1}^{j+1} \end{pmatrix} =
 \begin{pmatrix} C_0^{j} \\ C_1^{j} \\ C_2^{j} \\ \vdots \\ C_{N-2}^{j} \\ C_{N-1}^{j} \end{pmatrix}. \tag{47}
 $$
 
@@ -924,27 +1079,29 @@ The zero in position $(1,0)$ is $L_1 = 0$ (Section 4.3).
 
 ## 11. Scratch experiments and open items
 
-**Scratch experiments.** All numbers quoted in this document come from short uncommitted scratch programs, written only to test the algebra above. They solved the semi-discrete system exactly in time, by an eigen-decomposition of the symmetrised operator, or ran backward Euler with a plain Thomas algorithm. They used the synthetic five-layer input of `inputs/synthetic/synthetic_five_layer.toml`, which states that it is not literature data, and the homogeneous-sphere series solution. They are numerical checks of the derivation. They are not part of the repository, not a verification of the future Rust solver, and not experimental validation.
+**Scratch experiments.** All numbers quoted in this document come from short uncommitted scratch programs, written only to test the algebra above. They solved the semi-discrete system exactly in time, by an eigen-decomposition of the symmetrised operator, or ran backward Euler with a plain Thomas algorithm. They used the synthetic five-layer input of `inputs/synthetic/synthetic_five_layer.toml`, which states that it is not literature data, and the homogeneous-sphere series solution. Three independent scratch programs were used: one for derivation A, one for derivation B (cited as "archive"), and one written for the reconciliation that implements Document 2 row by row. They are numerical checks of the derivation. They are not part of the repository, not a verification of the future Rust solver, and not experimental validation.
 
 | Check | Result |
 |---|---|
 | Hypothesis (1), identity (18), random data | agreement to $1.4\times10^{-14}$ |
-| Hypothesis (2), $L_1 = 0$ | exact by Eq. (16); one-way coupling confirmed structurally |
-| Hypothesis (3), ghost (33a) vs. balance (33b) at unequal spacing | balance residual $3.15\times10^{-4}$ vs. $3.75\times10^{-11}$ |
+| Hypothesis (2), $L_1 = 0$ | exact by Eq. (16); one-way coupling confirmed structurally; column 0 of $\mathbf{A}^{-1}$ zero below the diagonal (archive) |
+| Hypothesis (3), ghost (33a) vs. balance (33b) at unequal spacing | balance residual $3.15\times10^{-4}$ vs. rounding level, obtained independently by A and B |
 | Hypothesis (4), positivity | no negative value in any run; proved in Section 9.2 |
-| Hypothesis (5), $\theta$ | only Eq. (40)/(41) gives order 2; $\theta = \frac{1}{2}$, $0$ and $1$ give order 1 |
-| Spatial order, $F(2\times10^5\ \mathrm{s})$ vs. reference | $1.988$, $1.997$, $1.999$, $1.997$, $2.050$ |
-| Temporal order, BE | $0.998$ to $1.000$ |
-| Release rate, homogeneous sphere | order $2.00$ to $2.03$ with exact $M^0$ |
+| Hypothesis (5), $\theta$ | on unequal spacing only Eq. (40)/(41) gives order 2; on equal spacing $\theta = \frac{1}{2}$ is also second order (Section 7) |
+| Spatial order, $F(2\times10^5\ \mathrm{s})$ vs. reference | $1.988$, $1.997$, $1.999$, $1.997$, $2.050$; reconciliation: $2.00$, $2.00$, $2.00$, $2.01$ |
+| Temporal order, BE | $0.998$ to $1.000$; reproduced in the reconciliation |
+| Release rate, homogeneous sphere | order $2.00$ to $2.03$ with exact $M^0$; reproduced in the reconciliation |
+| $F(2\times10^5\ \mathrm{s})$, 40 intervals per layer, $\Delta t = 200\ \mathrm{s}$ | $0.43242910455$ (archive) and $0.432429104571$ (reconciliation), equal within the rounding residual of Section 9.4 |
 
 **Open items for the following phases.**
 
-1. Independent review of Sections 1 to 10 (directive A7), in particular Sections 4.3, 5.5, 7 and 9.
-2. Floating-point conservation (Section 9.4): analyse the residual of the Thomas solve and choose the Phase D tolerance from that analysis.
+1. Directive A7 asks for an independent review. The reconciliation compared two independent derivations and checked each difference; the coordinator decides whether that satisfies A7 or whether Document 2 needs a further review before Phase C.
+2. Floating-point conservation (Section 9.4): analyse the rounding of the Rust Thomas solve and choose the Phase D tolerance from that analysis.
 3. Grid counts per layer for production runs: a convergence study on the AGR-1 geometry with literature diffusivities (Phase D), including whether grading towards $R_1$ helps at early times.
-4. Phase G hooks:
-   - decay adds $\lambda\,\Delta t$ to every $B_i$, with the decayed amount $\lambda\,\Delta t\,M^{j+1}$ booked separately;
-   - generation adds $\Delta t\,G_i$ to the right-hand side, with the generated amount $4\pi\sum V_i\,\Delta t\,G_i$;
-   - temperature changes the $D_{i\pm\frac12}$ and triggers reassembly.
+4. A proof of second-order convergence of the computed release rate (Section 6), and of the discontinuous start (Section 9.5), are open.
+5. Phase G hooks (Document 2, Section 9, gives the places; none is derived here):
+   - decay adds $\lambda\,\Delta t$ to every $B_i$, with the decayed amount $4\pi\lambda\,\Delta t\sum V_iC_i^{j+1}$ booked separately from the release;
+   - generation adds $\Delta t\,G_i$ to the right-hand side, with the generated amount $4\pi\sum V_i\,\Delta t\,G_i$. Derivation B found two points that the G1 derivation must settle: a source that differs between two materials needs the half-interval split of $V_i$ at an interface node, and a source that is non-zero at $R_5$ breaks the cancellation in Eq. (36a), so the release then needs the generation in the outer half-interval of node $N$ (archive, Section 9). These findings are recorded, not adopted;
+   - temperature changes $D_{i,\mathrm{inner}}$ and $D_{i,\mathrm{outer}}$ and triggers reassembly, with the same values used in the release.
 
    Each needs its own short derivation before implementation. None is claimed here.
