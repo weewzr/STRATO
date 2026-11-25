@@ -3,9 +3,9 @@
 # generator: scripts/web/generate_data.py v1
 # generator_sha256: da6e43b8d6892818528817d1bcaddad552136b9b21eea9d605889d64ffd1135f
 # strato_version: 1.0.1
-# commit: 6dc10a47c547729d424071fec9eb1565926d45da+modified
+# commit: 58679db21f28985a0b4a62e2c688864ad6bbbbd5
 # command: python -I -X utf8 scripts/web/generate_data.py figures
-# created_utc: 2026-11-25T01:05:47Z
+# created_utc: 2026-11-25T01:37:04Z
 # note: Guide lines of the convergence plots: slope 2 over the total cell count (spatial study) and slope 1 over the time step (temporal study), each through the coarsest point of its study. A reading aid, not a result.
 # input: web/public/data/convergence_study.json (data_sha256 99083d64268a582943fcd8a12b111ec04aa64e05b0aca464b54b43c418160772)
 study,x_name,x,slope,guide_abs_error
