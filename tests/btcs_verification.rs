@@ -1,65 +1,85 @@
 //! Numerical verification of the five-layer BTCS solver (directive Section 11, tests A to G;
-//! Document 2 properties P1 to P18; verification plan rules R1 to R5).
+//! Document 2 properties P1 to P18).
 //!
 //! These tests check the numerical solution of the stated model against analytical
 //! references that contain no BTCS code. They are NOT experimental validation.
 //!
-//! # Tolerances, fixed before the first run
+//! # What is asserted, and where each bound comes from
 //!
-//! They were fixed before the first run, except the three revisions listed under "Revisions"
-//! below and the later replacement of underived bounds by derived ones (R5, and the unit
-//! tests of `numerical::btcs`). No tolerance was loosened to make a check pass.
+//! No assertion in this file rests on a literal tolerance without a derivation. Each bound
+//! is one of the following.
 //!
-//! * R1 (series floor): a difference is "resolved" only if it exceeds 3 x the accuracy floor
-//!   of the reference. `ModalRelease::accuracy_floor` for the layered series; for the
-//!   homogeneous series 3 x (1e-14 requested tail tolerance + 1e-15 rounding).
-//! * R2 (absolute accuracy): `err <= max(3 floor, E_h)`, with the Richardson estimate
-//!   `E_h = 1.25 |F_h - F_{h/2}| / (2^p - 1)`, p the order observed on the last three grids
-//!   (1.25 is the usual safety factor of the verification plan); and an absolute convention
-//!   `err <= 1e-6` on the finest grid (the value the finite-volume driver used).
-//! * R3 (order band): observed order within 0.2 of the theoretical order on the last two
-//!   pairs: space 2 (band 1.8 to 2.2), time 1 (band 0.8 to 1.2), when the errors are
-//!   resolved. Theory: central differences are second order, Backward Euler first order.
-//! * R4 (balance): `|eps^j| / M^0 <=` an a-posteriori rounding bound that contains the mesh
-//!   Fourier numbers through `|A||x|` and the step count through the sum over steps (see
-//!   `balance_bound_history`); the measured ratio is printed.
+//! * A rounding bound derived from the operation count (u = 2^-53, gamma_k = k u/(1 - k u)):
+//!   the F31 identity (`interfaces_concentration_and_flux_continuity`), the balance bound
+//!   (`balance_bound_history`, with its derivation), the maximum-principle bound and the
+//!   margin deviation of the matrix (P1), and the check that a time is a multiple of the
+//!   step. Their constants are `kappa_t` (backward error of the F24 solve, derived in
+//!   `numerical::tridiagonal::tests::thomas_matches_dense_f24`) and `c_step`. The O(u^2)
+//!   terms of these derivations are taken into the stated factors (see each comment); no
+//!   safety factor is applied anywhere.
+//! * A sign or a monotone sequence, which needs no tolerance: the error against the series
+//!   falls at every grid refinement (test A, B, C3), the Cauchy differences fall at every
+//!   step halving (D1, D2), the relative flux jump at each interface falls (E), the
+//!   positivity `min C >= 0` is exact (G), and the negative control of the balance identity
+//!   exceeds the derived rounding bound (F). Where the reference carries an uncertainty (the
+//!   Sturm-Liouville series reports `accuracy_floor`, an estimate; the homogeneous series
+//!   reports a truncation `error_bound`), the monotone check allows the sum of the two
+//!   uncertainties and nothing more.
+//! * The accuracy of the Sturm-Liouville series against the independent value of
+//!   `reconciliation.md` (item 18, 14 decimals): `accuracy_floor` plus the 5e-15 rounding of
+//!   that decimal value.
+//!
+//! The orders are NOT asserted: Documents 1 and 2 state second order in space and first order
+//! in time as OBSERVED (properties P8b, P16, P17; P14 and P15 are proof outlines of
+//! `O(dr^2 + dt)` and `O(dr + dt)` without a constant), they state no band, and decision 7
+//! withdrew the plus-or-minus 0.2 order bands and the 1e-6 target inherited from the
+//! finite-volume work. The observed orders are printed (`BTCS_RESULT|...|order_...`) and
+//! recorded in `solver-core-results.md`. What is lost by this: a regression that merely
+//! degrades the order while the error still falls is not caught here; the frozen regression
+//! files of the separate regression task are meant to catch it.
+//!
+//! # Not derived, and said so
+//!
+//! * `accuracy_floor` of the layered series is an estimate of the module (its documentation
+//!   says the true error stayed 10 to 20 times below it), not a proved bound.
+//! * The compensated (Kahan) accumulation of the release is not bounded by an assumed
+//!   constant: the balance bound uses the exactly measured error of that accumulation
+//!   (`Expansion`), so it is an a-posteriori bound (a function of the run). Goldberg's Theorem 8
+//!   gives `2u + O(N u^2)`; the constant hidden in the O() is not used.
+//! * The references in the smooth-mode tests (an exponential times a sinc) are evaluated in
+//!   floating point; their rounding (a few u) is far below every error compared (at least 6e-13
+//!   in the weighted L2 norm, 4e-7 in the maximum norm) and is not added to a bound.
+//!
+//! Where the results of derivation and an earlier literal differ, see the results file
+//! ("Revisions", item 7).
 //!
 //! # Revisions after the first run (recorded, not hidden)
 //!
-//! Items 1 to 3 followed first-run failures whose cause lay in the test design (a bound
-//! without the Fourier number, a step outside the asymptotic range, a slack that left out
-//! the rounding of the solve); the replacements are derived, none merely loosened.
-//!
-//! 1. R4 as first written was `u N sqrt(steps)` (the heuristic of the verification plan). It
-//!    failed at n = 20 (observed 2.3e-11 against 3.5e-13) because it contains no Fourier
-//!    number, whereas Document 2 7.4 and Document 3 RP-4 require one. It was replaced by
-//!    the derived a-posteriori bound above.
+//! 1. The balance bound as first written was `u N sqrt(steps)` (the heuristic of the
+//!    verification plan). It failed at n = 20 (observed 2.3e-11 against 3.5e-13) because it
+//!    contains no Fourier number, whereas Document 2 7.4 and Document 3 RP-4 require one. It
+//!    was replaced by a derived a-posteriori bound, later by the one documented in
+//!    `balance_bound_history`.
 //! 2. Test A first used the base step `dt = 200 s` for the extrapolation triple. At
 //!    t = 5e3 s (25 steps, F = 1.8e-7, an exponentially small tail) that triple is not in the
 //!    asymptotic range: a same-grid step sweep (n = 160) shows F(5e3) = 1.24e-6, 3.4e-7,
 //!    2.16e-7, 1.90e-7, 1.84e-7, 1.82e-7 for dt = 200, 50, 12.5, 3.1, 0.78, 0.20 s,
 //!    first order in dt. The base step was changed to 25 s (triple 25, 12.5, 6.25 s) for
 //!    every time of test A.
-//! 3. The inventory-monotonicity check allows a rounding slack, because `M^j` moves by
-//!    rounding while the release is still exactly zero. The first slack, `2 (N+1) u`
-//!    (rounding of the two sums only), was too small at n = 320 (observed increase 9.3e-13
-//!    against 3.6e-13) because it left out the rounding error of the solve itself, which
-//!    is the per-step increment of the balance bound of item 1; the slack is that increment
-//!    plus `2 (N+1) u`.
-//! 4. R5 (below) first read `max C <= C_init (1 + 10 N u)` with no derivation (observed
-//!    excess 1.1e-14, far inside it). It was replaced by the derived bound that follows.
+//! 3. The inventory-monotonicity check allows a rounding slack because `M^j` moves by
+//!    rounding while the release is still exactly zero; the slack is the accumulating
+//!    per-step term of the balance bound plus the rounding of the two reported inventories.
+//! 4. The maximum bound `max C <= C_init (1 - kappa)^-k` (maximum principle P3, P4;
+//!    `kappa = (g1 + 2 gamma_5) B_max`, derived in the test) replaced `max C <= C_init
+//!    (1 + 10 N u)`, which had no derivation.
+//! 5. Order bands, the 1e-6 target, the factor 1.25 Richardson check and the factor 1.8 on the
+//!    flux jump were replaced by monotone checks (see above); the observed orders are
+//!    unchanged and still printed.
 //!
-//! # Positivity and maximum principle
-//!
-//! * R5 (positivity): `min C >= 0` exactly (property P6: all operations in the solve add
-//!   non-negative numbers), `max C <= C_init (1 - kappa)^-k` after k steps (maximum
-//!   principle P3, P4; the rounding bound and `kappa = (4 u + 2 gamma_5) B_max` are derived
-//!   in the test).
-//! * Time error is removed from space studies by Richardson extrapolation over `dt, dt/2,
-//!   dt/4`: `(8 F(dt/4) - 6 F(dt/2) + F(dt)) / 3`, which cancels the `dt` and `dt^2` terms.
+//! Time error is removed from space studies by Richardson extrapolation over `dt, dt/2,
+//! dt/4`: `(8 F(dt/4) - 6 F(dt/2) + F(dt)) / 3`, which cancels the `dt` and `dt^2` terms.
 //!
 //! Measured numbers are printed as `BTCS_RESULT|test|quantity|value` lines.
-
 use std::f64::consts::PI;
 use strato::{
     analytical::{
@@ -121,8 +141,13 @@ fn f_at(cfg: &Config, times: &[f64]) -> Vec<f64> {
         .iter()
         .map(|&t| {
             let step = (t / dt).round() as usize;
+            // Derived (u = 2^-53): the requested times are decimal literals or tau * R^2/D
+            // (each literal and each operation rounds once, at most 3 roundings on the way to t);
+            // the effective step dt = end/steps is one division, and the product step * dt one
+            // more; for the times of tests A and D1 and the steps 25, 12.5, 6.25 s, ... both are
+            // exact (dyadic dt, integer t). So |step dt - t| <= 4 u t.
             assert!(
-                (step as f64 * dt - t).abs() < 1e-9 * t,
+                (step as f64 * dt - t).abs() <= 4.0 * U * t,
                 "time {t} is not a multiple of dt {dt}"
             );
             r.series[step].1.release_fraction
@@ -152,11 +177,80 @@ fn orders(errors: &[f64]) -> Vec<f64> {
     errors.windows(2).map(|w| (w[0] / w[1]).log2()).collect()
 }
 
-fn assert_band(order: f64, theory: f64, label: &str) {
-    assert!(
-        (order - theory).abs() <= 0.2,
-        "{label}: observed order {order} outside {theory} +- 0.2"
-    );
+/// `gamma_k = k u / (1 - k u)`.
+fn gamma(k: f64) -> f64 {
+    k * U / (1.0 - k * U)
+}
+
+/// Backward-error constant of the F24 Thomas solve for the sign pattern of (F19), derived in
+/// `numerical::tridiagonal::tests::thomas_matches_dense_f24`: 4u + O(u^2), at most gamma_5.
+fn kappa_t() -> f64 {
+    let a = U / (1.0 - U);
+    (2.0 * a + gamma(2.0) + a * gamma(2.0)) * (1.0 - U) / (1.0 - 2.0 * U)
+}
+
+/// Per-step coefficient of the exact-form row residual, `|rho_i| <= c_step (|A||x|)_i`:
+/// the solve (kappa_t) plus the stored entries (3 u/(1 - 3u): the rounding of the division in
+/// U that is not absorbed in V, and the two roundings of B). Derived in the comment of
+/// `balance_bound_history`.
+fn c_step() -> f64 {
+    kappa_t() + 3.0 * U / (1.0 - 3.0 * U)
+}
+
+/// Monotone decrease of an error sequence on successive refinements, with no order band.
+/// The documents state the orders (second in space, first in time) as observed, not as
+/// bands (Document 2, P8b, P16, P17: OBSERVED), and the plus-or-minus 0.2 bands of the
+/// finite-volume work are withdrawn (decision 7). If the reference value carries an
+/// uncertainty `floor` (series truncation), the true errors can differ from the measured ones
+/// by `floor` each, so a true decrease implies `err_next <= err + 2 floor`; with `floor = 0`
+/// the decrease is strict.
+fn assert_decreasing(errors: &[f64], floor: f64, label: &str) {
+    for (k, w) in errors.windows(2).enumerate() {
+        let ok = if floor == 0.0 {
+            w[1] < w[0]
+        } else {
+            w[1] <= w[0] + 2.0 * floor
+        };
+        assert!(ok, "{label}: error {} -> {} at refinement {k}", w[0], w[1]);
+    }
+}
+
+/// Exact running sum of doubles (Shewchuk's grow-expansion): the partials are non-overlapping
+/// and hold the exact value of everything added so far.
+#[derive(Clone, Default)]
+struct Expansion {
+    partials: Vec<f64>,
+}
+
+impl Expansion {
+    fn add(&mut self, x0: f64) {
+        let mut x = x0;
+        let mut i = 0;
+        for j in 0..self.partials.len() {
+            let mut y = self.partials[j];
+            if x.abs() < y.abs() {
+                std::mem::swap(&mut x, &mut y);
+            }
+            let hi = x + y;
+            let lo = y - (hi - x);
+            if lo != 0.0 {
+                self.partials[i] = lo;
+                i += 1;
+            }
+            x = hi;
+        }
+        self.partials.truncate(i);
+        self.partials.push(x);
+    }
+
+    /// `|reported + (exact value held)|`; with the held value `-sum x_j` this is the exact
+    /// accumulation error of `reported`. The final summation from the largest partial is
+    /// accurate to a relative u, which the factor allows for.
+    fn magnitude_with(&self, reported: f64) -> f64 {
+        let mut e = self.clone();
+        e.add(reported);
+        e.partials.iter().rev().sum::<f64>().abs() * (1.0 + 2.0 * U)
+    }
 }
 
 // ------------------------------------------------------------------------------------------
@@ -172,9 +266,16 @@ fn five_layer_release_vs_sturm_liouville_and_spatial_order() {
     let floor = series.accuracy_floor();
     report("A", "series_accuracy_floor", floor);
     let exact: Vec<f64> = times.iter().map(|&t| series.release_fraction(t)).collect();
-    // Python-oracle anchor pinned by the repository for the series itself.
-    let oracle = 0.4325556390930383;
-    assert!((exact[4] - oracle).abs() <= 1e-10, "series vs oracle");
+    // Independent high-precision value of F(2e5 s) recorded in `reconciliation.md` (item 18),
+    // given to 14 decimals: its own rounding is at most 5e-15. The series is allowed its own
+    // accuracy estimate (`accuracy_floor`, the module's estimate; its documentation says the
+    // true error stayed 10 to 20 times below it). No other slack.
+    let oracle = 0.43255563909304;
+    assert!(
+        (exact[4] - oracle).abs() <= floor + 5.0e-15,
+        "series vs oracle: {} vs {oracle}",
+        exact[4]
+    );
 
     let mut failures: Vec<String> = Vec::new();
     let mut f_by_grid: Vec<Vec<f64>> = Vec::new();
@@ -205,25 +306,16 @@ fn five_layer_release_vs_sturm_liouville_and_spatial_order() {
             1.25 * (f_by_grid[n_last - 1][ti] - f_by_grid[n_last][ti]).abs() / (2f64.powf(p) - 1.0);
         report("A", &format!("richardson_estimate_t{t:.0e}"), e_h);
         report("A", &format!("richardson_order_t{t:.0e}"), p);
-        let finest = errs[n_last];
-        if finest > (3.0 * floor).max(e_h) {
-            failures.push(format!(
-                "R2 at t={t}: err {finest} > max(3 floor {}, E_h {e_h})",
-                3.0 * floor
-            ));
-        }
-        if finest > 1e-6 {
-            failures.push(format!("absolute target at t={t}: {finest}"));
-        }
-        // R3 on the last two pairs, only if both errors are resolved (R1).
-        let resolved = errs[n_last - 2..].iter().all(|&e| e > 3.0 * floor);
-        if resolved {
-            for (which, o) in [
-                ("last", ords[ords.len() - 1]),
-                ("prev", ords[ords.len() - 2]),
-            ] {
-                if (o - 2.0).abs() > 0.2 {
-                    failures.push(format!("spatial order t={t} {which}: {o} outside 2 +- 0.2"));
+        // No fixed target and no order band (decision 7): the error must fall at every
+        // refinement (up to the reference's own estimated accuracy), and the observed orders
+        // and the Richardson estimate are reported as OBSERVED values.
+        if errs.iter().all(|&e| e > floor) {
+            for w in errs.windows(2).enumerate() {
+                if w.1[1] > w.1[0] + 2.0 * floor {
+                    failures.push(format!(
+                        "t={t}: error {} -> {} at refinement {}",
+                        w.1[0], w.1[1], w.0
+                    ));
                 }
             }
         } else {
@@ -257,16 +349,18 @@ fn homogeneous_sphere_vs_analytical_reference() {
     let end = 0.5 * tau_scale;
     let dt0 = end / 2000.0;
     let times: Vec<f64> = taus.iter().map(|tau| tau * tau_scale).collect();
-    let floor: f64 = 3.0 * (1e-14 + 1e-15);
-    let exact: Vec<f64> = times
+    // The series reports a bound of its own truncation error with every value
+    // (`Estimate::error_bound`); the rounding of the series evaluation is not bounded by the
+    // module and is far below every error asserted on here (those are above 1e-8).
+    let estimates: Vec<_> = times
         .iter()
-        .map(|&t| sphere.release_fraction(t, 1e-14).unwrap().value)
+        .map(|&t| sphere.release_fraction(t, 1e-14).unwrap())
         .collect();
+    let exact: Vec<f64> = estimates.iter().map(|e| e.value).collect();
     let mut f_by_grid: Vec<Vec<f64>> = Vec::new();
     for &n in &GRIDS {
         f_by_grid.push(f_time_extrapolated(&homogeneous_cfg(n, dt0, end), &times));
     }
-    let n_last = GRIDS.len() - 1;
     for (ti, &tau) in taus.iter().enumerate() {
         let errs: Vec<f64> = (0..GRIDS.len())
             .map(|gi| (f_by_grid[gi][ti] - exact[ti]).abs())
@@ -283,21 +377,8 @@ fn homogeneous_sphere_vs_analytical_reference() {
         // (F is below 1e-3 or the BE time error at 8 to 40 steps is not removed; decided
         // before the first run).
         if tau >= 0.05 {
-            let p = ((f_by_grid[n_last - 2][ti] - f_by_grid[n_last - 1][ti]).abs()
-                / (f_by_grid[n_last - 1][ti] - f_by_grid[n_last][ti]).abs())
-            .log2();
-            let e_h = 1.25 * (f_by_grid[n_last - 1][ti] - f_by_grid[n_last][ti]).abs()
-                / (2f64.powf(p) - 1.0);
-            assert!(
-                errs[n_last] <= floor.max(e_h),
-                "R2 tau={tau}: err {} E_h {e_h}",
-                errs[n_last]
-            );
-            assert!(errs[n_last] <= 1e-6, "absolute target tau={tau}");
-            if errs[n_last - 2..].iter().all(|&e| e > floor) {
-                assert_band(ords[ords.len() - 1], 2.0, &format!("B tau={tau} last"));
-                assert_band(ords[ords.len() - 2], 2.0, &format!("B tau={tau} prev"));
-            }
+            // No fixed target and no order band (decision 7); see `assert_decreasing`.
+            assert_decreasing(&errs, estimates[ti].error_bound, &format!("B tau={tau}"));
         }
     }
 
@@ -305,7 +386,9 @@ fn homogeneous_sphere_vs_analytical_reference() {
     let t = 0.5 * tau_scale;
     let mut prof_err = Vec::new();
     let mut rate_err = Vec::new();
-    let rate_exact = sphere.surface_release_rate(t, 1e-14).unwrap().value;
+    let rate_est = sphere.surface_release_rate(t, 1e-14).unwrap();
+    let rate_exact = rate_est.value;
+    let mut prof_bound: f64 = 0.0;
     for &n in &GRIDS {
         let mut prof = Vec::new();
         let mut rate = Vec::new();
@@ -324,8 +407,9 @@ fn homogeneous_sphere_vs_analytical_reference() {
         let mut linf: f64 = 0.0;
         for i in 0..nn {
             let c = richardson(prof[0][i], prof[1][i], prof[2][i]);
-            let ex = sphere.concentration(grid.r[i], t, 1e-14).unwrap().value;
-            linf = linf.max((c - ex).abs());
+            let est = sphere.concentration(grid.r[i], t, 1e-14).unwrap();
+            prof_bound = prof_bound.max(est.error_bound);
+            linf = linf.max((c - est.value).abs());
         }
         prof_err.push(linf);
         rate_err.push((richardson(rate[0], rate[1], rate[2]) - rate_exact).abs());
@@ -349,7 +433,8 @@ fn homogeneous_sphere_vs_analytical_reference() {
         report("B", &format!("release_rate_order_pair{k}"), *o);
     }
     report("B", "release_rate_exact_tau0.5_mol_s", rate_exact);
-    assert!(prof_err[n_last] < prof_err[0] && rate_err[n_last] < rate_err[0]);
+    assert_decreasing(&prof_err, prof_bound, "B profile Linf");
+    assert_decreasing(&rate_err, rate_est.error_bound, "B release rate");
 }
 
 // ------------------------------------------------------------------------------------------
@@ -420,12 +505,12 @@ fn smooth_mode_spatial_order_and_temporal_order() {
     for (k, o) in o_l2.iter().enumerate() {
         report("C3", &format!("l2_order_pair{k}"), *o);
     }
-    for o in o_inf.iter().rev().take(2) {
-        assert_band(*o, 2.0, "smooth Linf");
-    }
-    for o in o_l2.iter().rev().take(2) {
-        assert_band(*o, 2.0, "smooth L2");
-    }
+    // No order band (decision 7): strict decrease at every refinement. The exact reference
+    // sinc(...) exp(...) is evaluated to a few u in magnitude (below 1e-15), against errors
+    // of at least 4e-7 (Linf) and 6e-13 (weighted L2, whose scale is the square root of the
+    // particle volume, so a reference rounding of 1e-15 contributes below 1e-20).
+    assert_decreasing(&linf, 0.0, "smooth Linf");
+    assert_decreasing(&l2, 0.0, "smooth L2");
 
     // D2: temporal order on one grid, Cauchy ratio of successive profiles in the max norm.
     let grid = Grid::from_radii(radii, [40; 5]).unwrap();
@@ -450,9 +535,10 @@ fn smooth_mode_spatial_order_and_temporal_order() {
     for (k, o) in ords.iter().enumerate() {
         report("D2", &format!("cauchy_order_{k}"), *o);
     }
-    for o in ords.iter().rev().take(2) {
-        assert_band(*o, 1.0, "smooth temporal");
-    }
+    // The Cauchy differences of successive step halvings fall strictly; their ratio is the
+    // OBSERVED order printed above (first order in time is stated in Document 1, 9.5, not
+    // as a band).
+    assert_decreasing(&diffs, 0.0, "smooth temporal Cauchy differences");
 }
 
 // ------------------------------------------------------------------------------------------
@@ -489,9 +575,7 @@ fn five_layer_temporal_order_cauchy() {
                 (row[ti] - series.release_fraction(t)).abs(),
             );
         }
-        for o in ords.iter().rev().take(2) {
-            assert_band(*o, 1.0, &format!("temporal t={t}"));
-        }
+        assert_decreasing(&diffs, 0.0, &format!("temporal Cauchy differences t={t}"));
     }
 }
 
@@ -555,7 +639,19 @@ fn interfaces_concentration_and_flux_continuity() {
                     + coeff.k_outer[i] * (c_new[i].abs() + c_new[i + 1].abs())
                     + (radius * radius * (r.grid.dr_inner(i) + r.grid.dr_outer(i)) / 2.0 / 200.0)
                         * (c_new[i].abs() + c_old[i].abs()));
-            let tol = 100.0 * U * scale;
+            // Derived bound: fi - fo is 4 pi times the residual of row (F10) at node i
+            // (the two halves of V_i add to r^2 (a + b)/2, which the solver stores with 3
+            // roundings). In units of `scale` (which bounds the (F10) scale S, times 4 pi):
+            //  - the exact-form row residual of the computed x: c_step (backward error of the
+            //    solve plus the stored entries, `c_step`);
+            //  - r^2 (a + b)/2 against the stored V_i: 3 roundings, and the division
+            //    rounding of the stored entry: gamma_4;
+            //  - the shared product dt K against K itself: gamma_1;
+            //  - evaluating each of fi and fo: k (c - c) 2 roundings; half = r r a / 2 and
+            //    (c_new - c_old)/dt (2) and their product: 5; the difference of the two terms
+            //    and the factor 4 pi: 2; gamma_7 each, and the two evaluations together
+            //    use at most the whole scale.
+            let tol = (c_step() + gamma(4.0) + gamma(1.0) + gamma(7.0)) * scale;
             assert!(
                 (fi - fo).abs() <= tol,
                 "F31 n={n} node {i}: {fi} vs {fo} tol {tol}"
@@ -582,16 +678,10 @@ fn interfaces_concentration_and_flux_continuity() {
             for (j, o) in ords.iter().enumerate() {
                 report("E1", &format!("order_{}_t{t:.0e}_pair{j}", names[k]), *o);
             }
-            // Pre-registered: the relative jump of the independent one-sided fluxes falls by
-            // at least a factor 1.8 per halving over the last two halvings (first order or
-            // better; the second-order rate is OBSERVED only, property P8b).
-            let nn = js.len();
-            assert!(
-                js[nn - 2] / js[nn - 1] >= 1.8 && js[nn - 3] / js[nn - 2] >= 1.8,
-                "flux jump not decreasing fast enough at {} t={t}: {:?}",
-                names[k],
-                js
-            );
+            // The relative jump of the independent one-sided fluxes falls at every halving
+            // (no factor is asserted; the second-order rate is OBSERVED only, property P8b,
+            // for which Document 4 records "no assertion of an order").
+            assert_decreasing(js, 0.0, &format!("flux jump {} t={t}", names[k]));
         }
     }
 }
@@ -600,21 +690,56 @@ fn interfaces_concentration_and_flux_continuity() {
 // F: balance identity;  G: positivity;  matrix structure
 // ------------------------------------------------------------------------------------------
 
-/// A-posteriori rounding bound on `|eps^j| / M^0` after each step `j = 0 ..= steps`.
+/// A-posteriori rounding bound on `|eps^j| / M^0` for every row `j = 0 ..= steps`, and the
+/// per-step accumulating part of it.
+struct BalanceBound {
+    /// Bound on `|eps^j| / M^0`.
+    bound: Vec<f64>,
+    /// Bound on the part of `M^j - M^{j-1}` that is not the release (relative to `M^0`),
+    /// `0` for `j = 0`.
+    step_term: Vec<f64>,
+}
+
+/// Rounding analysis (Document 2 7.4 and Document 3 RP-4 ask that the mesh Fourier numbers and
+/// the step count enter). Notation: u = 2^-53, gamma_k = k u/(1 - k u); `x` is the computed
+/// profile of a step, `c` the old one; pi stands for the double `PI` used by the solver.
 ///
-/// Rounding analysis (Document 2 7.4 asks that Fo and the step count enter): the identity
-/// (F29) follows by summing the exact-form rows (F10) over `i = 1 ..= N-1`. The computed
-/// `x` satisfies the stored rows up to the backward error of tridiagonal elimination,
-/// `|delta_i| <= gamma_5 (|A||x|)_i`, `gamma_5 = 5u / (1 - 5u)` (Higham, Section 9.6: `|dA| <=
-/// (4u + O(u^2)) |L||U| <= gamma_5 |A|` for this M-matrix, as in the tridiagonal tests),
-/// and the stored entries differ from the exact `-dt K / V` and `1 - L - U` by at most
-/// `2u` relative (two roundings; `B` by `2u B`). Hence per step
-/// `|Delta eps| <= 4 pi (5u + 2u) sum_i V_i (|A||x|)_i`; the constant used is 16u (a safety
-/// factor of about 2.3 over 7u). The final rounding of `M^j` (N terms), of `dt Phi`
-/// (three products) and of the compensated sum adds `(N + 8) u M^0`. This is fixed before
-/// any run and replaces the heuristic `u N sqrt(steps)` of the verification plan, which
-/// omits Fo (it failed at n = 20 by a factor 65; recorded in the results file).
-fn balance_bound_history(cfg: &Config) -> Vec<f64> {
+/// 1. Exact identity. Rows (F10) with data `K'`, `V''` (defined in 2), multiplied by `V''`,
+///    summed over `i = 1 ..= N-1` telescope (`K_0 = 0`, `x_N = 0`):
+///    `sum V'' (x - c) = -dt K'_{N-1} x_{N-1} + sum V'' rho`, with `rho = (A'' x - c)` the
+///    residual of the exact-form matrix. Hence
+///    `M''(x) - M''(c) + dt Phi'(x) = 4 pi sum_i V''_i rho_i` exactly, where
+///    `M''` is `4 pi sum V'' x` and `Phi' = 4 pi K' x_{N-1}`.
+/// 2. Stored matrix. `assemble` forms `P = fl(-dt K)` (one rounding, the same operands in the
+///    two rows that use `K_i`), `L = fl(P/V)`, `U = fl(P/V)`, `B = fl(fl(1 - L) - U)`. Put
+///    `K' = P/(-dt)` (relative change u) and `V''_i` such that `L_i = P_{i-1}/V''_i` exactly
+///    (relative change u from V_i). Then `U_i` differs from `P_i/V''_i` by at most one
+///    relative rounding, and `B` carries two roundings of positive terms:
+///    `|B - (1 + |L| + |U''|)| <= gamma_2 B`. So `|(A'' - A) x|_i <= 3u/(1 - 3u) (|A||x|)_i`
+///    (u |U||x_{i+1}| from U, 2u B |x_i| from B; L is exact for the modified data).
+/// 3. Solve. The computed `x` satisfies `(A + dA) x = c` with `|dA| <= kappa_t |A|`,
+///    `kappa_t = 4u + O(u^2)` (derived in `numerical::tridiagonal::tests::thomas_matches_dense_f24`).
+///    Together: `|rho_i| <= c_step (|A||x|)_i`, `c_step = kappa_t + 3u/(1 - 3u)` (about 7u),
+///    so per step `|M''(x) - M''(c) + dt Phi'| <= 4 pi c_step sum_i V_i (|A||x|)_i (1 + gamma_{N+6})`
+///    (the factor covers `V''` against `V` and the evaluation of the sum, N terms).
+/// 4. What the solver reports differs from the exact quantities by: `M` (N - 1 products, N - 2
+///    additions, the factor 4 pi: gamma_N, and `V''` against `V`: u): gamma_{N+1} M, at
+///    `j` and at `0`; the increments `dt Phi` (3 products, with `K'` against `K`: u):
+///    gamma_4 per increment, so gamma_4 times the cumulative release; the compensated sum of
+///    the increments against their exact sum: the *measured* exact accumulation error `E_K`
+///    (evaluated with exact expansion arithmetic from the same increments, so no assumption is
+///    made on the Kahan constant; Goldberg, Theorem 8, gives `2u + O(N u^2)` for it); and the
+///    residual `fl(fl(M + R) - M^0)`: one rounding of `M + R` (the subtraction is exact
+///    within a factor 2 of its operands and otherwise rounds the small result), so u (M + R),
+///    divided by (1 - u) because the result itself rounds.
+/// 5. The per-step terms are added in the order of the steps (`steps` additions): the factor
+///    (1 + gamma_{steps + 8}) on their sum.
+///
+/// None of this is tuned: no safety factor is applied, and the observed ratio is printed. The
+/// bound replaces the heuristic `u N sqrt(steps)` of the verification plan, which omits Fo (it
+/// failed at n = 20 by a factor 65; recorded in the results file), and the earlier constant
+/// 16u, which had no derivation.
+fn balance_bound_history(cfg: &Config) -> BalanceBound {
     let d = [
         cfg.regions[0].diffusivity_m2_s,
         cfg.regions[1].diffusivity_m2_s,
@@ -623,38 +748,57 @@ fn balance_bound_history(cfg: &Config) -> Vec<f64> {
         cfg.regions[4].diffusivity_m2_s,
     ];
     let r = run(cfg, &LIMITS, &[]).unwrap();
+    assert_eq!(r.series.len(), r.meta.steps + 1, "output every step");
     let grid = &r.grid;
     let dt = r.meta.dt;
     let m0 = r.meta.initial_inventory;
+    let n_nodes = grid.n as f64;
+    let steps = r.meta.steps as f64;
     let mut stepper = Stepper::new(grid, d, dt).unwrap();
     let (mut c_old, _, _) = initial_vector(grid, cfg.initial.kernel_concentration_mol_m3);
     let mut c_new = vec![0.0; grid.n + 1];
-    let tail = (grid.n as f64 + 8.0) * U;
+    let g_inv = gamma(n_nodes + 1.0) / (1.0 - gamma(n_nodes + 1.0));
+    let g_inc = gamma(4.0) / (1.0 - gamma(4.0));
+    let mut neg_increments = Expansion::default();
     let mut cum = 0.0;
-    let mut out = vec![tail];
-    for _ in 0..r.meta.steps {
+    let row0 = r.series[0].1;
+    let first = (g_inv * (row0.inventory + m0) + U * (row0.inventory + row0.cumulative_release))
+        / (1.0 - U)
+        / m0;
+    let mut bound = vec![first];
+    let mut step_term = vec![0.0];
+    for (_, (_, row)) in (1..=r.meta.steps).zip(r.series.iter().skip(1)) {
         stepper.step(&c_old, &mut c_new).unwrap();
+        let increment = dt
+            * strato::numerical::boundary_conditions::release_rate(
+                stepper.k_last(),
+                c_new[grid.n - 1],
+            );
+        neg_increments.add(-increment);
         let a = &stepper.assembly().matrix;
         let mut s = 0.0;
         for i in 1..grid.n {
-            let left = if i >= 1 {
-                a.lower[i].abs() * c_new[i - 1].abs()
-            } else {
-                0.0
-            };
+            let left = a.lower[i].abs() * c_new[i - 1].abs();
             let right = a.upper[i].abs() * c_new[i + 1].abs();
             s += grid.v[i] * (left + a.diag[i].abs() * c_new[i].abs() + right);
         }
-        cum += 4.0 * PI * 16.0 * U * s / m0;
-        out.push(cum + tail);
+        let term = 4.0 * PI * c_step() * s * (1.0 + gamma(n_nodes + 6.0)) / m0;
+        cum += term;
+        step_term.push(term);
+        let e_k = neg_increments.magnitude_with(row.cumulative_release);
+        let rounding = g_inv * (row.inventory + m0)
+            + g_inc * row.cumulative_release
+            + e_k
+            + U * (row.inventory + row.cumulative_release);
+        bound.push(cum * (1.0 + gamma(steps + 8.0)) + rounding / (1.0 - U) / m0);
         std::mem::swap(&mut c_old, &mut c_new);
     }
-    out
+    BalanceBound { bound, step_term }
 }
 
 fn check_balance(label: &str, cfg: &Config) {
     let r = run(cfg, &LIMITS, &[]).unwrap();
-    let bounds = balance_bound_history(cfg);
+    let bounds = balance_bound_history(cfg).bound;
     assert_eq!(bounds.len(), r.series.len());
     let m0 = r.meta.initial_inventory;
     let mut worst_ratio: f64 = 0.0;
@@ -714,12 +858,16 @@ fn production_balance_bound_equals_the_test_derivation() {
         let cfg = s5(n, 200.0);
         let r = run(&cfg, &LIMITS, &[]).unwrap();
         let history = balance_bound_history(&cfg);
+        let history = history.bound;
         assert_eq!(history.len(), r.series.len());
         let m0 = r.meta.initial_inventory;
         for (k, (_, row)) in r.series.iter().enumerate() {
+            // The same operations in the same order; the run stores the bound in mol (one
+            // multiplication by m0) and it is divided by m0 here (one division): relative
+            // difference at most gamma_2.
             let rel = row.balance_residual_bound / m0;
             assert!(
-                (rel - history[k]).abs() <= 4.0 * U * history[k],
+                (rel - history[k]).abs() <= gamma(2.0) * history[k],
                 "n={n} row {k}: {rel} vs {}",
                 history[k]
             );
@@ -753,7 +901,14 @@ fn balance_negative_control_wrong_release_level() {
     let eps_right = ((m + released_new_level - m0) / m0).abs();
     report("F", "negative_control_residual_old_level", eps_wrong);
     report("F", "residual_new_level_plain_sum", eps_right);
-    assert!(eps_wrong > 1e3 * eps_right.max(1e-16));
+    // The control must exceed the derived rounding bound of the correct identity, which is
+    // the statement that the identity is sensitive to the release rule.
+    let bound = balance_bound_history(&cfg);
+    let final_bound = *bound.bound.last().unwrap();
+    assert!(
+        eps_wrong > final_bound,
+        "negative control {eps_wrong} does not exceed the bound {final_bound}"
+    );
 }
 
 #[test]
@@ -792,9 +947,11 @@ fn positivity_maximum_principle_and_monotone_release() {
             .cloned()
             .fold(0.0, f64::max);
         let gamma5 = 5.0 * U / (1.0 - 5.0 * U);
-        let kappa = (4.0 * U + 2.0 * gamma5) * b_max;
+        let g1 = gamma(2.0) / (1.0 - gamma(2.0));
+        let kappa = (g1 + 2.0 * gamma5) * b_max;
+        // The bound below needs 1 - kappa > 0 (nothing smaller is assumed).
         assert!(
-            kappa < 1e-3,
+            kappa < 1.0,
             "{label}: kappa {kappa} too large for the bound"
         );
         let mut steps_done: i32 = 0;
@@ -807,13 +964,14 @@ fn positivity_maximum_principle_and_monotone_release() {
                 rep.min_new
             );
             // Derived maximum-principle bound. The computed x solves (A + dA) x = c_old with
-            // |dA| <= gamma_5 |A| (operation count in btcs::tests::one_step_matches_dense_solve)
+            // |dA| <= kappa_t |A| <= gamma_5 |A| (derived in tridiagonal::tests::thomas_matches_dense_f24)
             // and signs preserved. At the node of largest x, row i gives
             // x_max (rowsum_i(A) - sum_j |dA_ij|) <= (A+dA)x ... <= max c_old, where
-            // rowsum_i(A) >= 1 - 4 u B_max (P1 margin, tested below) and
-            // sum_j |dA_ij| <= gamma_5 (2 B_max - 1) because B = 1 + |L| + |U|. Hence per step
-            // max x <= max c_old / (1 - kappa), kappa = (4 u + 2 gamma_5) B_max, and after k
-            // steps max C <= C_init (1 - kappa)^-k.
+            // rowsum_i(A) = B - |L| - |U| >= 1 - g1 B_max with g1 = gamma_2/(1 - gamma_2) (B is
+            // two roundings of the positive terms 1, |L|, |U|, so B >= (1 + |L| + |U|)(1 - gamma_2))
+            // and sum_j |dA_ij| <= gamma_5 (2 B_max - 1) because B = 1 + |L| + |U| up to rounding.
+            // Hence per step max x <= max c_old / (1 - kappa), kappa = (g1 + 2 gamma_5) B_max,
+            // and after k steps max C <= C_init (1 - kappa)^-k.
             steps_done += 1;
             assert!(
                 rep.max_new <= (1.0 - kappa).powi(-steps_done),
@@ -834,9 +992,9 @@ fn positivity_maximum_principle_and_monotone_release() {
         assert!(rep.release_monotone, "F not monotone n={n}");
         assert!(rep.release_in_range, "F out of [0,1] n={n}");
         // M^{j+1} - M^j = -dt Phi^{j+1} + (rounding discrepancy of the step) with Phi >= 0, so
-        // an increase can only be rounding: at most the per-step increment of the balance
-        // bound plus the rounding of two N-term sums, 2 (N+1) u (first slack, derived from
-        // the sum alone, was too small at n = 320; see "Revisions").
+        // an increase can only be rounding: at most the accumulating per-step term of the balance
+        // bound (item 3 of alance_bound_history) plus the rounding of the two reported
+        // inventories, gamma_{N+1}/(1 - gamma_{N+1}) (M^j + M^{j-1}).
         report(
             "G",
             &format!("max_inventory_increase_rel_n{n}"),
@@ -844,10 +1002,11 @@ fn positivity_maximum_principle_and_monotone_release() {
         );
         let bounds = balance_bound_history(&s5(n, 200.0));
         let m0 = r.meta.initial_inventory;
-        let sum_slack = 2.0 * (r.grid.n as f64 + 1.0) * U;
+        let g_inv = gamma(r.grid.n as f64 + 1.0) / (1.0 - gamma(r.grid.n as f64 + 1.0));
         for k in 1..r.series.len() {
-            let inc = (r.series[k].1.inventory - r.series[k - 1].1.inventory) / m0;
-            let allowed = (bounds[k] - bounds[k - 1]) + sum_slack;
+            let (inv_k, inv_p) = (r.series[k].1.inventory, r.series[k - 1].1.inventory);
+            let inc = (inv_k - inv_p) / m0;
+            let allowed = bounds.step_term[k] + g_inv * (inv_k + inv_p) / m0;
             assert!(
                 inc <= allowed,
                 "inventory increase {inc} > {allowed} at step {k}, n={n}"
@@ -882,10 +1041,12 @@ fn matrix_sign_pattern_and_diagonal_dominance_p1() {
         let coeff = Coefficients::new(&grid, d, dt).unwrap();
         let a = assemble(&grid, coeff, dt).unwrap();
         let rep = check_matrix_structure(&a.matrix).unwrap();
-        // Pre-registered: B = (1 - L) - U is rounded, so the margin deviates from 1 by at
-        // most about 2 u B_max; the bound used is 4 u B_max.
+        // Derived: B = fl(fl(1 - L) - U) is two roundings of positive terms, so the real margin
+        // B - |L| - |U| deviates from 1 by at most gamma_2 B_max (1 + O(u)); check_matrix_structure`n        // evaluates it in floating point with two subtractions, which adds at most gamma_2 B_max
+        // more. So the deviation is at most 2 gamma_2 B_max, and the smallest margin is at least
+        // 1 minus that.
         let b_max = a.matrix.diag.iter().cloned().fold(0.0, f64::max);
-        let tol = 4.0 * U * b_max;
+        let tol = 2.0 * gamma(2.0) * b_max;
         report(
             "P1",
             &format!("max_margin_deviation_n{n}_dt{dt:e}"),

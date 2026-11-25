@@ -32,42 +32,120 @@ pub struct StepDiagnostics {
 /// `(t^j in s, row)`.
 pub type TimeSeries = Vec<(f64, StepDiagnostics)>;
 
+/// Exact running sum of doubles (Shewchuk's grow-expansion): the partials are non-overlapping
+/// and hold the exact value of everything added so far.
+#[derive(Clone, Debug, Default)]
+pub struct Expansion {
+    partials: Vec<f64>,
+}
+
+impl Expansion {
+    /// Adds `x0` exactly.
+    pub fn add(&mut self, x0: f64) {
+        let mut x = x0;
+        let mut i = 0;
+        for j in 0..self.partials.len() {
+            let mut y = self.partials[j];
+            if x.abs() < y.abs() {
+                std::mem::swap(&mut x, &mut y);
+            }
+            let hi = x + y;
+            let lo = y - (hi - x);
+            if lo != 0.0 {
+                self.partials[i] = lo;
+                i += 1;
+            }
+            x = hi;
+        }
+        self.partials.truncate(i);
+        self.partials.push(x);
+    }
+
+    /// `|reported + (exact value held)|`; with the held value `-sum x_j` this is the exact
+    /// accumulation error of `reported`. The final summation from the largest partial is
+    /// accurate to a relative `u`, which the factor allows for.
+    pub fn magnitude_with(&self, reported: f64) -> f64 {
+        let mut e = self.clone();
+        e.add(reported);
+        e.partials.iter().rev().sum::<f64>().abs() * (1.0 + 2.0 * BalanceBound::U)
+    }
+}
+
 /// A-posteriori rounding bound on the balance residual `|eps^j| / M^0` (property P18).
 ///
-/// Derivation (recorded before it was used, in `tests/btcs_verification.rs`): the identity
-/// (F29) follows by summing the exact-form rows (F10) over `i = 1 ..= N-1`. The computed
-/// solution satisfies the stored rows up to the backward error of tridiagonal elimination,
-/// `|delta_i| <= gamma_5 (|A||x|)_i`, `gamma_5 = 5u / (1 - 5u)` (Higham, Section 9.6:
-/// `|dA| <= (4u + O(u^2)) |L||U| <= gamma_5 |A|` for this M-matrix), and
-/// the stored entries differ from the exact `-dt K / V` and `1 - L - U` by at most `2u`
-/// relative. Hence per step `|Delta eps| <= 4 pi (5u + 2u) sum_i V_i (|A||x|)_i`; the constant
-/// used is `16 u` (a safety factor of about 2.3 over `7 u`). The final rounding of `M^j` (`N`
-/// terms), of `dt Phi` (three products) and of the compensated sum adds `(N + 8) u M^0`.
-/// `u = 2^-53`. This is a bound derived from the operation count, not a rigorous proof, and
-/// nothing about it is tightened empirically (coordinator decision 6).
-#[derive(Clone, Copy, Debug)]
+/// The derivation is written in full beside the test that checks it
+/// (`balance_bound_history` in `tests/btcs_verification.rs`); this is the same computation in
+/// the production loop, so the observed residual is reported beside its derived bound in every
+/// output row (coordinator decision 6). Notation: `u = 2^-53`, `gamma_k = k u / (1 - k u)`.
+///
+/// 1. The identity (F29) is the sum of the exact-form rows (F10) over `i = 1 ..= N-1`, which
+///    telescopes; per step it holds up to the residual `rho` of the exact-form matrix.
+/// 2. The stored matrix differs from the exact-form one by `3u/(1 - 3u) (|A||x|)`.
+/// 3. The solve (F24) has backward error `kappa_t = 4u + O(u^2)` (derived in
+///    `numerical::tridiagonal::tests::thomas_matches_dense_f24`, at most `gamma_5`). Together
+///    `c_step = kappa_t + 3u/(1 - 3u)`, about `7u`, and per step
+///    `4 pi c_step sum_i V_i (|A||x|)_i (1 + gamma_{N+6})`.
+/// 4. What the solver reports differs from the exact quantities by `gamma_{N+1}` of `M` (at `j`
+///    and at 0), by `gamma_4` per increment `dt Phi`, by the exactly measured accumulation
+///    error of the compensated sum ([`Expansion`], no assumed constant for it) and by one
+///    rounding of `M + R`.
+/// 5. The per-step terms are added in step order: the factor `1 + gamma_{steps + 8}`.
+///
+/// No safety factor is applied and nothing is tightened empirically.
+#[derive(Clone, Debug)]
 pub struct BalanceBound {
+    n_nodes: f64,
+    steps: f64,
+    m0: f64,
     cumulative: f64,
-    tail: f64,
+    neg_increments: Expansion,
 }
 
 impl BalanceBound {
     /// Unit roundoff of `f64`.
     pub const U: f64 = f64::EPSILON / 2.0;
-    /// The per-step constant `16 u`, as a multiple of `u`.
-    pub const STEP_CONSTANT_IN_U: f64 = 16.0;
 
-    /// Bound for a grid with `n` the index of the outer node (`N`).
-    pub fn new(n: usize) -> BalanceBound {
+    fn gamma(k: f64) -> f64 {
+        k * Self::U / (1.0 - k * Self::U)
+    }
+
+    /// Backward-error constant of the F24 solve for the sign pattern of (F19): `4u + O(u^2)`.
+    pub fn kappa_t() -> f64 {
+        let u = Self::U;
+        let a = u / (1.0 - u);
+        (2.0 * a + Self::gamma(2.0) + a * Self::gamma(2.0)) * (1.0 - u) / (1.0 - 2.0 * u)
+    }
+
+    /// `c_step = kappa_t + 3u/(1 - 3u)`.
+    pub fn c_step() -> f64 {
+        Self::kappa_t() + 3.0 * Self::U / (1.0 - 3.0 * Self::U)
+    }
+
+    /// Bound for a grid whose outer node has index `n` (`N`), a run of `steps` steps and the
+    /// initial inventory `m0` (mol).
+    pub fn new(n: usize, steps: usize, m0: f64) -> BalanceBound {
         BalanceBound {
+            n_nodes: n as f64,
+            steps: steps as f64,
+            m0,
             cumulative: 0.0,
-            tail: (n as f64 + 8.0) * Self::U,
+            neg_increments: Expansion::default(),
         }
     }
 
-    /// Adds the increment of one step: `c_new` is the profile after the step (length `N + 1`),
-    /// `v` the weights `V_i`, `m0` the initial inventory.
-    pub fn add_step(&mut self, a: &Tridiagonal, v: &[f64], c_new: &[f64], m0: f64) {
+    fn g_inv(&self) -> f64 {
+        Self::gamma(self.n_nodes + 1.0) / (1.0 - Self::gamma(self.n_nodes + 1.0))
+    }
+
+    /// The bound `|eps^0| / M^0` of the first row, whose reported inventory is `inventory`.
+    pub fn first_row(&self, inventory: f64) -> f64 {
+        (self.g_inv() * (inventory + self.m0) + Self::U * inventory) / (1.0 - Self::U) / self.m0
+    }
+
+    /// Accumulates one step: `a` is the assembled matrix, `v` the weights `V_i`, `c_new` the
+    /// profile after the step and `increment` the release `dt Phi` of the step. Must be called
+    /// for every step, whatever the output stride.
+    pub fn add_step(&mut self, a: &Tridiagonal, v: &[f64], c_new: &[f64], increment: f64) {
         let n = a.diag.len();
         let mut s = 0.0;
         for i in 1..n {
@@ -75,15 +153,27 @@ impl BalanceBound {
             let right = a.upper[i].abs() * c_new[i + 1].abs();
             s += v[i] * (left + a.diag[i].abs() * c_new[i].abs() + right);
         }
-        self.cumulative += 4.0 * std::f64::consts::PI * Self::STEP_CONSTANT_IN_U * Self::U * s / m0;
+        self.cumulative += 4.0
+            * std::f64::consts::PI
+            * Self::c_step()
+            * s
+            * (1.0 + Self::gamma(self.n_nodes + 6.0))
+            / self.m0;
+        self.neg_increments.add(-increment);
     }
 
-    /// The bound on `|eps^j| / M^0` after the steps added so far.
-    pub fn relative(&self) -> f64 {
-        self.cumulative + self.tail
+    /// The bound on `|eps^j| / M^0` of the row after the steps added so far, whose reported
+    /// inventory and cumulative release are given.
+    pub fn row(&self, inventory: f64, cumulative_release: f64) -> f64 {
+        let e_k = self.neg_increments.magnitude_with(cumulative_release);
+        let rounding = self.g_inv() * (inventory + self.m0)
+            + Self::gamma(4.0) / (1.0 - Self::gamma(4.0)) * cumulative_release
+            + e_k
+            + Self::U * (inventory + cumulative_release);
+        self.cumulative * (1.0 + Self::gamma(self.steps + 8.0))
+            + rounding / (1.0 - Self::U) / self.m0
     }
 }
-
 /// Result of [`check_matrix_structure`].
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct MatrixReport {
@@ -278,7 +368,8 @@ mod tests {
         assert!(r.non_negative && r.max_principle_excess == 0.0);
         let r = check_step_properties(&[1.0, 0.5], &[1.1, -1e-30]);
         assert!(!r.non_negative);
-        assert!((r.max_principle_excess - 0.1).abs() < 1e-15);
+        // No tolerance: the excess is the one subtraction 1.1 - 1.0, exact by Sterbenz.
+        assert_eq!(r.max_principle_excess.to_bits(), (1.1f64 - 1.0).to_bits());
     }
 
     #[test]
