@@ -71,12 +71,32 @@ mod tests {
         // Hand value, kernel interval 1: D r_1 r_2 / dr with r_1 = R1/3, r_2 = 2 R1/3.
         let dr = RADII[0] / 3.0;
         let expect = D[0] * dr * (2.0 * dr) / dr;
-        assert!((c.k_outer[1] - expect).abs() <= 64.0 * f64::EPSILON * expect);
-        // Series check inside the buffer: sum of reciprocals telescopes to (1/r_a - 1/r_b)/D.
+        // No tolerance: the stored nodes are r_1 = fl(1 * dr) = dr and r_2 = fl(2 * dr) = 2 dr
+        // (doubling is exact), so Delta r_{1,outer} = 2 dr - dr = dr exactly, and (F6) executes
+        // the very operations of `expect`, in the same order: bitwise equality.
+        assert_eq!(c.k_outer[1].to_bits(), expect.to_bits());
+        // Series check inside the buffer. In exact arithmetic, with the stored radii and the
+        // stored differences dr_i = r_{i+1} - r_i, 1/K_i = dr_i / (D r_i r_{i+1}) =
+        // (1/r_i - 1/r_{i+1}) / D, so the sum over the buffer telescopes to
+        // (r_b - r_a) / (D r_a r_b). Rounding (u = 2^-53, gamma_k = k u / (1 - k u)):
+        // the buffer radii satisfy r_b <= 2 r_a (Sterbenz), so every stored difference and
+        // r_b - r_a is exact. K_i has 3 roundings (two products, one quotient), 1/K_i one
+        // more: gamma_4 per term; recursive summation of n positive terms adds gamma_{n-1}:
+        // |recip - S| <= gamma_{n+3} S. The reference ((r_b - r_a) / (r_a r_b)) / D has 3
+        // roundings: |exact - S| <= gamma_3 S. Hence
+        // |recip - exact| <= (gamma_{n+3} + gamma_3) S, and S <= exact / (1 - gamma_3).
         let (a, b) = (g.interface_nodes[0], g.interface_nodes[1]);
+        assert!(g.r[b] <= 2.0 * g.r[a], "Sterbenz precondition");
         let recip: f64 = (a..b).map(|i| 1.0 / c.k_outer[i]).sum();
-        let exact = (1.0 / g.r[a] - 1.0 / g.r[b]) / D[1];
-        assert!((recip - exact).abs() <= 64.0 * f64::EPSILON * exact);
+        let exact = ((g.r[b] - g.r[a]) / (g.r[a] * g.r[b])) / D[1];
+        let u = f64::EPSILON / 2.0;
+        let gamma = |k: f64| k * u / (1.0 - k * u);
+        let n_terms = (b - a) as f64;
+        let tol = (gamma(n_terms + 3.0) + gamma(3.0)) / (1.0 - gamma(3.0)) * exact;
+        assert!(
+            (recip - exact).abs() <= tol,
+            "recip {recip} exact {exact} tol {tol}"
+        );
     }
 
     #[test]

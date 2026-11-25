@@ -371,38 +371,50 @@ mod tests {
 
     #[test]
     fn size_two() {
-        // [2 1; 1 3] x = [4; 7] -> x = [1; 2]
+        // [2 1; 1 3] x = [4; 7] -> x = [1; 2]. No tolerance: the operations are
+        // 4/2 = 2, 1/2 = 0.5, 3 - 0.5 = 2.5, (7 - 2)/2.5 = 2, 2 - 0.5 * 2 = 1, all exact.
         let x = solve(&[1.0], &[2.0, 3.0], &[1.0], &[4.0, 7.0]).unwrap();
-        assert!((x[0] - 1.0).abs() < 1e-15 && (x[1] - 2.0).abs() < 1e-15);
+        assert_eq!(x, vec![1.0, 2.0]);
     }
 
     #[test]
     fn size_three() {
-        // [4 1 0; 1 4 1; 0 1 4] x = [5; 6; 5] -> x = [1; 1; 1]
-        let x = solve(&[1.0; 2], &[4.0; 3], &[1.0; 2], &[5.0, 6.0, 5.0]).unwrap();
-        for v in x {
-            assert!((v - 1.0).abs() < 1e-15);
-        }
+        // [2 1 0; 1 2.5 1; 0 1 2.5] x = [4; 9; 9.5] -> x = [1; 2; 3]. No tolerance: the
+        // pivots are 2, 2.5 - 0.5 = 2, 2.5 - 0.5 = 2 and every intermediate value
+        // (2, 3.5, 3, 0.5) is a dyadic rational of few bits, so each operation is exact.
+        let x = solve(&[1.0; 2], &[2.0, 2.5, 2.5], &[1.0; 2], &[4.0, 9.0, 9.5]).unwrap();
+        assert_eq!(x, vec![1.0, 2.0, 3.0]);
     }
 
     #[test]
     fn second_difference_closed_form() {
         // tridiag(-1, 2, -1) x = 1 has x_i = i (n + 1 - i) / 2, i = 1..=n.
+        // Derived a-posteriori bound (u = 2^-53, gamma_k = k u / (1 - k u)): the exact inverse
+        // is positive with entries i (n + 1 - j) / (n + 1) (i <= j), so
+        // ||A^-1||_inf = max_i (A^-1 1)_i = max_i x_i = (n + 1)^2 / 8. With the exact residual
+        // r = b - A x_hat, x - x_hat = A^-1 r, so |x - x_hat|_inf <= ||A^-1||_inf |r|_inf. The
+        // exact residual differs from the floating-point one evaluated here by at most
+        // gamma_4 (|A||x_hat| + |b|)_i (3 products, 3 additions and b). The bound is rigorous
+        // and, because cond(A) ~ n^2/4, is of relative size about n^2 u; it is looser than a
+        // fixed constant would be at n = 10^4 and no constant is asserted.
         for &n in &[5usize, 100, 10_000] {
-            let x = solve(
-                &vec![-1.0; n - 1],
-                &vec![2.0; n],
-                &vec![-1.0; n - 1],
-                &vec![1.0; n],
-            )
-            .unwrap();
+            let (l, d, up, b) = (
+                vec![-1.0; n - 1],
+                vec![2.0; n],
+                vec![-1.0; n - 1],
+                vec![1.0; n],
+            );
+            let x = solve(&l, &d, &up, &b).unwrap();
+            let u = f64::EPSILON / 2.0;
+            let g4 = 4.0 * u / (1.0 - 4.0 * u);
+            let (r, s) = residual_and_scale(&l, &d, &up, &b, &x);
+            let rmax = (0..n).map(|i| r[i].abs() + g4 * s[i]).fold(0.0, f64::max);
+            let inv_norm = (n as f64 + 1.0) * (n as f64 + 1.0) / 8.0;
+            let tol = inv_norm * rmax;
             for (k, v) in x.iter().enumerate() {
                 let i = (k + 1) as f64;
                 let exact = i * (n as f64 + 1.0 - i) / 2.0;
-                assert!(
-                    (v - exact).abs() <= 1e-12 * exact.max(1.0) * n as f64,
-                    "n={n} i={i}"
-                );
+                assert!((v - exact).abs() <= tol, "n={n} i={i} tol {tol}");
             }
         }
     }
@@ -419,24 +431,58 @@ mod tests {
         ] {
             let (l, d, u, b) = random_dominant(n, seed);
             let x = solve(&l, &d, &u, &b).unwrap();
-            let r = multiply(&l, &d, &u, &x);
-            let rmax = r
-                .iter()
-                .zip(&b)
-                .map(|(p, q)| (p - q).abs())
-                .fold(0.0, f64::max);
-            let bmax = b.iter().fold(0.0f64, |m, v| m.max(v.abs()));
-            let xmax = x.iter().fold(0.0f64, |m, v| m.max(v.abs()));
-            let dmax = d.iter().fold(0.0f64, |m, v| m.max(v.abs()));
-            // Backward-stable bound with a modest constant.
-            assert!(
-                rmax <= 8.0 * f64::EPSILON * (dmax * 3.0 * xmax + bmax),
-                "n={n} r={rmax}"
-            );
+            // Derived bounds, u = 2^-53, gamma_k = k u / (1 - k u), a = u / (1 - u).
+            // (1) Backward error of `solve_in_place` (pivots m_i = d_i - l w_{i-1} with
+            //     w_i = fl(u_i / m_i), y_i = fl(fl(b_i - fl(l y_{i-1})) / m_i),
+            //     x_i = fl(y_i - fl(w_i x_{i+1}))). Writing out the roundings gives
+            //     |A - L U| <= a |L||U| (L lower with diagonal m_i, U unit upper with w_i),
+            //     (L + dL) y = b with |dL| <= gamma_2 |L|, (U + dU) x = y with |dU| <= a |U|,
+            //     hence (A + dA) x = b with |dA| <= kappa |L||U|,
+            //     kappa = 2 a + gamma_2 + a gamma_2 (= 4u + O(u^2)).
+            // (2) Row dominance with margin >= 0.1 (by construction of `random_dominant`) gives
+            //     |w_i| <= 1 + O(u) by induction (|m_i| >= |d_i| - |l| (1 + O(u)) >= |u_i|),
+            //     so (|L||U|)_ii <= |d_i| + 2 |l| (1 + 3u) <= 3 (1 + 3u) |d_i| and the off-diagonal
+            //     entries are at most (1 + u) |A|. Hence |dA| <= 3 (1 + 3u) kappa |A|.
+            // (3) The residual below is evaluated in floating point: at most gamma_4 (|A||x| + |b|)_i
+            //     away from the exact one (3 products, 3 additions, b).
+            let u_r = f64::EPSILON / 2.0;
+            let g = |k: f64| k * u_r / (1.0 - k * u_r);
+            let a_u = u_r / (1.0 - u_r);
+            let kappa = 2.0 * a_u + g(2.0) + a_u * g(2.0);
+            let c_back = 3.0 * (1.0 + 3.0 * u_r) * kappa;
+            let (rr, ss) = residual_and_scale(&l, &d, &u, &b, &x);
+            for i in 0..n {
+                let abs_ax = ss[i] - b[i].abs();
+                assert!(
+                    rr[i].abs() <= c_back * abs_ax + g(4.0) * ss[i],
+                    "n={n} row {i}: residual {}",
+                    rr[i]
+                );
+            }
             if n <= 200 {
+                // |x - y|_inf <= ||A^-1||_inf (||r_x|| + ||r_y||) with Varah's bound
+                // ||A^-1||_inf <= 1 / margin for row dominance. The margin is evaluated in
+                // floating point (two subtractions: error at most gamma_2 (|d| + |l| + |u|)),
+                // which is subtracted.
                 let y = dense_solve(&l, &d, &u, &b);
+                let (ry, sy) = residual_and_scale(&l, &d, &u, &b, &y);
+                let margin = (0..n)
+                    .map(|i| {
+                        let lo = if i > 0 { l[i - 1].abs() } else { 0.0 };
+                        let up = if i + 1 < n { u[i].abs() } else { 0.0 };
+                        (d[i].abs() - lo - up) - g(2.0) * (d[i].abs() + lo + up)
+                    })
+                    .fold(f64::INFINITY, f64::min);
+                assert!(margin > 0.0, "n={n}");
+                let nx = (0..n)
+                    .map(|i| rr[i].abs() + g(4.0) * ss[i])
+                    .fold(0.0, f64::max);
+                let ny = (0..n)
+                    .map(|i| ry[i].abs() + g(4.0) * sy[i])
+                    .fold(0.0, f64::max);
+                let tol = (nx + ny) / margin;
                 for (p, q) in x.iter().zip(&y) {
-                    assert!((p - q).abs() <= 1e-10 * (1.0 + q.abs()), "n={n}");
+                    assert!((p - q).abs() <= tol, "n={n}: {p} vs {q} tol {tol}");
                 }
             }
         }
@@ -544,21 +590,39 @@ mod tests {
     #[test]
     fn thomas_matches_dense_f24() {
         // Derived bounds, u = 2^-53, gamma_k = k u / (1 - k u).
-        // (1) For a matrix with positive diagonal and non-positive off-diagonals, L and U have
-        //     the sign pattern of A and (|L||U|)_ii = m_i + |w_i||U_{i-1}| = B_i, so |L||U| = |A|.
-        //     Tridiagonal LU plus the two bidiagonal solves then give
-        //     (A + dA) x = b with |dA| <= (4u + O(u^2)) |L||U| <= gamma_5 |A|
-        //     (Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section 9.6),
-        //     so the exact residual obeys |b - A x|_i <= gamma_5 (|A||x|)_i.
+        // (1) Backward error of (F24), derived here (no theorem is quoted). Let a = u/(1-u),
+        //     gamma_2 = 2u/(1-2u). Factor: w_i = fl(L_i/m_{i-1}) and
+        //     m_i = fl(B_i - fl(w_i U_{i-1})). Writing out the roundings, the product of the
+        //     computed factors (Lh unit lower with w_i, Uh upper with m_i and U_i) satisfies
+        //     (Lh Uh)_{i,i-1} = L_i (1 + d), |d| <= u; (Lh Uh)_{i,i+1} = U_i exactly;
+        //     (Lh Uh)_ii = B_i + e_i with |e_i| <= a (|Lh||Uh|)_ii. So |A - Lh Uh| <= a |Lh||Uh|.
+        //     Forward sweep y_i = fl(c_i - fl(w_i y_{i-1})): (Lh + dL) y = c, |dL| <= a |Lh|.
+        //     Back sweep x_i = fl(fl(y_i - fl(U_i x_{i+1})) / m_i) (3 roundings):
+        //     (Uh + dU) x = y, |dU| <= gamma_2 |Uh|. Hence (A + dA) x = c with
+        //     |dA| <= (2a + gamma_2 + a gamma_2) |Lh||Uh| = (4u + O(u^2)) |Lh||Uh|.
+        //     For a positive diagonal and non-positive off-diagonals (P1), w_i <= 0 and
+        //     U_i < 0, so (|Lh||Uh|)_ii = m_i + w_i U_{i-1} has no cancellation and equals
+        //     (Lh Uh)_ii <= B_i (1 - u)/(1 - 2u); off-diagonals are at most (1 + u)|A|.
+        //     Therefore |dA| <= kappa_t |A|, kappa_t = (2a + gamma_2 + a gamma_2)(1 - u)/(1 - 2u)
+        //     <= gamma_5 (checked below), and the exact residual obeys
+        //     |b - A x|_i <= gamma_5 (|A||x|)_i. (Higham, Accuracy and Stability of Numerical
+        //     Algorithms, 2nd ed., Section 9.6 states the same 4u + O(u^2) for tridiagonal LU;
+        //     the theorem number was not checked against the book, so the derivation above is
+        //     what this test relies on.)
         // (2) The residual evaluated below has at most 3 products, 3 additions and b, so it
         //     differs from the exact one by at most gamma_4 (|A||x| + |b|)_i.
         // (3) The pivoted dense reference y: its own backward error is not assumed; its
         //     measured residual enters. x - y = A^-1 ((b - A x) - (b - A y)) gives
         //     |x - y|_inf <= ||A^-1||_inf (||r_x|| + ||r_y||), and ||A^-1||_inf <= 1/margin
-        //     (Varah) with margin = min_i (B_i - |L_i| - |U_i|) >= 1 - 2u by construction
-        //     (1 + off + g, three roundings of non-negative terms).
+        //     (Varah) with margin = min_i (B_i - |L_i| - |U_i|), evaluated in floating point
+        //     (two subtractions, error at most gamma_2 (B + |L| + |U|)), which is subtracted.
         let u = f64::EPSILON / 2.0;
         let gamma = |k: f64| k * u / (1.0 - k * u);
+        {
+            let a_u = u / (1.0 - u);
+            let kappa_t = (2.0 * a_u + gamma(2.0) + a_u * gamma(2.0)) * (1.0 - u) / (1.0 - 2.0 * u);
+            assert!(kappa_t <= gamma(5.0));
+        }
         for (n, seed) in [(1usize, 1u64), (2, 2), (3, 3), (20, 4), (150, 5)] {
             let (l, d, u_) = f24_matrix(n, seed);
             let mut g = Lcg(seed + 100);
@@ -573,10 +637,10 @@ mod tests {
                 .map(|i| {
                     let lo = if i > 0 { l[i - 1].abs() } else { 0.0 };
                     let up = if i + 1 < n { u_[i].abs() } else { 0.0 };
-                    d[i] - lo - up
+                    (d[i] - lo - up) - gamma(2.0) * (d[i] + lo + up)
                 })
                 .fold(f64::INFINITY, f64::min);
-            assert!(margin >= 1.0 - 4.0 * u, "n={n} margin {margin}");
+            assert!(margin > 0.0, "n={n} margin {margin}");
             let (rx, sx) = residual_and_scale(&l, &d, &u_, &b, &x);
             let (ry, sy) = residual_and_scale(&l, &d, &u_, &b, &y);
             let (mut nx, mut ny) = (0.0f64, 0.0f64);
@@ -602,13 +666,21 @@ mod tests {
         // Exact arithmetic (P5): m_i >= 1 + |U_i| (m_{n-1} >= 1), by induction using
         // |U_{i-1}|/m_{i-1} <= |U_{i-1}|/(1 + |U_{i-1}|) <= 5/6 for |U| <= 5, so the correction
         // w_i U_{i-1} (>= 0) is at most (5/6)|L_{i-1}|.
-        // Floating point: the stored diagonal of the test matrices satisfies
-        // B_i >= (1 + |L_{i-1}| + |U_i|)(1 - 2u); forming w (1 rounding), w U (1) and the
-        // subtraction (1) perturbs the correction by gamma_2 |L| < |L|/6 (so the induction
-        // keeps |U|/m < 1) and the result by one relative u of a quantity at most
-        // 4 + |L| + |U|. Hence the asserted bound
-        //   m_i >= (1 + |U_i|) - 3u (4 + |L_{i-1}| + |U_i|).
+        // Floating point, u = 2^-53, gamma_k = k u / (1 - k u). The stored diagonal of the test
+        // matrices is d = fl(fl(fl(1 + off) + fl(3 g))) with off = fl(|L| + |U|): 4 roundings
+        // of non-negative terms (off, 1 + off, 3 g, the last sum), so
+        // B_i >= (1 + |L_{i-1}| + |U_i|)(1 - gamma_4) (the term 3 g >= 0 is dropped). Forming
+        // w (1 rounding) and w U (1) perturbs the correction c = |w||U_{i-1}| <= (5/6)|L|
+        // by the factor (1 + gamma_2), and the subtraction rounds once more:
+        //   m_i >= (1 - u) [ B_i - (5/6)|L| (1 + gamma_2) ]
+        //       >= (1 - u) [ (1 + |U_i|) + |L|/6 - gamma_4 (1 + |L| + |U_i|) - (5/6) gamma_2 |L| ]
+        //       >= (1 - u)(1 - gamma_4)(1 + |U_i|),
+        // because |L|/6 >= gamma_4 |L| + (5/6) gamma_2 |L|. The same holds for row 0 (m_0 = B_0).
+        // The induction hypothesis |U|/m <= 5/6 is kept since m >= (1 + |U|)(1 - gamma_5) with
+        // |U| <= 5. Hence the asserted bound m_i >= (1 + |U_i|)(1 - gamma_5), where
+        // (1 - u)(1 - gamma_4) >= 1 - gamma_5.
         let u = f64::EPSILON / 2.0;
+        let gamma5 = 5.0 * u / (1.0 - 5.0 * u);
         for (n, seed) in [
             (1usize, 21u64),
             (2, 22),
@@ -619,19 +691,15 @@ mod tests {
         ] {
             let (l, d, up) = f24_matrix(n, seed);
             let f = ThomasFactors::new(&l, &d, &up).unwrap();
-            let mut smallest = f64::INFINITY;
             for (i, &m) in f.pivots().iter().enumerate() {
-                let lo = if i > 0 { l[i - 1].abs() } else { 0.0 };
                 let un = if i + 1 < n { up[i].abs() } else { 0.0 };
-                let bound = (1.0 + un) - 3.0 * u * (4.0 + lo + un);
+                let bound = (1.0 + un) * (1.0 - gamma5);
                 assert!(m >= bound, "n={n} row {i}: m = {m}, bound {bound}");
-                smallest = smallest.min(m - (1.0 + un));
             }
             // Multipliers |U_i|/m_i < 1 in floating point as well.
             for (i, (uv, m)) in up.iter().zip(f.pivots()).enumerate() {
                 assert!(uv.abs() / m < 1.0, "n={n} row {i}");
             }
-            assert!(smallest > -1e-12, "smallest margin {smallest}");
         }
     }
     #[test]

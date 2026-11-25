@@ -222,7 +222,8 @@ mod tests {
         assert!(r.non_negative && r.max_principle_excess == 0.0);
         let r = check_step_properties(&[1.0, 0.5], &[1.1, -1e-30]);
         assert!(!r.non_negative);
-        assert!((r.max_principle_excess - 0.1).abs() < 1e-15);
+        // No tolerance: the excess is the one subtraction 1.1 - 1.0, exact by Sterbenz.
+        assert_eq!(r.max_principle_excess.to_bits(), (1.1f64 - 1.0).to_bits());
     }
 
     #[test]
