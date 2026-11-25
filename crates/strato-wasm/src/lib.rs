@@ -14,6 +14,10 @@
 //! [`MAX_TOTAL_CELLS`], [`MAX_STEPS`] and [`MAX_PROFILE_VALUES`], and the worker contains what
 //! remains (time-out and instance recreation).
 
+// The BTCS reply is one large `json!` literal.
+#![recursion_limit = "512"]
+
+pub mod btcs_api;
 pub mod tolerances;
 
 use anyhow::Result;
@@ -28,8 +32,10 @@ use strato::{
 use wasm_bindgen::prelude::*;
 
 /// ABI version of the exported functions; the worker reports it in its hello message.
-pub const ABI_VERSION: u32 = 1;
-/// Schema version of every request and response object.
+pub const ABI_VERSION: u32 = 2;
+/// Schema version of every request and response object of the finite-volume functions
+/// (`run_v1`, `analytical_release`, `compare_v1`, `validate_config`). The BTCS functions use
+/// [`btcs_api::SCHEMA_BTCS`].
 pub const SCHEMA: u32 = 1;
 /// Result label of every value this build computes.
 pub const LABEL: &str = "COMPUTED v1.0";
@@ -130,6 +136,28 @@ pub fn compare_v1(request_json: &str) -> String {
     }
 }
 
+// The BTCS interface (ABI 2): method-neutral names. See `btcs_api` and
+// stage-b/btcs/wasm-interface.md for the fields.
+
+/// Validates a configuration (TOML or JSON, a bare configuration or a request) for the BTCS
+/// solver and returns the plan, the grid and the limits.
+#[wasm_bindgen]
+pub fn validate(toml_or_json: &str) -> String {
+    btcs_api::validate(toml_or_json)
+}
+
+/// Runs the BTCS solver (schema 2 request) and returns the complete reply.
+#[wasm_bindgen]
+pub fn run(request_json: &str) -> String {
+    btcs_api::run(request_json)
+}
+
+/// Runs a baseline and a modified configuration and returns both runs and their difference.
+#[wasm_bindgen]
+pub fn compare(request_json: &str) -> String {
+    btcs_api::compare(request_json)
+}
+
 // ---------------------------------------------------------------------------------------
 // Build information
 // ---------------------------------------------------------------------------------------
@@ -147,6 +175,11 @@ pub fn build_info_value() -> Value {
         "label": LABEL,
         "capabilities": CAPABILITIES,
         "limits": limits_value(),
+        "legacy_finite_volume": {
+            "note": "label, capabilities and limits above describe the finite-volume functions, which stay until the retirement task",
+            "functions": ["validate_config", "run_v1", "analytical_release", "compare_v1"],
+        },
+        "btcs": btcs_api::build_info_value(),
     })
 }
 
@@ -259,9 +292,13 @@ struct CompareRequest {
 }
 
 fn check_schema(schema: u32) -> Result<(), Vec<String>> {
-    if schema != SCHEMA {
+    check_schema_value(schema, SCHEMA)
+}
+
+fn check_schema_value(schema: u32, expected: u32) -> Result<(), Vec<String>> {
+    if schema != expected {
         return Err(vec![format!(
-            "unsupported request schema {schema}; this build reads schema {SCHEMA}"
+            "unsupported request schema {schema}; this build reads schema {expected}"
         )]);
     }
     Ok(())
