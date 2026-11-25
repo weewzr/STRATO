@@ -136,6 +136,12 @@ struct Tally {
     failures: BTreeMap<String, Failure>,
 }
 
+/// Fields that come from the independent Sturm-Liouville series, or from a difference with it.
+/// The label only classifies a failure for the report; it never excuses one.
+fn is_series_derived(pattern: &str) -> bool {
+    pattern.starts_with(".analytical.") || pattern.starts_with(".diagnostics.analytical_comparison")
+}
+
 fn pattern(path: &str) -> String {
     let mut out = String::new();
     let mut in_index = false;
@@ -252,6 +258,7 @@ fn main() -> ExitCode {
                 return ExitCode::FAILURE;
             };
             let mut any_fail = false;
+            let (mut solver_fail, mut series_fail) = (0usize, 0usize);
             for (name, nv) in n {
                 let Some(wv) = w.get(name) else {
                     println!("FAIL {name}: missing from the WebAssembly file");
@@ -271,8 +278,15 @@ fn main() -> ExitCode {
                 );
                 for (pat, f) in &t.failures {
                     let (a, b) = f.first.clone().unwrap_or_default();
+                    let kind = if is_series_derived(pat) {
+                        series_fail += 1;
+                        "series-derived"
+                    } else {
+                        solver_fail += 1;
+                        "BTCS"
+                    };
                     println!(
-                        "    outside {PARITY_RTOL:e}: {pat}: {} value(s), worst relative {:e}, first native {a} wasm {b}",
+                        "    outside {PARITY_RTOL:e} [{kind}]: {pat}: {} value(s), worst relative {:e}, first native {a} wasm {b}",
                         f.count, f.worst_rel
                     );
                 }
@@ -282,7 +296,10 @@ fn main() -> ExitCode {
                 println!("FAIL {name}: missing from the native file");
                 any_fail = true;
             }
-            println!("RESULT {}", if any_fail { "FAIL" } else { "PASS" });
+            println!(
+                "RESULT {} ({solver_fail} failing BTCS field(s), {series_fail} failing series-derived field(s))",
+                if any_fail { "FAIL" } else { "PASS" }
+            );
             if any_fail {
                 ExitCode::FAILURE
             } else {

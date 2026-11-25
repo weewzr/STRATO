@@ -7,6 +7,9 @@
 //! | Wrapper or wasm versus `tests/golden/v1.0/` | relative 1e-12 (the existing regression tolerance) |
 //! | Browser wasm versus native, same inputs | relative 1e-12 per value, identical array lengths |
 //! | Inventory balance | no worse than the v1.0 level |
+//! | BTCS interface versus `numerical::btcs::run`, same platform | exact (bit-identical) |
+//! | BTCS interface, browser wasm versus native, same inputs | relative 1e-12 per value ([`PARITY_RTOL`]); `examples/btcs_parity.rs` applies it to every field and lists each failure |
+//! | BTCS balance residual | within the a-posteriori rounding bound reported with it |
 
 /// Wrapper or wasm against the golden files: the tolerance of `tests/phase1_regression.rs`
 /// (`RTOL`), used with the same scale rule: |a - b| <= RTOL * max(scale, |a|, |b|).

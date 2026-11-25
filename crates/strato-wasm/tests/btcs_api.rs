@@ -19,6 +19,7 @@ use strato::{
     config::Config,
     numerical::{
         btcs::{run as btcs_run, Limits},
+        diagnostics::StepDiagnostics,
         inventory::{inventory, inventory_by_region},
     },
     postprocessing::comparison::{layers_from_config, MAX_MODES},
@@ -74,6 +75,9 @@ fn equals_printed(x: f64, printed: f64) -> bool {
     (x - printed).abs() <= 0.5 * unit
 }
 
+/// A column of the output series: the library row to the value the reply must hold.
+type Column = Box<dyn Fn(&StepDiagnostics) -> f64>;
+
 const LIMITS: Limits = Limits {
     max_intervals_total: 100_000,
     max_steps: 10_000_000,
@@ -87,10 +91,7 @@ fn run_is_bit_identical_to_the_library_solver() {
     let v = run_ok(&request(synthetic_config_value()));
     let t = floats(&v["times_s"]);
     assert_eq!(t.len(), reference.series.len());
-    let cols: [(
-        &str,
-        Box<dyn Fn(&strato::numerical::diagnostics::StepDiagnostics) -> f64>,
-    ); 7] = [
+    let cols: [(&str, Column); 7] = [
         ("release_fraction", Box::new(|d| d.release_fraction)),
         ("inventory_mol", Box::new(|d| d.inventory)),
         ("cumulative_release_mol", Box::new(|d| d.cumulative_release)),

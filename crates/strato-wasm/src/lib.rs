@@ -8,6 +8,11 @@
 //! `compare_v1` subtracts two library results. No physics is written here, and the frontend
 //! does no scientific arithmetic (owner decision M4).
 //!
+//! ABI 2 adds the BTCS interface in [`btcs_api`] (`validate`, `run`, `compare`; capability
+//! `diffusion_btcs_layered`), served by the library's `numerical::btcs` under the same rules
+//! and with the same absence of physics in this crate. The finite-volume functions above stay
+//! until the retirement task.
+//!
 //! Rules: no file I/O, no `SystemTime` or `Instant`, no panics across the boundary. On
 //! `wasm32-unknown-unknown` a panic aborts and traps the instance, so every rejection rule of
 //! the wrapper facts table is applied before `strato` is called, the work is capped by
