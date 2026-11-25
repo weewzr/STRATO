@@ -4,24 +4,109 @@
   "kind": "research_catalogue",
   "generator": "scripts/web/generate_data.py v1",
   "strato_version": "1.0.1",
-  "commit": "b96a05c79a77d7e719a7a111ae31d1470d5a1753",
+  "commit": "438e533d1bedbeb8558f08ee57c4c11d3a4ef222",
   "command": "python -I -X utf8 scripts/web/generate_data.py catalogue",
-  "created_utc": "2026-11-24T13:54:16Z",
+  "created_utc": "2026-11-25T01:59:53Z",
   "note": "CATALOGUE marks a data file of research statuses and references; it is not a result label.",
   "inputs": [
     {
+      "path": "data/research/gallery.csv",
+      "sha256": "ac8fe34d443aa8b158c062b69734218a026c20b2aec7eb2e889cef12b37bda7e"
+    },
+    {
       "path": "data/research/mechanisms.csv",
-      "sha256": "6293e297820ae9808427740e1f85359d882c0682f221690c32f4eadd2752b1d5"
+      "sha256": "3331cb54a7ada38caf277525c8e6b25200c6c1812b00d55a87afd9f593c6928b"
     },
     {
       "path": "data/research/references.csv",
-      "sha256": "a7371e1bc64e3c5724a3e405aae162488f466d37c9257edadb9babc9319fbfd0"
+      "sha256": "15d5dc1f80abebe221cde86c7ef3ff0c45f0a2561286ac1d6b6efc8c87099ed6"
+    },
+    {
+      "path": "data/research/species.csv",
+      "sha256": "8b447616ffff2674883a5386a5831975d603f935f898e358bc8b405d628cdefd"
+    },
+    {
+      "path": "docs/research/additional_species_downstream_transport.md",
+      "sha256": "0a1b508a4870316b5eb0988035beb289fff0bb6a8d3cfccfb0ca50795dfd8ae7"
+    },
+    {
+      "path": "docs/research/ag_grain_boundary_transport.md",
+      "sha256": "93cf2cc2db65fba3d8c570c62df5eea4ee418eb1fb6b0f0eaac9e4cb01f14314"
+    },
+    {
+      "path": "docs/research/ag_trapping_detrapping.md",
+      "sha256": "1b46edb58b5a85b46ca700b54548af81cd658d1d83105cf5aabc0589b168bad0"
+    },
+    {
+      "path": "docs/research/coating_degradation_failure.md",
+      "sha256": "39d18180f3f751aeb7491f5b36287d83a7d16c0397178bef0f9e832a8735d247"
+    },
+    {
+      "path": "docs/research/cs_retention_barrier_integrity.md",
+      "sha256": "2c7da13161150728cf2d281b64e93a8ffd2f9b5ad95cb7d75345acc3f6ab4f0f"
+    },
+    {
+      "path": "docs/research/materials_studio_gallery.md",
+      "sha256": "9a35ddb2e159f24c9f8c98bff94e6e3182cc17dda14543235dffcbbe4df26855"
+    },
+    {
+      "path": "docs/research/pd_assisted_degradation.md",
+      "sha256": "b636cd544986d03271e755b59944c962ac148b25c9c2277f83c90cf84db179cf"
+    },
+    {
+      "path": "docs/research/regime-a.md",
+      "sha256": "1b203c760a594870f5648e430c91fecab1b7f5873466ad3a1baa906f2ec70a64"
+    },
+    {
+      "path": "docs/research/regime-b.md",
+      "sha256": "2c9ec55516b9a3843cecf663f0e110950375f18daf5cd94ed39dbe281e3dc314"
+    },
+    {
+      "path": "docs/research/regime-c.md",
+      "sha256": "76fbd531480a4a7d8f12b3b4e3bea8a5419d308d4bda45d6af337f95022d5319"
+    },
+    {
+      "path": "docs/research/roadmap.md",
+      "sha256": "14d883bf4464554b0586c5d3457b6562c613b0dab9b218ebef819217ff1271a7"
+    },
+    {
+      "path": "docs/research/species-ag.md",
+      "sha256": "3ee521ec9dbc7318e94c8d5f5c9a13248eb8340d727d86c29f43728a7c93c1df"
+    },
+    {
+      "path": "docs/research/species-cs.md",
+      "sha256": "b3499d1f18d562e28dab349470b9b2da6d29b02eeb947ed839e0c4d2900b4964"
+    },
+    {
+      "path": "docs/research/species-eu.md",
+      "sha256": "74c28426387fac7824bcbe761edbaa5ca516f42b1269b0e0d1c168e7cf82027c"
+    },
+    {
+      "path": "docs/research/species-i.md",
+      "sha256": "ba460ec1b9cbb5915b0cc84e9927999d0cd841a28c743537d3dbcb2e07644874"
+    },
+    {
+      "path": "docs/research/species-kr.md",
+      "sha256": "43ca836709e84f42f49f7821b313e3bfd47d35e952212b59e4e1179f946903e1"
+    },
+    {
+      "path": "docs/research/species-pd.md",
+      "sha256": "6e71c50906fc22f5e62492b0ed20bd711a5caf560c84427b5208f4ccbdf238bc"
+    },
+    {
+      "path": "docs/research/species-ru.md",
+      "sha256": "437945170557f08a13b792aa78ef368bf8444ea79a4b0c6e70f83e202950184b"
+    },
+    {
+      "path": "docs/research/species-sr.md",
+      "sha256": "8be16e09e922f886eaeb9b12cd3c325e7ec7f944a9ac3d53e5b5a5c432209cb9"
+    },
+    {
+      "path": "docs/research/species-xe.md",
+      "sha256": "9ca3e01dba3d565afcef6535b65f5709babc8d643cba0550e3d2f6cddaab02b7"
     }
   ],
-  "tables_absent": [
-    "species.csv",
-    "gallery.csv"
-  ],
+  "tables_absent": [],
   "data": {
     "mechanisms": [
       {
@@ -277,9 +362,830 @@
         ],
         "entry": "",
         "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "ag_trapping_detrapping",
+        "name": "Silver trapping and detrapping in SiC",
+        "regime": [
+          "A",
+          "B"
+        ],
+        "brick": 4,
+        "builder_stage": 6,
+        "species": "Ag",
+        "material_domain": "SiC",
+        "status": "PENDING",
+        "status_basis": "Newly proposed mechanism. Literature and candidate equations are collected in the entry; STRATO has no derivation, register row, code or test for it.",
+        "evidence": [],
+        "validation_ids": [],
+        "equation_ids": [],
+        "coupled": true,
+        "solver_capability": "",
+        "required_parameters": [
+          "trap site density for Ag in SiC (missing)",
+          "trap energy for Ag in SiC (missing",
+          "only an atomistic surface-desorption range in xiao2012)",
+          "trapping rate coefficient (missing)",
+          "SiC lattice atom density (missing)",
+          "mobile Ag diffusivity in SiC (registered: data/diffusivity/arrhenius.csv#A3-05, effective)",
+          "Ag-110m decay constant (registered: data/nuclear/decay.csv Ag-110m)",
+          "SiC porosity, pore size and grain size for the effective form (missing)"
+        ],
+        "missing_work": "No measured or computed trap density or trap energy for Ag in AGR-1 SiC was found. Needs atomistic trap energies at pores and triple junctions, a derivation of the coupled system on the spherical finite-volume mesh with conservation and limiting-case checks, and comparison with AGR-1 Ag-110m retention after Phase 2.2.",
+        "reference_ids": [
+          "longhurst2004",
+          "miller2018",
+          "abdulhameed2026",
+          "xiao2012",
+          "simon2022",
+          "vanrooyen2014a",
+          "lillo2015",
+          "szlufarska2016",
+          "gerczak2016"
+        ],
+        "entry": "docs/research/ag_trapping_detrapping.md",
+        "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "ag_grain_boundary_transport",
+        "name": "Silver grain-boundary transport in polycrystalline SiC",
+        "regime": [
+          "A"
+        ],
+        "brick": 5,
+        "builder_stage": 6,
+        "species": "Ag",
+        "material_domain": "SiC",
+        "status": "PENDING",
+        "status_basis": "Newly proposed mechanism. Literature and candidate equations are collected in the entry; STRATO has no derivation, register row, code or test for it.",
+        "evidence": [],
+        "validation_ids": [],
+        "equation_ids": [],
+        "coupled": false,
+        "solver_capability": "",
+        "required_parameters": [
+          "grain minor-axis length of AGR-1 SiC per variant (missing",
+          "reported in gerczak2016 and compiled in simon2022)",
+          "fit coefficients Dm0 Dm1 Qm0 Qm1 (missing",
+          "printed in simon2022)",
+          "correction factor delta_corr (missing",
+          "8.5 in simon2022, 10 in parsons2024)",
+          "lattice and grain-boundary Ag diffusivities per boundary type (missing",
+          "atomistic values in khalil2011, ko2016, rabone2015)",
+          "segregation factor and boundary width (missing)",
+          "empirical effective Ag diffusivity in SiC (registered: data/diffusivity/arrhenius.csv#A3-05)"
+        ],
+        "missing_work": "Microstructure data not registered; the mesoscale model was compared with AGR-1 after selecting a grain size per compact; boundary-type-resolved diffusivities and an independent delta_corr are missing; irradiation and Pd effects are not in the base model. Rides on Phase 2.2 (temperature-dependent diffusivity); per-temperature comparison with public data only after that.",
+        "reference_ids": [
+          "simon2022",
+          "parsons2024",
+          "aagesen2022",
+          "simon2025",
+          "abdulhameed2026",
+          "shrader2011",
+          "khalil2011",
+          "ko2016",
+          "rabone2015",
+          "gerczak2015",
+          "leng2016",
+          "szlufarska2016",
+          "kirchhofer2013",
+          "gerczak2016",
+          "demkowicz2016",
+          "iaea1997"
+        ],
+        "entry": "docs/research/ag_grain_boundary_transport.md",
+        "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "pd_assisted_degradation",
+        "name": "Palladium-assisted degradation of SiC (Pd-SiC interaction)",
+        "regime": [
+          "B",
+          "C"
+        ],
+        "brick": 6,
+        "builder_stage": 6,
+        "species": "Pd",
+        "material_domain": "SiC",
+        "status": "PENDING",
+        "status_basis": "Newly proposed mechanism. Literature and candidate equations are collected in the entry; STRATO has no derivation, register row, code or test for it.",
+        "evidence": [],
+        "validation_ids": [],
+        "equation_ids": [],
+        "coupled": true,
+        "solver_capability": "",
+        "required_parameters": [
+          "Pd penetration-rate coefficients (missing",
+          "printed in miller2018)",
+          "SiC thickness (registered: data/geometry/geometry.csv#G-04)",
+          "particle temperature history (missing for this use)",
+          "Pd inventory and arrival at the IPyC-SiC interface (missing)",
+          "failed-layer diffusivity (missing",
+          "arbitrary value in miller2018)",
+          "local attack at IPyC cracks (missing)"
+        ],
+        "missing_work": "No Pd nuclide or fission yield is registered; the penetration correlation is global and temperature-only while AGR-1 failures were local; atomistic Pd-SiC calculations and a derivation of the layer-state switch with conservation checks are missing.",
+        "reference_ids": [
+          "miller2018",
+          "tiegs1980",
+          "tiegs1982",
+          "minato1990",
+          "demkowicz2016",
+          "hunn2016",
+          "lillo2015",
+          "vanrooyen2014a",
+          "rabone2015",
+          "aagesen2022",
+          "simon2022"
+        ],
+        "entry": "docs/research/pd_assisted_degradation.md",
+        "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "pd_assisted_degradation",
+        "name": "Palladium-assisted silver transport (Ag-Pd interaction)",
+        "regime": [
+          "B"
+        ],
+        "brick": 6,
+        "builder_stage": 6,
+        "species": "Ag",
+        "material_domain": "SiC",
+        "status": "PENDING",
+        "status_basis": "Newly proposed mechanism. Literature and candidate equations are collected in the entry; STRATO has no derivation, register row, code or test for it.",
+        "evidence": [],
+        "validation_ids": [],
+        "equation_ids": [],
+        "coupled": true,
+        "solver_capability": "",
+        "required_parameters": [
+          "Ag-Pd interaction law (missing",
+          "none found)",
+          "Pd penetration state of the SiC (missing)",
+          "Ag diffusivity in intact SiC (registered: data/diffusivity/arrhenius.csv#A3-05, effective)"
+        ],
+        "missing_work": "No quantitative law for Pd-assisted Ag transport at TRISO-relevant concentrations was found; laboratory couples used much higher Pd and Ag concentrations; atomistic Pd-Ag co-location calculations are missing.",
+        "reference_ids": [
+          "abdulhameed2026",
+          "szlufarska2016",
+          "neethling2012",
+          "olivier2013",
+          "oconnell2014",
+          "lopezhonorato2010",
+          "lillo2015",
+          "demkowicz2016",
+          "aagesen2022",
+          "rabone2015"
+        ],
+        "entry": "docs/research/pd_assisted_degradation.md",
+        "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "cs_retention_barrier_integrity",
+        "name": "Caesium retention by intact SiC and release through failed SiC (barrier integrity)",
+        "regime": [
+          "A",
+          "C"
+        ],
+        "brick": 7,
+        "builder_stage": 6,
+        "species": "Cs",
+        "material_domain": "SiC",
+        "status": "PENDING",
+        "status_basis": "Newly proposed mechanism. Literature and candidate equations are collected in the entry; STRATO has no derivation, register row, code or test for it.",
+        "evidence": [],
+        "validation_ids": [],
+        "equation_ids": [],
+        "coupled": false,
+        "solver_capability": "",
+        "required_parameters": [
+          "FRG Cs-in-SiC diffusivity branches with fluence factor (registered: data/diffusivity/arrhenius.csv#A3-01, A3-02)",
+          "fast-neutron fluence per AGR-1 compact at the 16 fJ cutoff (missing",
+          "cutoff conversion not verified)",
+          "number and timing of particles with failed SiC per compact (missing",
+          "counts in morris2016 and demkowicz2016)",
+          "failed-layer diffusivity (registered: data/diffusivity/arrhenius.csv#C16-23, H21-10)",
+          "Cs kernel and PyC diffusivities (registered: data/diffusivity/arrhenius.csv#A1-01, A1-02, A2-01",
+          "UO2 values, rule E3)",
+          "OPyC and matrix retention of released Cs (missing in the particle domain",
+          "matrix row A4-01)",
+          "distribution of SiC diffusivities (missing)"
+        ],
+        "missing_work": "Needs Phase 2.1 and 2.2 for Cs-137 first; registered failure counts, failure times and fluences per AGR-1 compact; a STRATO derivation of the intact/failed population combination and of the failed-layer switch with conservation checks; a matrix region or documented boundary condition; atomistic Cs calculations at SiC boundaries (none performed).",
+        "reference_ids": [
+          "demkowicz2016",
+          "morris2016",
+          "hunn2016",
+          "collin2015",
+          "collin2016",
+          "iaea1997",
+          "miller2018",
+          "rabone2015"
+        ],
+        "entry": "docs/research/cs_retention_barrier_integrity.md",
+        "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "coating_degradation_failure",
+        "name": "Irradiation and coating degradation: defect evolution, microcracking and coating failure",
+        "regime": [
+          "B",
+          "C"
+        ],
+        "brick": 8,
+        "builder_stage": 6,
+        "species": "all",
+        "material_domain": "particle",
+        "status": "PENDING",
+        "status_basis": "Newly proposed mechanism. Literature and candidate equations are collected in the entry; STRATO has no derivation, register row, code or test for it.",
+        "evidence": [],
+        "validation_ids": [],
+        "equation_ids": [],
+        "coupled": true,
+        "solver_capability": "",
+        "required_parameters": [
+          "Weibull characteristic strength and modulus of SiC and PyC (missing",
+          "correlations in miller2018)",
+          "irradiation-induced dimensional change and creep of PyC and buffer densification (missing",
+          "correlations in miller2018)",
+          "fission-gas and CO pressure (missing)",
+          "fast-neutron fluence and flux histories (missing)",
+          "layer thicknesses (registered: data/geometry/geometry.csv#G-01 to G-05)",
+          "thickness distributions (missing)",
+          "interface bond strengths (missing)",
+          "as-fabricated defect fractions (missing)",
+          "defect-to-transport law (missing",
+          "only the empirical Cs fluence factor A3-01)"
+        ],
+        "missing_work": "STRATO has no mechanical model; needs registered material correlations, fluence histories, a derivation of a coupled stress and failure model or of a data-driven failure input, verification, and a law linking SiC defect state to effective diffusivity; atomistic defect calculations (gallery item ms-sic-intrinsic-defects) not performed.",
+        "reference_ids": [
+          "miller2018",
+          "demkowicz2016",
+          "hunn2016",
+          "morris2016",
+          "iaea1997",
+          "leng2016",
+          "aagesen2022"
+        ],
+        "entry": "docs/research/coating_degradation_failure.md",
+        "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "additional_species_downstream_transport",
+        "name": "Strontium beyond the Phase 2 baseline: retention in OPyC and matrix, release through failed SiC",
+        "regime": [
+          "A",
+          "C"
+        ],
+        "brick": 9,
+        "builder_stage": 6,
+        "species": "Sr",
+        "material_domain": "particle",
+        "status": "PENDING",
+        "status_basis": "Newly proposed mechanism. Literature and candidate equations are collected in the entry; STRATO has no derivation, register row, code or test for it.",
+        "evidence": [],
+        "validation_ids": [],
+        "equation_ids": [],
+        "coupled": false,
+        "solver_capability": "",
+        "required_parameters": [
+          "Sr diffusivities (registered: data/diffusivity/arrhenius.csv#A1-03, A2-02, A3-03, A3-04",
+          "UO2 kernel values, rule E3)",
+          "Sr-90 decay (registered: data/nuclear/decay.csv Sr-90)",
+          "matrix retention (missing in the particle domain",
+          "matrix row A4-02)",
+          "failed fraction per compact (missing)"
+        ],
+        "missing_work": "STRATO has no matrix region; heating-test Sr release mixes in-pile matrix inventory with release during heating, and the sources could not separate them; needs a derivation of a matrix region or outer boundary condition and verification.",
+        "reference_ids": [
+          "demkowicz2016",
+          "morris2016",
+          "collin2015",
+          "collin2016",
+          "iaea1997"
+        ],
+        "entry": "docs/research/additional_species_downstream_transport.md",
+        "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "additional_species_downstream_transport",
+        "name": "Europium transport and retention in the TRISO particle",
+        "regime": [
+          "A",
+          "C"
+        ],
+        "brick": 9,
+        "builder_stage": 6,
+        "species": "Eu",
+        "material_domain": "particle",
+        "status": "PENDING",
+        "status_basis": "Newly proposed mechanism. Literature and candidate equations are collected in the entry; STRATO has no derivation, register row, code or test for it.",
+        "evidence": [],
+        "validation_ids": [],
+        "equation_ids": [],
+        "coupled": false,
+        "solver_capability": "",
+        "required_parameters": [
+          "Eu diffusivities in every layer (missing)",
+          "Eu-154 decay (registered: data/nuclear/decay.csv Eu-154)",
+          "Eu-153 capture cross section for the Eu-154 source (missing",
+          "activation deferred, D3)",
+          "Eu-155 decay and fission yield (missing",
+          "half-life in iaea_livechart_fp)",
+          "matrix retention (missing)"
+        ],
+        "missing_work": "No europium diffusivity found or registered; Eu-154 is an activation product; Eu-155 not registered; needs register rows, a source term, a matrix region and a derivation with verification.",
+        "reference_ids": [
+          "demkowicz2016",
+          "morris2016",
+          "iaea1997",
+          "iaea_livechart_fp"
+        ],
+        "entry": "docs/research/additional_species_downstream_transport.md",
+        "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "additional_species_downstream_transport",
+        "name": "Iodine transport in the TRISO particle (deferred from Phase 2)",
+        "regime": [
+          "A",
+          "C"
+        ],
+        "brick": 9,
+        "builder_stage": 6,
+        "species": "I",
+        "material_domain": "particle",
+        "status": "PENDING",
+        "status_basis": "Newly proposed mechanism. Literature and candidate equations are collected in the entry; STRATO has no derivation, register row, code or test for it.",
+        "evidence": [],
+        "validation_ids": [],
+        "equation_ids": [],
+        "coupled": false,
+        "solver_capability": "",
+        "required_parameters": [
+          "I kernel diffusivities (registered: data/diffusivity/arrhenius.csv#A1-05, A1-06, A1-07",
+          "I/Kr/Xe in UO2, rule E3)",
+          "I diffusivities in IPyC, SiC and OPyC (missing",
+          "reason for the deferral, D1)",
+          "I-131 decay (registered: data/nuclear/decay.csv I-131)",
+          "Te-131m precursor feed (registered half-life in the I-131 row note",
+          "explicit precursor model missing)",
+          "kernel and buffer trap-emission parameters (missing)"
+        ],
+        "missing_work": "No PyC or SiC iodine diffusivity in any source read or in the register; the instantaneous cumulative-yield source is approximate because of the Te-131m precursor; needs register rows, a derivation and verification.",
+        "reference_ids": [
+          "iaea1997",
+          "scates2010",
+          "iaea_livechart_fp"
+        ],
+        "entry": "docs/research/additional_species_downstream_transport.md",
+        "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "additional_species_downstream_transport",
+        "name": "Ruthenium transport and retention in the TRISO particle",
+        "regime": [
+          "A"
+        ],
+        "brick": 9,
+        "builder_stage": 6,
+        "species": "Ru",
+        "material_domain": "particle",
+        "status": "PENDING",
+        "status_basis": "Newly proposed mechanism. Literature and candidate equations are collected in the entry; STRATO has no derivation, register row, code or test for it.",
+        "evidence": [],
+        "validation_ids": [],
+        "equation_ids": [],
+        "coupled": false,
+        "solver_capability": "",
+        "required_parameters": [
+          "Ru diffusivities in every layer (missing)",
+          "Ru-103 and Ru-106 decay data (missing in the register",
+          "half-lives in iaea_livechart_fp)",
+          "Ru fission yields (missing)"
+        ],
+        "missing_work": "Evidence is sparse and mostly qualitative; no ruthenium diffusivity for the AGR-1 layers was found; needs register rows, a derivation and verification.",
+        "reference_ids": [
+          "demkowicz2016",
+          "iaea1997",
+          "iaea_livechart_fp"
+        ],
+        "entry": "docs/research/additional_species_downstream_transport.md",
+        "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "additional_species_downstream_transport",
+        "name": "Xenon release: failed particles, contamination and recoil (release-to-birth)",
+        "regime": [
+          "A",
+          "C"
+        ],
+        "brick": 9,
+        "builder_stage": 6,
+        "species": "Xe",
+        "material_domain": "particle",
+        "status": "PENDING",
+        "status_basis": "Newly proposed mechanism. Literature and candidate equations are collected in the entry; STRATO has no derivation, register row, code or test for it.",
+        "evidence": [],
+        "validation_ids": [],
+        "equation_ids": [],
+        "coupled": false,
+        "solver_capability": "",
+        "required_parameters": [
+          "Xe kernel and PyC diffusivities (registered: data/diffusivity/arrhenius.csv#A1-05 to A1-07, A2-04, A2-05",
+          "with Kr)",
+          "Xe in SiC (registered Japanese rows only: A3-17 to A3-19",
+          "no FRG row)",
+          "Xe-133 and Xe-135 decay data and yields (missing in the register",
+          "half-lives in iaea_livechart_fp)",
+          "failed fraction and contamination fraction (missing",
+          "AGR-1 values in scates2010 and morris2016)"
+        ],
+        "missing_work": "STRATO models one intact particle and has no failure or contamination term; no xenon nuclide is registered; needs register rows, a derivation of the population form and verification.",
+        "reference_ids": [
+          "scates2010",
+          "iaea1997",
+          "demkowicz2016",
+          "morris2016",
+          "iaea_livechart_fp"
+        ],
+        "entry": "docs/research/additional_species_downstream_transport.md",
+        "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "additional_species_downstream_transport",
+        "name": "Krypton beyond the Phase 2 baseline: failed-particle and contamination release, Kr-85m precursor",
+        "regime": [
+          "A",
+          "C"
+        ],
+        "brick": 9,
+        "builder_stage": 6,
+        "species": "Kr",
+        "material_domain": "particle",
+        "status": "PENDING",
+        "status_basis": "Newly proposed mechanism. Literature and candidate equations are collected in the entry; STRATO has no derivation, register row, code or test for it.",
+        "evidence": [],
+        "validation_ids": [],
+        "equation_ids": [],
+        "coupled": false,
+        "solver_capability": "",
+        "required_parameters": [
+          "Kr kernel and PyC diffusivities (registered: data/diffusivity/arrhenius.csv#A1-06, A1-07, A2-04, A2-05",
+          "UO2 kernel values, rule E3)",
+          "Kr in SiC (missing in the FRG set",
+          "C16-20 reuses the Japanese Xe row A3-17)",
+          "Kr-85 and Kr-85m decay (registered: data/nuclear/decay.csv Kr-85, Kr-85m)",
+          "failed fraction and contamination fraction (missing)"
+        ],
+        "missing_work": "No FRG krypton row for SiC; the Kr-85m precursor makes an instantaneous Kr-85 source approximate (t99 29.8 h in the Phase 2 derivations); failure and contamination terms missing; needs a derivation and verification.",
+        "reference_ids": [
+          "morris2016",
+          "scates2010",
+          "collin2016",
+          "iaea1997",
+          "demkowicz2016"
+        ],
+        "entry": "docs/research/additional_species_downstream_transport.md",
+        "status_date": "2026-11-24"
+      },
+      {
+        "mechanism_id": "additional_species_downstream_transport",
+        "name": "Downstream transport in FLiBe coolant and cover gas (planned for a future phase)",
+        "regime": [
+          "A",
+          "C"
+        ],
+        "brick": 9,
+        "builder_stage": 6,
+        "species": "all",
+        "material_domain": "downstream_flibe_cover_gas",
+        "status": "PENDING",
+        "status_basis": "Newly proposed mechanism. Literature and candidate equations are collected in the entry; STRATO has no derivation, register row, code or test for it.",
+        "evidence": [],
+        "validation_ids": [],
+        "equation_ids": [],
+        "coupled": true,
+        "solver_capability": "",
+        "required_parameters": [
+          "chemical form and solubility of each species in FLiBe (missing)",
+          "exchange law at the particle or pebble surface with the salt (missing)",
+          "stripping of Kr and Xe to the cover gas and off-gas (missing)",
+          "deposition of noble metals on surfaces (missing)"
+        ],
+        "missing_work": "Does not exist in STRATO; no FLiBe or cover-gas data, model or result in the repository. Needs FLiBe or cover-gas data from a cited source and a transport model for that environment, kept separate from the gas-cooled AGR conditions; MSRE evidence comes from a fuel salt and must not be transferred without new evidence.",
+        "reference_ids": [
+          "andrews2021",
+          "compere1975",
+          "davenport2016"
+        ],
+        "entry": "docs/research/additional_species_downstream_transport.md",
+        "status_date": "2026-11-24"
       }
     ],
-    "species": [],
+    "species": [
+      {
+        "species": "Ag",
+        "element": "silver",
+        "nuclides": [
+          "Ag-110m",
+          "Ag-110",
+          "Ag-111",
+          "Ag-109"
+        ],
+        "layers": [
+          "kernel",
+          "buffer",
+          "IPyC",
+          "SiC",
+          "OPyC"
+        ],
+        "regimes": [
+          "A",
+          "B",
+          "C"
+        ],
+        "summary": "Ag-110m, an activation product with a 249.83 d half-life, passes through intact SiC coatings; AGR-1 compacts released from about 0 % to more than 90 % of it.",
+        "reference_ids": [
+          "demkowicz2016",
+          "simon2022",
+          "abdulhameed2026",
+          "parsons2024",
+          "shrader2011",
+          "khalil2011",
+          "ko2016",
+          "lillo2015",
+          "vanrooyen2014a",
+          "vanrooyen2014b",
+          "iaea1997",
+          "davenport2016",
+          "stempien2021",
+          "grover2013"
+        ],
+        "entry": "docs/research/species-ag.md"
+      },
+      {
+        "species": "Pd",
+        "element": "palladium",
+        "nuclides": [
+          "Pd-105 (not in register)",
+          "Pd-107 (not in register)",
+          "Pd-108 (not in register)",
+          "Pd-110 (not in register)"
+        ],
+        "layers": [
+          "kernel",
+          "buffer",
+          "IPyC",
+          "SiC",
+          "OPyC"
+        ],
+        "regimes": [
+          "B",
+          "C"
+        ],
+        "summary": "Palladium has no isotope of radiological consequence but crosses intact SiC and corrodes it, a key contributor to the SiC failures found in AGR-1 particles.",
+        "reference_ids": [
+          "demkowicz2016",
+          "hunn2016",
+          "tiegs1980",
+          "tiegs1982",
+          "miller2018",
+          "lillo2015",
+          "vanrooyen2014a",
+          "rabone2015",
+          "aagesen2022",
+          "abdulhameed2026",
+          "iaea_livechart"
+        ],
+        "entry": "docs/research/species-pd.md"
+      },
+      {
+        "species": "Cs",
+        "element": "caesium",
+        "nuclides": [
+          "Cs-137",
+          "Cs-134",
+          "Cs-134m",
+          "Cs-133",
+          "Ba-137m",
+          "Cs-135 (not in register)"
+        ],
+        "layers": [
+          "kernel",
+          "buffer",
+          "IPyC",
+          "SiC",
+          "OPyC"
+        ],
+        "regimes": [
+          "A",
+          "B",
+          "C"
+        ],
+        "summary": "Caesium is effectively retained by intact SiC, so its release measures SiC integrity; Cs-137 is one of the owner's first Phase 2 nuclides.",
+        "reference_ids": [
+          "demkowicz2016",
+          "morris2016",
+          "hunn2016",
+          "collin2015",
+          "collin2016",
+          "iaea1997",
+          "rabone2015",
+          "kirchhofer2013",
+          "davenport2016",
+          "iaea_livechart_fp"
+        ],
+        "entry": "docs/research/species-cs.md"
+      },
+      {
+        "species": "Sr",
+        "element": "strontium",
+        "nuclides": [
+          "Sr-90",
+          "Sr-89",
+          "Y-90",
+          "Sr-86 (not in register)",
+          "Sr-88 (not in register)"
+        ],
+        "layers": [
+          "kernel",
+          "buffer",
+          "IPyC",
+          "SiC",
+          "OPyC"
+        ],
+        "regimes": [
+          "A",
+          "C"
+        ],
+        "summary": "Strontium passes intact coatings in small amounts and is held in the OPyC and matrix; Sr-90 is one of the owner's first Phase 2 nuclides.",
+        "reference_ids": [
+          "demkowicz2016",
+          "morris2016",
+          "collin2015",
+          "collin2016",
+          "iaea1997",
+          "kirchhofer2013",
+          "davenport2016",
+          "iaea_livechart_fp"
+        ],
+        "entry": "docs/research/species-sr.md"
+      },
+      {
+        "species": "Eu",
+        "element": "europium",
+        "nuclides": [
+          "Eu-154",
+          "Eu-155 (not in register)",
+          "Eu-153 (not in register)"
+        ],
+        "layers": [
+          "kernel",
+          "buffer",
+          "IPyC",
+          "SiC",
+          "OPyC"
+        ],
+        "regimes": [
+          "A",
+          "C"
+        ],
+        "summary": "Europium passes intact coatings at levels about ten times those of strontium and is largely held in the OPyC and compact matrix.",
+        "reference_ids": [
+          "demkowicz2016",
+          "morris2016",
+          "iaea1997",
+          "davenport2016",
+          "iaea_livechart_fp"
+        ],
+        "entry": "docs/research/species-eu.md"
+      },
+      {
+        "species": "I",
+        "element": "iodine",
+        "nuclides": [
+          "I-131",
+          "I-133 (not in register)",
+          "I-135 (not in register)",
+          "I-129 (not in register)",
+          "I-127 (not in register)"
+        ],
+        "layers": [
+          "kernel",
+          "buffer",
+          "IPyC",
+          "SiC",
+          "OPyC"
+        ],
+        "regimes": [
+          "A",
+          "C"
+        ],
+        "summary": "Radioiodine is expected to be released like the fission gases through failed coatings; deferred in STRATO because no PyC or SiC iodine diffusivity is registered.",
+        "reference_ids": [
+          "iaea1997",
+          "scates2010",
+          "compere1975",
+          "davenport2016",
+          "iaea_livechart_fp"
+        ],
+        "entry": "docs/research/species-i.md"
+      },
+      {
+        "species": "Ru",
+        "element": "ruthenium",
+        "nuclides": [
+          "Ru-106 (not in register)",
+          "Ru-103 (not in register)",
+          "Ru-101 (not in register)",
+          "Ru-102 (not in register)",
+          "Ru-104 (not in register)"
+        ],
+        "layers": [
+          "kernel",
+          "SiC"
+        ],
+        "regimes": [
+          "A"
+        ],
+        "summary": "Ruthenium, a noble-metal fission product, was retained even in AGR-1 particles with failed SiC; little transport evidence exists.",
+        "reference_ids": [
+          "demkowicz2016",
+          "iaea1997",
+          "compere1975",
+          "davenport2016",
+          "iaea_livechart_fp"
+        ],
+        "entry": "docs/research/species-ru.md"
+      },
+      {
+        "species": "Xe",
+        "element": "xenon",
+        "nuclides": [
+          "Xe-133 (not in register)",
+          "Xe-135 (not in register)",
+          "Xe-131 (not in register)",
+          "Xe-132 (not in register)"
+        ],
+        "layers": [
+          "kernel",
+          "buffer",
+          "IPyC",
+          "SiC",
+          "OPyC"
+        ],
+        "regimes": [
+          "A",
+          "C"
+        ],
+        "summary": "Xenon is a fission gas held gas-tight by intact SiC; its release-to-birth ratio monitored AGR-1 for coating failures.",
+        "reference_ids": [
+          "iaea1997",
+          "scates2010",
+          "demkowicz2016",
+          "morris2016",
+          "compere1975",
+          "davenport2016",
+          "iaea_livechart_fp"
+        ],
+        "entry": "docs/research/species-xe.md"
+      },
+      {
+        "species": "Kr",
+        "element": "krypton",
+        "nuclides": [
+          "Kr-85",
+          "Kr-85m",
+          "Kr-88 (not in register)",
+          "Kr-84 (not in register)",
+          "Kr-86 (not in register)"
+        ],
+        "layers": [
+          "kernel",
+          "buffer",
+          "IPyC",
+          "SiC",
+          "OPyC"
+        ],
+        "regimes": [
+          "A",
+          "C"
+        ],
+        "summary": "Krypton release indicates TRISO coating failure; Kr-85 is the owner's second Phase 2 nuclide, with a precursor-delay caveat.",
+        "reference_ids": [
+          "iaea1997",
+          "morris2016",
+          "scates2010",
+          "collin2016",
+          "demkowicz2016",
+          "davenport2016",
+          "iaea_livechart_fp"
+        ],
+        "entry": "docs/research/species-kr.md"
+      }
+    ],
     "references": [
       {
         "reference_id": "gelbard2003",
@@ -293,9 +1199,9 @@
         "reference_id": "iaea1997",
         "citation": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
         "doi_or_url": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
-        "link_checked": "2026-11-24",
+        "link_checked": "2026-11-25",
         "register_link": "IAEA (1997)",
-        "notes": "Arrhenius form of the diffusivity, Eq. (A-1), and the measured partition ratios that STRATO does not model (p. 436)."
+        "notes": "Table A-3 (printed p. 446): Ag diffusion coefficients in SiC from FRG, USA, Japan and the Russian Federation, source of register rows A3-05, A3-12, A3-16, A3-21; effective (lumped) diffusivities. PDF opened on 2026-11-24; the parameter register still marks this URL as not verified. Also used for printed p. 61 (fission metals in SiC proportional to neutron exposure), p. 150 (IMGA distributions, degraded SiC), p. 154 (fission gas and iodine release), p. 435 (Eq. A-1), p. 446 (Cs fluence factor, Table A-3 footnote), p. 447 (US reference model, log-normal diffusivities) and pp. 406-407 (Ru and Eu in ZrC- and SiC-TRISO). Also used for p. 436 (measured interface partition ratios, which STRATO does not model)."
       },
       {
         "reference_id": "iaea2012",
@@ -304,9 +1210,805 @@
         "link_checked": "2026-11-24",
         "register_link": "IAEA (2012)",
         "notes": "CRP-6 participant equations with decay and source that (P21.1) matches, and the CRP-6 benchmark cases."
+      },
+      {
+        "reference_id": "demkowicz2016",
+        "citation": "Demkowicz, P. A., Hunn, J. D., Ploger, S. A., Morris, R. N., Baldwin, C. A., Harp, J. M., Winston, P. L., Gerczak, T. J., van Rooyen, I. J., Montgomery, F. C., & Silva, C. M. (2016). Irradiation performance of AGR-1 high temperature reactor fuel. Nuclear Engineering and Design, 306, 2-13. https://doi.org/10.1016/j.nucengdes.2015.09.011",
+        "doi_or_url": "https://www.osti.gov/servlets/purl/1325504",
+        "link_checked": "2026-11-25",
+        "register_link": "Demkowicz et al. (2016)",
+        "notes": "Accepted manuscript read. AGR-1 irradiation conditions, Ag-110m release fractions, Pd-105 outside SiC, Pd-U-Si precipitates, Ag at SiC grain boundaries and triple points, SiC failures. Also used for the Cs, Sr, Eu and Ru statements (capsule release ranges, in-pile SiC failure fraction 1.3e-5, Ru-106 retained in failed-SiC particles) and the layer fracture frequencies (Section 4.2)."
+      },
+      {
+        "reference_id": "davenport2016",
+        "citation": "Davenport, M., Petti, D. A., & Palmer, J. (2016). Status of TRISO fuel irradiations in the Advanced Test Reactor supporting high-temperature gas-cooled reactor designs (INL/CON-16-39057; preprint, 2016 International Topical Meeting on High Temperature Reactor Technology). Idaho National Laboratory.",
+        "doi_or_url": "https://www.osti.gov/servlets/purl/1358289",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "AGR experiments irradiated in an inert sweep gas atmosphere; insulating gas jacket with variable helium-neon mixing for temperature control; irradiation dates of AGR-1, AGR-2, AGR-3/4."
+      },
+      {
+        "reference_id": "grover2013",
+        "citation": "Grover, S. B., Petti, D. A., & Davenport, M. E. (2013). Status of the combined third and fourth NGNP fuel irradiations in the Advanced Test Reactor (INL/CON-13-28332; preprint, ICONE21). Idaho National Laboratory.",
+        "doi_or_url": "https://inldigitallibrary.inl.gov/sites/sti/sti/5808431.pdf",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "AGR-3/4 mission: designed-to-fail particles as a fission-product source for matrix and graphite retention; fission-gas release from failed particles."
+      },
+      {
+        "reference_id": "stempien2021",
+        "citation": "Stempien, J. D., Hunn, J. D., Morris, R. N., Gerczak, T. J., & Demkowicz, P. A. (2021). AGR-2 TRISO fuel post-irradiation examination final report (INL/EXT-21-64279, Rev. 0). Idaho National Laboratory.",
+        "doi_or_url": "https://www.osti.gov/biblio/1822447",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Abstract read. AGR-2 UCO (engineering-scale coater) and UO2 fuel; definitions of SiC failure and TRISO failure."
+      },
+      {
+        "reference_id": "shrader2011",
+        "citation": "Shrader, D., Khalil, S. M., Gerczak, T., Allen, T. R., Heim, A. J., Szlufarska, I., & Morgan, D. (2011). Ag diffusion in cubic silicon carbide. Journal of Nuclear Materials, 408(3), 257-271. https://doi.org/10.1016/j.jnucmat.2010.10.088",
+        "doi_or_url": "https://impact.ornl.gov/en/publications/ag-diffusion-in-cubic-silicon-carbide/",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Abstract read. Density-functional study of Ag in ideal bulk 3C-SiC; Ag interstitial activation energy about 7.9 eV (atomistic)."
+      },
+      {
+        "reference_id": "khalil2011",
+        "citation": "Khalil, S., Swaminathan, N., Shrader, D., Heim, A. J., Morgan, D. D., & Szlufarska, I. (2011). Diffusion of Ag along Σ3 grain boundaries in 3C-SiC. Physical Review B, 84(21), 214104. https://doi.org/10.1103/PhysRevB.84.214104",
+        "doi_or_url": "https://link.aps.org/accepted/10.1103/PhysRevB.84.214104",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Accepted manuscript read. Atomistic (MD plus DFT) Ag defect energies and diffusion coefficients in a Σ3 boundary and bulk; comparison of activation energies with integral release and ion implantation; steady-flux release estimate."
+      },
+      {
+        "reference_id": "ko2016",
+        "citation": "Ko, H., Deng, J., Szlufarska, I., & Morgan, D. (2016). Ag diffusion in SiC high-energy grain boundaries: Kinetic Monte Carlo study with first-principle calculations. Computational Materials Science, 121, 248-257. https://doi.org/10.1016/j.commatsci.2016.04.027",
+        "doi_or_url": "https://arxiv.org/abs/1607.05253v1",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Abstract read (arXiv version). Kinetic Monte Carlo on ab initio energies for high-energy boundaries modelled as amorphous SiC, 1200-1600 °C."
+      },
+      {
+        "reference_id": "rabone2015",
+        "citation": "Rabone, J., & López-Honorato, E. (2015). Density functional theory metadynamics of silver, caesium and palladium diffusion at β-SiC grain boundaries. Journal of Nuclear Materials, 458, 56-63. https://doi.org/10.1016/j.jnucmat.2014.11.032",
+        "doi_or_url": "https://doi.org/10.1016/j.jnucmat.2014.11.032",
+        "link_checked": "2026-11-25",
+        "register_link": "",
+        "notes": "Abstract read through the OpenAlex record; DOI resolves. Atomistic diffusion coefficients at 1500 K: Ag and Cs along a Σ5 boundary, Pd along a Σ5 and a carbon-rich Σ3 boundary. Cs values 3.91e-23 to 2.15e-21 m2/s, very much slower than experiment, suggesting a different mechanism (OpenAlex abstract, checked 2026-11-24)."
+      },
+      {
+        "reference_id": "simon2022",
+        "citation": "Simon, P.-C. A., Aagesen, L. K., Jiang, C., Jiang, W., & Ke, J.-H. (2022). Mechanistic calculation of the effective silver diffusion coefficient in polycrystalline silicon carbide: Application to silver release in AGR-1 TRISO particles. Journal of Nuclear Materials, 563, 153669. https://doi.org/10.1016/j.jnucmat.2022.153669",
+        "doi_or_url": "https://www.osti.gov/servlets/purl/1864857",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Accepted manuscript (INL/JOU-21-65429) read. Mesoscale D_eff(T, m_i) Eqs. (18)-(19), fit coefficients, delta_corr = 8.5, AGR-1 comparison with per-compact grain-size selection."
+      },
+      {
+        "reference_id": "aagesen2022",
+        "citation": "Aagesen, L. K., Jiang, C., Jiang, W., Ke, J.-H., Simon, P.-C. A., & Yang, L. (2022). Demonstrate improved Ag diffusion and describe the basis for Pd penetration modeling in SiC (INL/RPT-22-70388-Rev000). Idaho National Laboratory.",
+        "doi_or_url": "https://www.osti.gov/servlets/purl/1922426",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Report read. Irradiation-enhanced (flux-dependent) bulk Ag diffusivity; Σ5 faster than random high-angle boundaries; ab initio MD of Pd attack on SiC at 2000 K."
+      },
+      {
+        "reference_id": "simon2025",
+        "citation": "Simon, P.-C. A., Ke, J.-H., Jiang, C., Aagesen, L. K., & Jiang, W. (2025). Multiscale, mechanistic modeling of irradiation-enhanced silver diffusion in TRISO particles. Journal of Nuclear Materials, 603, 155464. https://doi.org/10.1016/j.jnucmat.2024.155464",
+        "doi_or_url": "https://www.osti.gov/biblio/2476359",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Abstract read. Temperature-, grain-size- and flux-dependent Ag diffusivity in BISON compared with AGR-1 and AGR-2 Ag release."
+      },
+      {
+        "reference_id": "parsons2024",
+        "citation": "Parsons, C. B., Simon, P.-C. A., & Wirth, B. D. (2024). Impact of temperature variations on BISON predictions of Ag release in AGR-1 and AGR-2 experiments (INL/JOU-23-75968-Revision-0). Idaho National Laboratory.",
+        "doi_or_url": "https://www.osti.gov/pages/servlets/purl/2370475",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Report (preprint submitted to Journal of Nuclear Materials) read. States delta_corr set to 10 and validity 1000-2200 K, 0.3-0.82 um; calculated AGR temperature uncertainty; Ag-110m inventory by precision gamma scanning."
+      },
+      {
+        "reference_id": "abdulhameed2026",
+        "citation": "AbdulHameed, M., Mahbuba, K., Yaseen, M., Ibrahim, A., Moneghan, D., & Beeler, B. (2026). Modeling of silver transport in cubic SiC: Integrating molecular dynamics, bounds averaging, and uncertainty quantification. Physical Review Materials, 10, 015402. https://doi.org/10.1103/1nt8-9hly",
+        "doi_or_url": "https://journals.aps.org/prmaterials/abstract/10.1103/1nt8-9hly",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Published-version page opened; equations and numbers read in the preprint arXiv:2508.14325v1 (https://arxiv.org/abs/2508.14325v1), not compared with the published text. Trap-limited effective diffusivity Eqs. (27)-(46); review of the Ag-Pd experiments."
+      },
+      {
+        "reference_id": "xiao2012",
+        "citation": "Xiao, H. Y., Zhang, Y., Snead, L. L., Shutthanandan, V., Xue, H. Z., & Weber, W. J. (2012). Near-surface and bulk behavior of Ag in SiC. Journal of Nuclear Materials, 420(1-3), 123-130. https://doi.org/10.1016/j.jnucmat.2011.09.028",
+        "doi_or_url": "https://www.osti.gov/biblio/1036414",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Abstract read. Ab initio Ag adsorption on SiC surfaces, desorption barrier 0.85-1.68 eV (atomistic); vapour or surface transport through cracks proposed."
+      },
+      {
+        "reference_id": "gerczak2015",
+        "citation": "Gerczak, T. J., Leng, B., Sridharan, K., Hunter, J. L., Giordani, A. J., & Allen, T. R. (2015). Observations of Ag diffusion in ion implanted SiC. Journal of Nuclear Materials, 461, 314-324. https://doi.org/10.1016/j.jnucmat.2015.03.027",
+        "doi_or_url": "https://www.osti.gov/biblio/1302911",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Abstract read. Ion-implantation diffusion couples, 1500-1625 °C; grain-boundary diffusion in undamaged SiC does not describe release from TRISO fuel."
+      },
+      {
+        "reference_id": "leng2016",
+        "citation": "Leng, B., Ko, H., Gerczak, T. J., Deng, J., Giordani, A. J., Hunter, J. L., Morgan, D., Szlufarska, I., & Sridharan, K. (2016). Effect of carbon ion irradiation on Ag diffusion in SiC. Journal of Nuclear Materials, 471, 220-232. https://doi.org/10.1016/j.jnucmat.2015.11.017",
+        "doi_or_url": "https://www.osti.gov/biblio/1295098",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Abstract read. Ag diffusion greatly enhanced by carbon-ion irradiation in diffusion couples at 1500-1569 °C."
+      },
+      {
+        "reference_id": "szlufarska2016",
+        "citation": "Szlufarska, I. (2016). Ag transport through un-irradiated and irradiated SiC (Final report, NEUP Project No. 11-2988). University of Wisconsin-Madison.",
+        "doi_or_url": "https://www.osti.gov/servlets/purl/1242964",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "DOE NEUP final report read. Harrison regimes and Le Claire analysis (Eqs. 3.3-3.5) applied to irradiated SiC; Ag trapping in implantation damage; summary of Ag-Pd irradiation result of O'Connell et al."
+      },
+      {
+        "reference_id": "gerczak2016",
+        "citation": "Gerczak, T. J., Hunn, J. D., Lowden, R. A., & Allen, T. R. (2016). SiC layer microstructure in AGR-1 and AGR-2 TRISO fuel particles and the influence of its variation on the effective diffusion of key fission products. Journal of Nuclear Materials, 480, 257-270. https://doi.org/10.1016/j.jnucmat.2016.08.011",
+        "doi_or_url": "https://www.osti.gov/biblio/1325469",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Abstract read. EBSD of as-fabricated AGR-1 and AGR-2 SiC; microstructure differs between variants and batches."
+      },
+      {
+        "reference_id": "kirchhofer2013",
+        "citation": "Kirchhofer, R., Hunn, J. D., Demkowicz, P. A., Cole, J. I., & Gorman, B. P. (2013). Microstructure of TRISO coated particles from the AGR-1 experiment: SiC grain size and grain boundary character. Journal of Nuclear Materials, 432(1-3), 127-134. https://doi.org/10.1016/j.jnucmat.2012.08.052",
+        "doi_or_url": "https://www.osti.gov/biblio/1058082",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Abstract read. AGR-1 SiC cubic only, high fraction of CSL Σ3 boundaries, heavily faulted; grain diameter increases outward except Variant 3."
+      },
+      {
+        "reference_id": "vanrooyen2014a",
+        "citation": "van Rooyen, I. J., Lillo, T. M., & Wu, Y. Q. (2014). Identification of silver and palladium in irradiated TRISO coated particles of the AGR-1 experiment. Journal of Nuclear Materials, 446(1-3), 178-186. https://doi.org/10.1016/j.jnucmat.2013.11.028",
+        "doi_or_url": "https://scholarworks.boisestate.edu/mse_facpubs/175",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Abstract read. Ag at SiC grain boundaries and triple points near the IPyC-SiC interface, Cd at triple junctions, Pd-rich precipitates, Pd-U in IPyC."
+      },
+      {
+        "reference_id": "vanrooyen2014b",
+        "citation": "van Rooyen, I. J., Dunzik-Gougar, M. L., & van Rooyen, P. M. (2014). Silver (Ag) transport mechanisms in TRISO coated particles: A critical review. Nuclear Engineering and Design, 271, 180-188. https://doi.org/10.1016/j.nucengdes.2013.11.029",
+        "doi_or_url": "https://www.osti.gov/biblio/1129962",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Abstract read. Review of proposed Ag transport mechanisms and influencing factors."
+      },
+      {
+        "reference_id": "lillo2015",
+        "citation": "Lillo, T. M., & van Rooyen, I. J. (2015). Associations of Pd, U and Ag in the SiC layer of neutron-irradiated TRISO fuel. Journal of Nuclear Materials, 460, 97-106. https://doi.org/10.1016/j.jnucmat.2015.02.010",
+        "doi_or_url": "https://www.osti.gov/biblio/1177608",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Abstract read. Composition and location of Pd, Ag and U nano-precipitates in the SiC of one AGR-1 particle."
+      },
+      {
+        "reference_id": "hunn2016",
+        "citation": "Hunn, J. D., Baldwin, C. A., Gerczak, T. J., Montgomery, F. C., Morris, R. N., Silva, C. M., Demkowicz, P. A., Harp, J. M., & Ploger, S. A. (2016). Detection and analysis of particles with failed SiC in AGR-1 fuel compacts. Nuclear Engineering and Design, 306, 36-46. https://doi.org/10.1016/j.nucengdes.2015.12.011",
+        "doi_or_url": "https://www.osti.gov/biblio/1325503",
+        "link_checked": "2026-11-25",
+        "register_link": "",
+        "notes": "Abstract read. SiC failures linked to IPyC cracking with concentrated Pd attack, fabrication defects, or extensive Pd corrosion. Accepted manuscript (https://www.osti.gov/servlets/purl/1325503) read on 2026-11-24 for the caesium and coating-failure entries: buffer densification, IPyC cracking exposing the SiC, localised Pd corrosion, two as-fabricated defects."
+      },
+      {
+        "reference_id": "miller2018",
+        "citation": "Miller, G. K., Petti, D. A., Maki, J. T., Knudson, D. L., & Skerjanc, W. F. (2018). PARFUME theory and model basis report (INL/EXT-08-14497, Rev. 1). Idaho National Laboratory.",
+        "doi_or_url": "https://inldigitallibrary.inl.gov/sites/sti/sti/Sort_7186.pdf",
+        "link_checked": "2026-11-25",
+        "register_link": "",
+        "notes": "Report read. Failure mechanisms; Pd penetration rate Eq. (5-17); failed-layer diffusivity; trapping implemented but not used; transport code taken from TMAP4. Also used for Eq. (1-3) (Weibull failure probability, printed p. 6) and the failure mechanisms of Section 4.6 (printed pp. 26-27)."
+      },
+      {
+        "reference_id": "longhurst2004",
+        "citation": "Longhurst, G. R. (2004). TMAP7 user manual (INEEL/EXT-04-02352). Idaho National Engineering and Environmental Laboratory.",
+        "doi_or_url": "https://inldigitallibrary.inl.gov/sites/sti/sti/2906951.pdf",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Report read. Coupled mobile-trapped transport with decay, Eqs. (31) and (33)-(37); written for tritium transport."
+      },
+      {
+        "reference_id": "tiegs1980",
+        "citation": "Tiegs, T. N. (1980). Fission product Pd-SiC interaction in irradiated coated particle fuels (ORNL/TM-7203). Oak Ridge National Laboratory. https://doi.org/10.2172/5553743",
+        "doi_or_url": "https://www.osti.gov/biblio/5553743",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Abstract read. Temperature is the major factor in the penetration rate of SiC by Pd across kernel compositions and enrichments."
+      },
+      {
+        "reference_id": "tiegs1982",
+        "citation": "Tiegs, T. N. (1982). Fission product Pd-SiC interaction in irradiated coated-particle fuels. Nuclear Technology, 57(3), 389.",
+        "doi_or_url": "https://www.osti.gov/biblio/7157213",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Abstract read (OSTI record). Temperature is the major factor in SiC corrosion by Pd; other factors secondary. End page not given in the record."
+      },
+      {
+        "reference_id": "minato1990",
+        "citation": "Minato, K., Ogawa, T., Kashimura, S., Fukuda, K., Shimizu, M., Tayama, Y., & Takahashi, I. (1990). Fission product palladium-silicon carbide interaction in HTGR fuel particles. Journal of Nuclear Materials, 172, 184-196. https://doi.org/10.1016/0022-3115(90)90437-R",
+        "doi_or_url": "https://doi.org/10.1016/0022-3115(90)90437-R",
+        "link_checked": "NOT VERIFIED",
+        "register_link": "",
+        "notes": "Link not verified: content not opened. Cited only as one of the data sources of the PARFUME Pd penetration correlation (miller2018)."
+      },
+      {
+        "reference_id": "neethling2012",
+        "citation": "Neethling, J. H., O'Connell, J. H., & Olivier, E. J. (2012). Palladium assisted silver transport in polycrystalline SiC. Nuclear Engineering and Design, 251, 230-234. https://doi.org/10.1016/j.nucengdes.2011.09.064",
+        "doi_or_url": "https://doi.org/10.1016/j.nucengdes.2011.09.064",
+        "link_checked": "NOT VERIFIED",
+        "register_link": "",
+        "notes": "Link not verified: content not opened. Its findings are used only as reported by abdulhameed2026 and simon2022."
+      },
+      {
+        "reference_id": "olivier2013",
+        "citation": "Olivier, E. J., & Neethling, J. H. (2013). The role of Pd in the transport of Ag in SiC. Journal of Nuclear Materials, 432(1-3), 252-260. https://doi.org/10.1016/j.jnucmat.2012.07.033",
+        "doi_or_url": "https://doi.org/10.1016/j.jnucmat.2012.07.033",
+        "link_checked": "NOT VERIFIED",
+        "register_link": "",
+        "notes": "Link not verified: content not opened. Used only as reported by abdulhameed2026."
+      },
+      {
+        "reference_id": "oconnell2014",
+        "citation": "O'Connell, J. H., & Neethling, J. H. (2014). Ag transport in high temperature neutron irradiated 3C-SiC. Journal of Nuclear Materials, 445(1-3), 20-25. https://doi.org/10.1016/j.jnucmat.2013.10.050",
+        "doi_or_url": "https://doi.org/10.1016/j.jnucmat.2013.10.050",
+        "link_checked": "NOT VERIFIED",
+        "register_link": "",
+        "notes": "Link not verified: content not opened. Used only as reported by szlufarska2016 and abdulhameed2026."
+      },
+      {
+        "reference_id": "lopezhonorato2010",
+        "citation": "López-Honorato, E., Yang, D., Tan, J., Meadows, P. J., & Xiao, P. (2010). Silver diffusion in coated fuel particles. Journal of the American Ceramic Society, 93, 3076-3079. https://doi.org/10.1111/j.1551-2916.2010.04055.x",
+        "doi_or_url": "https://doi.org/10.1111/j.1551-2916.2010.04055.x",
+        "link_checked": "NOT VERIFIED",
+        "register_link": "",
+        "notes": "Link not verified: content not opened. Used only as reported by abdulhameed2026."
+      },
+      {
+        "reference_id": "iaea_livechart",
+        "citation": "International Atomic Energy Agency, Nuclear Data Section. (2026). LiveChart of Nuclides: Ground-state data for Pd-105, Pd-107, Pd-108 and Pd-110 (ENSDF adopted values; extracted 2026-11-24) [Data set]. IAEA.",
+        "doi_or_url": "https://www-nds.iaea.org/relnsd/v1/data?fields=ground_states&nuclides=107pd",
+        "link_checked": "2026-11-24",
+        "register_link": "",
+        "notes": "Pd-107 half-life 6.5E+6 y (uncertainty 0.3E+6 y), beta-minus 100 %, ENSDF evaluation by J. Blachot; Pd-105, Pd-108, Pd-110 stable (same API with nuclides=105pd, 108pd, 110pd). None of these nuclides is in data/nuclear/decay.csv."
+      },
+      {
+        "reference_id": "morris2016",
+        "citation": "Morris, R. N., Baldwin, C. A., Demkowicz, P. A., Hunn, J. D., & Reber, E. L. (2016). Performance of AGR-1 high-temperature reactor fuel during post-irradiation heating tests. Nuclear Engineering and Design, 306, 24-35. https://doi.org/10.1016/j.nucengdes.2016.04.031",
+        "doi_or_url": "https://www.osti.gov/servlets/purl/1325505",
+        "link_checked": "2026-11-25",
+        "register_link": "Morris et al. (2016)",
+        "notes": "Accepted manuscript (OSTI 1325505) read. AGR-1 safety tests at 1600-1800 °C on 14 compacts: Cs release below 5e-6 with intact SiC; SiC failures about 3 of 33,100 (1600 °C), 4 of 8300 (1700 °C), 23 of 16,500 (1800 °C); Kr-85 below 5e-6 except two TRISO failures at 1800 °C; Eu and Sr release dominated by OPyC and matrix inventory; HRB-15B results as reported. Source of register measurement rows."
+      },
+      {
+        "reference_id": "collin2015",
+        "citation": "Collin, B. P., Petti, D. A., Demkowicz, P. A., & Maki, J. T. (2015). Comparison of silver, cesium, and strontium release predictions using PARFUME with results from the AGR-1 irradiation experiment. Journal of Nuclear Materials, 466, 426-442. https://doi.org/10.1016/j.jnucmat.2015.08.033",
+        "doi_or_url": "https://www.osti.gov/pages/servlets/purl/1357239",
+        "link_checked": "2026-11-25",
+        "register_link": "Collin et al. (2015)",
+        "notes": "Accepted manuscript opened; abstract, introduction and Section 5 headings read. PARFUME over-predicted Cs release (factor up to 3 failed SiC, up to 100 intact; diffusivity in UCO up to 250 times and in SiC about 40 % too high) and Sr release from intact particles; intact and failed particles modelled separately and combined per compact."
+      },
+      {
+        "reference_id": "collin2016",
+        "citation": "Collin, B. P., Petti, D. A., Demkowicz, P. A., & Maki, J. T. (2016). Comparison of fission product release predictions using PARFUME with results from the AGR-1 safety tests. Nuclear Engineering and Design, 301, 378-390. https://doi.org/10.1016/j.nucengdes.2016.03.023",
+        "doi_or_url": "https://www.osti.gov/pages/servlets/purl/1246116",
+        "link_checked": "2026-11-25",
+        "register_link": "Collin et al. (2016)",
+        "notes": "Accepted manuscript (INL/JOU-15-34147) abstract read. PARFUME over-predicted safety-test release of Ag, Sr and Kr, and of Cs from intact particles (up to five orders of magnitude); tentative correction factors for Ag and Cs only. Its Table 2 diffusivities are register rows C16-01 to C16-23. Correction factors are never STRATO defaults (owner decision D4)."
+      },
+      {
+        "reference_id": "scates2010",
+        "citation": "Scates, D., Walter, J., Drigert, M., Reber, E., & Harp, J. (2010). Fission product monitoring and release data for the Advanced Gas Reactor-1 experiment (INL/CON-10-17996; preprint, HTR 2010, Paper 52). Idaho National Laboratory.",
+        "doi_or_url": "https://www.osti.gov/servlets/purl/1009169",
+        "link_checked": "2026-11-25",
+        "register_link": "",
+        "notes": "Preprint read. AGR-1 fission product monitoring system: Kr and Xe isotopes in the sweep gas, release-to-birth ratios, Kr-85m R/B mostly below 1e-7; I-135 from Xe-135m after shutdown; eq. 6 (failure plus contamination); Booth equivalent-sphere model; release attributed to uranium contamination."
+      },
+      {
+        "reference_id": "compere1975",
+        "citation": "Compere, E. L., Kirslis, S. S., Bohlmann, E. G., Blankenship, F. F., & Grimes, W. R. (1975). Fission product behavior in the Molten Salt Reactor Experiment (ORNL-4865). Oak Ridge National Laboratory. https://doi.org/10.2172/4077644",
+        "doi_or_url": "https://www.osti.gov/servlets/purl/4077644",
+        "link_checked": "2026-11-25",
+        "register_link": "",
+        "notes": "Report opened; abstract (printed p. 1) and introduction (p. 2) read. Fuel dissolved in a circulating fluoride salt (not TRISO particles in a coolant): Kr and Xe stripped to the off-gas; Rb, Cs, Sr, Ba, Y, Zr and lanthanides stayed in the salt; iodine indicated to stay in the salt; noble metals Nb, Mo, Tc, Ru, Ag, Sb, Te deposited on surfaces. The author order differs between the cover (used here) and the title page."
+      },
+      {
+        "reference_id": "andrews2021",
+        "citation": "Andrews, N. C., Clark, A. J., Higgins, M., Leonard, E., Leute, J. E., Luxat, D. L., & Nenoff, T. M. (2021). Mechanistic source term considerations for advanced non-LWRs, Revision 1 (SAND2021-2668). Sandia National Laboratories. https://doi.org/10.2172/1813683",
+        "doi_or_url": "https://www.osti.gov/servlets/purl/1813683",
+        "link_checked": "2026-11-25",
+        "register_link": "",
+        "notes": "Report read (abstract, Sections 6-8). Functional review of FHR, MSR and HTGR containment strategies as a start to identifying gaps for a mechanistic source term; pebble-bed FHR with TRISO pebbles in FLiBe coolant and an off-gas system for gaseous radionuclides (printed pp. 41-42). Author list taken from the report cover; the OSTI record lists the authors differently."
+      },
+      {
+        "reference_id": "iaea_livechart_fp",
+        "citation": "International Atomic Energy Agency, Nuclear Data Section. (2026). LiveChart of Nuclides: Ground-state data for Cs-135, Eu-155, Ru-103, Ru-106, I-129, I-133, I-135, Xe-133, Xe-135, Kr-88 and the stable Sr-86, Sr-88, Eu-153, Ru-101, Ru-102, Ru-104, I-127, Xe-131, Xe-132, Kr-84 and Kr-86 (ENSDF adopted values; extracted 2026-11-24) [Data set]. IAEA.",
+        "doi_or_url": "https://www-nds.iaea.org/relnsd/v1/data?fields=ground_states&nuclides=155eu",
+        "link_checked": "2026-11-25",
+        "register_link": "",
+        "notes": "Same API with nuclides=135cs, 103ru, 106ru, 129i, 133i, 135i, 133xe, 135xe, 88kr and the stable nuclides. Half-lives (uncertainty in last digits): Cs-135 2.3E+6 y (3); Eu-155 4.753 y (14), evaluator N. Nica; Ru-103 39.247 d (13); Ru-106 371.8 d (18); I-129 1.57E+7 y (4); I-133 20.83 h (8); I-135 6.58 h (3); Xe-133 5.2475 d (5); Xe-135 9.14 h (2); Kr-88 2.825 h (19); all beta-minus 100 %. Abundances: Sr-86 9.86 %, Sr-88 82.58 %, Eu-153 52.19 %, Ru-101 17.06 %, Ru-102 31.55 %, Ru-104 18.62 %, I-127 100 %, Xe-131 21.232 %, Xe-132 26.909 %, Kr-84 56.987 %, Kr-86 17.279 %. None of these nuclides is in data/nuclear/decay.csv."
       }
     ],
-    "gallery": [],
-    "entries": {}
+    "gallery": [
+      {
+        "item_id": "ms-sic-3c-bulk",
+        "kind": "placeholder",
+        "title": "Cubic SiC reference cell",
+        "caption": "Planned reference cell of cubic (3C) SiC for later defect and boundary models. The AGR-1 SiC is cubic but polycrystalline and heavily faulted; an ideal crystal does not represent the coating. This calculation has not been performed. It is planned for a future phase of the project.",
+        "alt_text": "A planned picture of the repeating atomic unit of perfect cubic silicon carbide, used only as a starting point; the real coating is made of many small, faulted grains. This calculation has not been performed. It is planned for a future phase of the project.",
+        "material": "3C-SiC, ideal single crystal (reference only)",
+        "species": "none",
+        "method": "Planned: crystal building and periodic density-functional relaxation in BIOVIA Materials Studio (CASTEP module).",
+        "conditions": "Planned: static relaxation at 0 K.",
+        "provenance": "",
+        "file": "",
+        "status": "PENDING",
+        "mechanism_ids": [
+          "ag_grain_boundary_transport"
+        ],
+        "reference_ids": [
+          "kirchhofer2013",
+          "shrader2011"
+        ]
+      },
+      {
+        "item_id": "ms-sic-sigma3-gb",
+        "kind": "placeholder",
+        "title": "Σ3 grain boundary in 3C-SiC",
+        "caption": "Planned bicrystal of a Σ3 twin boundary, a boundary type present in high fraction in the AGR-1 SiC. Σ3 boundaries cannot give a connected path through the layer and bound boundary diffusion from below. This calculation has not been performed. It is planned for a future phase of the project.",
+        "alt_text": "A planned picture of two SiC grains meeting at a highly ordered type of boundary that is frequent in the AGR-1 coating. This calculation has not been performed. It is planned for a future phase of the project.",
+        "material": "3C-SiC Σ3 bicrystal",
+        "species": "none",
+        "method": "Planned: bicrystal built in Materials Studio, pre-relaxed with an empirical potential (Forcite module), then density-functional relaxation (CASTEP module).",
+        "conditions": "Planned: static relaxation at 0 K.",
+        "provenance": "",
+        "file": "",
+        "status": "PENDING",
+        "mechanism_ids": [
+          "ag_grain_boundary_transport"
+        ],
+        "reference_ids": [
+          "khalil2011",
+          "kirchhofer2013"
+        ]
+      },
+      {
+        "item_id": "ms-sic-sigma5-gb",
+        "kind": "placeholder",
+        "title": "Σ5 grain boundary in 3C-SiC",
+        "caption": "Planned Σ5 (210)/[001] boundary, for which faster Ag diffusion than in random high-angle boundaries has been reported, and where Ag and Pd diffusion have been simulated atomistically. This calculation has not been performed. It is planned for a future phase of the project.",
+        "alt_text": "A planned picture of a less ordered boundary between two SiC grains, a candidate fast path for silver. This calculation has not been performed. It is planned for a future phase of the project.",
+        "material": "3C-SiC Σ5 (210)/[001] bicrystal",
+        "species": "none",
+        "method": "Planned: as for the Σ3 boundary (Forcite pre-relaxation, CASTEP relaxation).",
+        "conditions": "Planned: static relaxation at 0 K.",
+        "provenance": "",
+        "file": "",
+        "status": "PENDING",
+        "mechanism_ids": [
+          "ag_grain_boundary_transport"
+        ],
+        "reference_ids": [
+          "aagesen2022",
+          "rabone2015"
+        ]
+      },
+      {
+        "item_id": "ms-sic-random-gb",
+        "kind": "placeholder",
+        "title": "High-energy (random) grain boundary",
+        "caption": "Planned model of a high-energy boundary region, represented in the literature as amorphous SiC, which is expected to provide percolating fast paths. This calculation has not been performed. It is planned for a future phase of the project.",
+        "alt_text": "A planned picture of a disordered boundary region between SiC grains, the kind expected to connect across the coating. This calculation has not been performed. It is planned for a future phase of the project.",
+        "material": "3C-SiC with an amorphous boundary layer",
+        "species": "none",
+        "method": "Planned: melt-quench molecular dynamics with an empirical potential (Forcite module) to build the disordered region, then density-functional relaxation of a smaller cell.",
+        "conditions": "Planned: quench and relaxation; finite-temperature runs within the AGR-1 range of time-average, volume-average compact temperatures (955 to 1136 °C, demkowicz2016).",
+        "provenance": "",
+        "file": "",
+        "status": "PENDING",
+        "mechanism_ids": [
+          "ag_grain_boundary_transport"
+        ],
+        "reference_ids": [
+          "ko2016",
+          "simon2022",
+          "khalil2011"
+        ]
+      },
+      {
+        "item_id": "ms-sic-intrinsic-defects",
+        "kind": "placeholder",
+        "title": "Vacancies and interstitials in 3C-SiC",
+        "caption": "Planned set of intrinsic point defects (carbon and silicon vacancies, interstitials, antisites), the defects that irradiation multiplies and that bind silver. This calculation has not been performed. It is planned for a future phase of the project.",
+        "alt_text": "A planned picture of missing and extra atoms in the SiC crystal, the kind of damage that radiation creates. This calculation has not been performed. It is planned for a future phase of the project.",
+        "material": "3C-SiC supercell with point defects",
+        "species": "none",
+        "method": "Planned: density-functional defect formation energies in a supercell (CASTEP module).",
+        "conditions": "Planned: static relaxation at 0 K; charge states to be chosen from the literature.",
+        "provenance": "",
+        "file": "",
+        "status": "PENDING",
+        "mechanism_ids": [
+          "ag_grain_boundary_transport",
+          "ag_trapping_detrapping"
+        ],
+        "reference_ids": [
+          "shrader2011",
+          "aagesen2022"
+        ]
+      },
+      {
+        "item_id": "ms-ag-bulk-config",
+        "kind": "placeholder",
+        "title": "Silver impurity configurations in bulk 3C-SiC",
+        "caption": "Planned silver on silicon and carbon sites, as an interstitial, and bound to vacancies; the literature finds Ag on a silicon site bound to a carbon vacancy most stable in the bulk. This calculation has not been performed. It is planned for a future phase of the project.",
+        "alt_text": "A planned picture of single silver atoms sitting in different places inside a perfect SiC crystal. This calculation has not been performed. It is planned for a future phase of the project.",
+        "material": "3C-SiC supercell",
+        "species": "Ag",
+        "method": "Planned: density-functional formation and binding energies (CASTEP module).",
+        "conditions": "Planned: static relaxation at 0 K.",
+        "provenance": "",
+        "file": "",
+        "status": "PENDING",
+        "mechanism_ids": [
+          "ag_grain_boundary_transport"
+        ],
+        "reference_ids": [
+          "shrader2011"
+        ]
+      },
+      {
+        "item_id": "ms-ag-gb-segregation",
+        "kind": "placeholder",
+        "title": "Silver segregation to a grain boundary",
+        "caption": "Planned silver sites in a Σ3 boundary compared with the bulk; the literature reports formation energies 2 to 4 eV lower in the boundary. This calculation has not been performed. It is planned for a future phase of the project.",
+        "alt_text": "A planned picture of silver atoms preferring to sit in the boundary between two grains rather than inside a grain. This calculation has not been performed. It is planned for a future phase of the project.",
+        "material": "3C-SiC Σ3 bicrystal",
+        "species": "Ag",
+        "method": "Planned: density-functional energies of Ag at boundary and bulk sites (CASTEP module).",
+        "conditions": "Planned: static relaxation at 0 K.",
+        "provenance": "",
+        "file": "",
+        "status": "PENDING",
+        "mechanism_ids": [
+          "ag_grain_boundary_transport",
+          "ag_trapping_detrapping"
+        ],
+        "reference_ids": [
+          "khalil2011"
+        ]
+      },
+      {
+        "item_id": "ms-ag-migration-path",
+        "kind": "placeholder",
+        "title": "Silver migration pathway along a grain boundary",
+        "caption": "Planned minimum-energy path for a silver hop along a boundary. Any barrier from it is an atomistic migration barrier and is not converted on the page into an effective diffusivity of the coating. This calculation has not been performed. It is planned for a future phase of the project.",
+        "alt_text": "A planned picture of the route a silver atom takes when it jumps from one site to the next along a boundary, with the energy hill it has to climb. This calculation has not been performed. It is planned for a future phase of the project.",
+        "material": "3C-SiC Σ3 or Σ5 bicrystal",
+        "species": "Ag",
+        "method": "Planned: transition-state search (nudged elastic band) on density-functional energies (CASTEP module).",
+        "conditions": "Planned: 0 K energy path.",
+        "provenance": "",
+        "file": "",
+        "status": "PENDING",
+        "mechanism_ids": [
+          "ag_grain_boundary_transport"
+        ],
+        "reference_ids": [
+          "khalil2011",
+          "rabone2015"
+        ]
+      },
+      {
+        "item_id": "ms-ag-pore-surface",
+        "kind": "placeholder",
+        "title": "Silver at a pore surface (trapping site)",
+        "caption": "Planned silver adsorption and desorption at a SiC surface representing a nano-pore wall; desorption-limited pores are proposed as reversible traps. This calculation has not been performed. It is planned for a future phase of the project.",
+        "alt_text": "A planned picture of a silver atom stuck to the wall of a tiny pore in the coating, a place where it could be held for a while. This calculation has not been performed. It is planned for a future phase of the project.",
+        "material": "3C-SiC surface slab",
+        "species": "Ag",
+        "method": "Planned: density-functional adsorption energies and desorption path (CASTEP module).",
+        "conditions": "Planned: static relaxation at 0 K.",
+        "provenance": "",
+        "file": "",
+        "status": "PENDING",
+        "mechanism_ids": [
+          "ag_trapping_detrapping"
+        ],
+        "reference_ids": [
+          "xiao2012",
+          "abdulhameed2026"
+        ]
+      },
+      {
+        "item_id": "ms-ag-triple-junction",
+        "kind": "placeholder",
+        "title": "Silver at a triple junction",
+        "caption": "Planned silver at the junction of three grains, where silver precipitates were observed in irradiated AGR-1 SiC and which may act as traps. This calculation has not been performed. It is planned for a future phase of the project.",
+        "alt_text": "A planned picture of silver at a point where three grains of the coating meet. This calculation has not been performed. It is planned for a future phase of the project.",
+        "material": "3C-SiC tricrystal",
+        "species": "Ag",
+        "method": "Planned: empirical-potential construction (Forcite module) and density-functional energies of Ag sites in a reduced cell (CASTEP module).",
+        "conditions": "Planned: static relaxation at 0 K.",
+        "provenance": "",
+        "file": "",
+        "status": "PENDING",
+        "mechanism_ids": [
+          "ag_trapping_detrapping"
+        ],
+        "reference_ids": [
+          "simon2022",
+          "vanrooyen2014a",
+          "lillo2015"
+        ]
+      },
+      {
+        "item_id": "ms-pd-sic-surface",
+        "kind": "placeholder",
+        "title": "Palladium interaction with a SiC surface",
+        "caption": "Planned palladium atoms on a SiC surface; ab initio molecular dynamics in the literature shows palladium disintegrating the surface and removing carbon. This calculation has not been performed. It is planned for a future phase of the project.",
+        "alt_text": "A planned picture of palladium atoms attacking the surface of silicon carbide. This calculation has not been performed. It is planned for a future phase of the project.",
+        "material": "3C-SiC surface slab",
+        "species": "Pd",
+        "method": "Planned: ab initio molecular dynamics (CASTEP module).",
+        "conditions": "Planned: finite temperature within the AGR-1 range of time-average, volume-average compact temperatures (955 to 1136 °C, demkowicz2016); higher temperatures only if justified by a source.",
+        "provenance": "",
+        "file": "",
+        "status": "PENDING",
+        "mechanism_ids": [
+          "pd_assisted_degradation"
+        ],
+        "reference_ids": [
+          "aagesen2022"
+        ]
+      },
+      {
+        "item_id": "ms-pd-gb",
+        "kind": "placeholder",
+        "title": "Palladium at Σ3 and Σ5 grain boundaries",
+        "caption": "Planned palladium sites and paths at Σ3 and Σ5 boundaries, where atomistic palladium diffusion far faster than observed nodule penetration has been reported. This calculation has not been performed. It is planned for a future phase of the project.",
+        "alt_text": "A planned picture of palladium atoms in the boundaries between SiC grains. This calculation has not been performed. It is planned for a future phase of the project.",
+        "material": "3C-SiC Σ3 and Σ5 bicrystals",
+        "species": "Pd",
+        "method": "Planned: density-functional energies and migration paths (CASTEP module).",
+        "conditions": "Planned: 0 K energies and paths.",
+        "provenance": "",
+        "file": "",
+        "status": "PENDING",
+        "mechanism_ids": [
+          "pd_assisted_degradation"
+        ],
+        "reference_ids": [
+          "rabone2015"
+        ]
+      },
+      {
+        "item_id": "ms-pd-ag-gb",
+        "kind": "placeholder",
+        "title": "Palladium and silver at the same boundary site",
+        "caption": "Planned co-location of palladium and silver at a boundary or triple junction, as observed in some precipitates of irradiated AGR-1 SiC. This calculation has not been performed. It is planned for a future phase of the project.",
+        "alt_text": "A planned picture of a silver atom and a palladium atom side by side in a grain boundary, to test whether palladium helps silver move. This calculation has not been performed. It is planned for a future phase of the project.",
+        "material": "3C-SiC bicrystal",
+        "species": "Ag;Pd",
+        "method": "Planned: density-functional binding energies of Ag-Pd pairs at boundary sites (CASTEP module).",
+        "conditions": "Planned: static relaxation at 0 K.",
+        "provenance": "",
+        "file": "",
+        "status": "PENDING",
+        "mechanism_ids": [
+          "pd_assisted_degradation"
+        ],
+        "reference_ids": [
+          "lillo2015",
+          "abdulhameed2026"
+        ]
+      },
+      {
+        "item_id": "ms-pd-silicide",
+        "kind": "placeholder",
+        "title": "Palladium silicide at a SiC grain boundary",
+        "caption": "Planned palladium silicide in contact with SiC, the reaction product reported for palladium attack; precipitates of Pd, U and Si were found in AGR-1 SiC. This calculation has not been performed. It is planned for a future phase of the project.",
+        "alt_text": "A planned picture of the compound that forms when palladium reacts with silicon carbide. This calculation has not been performed. It is planned for a future phase of the project.",
+        "material": "Palladium silicide / 3C-SiC interface",
+        "species": "Pd",
+        "method": "Planned: interface construction and density-functional relaxation (CASTEP module); silicide phase to be taken from a cited source.",
+        "conditions": "Planned: static relaxation at 0 K.",
+        "provenance": "",
+        "file": "",
+        "status": "PENDING",
+        "mechanism_ids": [
+          "pd_assisted_degradation"
+        ],
+        "reference_ids": [
+          "simon2022",
+          "demkowicz2016"
+        ]
+      },
+      {
+        "item_id": "ms-cs-sic-gb",
+        "kind": "placeholder",
+        "title": "Caesium in bulk 3C-SiC and at a grain boundary",
+        "caption": "Planned caesium sites in the bulk and at a grain boundary of 3C-SiC. Caesium is effectively retained by intact SiC; published atomistic boundary diffusion coefficients for caesium are far slower than experiment, so any result would be compared with that disagreement, not converted into an effective diffusivity. This calculation has not been performed. It is planned for a future phase of the project.",
+        "alt_text": "A planned picture of single caesium atoms inside silicon carbide and in the boundary between two grains, the layer that holds caesium back. This calculation has not been performed. It is planned for a future phase of the project.",
+        "material": "3C-SiC supercell and bicrystal",
+        "species": "Cs",
+        "method": "Planned: density-functional formation and binding energies (CASTEP module).",
+        "conditions": "Planned: static relaxation at 0 K.",
+        "provenance": "",
+        "file": "",
+        "status": "PENDING",
+        "mechanism_ids": [
+          "cs_retention_barrier_integrity"
+        ],
+        "reference_ids": [
+          "rabone2015",
+          "demkowicz2016",
+          "kirchhofer2013"
+        ]
+      },
+      {
+        "item_id": "ms-sr-eu-sic",
+        "kind": "placeholder",
+        "title": "Strontium and europium in 3C-SiC",
+        "caption": "Planned strontium and europium configurations in 3C-SiC and at a grain boundary. Both elements passed intact AGR-1 coatings in small amounts and were held in the outer pyrocarbon and matrix. This calculation has not been performed. It is planned for a future phase of the project.",
+        "alt_text": "A planned picture of strontium and europium atoms inside silicon carbide, two elements that leak slowly through intact coatings. This calculation has not been performed. It is planned for a future phase of the project.",
+        "material": "3C-SiC supercell and bicrystal",
+        "species": "Sr;Eu",
+        "method": "Planned: density-functional formation energies of substitutional and interstitial sites (CASTEP module).",
+        "conditions": "Planned: static relaxation at 0 K.",
+        "provenance": "",
+        "file": "",
+        "status": "PENDING",
+        "mechanism_ids": [
+          "additional_species_downstream_transport"
+        ],
+        "reference_ids": [
+          "demkowicz2016",
+          "morris2016",
+          "kirchhofer2013"
+        ]
+      },
+      {
+        "item_id": "ms-noble-gas-sic",
+        "kind": "placeholder",
+        "title": "Krypton, xenon and iodine at vacancies in 3C-SiC",
+        "caption": "Planned krypton, xenon and iodine atoms at vacancy sites and small cavities of 3C-SiC. An intact SiC layer keeps the particle gas-tight; the calculation would examine where these atoms sit, not predict a release. This calculation has not been performed. It is planned for a future phase of the project.",
+        "alt_text": "A planned picture of large krypton, xenon and iodine atoms trapped in gaps of the silicon carbide crystal, the layer that keeps fission gases inside the particle. This calculation has not been performed. It is planned for a future phase of the project.",
+        "material": "3C-SiC supercell with vacancies",
+        "species": "Kr;Xe;I",
+        "method": "Planned: density-functional incorporation energies at vacancy sites (CASTEP module).",
+        "conditions": "Planned: static relaxation at 0 K.",
+        "provenance": "",
+        "file": "",
+        "status": "PENDING",
+        "mechanism_ids": [
+          "additional_species_downstream_transport"
+        ],
+        "reference_ids": [
+          "iaea1997",
+          "morris2016",
+          "kirchhofer2013"
+        ]
+      }
+    ],
+    "entries": {
+      "docs/research/additional_species_downstream_transport.md": {
+        "path": "docs/research/additional_species_downstream_transport.md",
+        "title": "Additional species and downstream transport",
+        "concept_equations": [
+          "\\left(\\frac{R}{B}\\right)_i^{\\mathrm{total}} = f_{\\mathrm{fail}}\\left(\\frac{R}{B}\\right)_i^{\\mathrm{fail}} + f_{\\mathrm{cont}}\\left(\\frac{R}{B}\\right)_i^{\\mathrm{contamination}}"
+        ]
+      },
+      "docs/research/ag_grain_boundary_transport.md": {
+        "path": "docs/research/ag_grain_boundary_transport.md",
+        "title": "Silver grain-boundary transport in polycrystalline SiC",
+        "concept_equations": []
+      },
+      "docs/research/ag_trapping_detrapping.md": {
+        "path": "docs/research/ag_trapping_detrapping.md",
+        "title": "Silver trapping and detrapping in SiC",
+        "concept_equations": []
+      },
+      "docs/research/coating_degradation_failure.md": {
+        "path": "docs/research/coating_degradation_failure.md",
+        "title": "Irradiation and coating degradation (defect evolution, microcracking, failure)",
+        "concept_equations": [
+          "P_f = 1 - \\exp\\!\\left[-\\int_V \\left(\\frac{\\sigma}{\\sigma_0}\\right)^{m} dV\\right]",
+          "\\sigma_{t,\\mathrm{SiC}}(t) \\ge \\sigma_{\\mathrm{SiC}}"
+        ]
+      },
+      "docs/research/cs_retention_barrier_integrity.md": {
+        "path": "docs/research/cs_retention_barrier_integrity.md",
+        "title": "Caesium retention and barrier integrity",
+        "concept_equations": [
+          "D_{\\mathrm{Cs,SiC}}(T,\\Gamma) = 5.5\\times10^{-14}\\,e^{\\Gamma/5}\\exp\\!\\left(-\\frac{125\\ \\mathrm{kJ\\,mol^{-1}}}{R\\,T}\\right) + 1.6\\times10^{-2}\\exp\\!\\left(-\\frac{514\\ \\mathrm{kJ\\,mol^{-1}}}{R\\,T}\\right)\\ \\mathrm{m^2\\,s^{-1}}",
+          "F_{\\mathrm{compact}}(t) = \\left(1-\\frac{n_{\\mathrm{f}}}{N}\\right)F_{\\mathrm{intact}}(t) + \\frac{n_{\\mathrm{f}}}{N}\\,F_{\\mathrm{failed}}(t)",
+          "D_{\\mathrm{SiC}} = D_{\\mathrm{failed}} \\quad \\text{for } t \\ge t_{\\mathrm{fail}}"
+        ]
+      },
+      "docs/research/materials_studio_gallery.md": {
+        "path": "docs/research/materials_studio_gallery.md",
+        "title": "Materials Studio gallery: planned atomistic calculations",
+        "concept_equations": []
+      },
+      "docs/research/pd_assisted_degradation.md": {
+        "path": "docs/research/pd_assisted_degradation.md",
+        "title": "Palladium-assisted degradation of SiC (Pd-SiC and Ag-Pd interactions)",
+        "concept_equations": [
+          "P = 38.232\\, \\exp\\!\\left(\\frac{-14342.3}{T}\\right)",
+          "x_{\\mathrm{Pd}}(t) = \\int_0^{t} P\\big(T(t')\\big)\\, dt'",
+          "\\text{SiC layer failed when } x_{\\mathrm{Pd}}(t) \\ge t_{\\mathrm{SiC}}",
+          "D_{\\mathrm{SiC}}(t) =\n\\begin{cases}\nD_{\\mathrm{SiC,intact}}(T) & x_{\\mathrm{Pd}}(t) < t_{\\mathrm{SiC}}\\\\\nD_{\\mathrm{failed}} & x_{\\mathrm{Pd}}(t) \\ge t_{\\mathrm{SiC}}\n\\end{cases}"
+        ]
+      },
+      "docs/research/regime-a.md": {
+        "path": "docs/research/regime-a.md",
+        "title": "Regime A: intact-barrier transport",
+        "concept_equations": []
+      },
+      "docs/research/regime-b.md": {
+        "path": "docs/research/regime-b.md",
+        "title": "Regime B: degradation-assisted transport",
+        "concept_equations": []
+      },
+      "docs/research/regime-c.md": {
+        "path": "docs/research/regime-c.md",
+        "title": "Regime C: barrier failure and bypass transport",
+        "concept_equations": []
+      },
+      "docs/research/roadmap.md": {
+        "path": "docs/research/roadmap.md",
+        "title": "Brick-by-brick roadmap",
+        "concept_equations": []
+      },
+      "docs/research/species-ag.md": {
+        "path": "docs/research/species-ag.md",
+        "title": "Silver (Ag)",
+        "concept_equations": []
+      },
+      "docs/research/species-cs.md": {
+        "path": "docs/research/species-cs.md",
+        "title": "Caesium (Cs)",
+        "concept_equations": []
+      },
+      "docs/research/species-eu.md": {
+        "path": "docs/research/species-eu.md",
+        "title": "Europium (Eu)",
+        "concept_equations": []
+      },
+      "docs/research/species-i.md": {
+        "path": "docs/research/species-i.md",
+        "title": "Iodine (I)",
+        "concept_equations": []
+      },
+      "docs/research/species-kr.md": {
+        "path": "docs/research/species-kr.md",
+        "title": "Krypton (Kr)",
+        "concept_equations": []
+      },
+      "docs/research/species-pd.md": {
+        "path": "docs/research/species-pd.md",
+        "title": "Palladium (Pd)",
+        "concept_equations": []
+      },
+      "docs/research/species-ru.md": {
+        "path": "docs/research/species-ru.md",
+        "title": "Ruthenium (Ru)",
+        "concept_equations": []
+      },
+      "docs/research/species-sr.md": {
+        "path": "docs/research/species-sr.md",
+        "title": "Strontium (Sr)",
+        "concept_equations": []
+      },
+      "docs/research/species-xe.md": {
+        "path": "docs/research/species-xe.md",
+        "title": "Xenon (Xe)",
+        "concept_equations": []
+      }
+    }
   }
 }
