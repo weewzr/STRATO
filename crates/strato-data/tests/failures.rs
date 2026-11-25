@@ -185,7 +185,108 @@ fn a_dropped_row_is_noticed_by_the_row_count_check_of_the_other_readers() {
     let mut t = real_texts();
     t.arrhenius = drop_line(&t.arrhenius, "A1-04,");
     let reg = Register::from_texts(&t).expect("still a valid file");
-    assert_eq!(reg.arrhenius.rows.len(), 117);
+    assert_eq!(reg.arrhenius.rows.len(), 140);
     // but the B6 re-read of the audit, which lists A1-04, notices the loss
     assert_fails(&t, "D5.V.b6-coverage");
+}
+
+// ---- the data-integration checks can fail
+
+#[test]
+fn a_class_outside_the_four_is_an_error() {
+    let mut t = real_texts();
+    t.arrhenius = mutate_line(
+        &t.arrhenius,
+        "A1-01,",
+        ",transferred material correlation,",
+        ",measured at AGR-1,",
+    );
+    let e = load_err(&t);
+    assert!(
+        e.contains("coefficient_class") && e.contains("A1-01"),
+        "{e}"
+    );
+}
+
+#[test]
+fn a_wrong_class_for_a_set_fails() {
+    let mut t = real_texts();
+    t.arrhenius = mutate_line(
+        &t.arrhenius,
+        "S20-01,",
+        ",AGR-1-specific fitted correlation,",
+        ",published PARFUME correlation,",
+    );
+    assert_fails(&t, "DI.class.one-per-row");
+}
+
+#[test]
+fn a_lost_printed_range_makes_the_selection_stop_refusing() {
+    let mut t = real_texts();
+    t.arrhenius = mutate_line(
+        &t.arrhenius,
+        "C16-20,",
+        ",1400,1750,printed range,",
+        ",,,printed range,",
+    );
+    assert_fails(&t, "DI.select.refuses-outside-range");
+}
+
+#[test]
+fn a_changed_default_row_breaks_the_equality_of_the_phases() {
+    let mut t = real_texts();
+    t.arrhenius = mutate_line(&t.arrhenius, "C15-05,", ",5.6e-8,", ",5.7e-8,");
+    assert_fails(&t, "DI.select.c15-equals-c16");
+}
+
+#[test]
+fn a_non_detect_that_loses_its_class_fails() {
+    let mut t = real_texts();
+    t.release = mutate_line(&t.release, "E-217,", ",M-ND,", ",M-UB,");
+    assert_fails(&t, "DI.release.non-detect");
+}
+
+#[test]
+fn a_digitised_row_without_reading_uncertainty_fails() {
+    let mut t = real_texts();
+    t.release = mutate_line(&t.release, "E-425,", ",rel_value_pct=0.5;time_h=0.2,", ",,");
+    assert_fails(&t, "DI.release.reading-uncertainty");
+}
+
+#[test]
+fn a_malformed_reading_uncertainty_is_an_error() {
+    let mut t = real_texts();
+    t.release = mutate_line(
+        &t.release,
+        "E-425,",
+        ",rel_value_pct=0.5;time_h=0.2,",
+        ",about half a percent,",
+    );
+    let e = load_err(&t);
+    assert!(
+        e.contains("reading_uncertainty") && e.contains("E-425"),
+        "{e}"
+    );
+}
+
+#[test]
+fn a_reused_withdrawn_id_fails() {
+    let mut t = real_texts();
+    t.release = mutate_line(&t.release, "E-315,", "E-315,", "E-340,");
+    assert_fails(&t, "DI.release.withdrawn-ids");
+}
+
+#[test]
+fn a_burnup_that_falls_between_cycles_fails() {
+    let mut t = real_texts();
+    t.irradiation_burnup = mutate_line(&t.irradiation_burnup, "IRRB-0001,", ",0.72,", ",9.72,");
+    assert_fails(&t, "DI.irr.monotone");
+}
+
+#[test]
+fn a_changed_particle_count_changes_the_derived_rate() {
+    let mut t = real_texts();
+    t.irradiation_conditions =
+        mutate_line(&t.irradiation_conditions, "IRR-456,", ",4154,", ",4145,");
+    assert_fails(&t, "DI.irr.inventory");
 }

@@ -18,18 +18,18 @@ use strato_data::yields::{
 fn row_counts_are_those_of_the_readme() {
     let r = real_register();
     assert_eq!(r.geometry.rows.len(), 149);
-    assert_eq!(r.arrhenius.rows.len(), 118);
+    assert_eq!(r.arrhenius.rows.len(), 141);
     assert_eq!(r.decay.rows.len(), 16);
     assert_eq!(r.yields.rows.len(), 56);
-    assert_eq!(r.temperature.rows.len(), 122);
-    assert_eq!(r.release.rows.len(), 156);
+    assert_eq!(r.temperature.rows.len(), 157);
+    assert_eq!(r.release.rows.len(), 482);
 }
 
 #[test]
 fn status_counts_match_the_audit() {
     let r = real_register();
     let n = |s: Status| r.arrhenius.rows.iter().filter(|x| x.status == s).count();
-    assert_eq!((n(Status::Verified), n(Status::NotVerified)), (115, 3));
+    assert_eq!((n(Status::Verified), n(Status::NotVerified)), (138, 3));
     let n = |s: Status| r.release.rows.iter().filter(|x| x.status == s).count();
     assert_eq!(
         (
@@ -37,7 +37,7 @@ fn status_counts_match_the_audit() {
             n(Status::Digitised),
             n(Status::NotVerified)
         ),
-        (82, 73, 1)
+        (263, 218, 1)
     );
     let n = |s: Status| r.temperature.rows.iter().filter(|x| x.status == s).count();
     assert_eq!(
@@ -46,7 +46,7 @@ fn status_counts_match_the_audit() {
             n(Status::Digitised),
             n(Status::NotVerified)
         ),
-        (110, 7, 5)
+        (110, 42, 5)
     );
     assert!(r.geometry.rows.iter().all(|x| x.status == Status::Verified));
 }
@@ -254,17 +254,17 @@ fn an_upper_bound_is_not_a_point_value() {
         .filter(|x| x.value.is_bound())
         .map(|x| x.id.as_str())
         .collect();
-    // 8 upper bounds and 1 lower bound
-    assert_eq!(bounds.len(), 9);
+    // 23 upper bounds and 1 lower bound
+    assert_eq!(bounds.len(), 24);
     assert!(
         r.release
             .rows
             .iter()
             .filter(|x| matches!(x.value, ReleaseValue::UpperBound(_)))
             .count()
-            == 8
+            == 23
     );
-    // the value kinds partition the 156 rows
+    // the value kinds partition the 482 rows
     let counts = r.release.rows.iter().fold([0usize; 6], |mut a, x| {
         let i = match x.value {
             ReleaseValue::Point(_) => 0,
@@ -277,7 +277,7 @@ fn an_upper_bound_is_not_a_point_value() {
         a[i] += 1;
         a
     });
-    assert_eq!(counts, [63 - 3, 79, 8, 1, 5, 3]);
+    assert_eq!(counts, [226, 224, 23, 1, 5, 3]);
 }
 
 #[test]
@@ -447,7 +447,7 @@ fn symbolic_temperatures_are_not_numbers() {
     ));
     assert!(row.t_start.as_ref().unwrap().celsius().is_none());
     let hist = t.histories();
-    assert_eq!(hist.len(), 59);
+    assert_eq!(hist.len(), 61);
     assert_eq!(
         hist.iter()
             .find(|(h, _)| *h == "AGR1-ST-C16-1600")
