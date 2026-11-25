@@ -326,7 +326,11 @@ pub fn generate(cfg: &Config, case: &Case, input_file: &str, commit: &str) -> Re
     let input = validate_input(cfg, &LIMITS)?;
     let end = input.dt * input.steps as f64;
     let run = run_input(&input, &[end])?;
-    let prov = Provenance::new(cfg, &input, input_file, commit);
+    // All regression cases are synthetic numerical benchmarks (see the README of the files).
+    let prov = Provenance::new(cfg, &input, input_file, commit).with_parameter_source(
+        crate::postprocessing::export::SYNTHETIC_SOURCE,
+        "synthetic benchmark",
+    );
     let banner = regression_banner(case, commit);
 
     let mut check = banner.clone();
@@ -342,9 +346,9 @@ pub fn generate(cfg: &Config, case: &Case, input_file: &str, commit: &str) -> Re
         );
     }
     let _ = writeln!(check, "# {}", crate::postprocessing::export::LABEL);
-    check.push_str(
-        "t_s,f_btcs,f_reference,abs_difference,time_error_estimate,space_error_estimate,reference_floor_3x,tolerance,abs_difference_over_tolerance,passed\n",
-    );
+    check.push_str(&crate::postprocessing::export::header_line(
+        &crate::postprocessing::export::CHECK_COLUMNS,
+    ));
     for r in &report.rows {
         let _ = writeln!(
             check,

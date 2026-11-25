@@ -57,7 +57,22 @@ pub struct Provenance {
     pub input_file: String,
     /// SHA-256 digest (hex) of [`canonical_input`].
     pub input_sha256: String,
+    /// Source row of the physical parameters (radii, diffusivities, initial concentration). The
+    /// TOML input format carries no source field, so the default says exactly that; a caller
+    /// that knows better (a synthetic benchmark, a register row) sets it with
+    /// [`Provenance::with_parameter_source`].
+    pub parameter_source: String,
+    /// Class of the physical parameters (decision 31), set together with the source.
+    pub parameter_class: String,
 }
+
+/// Default of [`Provenance::parameter_source`].
+pub const DEFAULT_PARAMETER_SOURCE: &str =
+    "input file as supplied; the input format records no source row";
+/// Default of [`Provenance::parameter_class`].
+pub const DEFAULT_PARAMETER_CLASS: &str = "user-supplied value, no source class recorded";
+/// Source and class of the synthetic benchmark inputs of this repository.
+pub const SYNTHETIC_SOURCE: &str = "synthetic benchmark, not literature data";
 
 impl Provenance {
     /// Builds the provenance of a run. `input_file` is reduced to its last path component.
@@ -79,8 +94,109 @@ impl Provenance {
             species: cfg.species.clone(),
             input_file: file,
             input_sha256: sha256_hex(canonical_input(cfg, input).as_bytes()),
+            parameter_source: DEFAULT_PARAMETER_SOURCE.to_string(),
+            parameter_class: DEFAULT_PARAMETER_CLASS.to_string(),
         }
     }
+
+    /// Sets the source row and class written beside every physical parameter.
+    pub fn with_parameter_source(mut self, source: &str, class: &str) -> Self {
+        self.parameter_source = one_line(source);
+        self.parameter_class = one_line(class);
+        self
+    }
+}
+
+/// One exported column: the stable machine key and the descriptive header (full physical name
+/// with its unit, decision 30). Headers contain no comma, so they need no CSV quoting.
+pub type Column = (&'static str, &'static str);
+
+/// Columns of the time-series CSV.
+pub const SERIES_COLUMNS: [Column; 10] = [
+    ("t_s", "Time (s)"),
+    ("inventory_mol", "Remaining inventory (mol)"),
+    ("cumulative_release_mol", "Cumulative release (mol)"),
+    ("release_fraction", "Release fraction (dimensionless)"),
+    ("release_rate_mol_s", "Release rate (mol/s)"),
+    ("balance_residual_mol", "Mass-balance residual (mol)"),
+    (
+        "balance_residual_relative",
+        "Relative mass-balance residual (dimensionless)",
+    ),
+    (
+        "balance_residual_bound_mol",
+        "Derived a-posteriori rounding bound of the mass-balance residual (mol)",
+    ),
+    (
+        "min_concentration_mol_m3",
+        "Minimum concentration over all nodes (mol/m^3)",
+    ),
+    (
+        "max_concentration_mol_m3",
+        "Maximum concentration over all nodes (mol/m^3)",
+    ),
+];
+
+/// Columns of the profile CSV.
+pub const PROFILE_COLUMNS: [Column; 6] = [
+    ("t_s", "Time (s)"),
+    ("node_index", "Node index (dimensionless)"),
+    ("r_m", "Radius (m)"),
+    ("region", "Material region"),
+    ("node_class", "Node class"),
+    ("concentration_mol_m3", "Concentration (mol/m^3)"),
+];
+
+/// Columns of the independent-check CSV of the regression suite.
+pub const CHECK_COLUMNS: [Column; 10] = [
+    ("t_s", "Time (s)"),
+    (
+        "f_btcs",
+        "Release fraction computed by BTCS (dimensionless)",
+    ),
+    (
+        "f_reference",
+        "Release fraction of the independent reference (dimensionless)",
+    ),
+    (
+        "abs_difference",
+        "Absolute difference of the release fractions (dimensionless)",
+    ),
+    (
+        "time_error_estimate",
+        "Time-discretisation error estimate (dimensionless)",
+    ),
+    (
+        "space_error_estimate",
+        "Space-discretisation error estimate (dimensionless)",
+    ),
+    (
+        "reference_floor_3x",
+        "Three times the reference accuracy floor (dimensionless)",
+    ),
+    ("tolerance", "Derived tolerance (dimensionless)"),
+    (
+        "abs_difference_over_tolerance",
+        "Absolute difference divided by tolerance (dimensionless)",
+    ),
+    ("passed", "Check passed (true or false)"),
+];
+
+/// The CSV header line of a column table.
+pub fn header_line(columns: &[Column]) -> String {
+    let mut s = columns.iter().map(|c| c.1).collect::<Vec<_>>().join(",");
+    s.push('\n');
+    s
+}
+
+/// The machine key of a descriptive header, over all column tables.
+pub fn key_of_header(header: &str) -> Option<&'static str> {
+    SERIES_COLUMNS
+        .iter()
+        .chain(PROFILE_COLUMNS.iter())
+        .chain(CHECK_COLUMNS.iter())
+        .find(|c| c.1 == header)
+        .map(|c| c.0)
 }
 
 /// Canonical text of the validated input: one `key=value` line per quantity, numbers in the
@@ -120,6 +236,12 @@ fn comment_header(prov: &Provenance, what: &str) -> String {
     let _ = writeln!(s, "# species: {}", one_line(&prov.species));
     let _ = writeln!(s, "# input_file: {}", one_line(&prov.input_file));
     let _ = writeln!(s, "# input_sha256: {}", prov.input_sha256);
+    let _ = writeln!(
+        s,
+        "# parameter_source: {}",
+        one_line(&prov.parameter_source)
+    );
+    let _ = writeln!(s, "# parameter_class: {}", one_line(&prov.parameter_class));
     s
 }
 
@@ -127,11 +249,11 @@ fn one_line(s: &str) -> String {
     s.replace(['\n', '\r'], " ")
 }
 
-/// Time series as CSV. Columns (units in the names): `t_s`, `inventory_mol`,
-/// `cumulative_release_mol`, `release_fraction`, `release_rate_mol_s` (empty at `t = 0`),
-/// `balance_residual_mol`, `balance_residual_relative`, `balance_residual_bound_mol`,
-/// `min_concentration_mol_m3`, `max_concentration_mol_m3`. `balance_residual_bound_mol` is the
-/// derived a-posteriori rounding bound reported beside the observed residual.
+/// Time series as CSV. The header row is [`SERIES_COLUMNS`]: the full physical name with its
+/// unit of time, remaining inventory, cumulative release, release fraction, release rate
+/// (empty at `t = 0`), mass-balance residual, its relative value, the derived a-posteriori
+/// rounding bound reported beside the observed residual, and the minimum and maximum
+/// concentration.
 ///
 /// # Errors
 ///
@@ -142,11 +264,7 @@ pub fn timeseries_csv(
     initial_inventory: f64,
 ) -> Result<String> {
     let mut s = comment_header(prov, "time series");
-    s.push_str(
-        "t_s,inventory_mol,cumulative_release_mol,release_fraction,release_rate_mol_s,\
-         balance_residual_mol,balance_residual_relative,balance_residual_bound_mol,\
-         min_concentration_mol_m3,max_concentration_mol_m3\n",
-    );
+    s.push_str(&header_line(&SERIES_COLUMNS));
     for (t, row) in series {
         let rate = match row.release_rate {
             Some(r) => num(r)?,
@@ -181,9 +299,10 @@ fn class_and_region(grid: &Grid, i: usize) -> (&'static str, String) {
     }
 }
 
-/// Radial profiles as CSV, one block of `N + 1` rows per snapshot. Columns: `t_s`,
-/// `node_index`, `r_m`, `region` (material of an interior node; `inner|outer` at an interface
-/// node), `node_class` (`centre`, `interior`, `interface`, `outer`), `concentration_mol_m3`.
+/// Radial profiles as CSV, one block of `N + 1` rows per snapshot. The header row is
+/// [`PROFILE_COLUMNS`]: time, node index, radius, material region (the material of an interior
+/// node; `inner|outer` at an interface node), node class (`centre`, `interior`, `interface`,
+/// `outer`) and concentration.
 /// The centre value is reported from its own row and carries no inventory; the outer node is
 /// zero by (F18).
 ///
@@ -196,7 +315,7 @@ pub fn profile_csv(
     snapshots: &[(f64, Vec<f64>)],
 ) -> Result<String> {
     let mut s = comment_header(prov, "radial concentration profiles");
-    s.push_str("t_s,node_index,r_m,region,node_class,concentration_mol_m3\n");
+    s.push_str(&header_line(&PROFILE_COLUMNS));
     for (t, c) in snapshots {
         if c.len() != grid.n + 1 {
             bail!(
@@ -253,7 +372,10 @@ fn json_arr(values: &[f64]) -> Result<String> {
     Ok(s)
 }
 
-/// The whole run as one JSON object: `provenance`, `label`, `input`, `grid`, `run`
+/// The whole run as one JSON object: `provenance` (with the source row and class of the
+/// physical parameters), `label`, `input`, `parameters` (each with full name, unit, source row
+/// and class), `column_dictionary` (the descriptive header of every machine key used in
+/// `series` and in the CSV files), `grid`, `run`
 /// (including the matrix and pivot diagnostics), `diagnostics` (series-level properties),
 /// `series` (column arrays, `release_rate_mol_s` has `null` at `t = 0`) and `snapshots`
 /// (profiles with the inventory of each material).
@@ -269,14 +391,16 @@ pub fn run_json(prov: &Provenance, input: &ValidatedInput, run: &RunResult) -> R
     // Provenance and label.
     let _ = writeln!(
         s,
-        "\"provenance\":{{\"solver\":{},\"package_version\":{},\"commit\":{},\"case\":{},\"species\":{},\"input_file\":{},\"input_sha256\":{}}},",
+        "\"provenance\":{{\"solver\":{},\"package_version\":{},\"commit\":{},\"case\":{},\"species\":{},\"input_file\":{},\"input_sha256\":{},\"parameter_source\":{},\"parameter_class\":{}}},",
         json_str(&prov.solver),
         json_str(&prov.package_version),
         json_str(&prov.commit),
         json_str(&prov.case_name),
         json_str(&prov.species),
         json_str(&prov.input_file),
-        json_str(&prov.input_sha256)
+        json_str(&prov.input_sha256),
+        json_str(&prov.parameter_source),
+        json_str(&prov.parameter_class)
     );
     let _ = writeln!(s, "\"label\":{},", json_str(LABEL));
     // Input.
@@ -296,6 +420,43 @@ pub fn run_json(prov: &Provenance, input: &ValidatedInput, run: &RunResult) -> R
         num(input.dt)?,
         input.steps,
         input.output_every
+    );
+    // Parameters with full names, units, source row and class (decision 31).
+    let mut params = Vec::new();
+    for (k, region) in Region::ALL.iter().enumerate() {
+        let name = region.name();
+        params.push(param_json(
+            &format!("Outer radius of the {name} region (m)"),
+            &num(input.radii[k])?,
+            &prov.parameter_source,
+            &prov.parameter_class,
+        ));
+        params.push(param_json(
+            &format!("Diffusion coefficient in the {name} region (m^2/s)"),
+            &num(input.d[k])?,
+            &prov.parameter_source,
+            &prov.parameter_class,
+        ));
+    }
+    params.push(param_json(
+        "Initial kernel concentration (mol/m^3)",
+        &num(input.c_init)?,
+        &prov.parameter_source,
+        &prov.parameter_class,
+    ));
+    let setting = "numerical setting chosen by the user";
+    params.push(param_json(
+        "Time step (s)",
+        &num(input.dt)?,
+        setting,
+        "numerical setting",
+    ));
+    let _ = writeln!(s, "\"parameters\":[{}],", params.join(","));
+    let _ = writeln!(
+        s,
+        "\"column_dictionary\":{{\"series\":{},\"profile\":{}}},",
+        dictionary_json(&SERIES_COLUMNS),
+        dictionary_json(&PROFILE_COLUMNS)
     );
     // Grid.
     let _ = writeln!(
@@ -393,6 +554,24 @@ pub fn run_json(prov: &Provenance, input: &ValidatedInput, run: &RunResult) -> R
     }
     s.push_str("\n]\n}\n");
     Ok(s)
+}
+
+fn param_json(name: &str, value: &str, source: &str, class: &str) -> String {
+    format!(
+        "{{\"name\":{},\"value\":{},\"source\":{},\"class\":{}}}",
+        json_str(name),
+        value,
+        json_str(source),
+        json_str(class)
+    )
+}
+
+fn dictionary_json(columns: &[Column]) -> String {
+    let parts: Vec<String> = columns
+        .iter()
+        .map(|c| format!("{}:{}", json_str(c.0), json_str(c.1)))
+        .collect();
+    format!("{{{}}}", parts.join(","))
 }
 
 fn json_arr_str(items: &[&str]) -> String {
@@ -548,6 +727,8 @@ mod tests {
         assert!(csv.contains("# commit: abc1234"));
         assert!(csv.contains("# label: numerical solution of the stated model"));
         assert!(!csv.contains("some/dir") && !csv.contains('\\'));
+        assert!(csv.contains("\nTime (s),Remaining inventory (mol),"));
+        assert!(csv.contains("# parameter_source: input file as supplied"));
         let rows = data_rows(&csv);
         assert_eq!(rows.len(), run.series.len());
         for (row, (t, d)) in rows.iter().zip(&run.series) {
@@ -619,6 +800,18 @@ mod tests {
             assert_eq!(v.unwrap().to_bits(), x.to_bits());
         }
         assert!(json.contains("\"commit\":\"abc1234\""));
+        assert!(json.contains("\"t_s\":\"Time (s)\""));
+        assert!(json.contains("\"name\":\"Diffusion coefficient in the Kernel region (m^2/s)\""));
+        assert!(json.contains("\"class\":\"user-supplied value, no source class recorded\""));
+        let synthetic = prov
+            .clone()
+            .with_parameter_source(SYNTHETIC_SOURCE, "synthetic benchmark");
+        let sj = run_json(&synthetic, &input, &run).unwrap();
+        assert!(sj.contains("\"source\":\"synthetic benchmark, not literature data\""));
+        for (key, header) in SERIES_COLUMNS.iter().chain(PROFILE_COLUMNS.iter()) {
+            assert_eq!(key_of_header(header), Some(*key));
+            assert!(!header.contains(','));
+        }
         assert!(json.contains("export \\\"test\\\", case"));
         assert!(
             !json.contains("some/dir")

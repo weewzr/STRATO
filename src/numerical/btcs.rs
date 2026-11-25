@@ -586,8 +586,10 @@ mod tests {
     #[test]
     fn production_solve_matches_general_tridiagonal_module() {
         // Decision 5: the production path is the F24 form; the general module is the
-        // cross-check. Pre-registered bound: two backward-stable solves of an M-matrix with
-        // ||A^-1||_inf <= 1 differ by at most 2 x 4 u ||A||_inf ||x||_inf; safety factor 2.
+        // cross-check. Bound: each of the two solves has backward error |dA| <= gamma_5 |A|
+        // (Higham, Section 9.6; see one_step_matches_dense_solve), so with ||A^-1||_inf <= 1
+        // they differ by at most 2 gamma_5 ||A||_inf ||x||_inf, i.e. 10 u ||A|| ||x|| to first
+        // order; the constant 16 u used here has a margin of 1.6 over that.
         for (counts, dt) in [([6, 5, 4, 5, 4], 200.0), ([20, 20, 20, 20, 20], 1.0e5)] {
             let (g, mut s) = stepper_for(counts, dt);
             let (mut c_old, _, _) = initial_vector(&g, 1.0);

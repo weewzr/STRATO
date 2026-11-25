@@ -37,10 +37,11 @@ pub type TimeSeries = Vec<(f64, StepDiagnostics)>;
 /// Derivation (recorded before it was used, in `tests/btcs_verification.rs`): the identity
 /// (F29) follows by summing the exact-form rows (F10) over `i = 1 ..= N-1`. The computed
 /// solution satisfies the stored rows up to the backward error of tridiagonal elimination,
-/// `|delta_i| <= 4u (|A||x|)_i` (Higham, LU of a diagonally dominant tridiagonal matrix), and
+/// `|delta_i| <= gamma_5 (|A||x|)_i`, `gamma_5 = 5u / (1 - 5u)` (Higham, Section 9.6:
+/// `|dA| <= (4u + O(u^2)) |L||U| <= gamma_5 |A|` for this M-matrix), and
 /// the stored entries differ from the exact `-dt K / V` and `1 - L - U` by at most `2u`
-/// relative. Hence per step `|Delta eps| <= 4 pi (4u + 2u) sum_i V_i (|A||x|)_i`; the constant
-/// used is `16 u` (a safety factor of about 2.7 over `6 u`). The final rounding of `M^j` (`N`
+/// relative. Hence per step `|Delta eps| <= 4 pi (5u + 2u) sum_i V_i (|A||x|)_i`; the constant
+/// used is `16 u` (a safety factor of about 2.3 over `7 u`). The final rounding of `M^j` (`N`
 /// terms), of `dt Phi` (three products) and of the compensated sum adds `(N + 8) u M^0`.
 /// `u = 2^-53`. This is a bound derived from the operation count, not a rigorous proof, and
 /// nothing about it is tightened empirically (coordinator decision 6).

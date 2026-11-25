@@ -605,11 +605,12 @@ fn interfaces_concentration_and_flux_continuity() {
 /// Rounding analysis (Document 2 7.4 asks that Fo and the step count enter): the identity
 /// (F29) follows by summing the exact-form rows (F10) over `i = 1 ..= N-1`. The computed
 /// `x` satisfies the stored rows up to the backward error of tridiagonal elimination,
-/// `|delta_i| <= 4u (|A||x|)_i` (Higham, LU of a diagonally dominant tridiagonal matrix),
+/// `|delta_i| <= gamma_5 (|A||x|)_i`, `gamma_5 = 5u / (1 - 5u)` (Higham, Section 9.6: `|dA| <=
+/// (4u + O(u^2)) |L||U| <= gamma_5 |A|` for this M-matrix, as in the tridiagonal tests),
 /// and the stored entries differ from the exact `-dt K / V` and `1 - L - U` by at most
 /// `2u` relative (two roundings; `B` by `2u B`). Hence per step
-/// `|Delta eps| <= 4 pi (4u + 2u) sum_i V_i (|A||x|)_i`; the constant used is 16u (a safety
-/// factor of about 2.7 over 6u). The final rounding of `M^j` (N terms), of `dt Phi`
+/// `|Delta eps| <= 4 pi (5u + 2u) sum_i V_i (|A||x|)_i`; the constant used is 16u (a safety
+/// factor of about 2.3 over 7u). The final rounding of `M^j` (N terms), of `dt Phi`
 /// (three products) and of the compensated sum adds `(N + 8) u M^0`. This is fixed before
 /// any run and replaces the heuristic `u N sqrt(steps)` of the verification plan, which
 /// omits Fo (it failed at n = 20 by a factor 65; recorded in the results file).

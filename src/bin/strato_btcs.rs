@@ -14,13 +14,16 @@
 //!
 //! ```text
 //! strato-btcs <input.toml> [--out DIR] [--snapshots T1,T2,...] [--commit HASH]
+//!                          [--parameter-source TEXT] [--parameter-class TEXT]
 //!                          [--max-nodes N] [--max-steps N]
 //! ```
 //!
 //! `--out` defaults to the `[output] directory` of the input. Snapshots default to the start
 //! and the end of the run; each requested time is served by the nearest step, never
 //! interpolated. `--commit` (or the environment variable `STRATO_BUILD_COMMIT`, or a compile
-//! time value of it) records the source commit in the headers.
+//! time value of it) records the source commit in the headers. The TOML format carries no
+//! source row, so the exported parameters say so unless `--parameter-source` and
+//! `--parameter-class` give the source row and class (decision 31); nothing is guessed.
 
 use anyhow::{bail, Context, Result};
 use std::{env, fs, path::Path};
@@ -49,13 +52,15 @@ fn main() -> Result<()> {
     let mut args: Vec<String> = env::args().skip(1).collect();
     if args.iter().any(|a| a == "-h" || a == "--help") {
         println!(
-            "usage: strato-btcs <input.toml> [--out DIR] [--snapshots T1,T2,...] [--commit HASH] [--max-nodes N] [--max-steps N]"
+            "usage: strato-btcs <input.toml> [--out DIR] [--snapshots T1,T2,...] [--commit HASH] [--parameter-source TEXT] [--parameter-class TEXT] [--max-nodes N] [--max-steps N]"
         );
         return Ok(());
     }
     let out_dir = take_value(&mut args, "--out")?;
     let snapshots_arg = take_value(&mut args, "--snapshots")?;
     let commit_arg = take_value(&mut args, "--commit")?;
+    let source_arg = take_value(&mut args, "--parameter-source")?;
+    let class_arg = take_value(&mut args, "--parameter-class")?;
     let max_nodes = take_value(&mut args, "--max-nodes")?
         .map(|v| v.parse::<usize>().context("--max-nodes"))
         .transpose()?
@@ -106,7 +111,12 @@ fn main() -> Result<()> {
     let commit = commit_arg
         .or_else(|| env::var("STRATO_BUILD_COMMIT").ok())
         .unwrap_or_else(|| build_commit().to_string());
-    let prov = Provenance::new(&cfg, &input, &input_path, &commit);
+    let mut prov = Provenance::new(&cfg, &input, &input_path, &commit);
+    if source_arg.is_some() || class_arg.is_some() {
+        let source = source_arg.unwrap_or_else(|| prov.parameter_source.clone());
+        let class = class_arg.unwrap_or_else(|| prov.parameter_class.clone());
+        prov = prov.with_parameter_source(&source, &class);
+    }
 
     let dir = out_dir.unwrap_or_else(|| cfg.output.directory.clone());
     fs::create_dir_all(&dir).with_context(|| format!("creating {dir}"))?;

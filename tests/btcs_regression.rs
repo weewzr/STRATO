@@ -16,6 +16,7 @@
 use std::{fs, path::PathBuf};
 use strato::{
     config::Config,
+    postprocessing::export::key_of_header,
     validation::regression::{generate, independent_check, Case, CASES, RTOL},
 };
 
@@ -63,6 +64,16 @@ fn table(text: &str) -> (Vec<String>, Vec<Vec<f64>>) {
     (header, rows)
 }
 
+/// Cells of the data rows of a CSV text as strings (comment lines and the header skipped).
+fn text_cells(text: &str) -> Vec<Vec<String>> {
+    let mut r = csv::ReaderBuilder::new()
+        .comment(Some(b'#'))
+        .from_reader(text.as_bytes());
+    r.records()
+        .map(|rec| rec.unwrap().iter().map(str::to_string).collect())
+        .collect()
+}
+
 fn close(a: f64, b: f64, scale: f64) -> bool {
     if a.is_nan() || b.is_nan() {
         return a.is_nan() && b.is_nan();
@@ -70,9 +81,17 @@ fn close(a: f64, b: f64, scale: f64) -> bool {
     (a - b).abs() <= RTOL * scale.max(a.abs()).max(b.abs())
 }
 
+/// Position of the column with the machine key `key` (headers are the descriptive names).
+fn col_of(header: &[String], key: &str) -> usize {
+    header
+        .iter()
+        .position(|h| key_of_header(h) == Some(key))
+        .unwrap_or_else(|| panic!("no column {key}"))
+}
+
 /// Scale of column `name` in a table, from the frozen values.
 fn scale_of(name: &str, header: &[String], rows: &[Vec<f64>]) -> f64 {
-    let col = |n: &str| header.iter().position(|h| h == n).unwrap();
+    let col = |n: &str| col_of(header, n);
     let max_abs = |n: &str| {
         rows.iter()
             .map(|r| r[col(n)])
@@ -100,6 +119,8 @@ fn scale_of(name: &str, header: &[String], rows: &[Vec<f64>]) -> f64 {
 fn compare(label: &str, frozen: &str, fresh: &str) -> Result<(), String> {
     let (hf, rf) = table(frozen);
     let (hn, rn) = table(fresh);
+    let frozen_text = text_cells(frozen);
+    let fresh_text = text_cells(fresh);
     if hf != hn {
         return Err(format!("{label}: columns differ: {hf:?} vs {hn:?}"));
     }
@@ -110,8 +131,18 @@ fn compare(label: &str, frozen: &str, fresh: &str) -> Result<(), String> {
             rn.len()
         ));
     }
-    for (j, name) in hf.iter().enumerate() {
-        if matches!(name.as_str(), "region" | "node_class") {
+    for (j, header) in hf.iter().enumerate() {
+        let name = key_of_header(header).unwrap_or_else(|| panic!("unknown header {header}"));
+        if matches!(name, "region" | "node_class") {
+            // Text columns are compared exactly.
+            for (i, (a, b)) in frozen_text.iter().zip(&fresh_text).enumerate() {
+                if a[j] != b[j] {
+                    return Err(format!(
+                        "{label}: row {i}, column {name}: frozen {} vs fresh {}",
+                        a[j], b[j]
+                    ));
+                }
+            }
             continue;
         }
         let scale = scale_of(name, &hf, &rf);
@@ -153,7 +184,7 @@ fn comparison_rejects_a_perturbed_value_negative_control() {
     // Change one release fraction in the middle of the fresh text by a relative 1e-9.
     let mut lines: Vec<String> = fresh.timeseries.lines().map(str::to_string).collect();
     let data: Vec<usize> = (0..lines.len())
-        .filter(|&i| !lines[i].starts_with('#') && !lines[i].starts_with("t_s"))
+        .filter(|&i| !lines[i].starts_with('#') && !lines[i].starts_with("Time (s),"))
         .collect();
     let k = data[data.len() / 2];
     let mut cells: Vec<String> = lines[k].split(',').map(str::to_string).collect();
@@ -178,20 +209,23 @@ fn independent_checks_pass_live_and_match_the_recorded_ones() {
                 r.abs_difference,
                 r.tolerance
             );
-            // The tolerance is made of three non-negative terms and is not vacuous: the
-            // difference is within a small multiple of the discretisation estimate.
-            assert!(
-                r.tolerance > 0.0 && r.tolerance < 0.1,
-                "{}: tolerance {}",
-                case.id,
-                r.tolerance
+            // The tolerance is exactly the sum of the three derived terms of rule R2 (no
+            // other constant enters; the sum is evaluated in the same order, so it is
+            // bit-identical) and every term is non-negative.
+            assert!(r.time_error_estimate >= 0.0 && r.space_error_estimate >= 0.0);
+            assert!(r.reference_floor_3x >= 0.0);
+            assert_eq!(
+                r.tolerance.to_bits(),
+                (r.time_error_estimate + r.space_error_estimate + r.reference_floor_3x).to_bits(),
+                "{}: tolerance is not the derived sum",
+                case.id
             );
         }
         // The recorded independent check is the same computation: same reference values.
         let frozen = fs::read_to_string(golden(case, "independent_check.csv")).unwrap();
         let (header, rows) = table(&frozen);
         assert_eq!(rows.len(), report.rows.len());
-        let col = |n: &str| header.iter().position(|h| h == n).unwrap();
+        let col = |n: &str| col_of(&header, n);
         for (row, live) in rows.iter().zip(&report.rows) {
             assert!(close(row[col("t_s")], live.t, 1.0));
             assert!(close(row[col("f_reference")], live.f_reference, 1.0));
