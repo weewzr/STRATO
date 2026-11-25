@@ -209,7 +209,7 @@ the Fourier number D t / R^2, with R the outer radius, is 0.1 for the whole sphe
 is a numerical verification case, not physical data. The orders printed are observed between neighbouring levels; they are reported, not required to meet a target
 </text>
 <text x="24" y="608" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-(decision 7). Solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit e483c9b8869214fea88352ee9debebfa66f904ba. The case is a numerical
+(decision 7). Solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit e56497225849397d8961bb0d032f885ecfb8fc0e. The case is a numerical
 </text>
 <text x="24" y="626" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 verification case on the registered AGR1-B-M16 radii with the same synthetic diffusion coefficient in all five regions, kernel-only start, absorbing outer surface; the

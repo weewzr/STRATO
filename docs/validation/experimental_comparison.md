@@ -31,7 +31,7 @@ Every one of the 482 rows of the release register has a status that the program 
 
 ## What was run
 
-The solver is the five-layer spherical backward-time centred-space finite-difference solver of the STRATO repository (package version 1.0.1, source commit `e483c9b8869214fea88352ee9debebfa66f904ba`). For every comparable row the program runs it for the registered measured baseline geometry (design `AGR1-B-M16`), with each layer's diffusion coefficient evaluated at the test temperature from the registered published heating-test correlation, chosen by the selection function of the `strato-data` crate (decisions 16, 39, 40 and 47: the rows of set `C16-T2` for kernel, pyrocarbon and silicon carbide, set `C16-BUF` for the buffer), and reads the release fraction at the time of the measurement. The time is counted from the moment the test temperature is reached. The temperature ramp of the real test (about 31 to 35 h) is not modelled, and the diffusion coefficients are constant, because the solver has constant coefficients; temperature-dependent diffusion, decay and generation are not yet in the solver.
+The solver is the five-layer spherical backward-time centred-space finite-difference solver of the STRATO repository (package version 1.0.1, source commit `e56497225849397d8961bb0d032f885ecfb8fc0e`). For every comparable row the program runs it for the registered measured baseline geometry (design `AGR1-B-M16`), with each layer's diffusion coefficient evaluated at the test temperature from the registered published heating-test correlation, chosen by the selection function of the `strato-data` crate (decisions 16, 39, 40 and 47: the rows of set `C16-T2` for kernel, pyrocarbon and silicon carbide, set `C16-BUF` for the buffer), and reads the release fraction at the time of the measurement. The time is counted from the moment the test temperature is reached. The temperature ramp of the real test (about 31 to 35 h) is not modelled, and the diffusion coefficients are constant, because the solver has constant coefficients; temperature-dependent diffusion, decay and generation are not yet in the solver.
 
 Outer radii (µm) of kernel, buffer, IPyC, SiC and OPyC: 175.0, 278.5, 317.9, 353.2, 394.2 (register rows G-01, G-02, G-03, G-04, G-05). The kernel diameter of the register is 350 µm (the measured value of the kernel batch is 349.7 µm; decision 41 uses a kernel radius of 174.9 µm for its scaling, the register's 175.0 µm gives the factor 0.490 instead of 0.489).
 
@@ -104,7 +104,7 @@ Each row is an inequality: the model's release fraction at the end of the test m
 | E-199 | Cs-134 | 6-2-1 | 1600 | 300 | printed total read as an upper bound | 4.75e-6 | 9.04e-4 | 1.90e2 | EXCEEDS REPORTED UPPER BOUND | 1.08e-6 |
 | E-201 | Cs-134 | 6-4-3 | 1600 | 400 | printed total read as an upper bound | 9.41e-7 | 3.03e-3 | 3.22e3 | EXCEEDS REPORTED UPPER BOUND | 1.57e-6 |
 
-Rows E-028, E-029 name the element only ("Cs"). the row names the element only: compared as elemental caesium with the caesium coefficient rows and without decay (decision 21).
+For rows E-028, E-029, the row is labelled with the element only ("Cs"): it is compared as elemental caesium with the caesium coefficient rows and without decay (decision 21).
 
 ## DATA INCOMPLETE rows with a model value, for scale only
 

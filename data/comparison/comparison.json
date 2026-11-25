@@ -3,7 +3,7 @@
   "provenance": {
     "solver": "STRATO BTCS five-layer spherical finite difference",
     "solver_package_version": "1.0.1",
-    "commit": "e483c9b8869214fea88352ee9debebfa66f904ba",
+    "commit": "e56497225849397d8961bb0d032f885ecfb8fc0e",
     "label": "numerical solution of the stated model; not experimental validation",
     "release_measurements_sha256": "80d14e97b256cb447187cd53d837c3af740145650a5e5efc1f962ff3c5fa305c",
     "arrhenius_sha256": "64a47ef90b9ab1f3e4e6ad9a784232d479468b4d090d16979eb3831674430b55",
@@ -3184,7 +3184,7 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "the row names the element only: compared as elemental caesium with the caesium coefficient rows and without decay (decision 21)"
+          "the row is labelled with the element only (\"Cs\"): it is compared as elemental caesium with the caesium coefficient rows and without decay (decision 21)"
         ],
         "diffusion_coefficients_m2_s": [1.2503921785549537e-13,1e-8,4.062559476131478e-14,9.228940631020239e-17,4.062559476131478e-14]
       },
@@ -3237,7 +3237,7 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "the row names the element only: compared as elemental caesium with the caesium coefficient rows and without decay (decision 21)"
+          "the row is labelled with the element only (\"Cs\"): it is compared as elemental caesium with the caesium coefficient rows and without decay (decision 21)"
         ],
         "diffusion_coefficients_m2_s": [6.975316764853693e-13,1e-8,1.6069812828229939e-13,1.832890105188039e-15,1.6069812828229939e-13]
       },
