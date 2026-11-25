@@ -749,8 +749,8 @@
   display: block;
   font-weight: 600;
 }
-.ref-list__link,
-.refs a {
+.ref-list__item,
+.refs li {
   overflow-wrap: anywhere;
 }
 .ref-list__checked,
