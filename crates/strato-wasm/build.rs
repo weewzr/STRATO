@@ -1,6 +1,6 @@
 //! Build stamp of the wrapper: the version of the `strato` package it wraps and the commit
-//! of the tree it was built from. The commit is passed in by scripts/web/build_wasm.py (and by
-//! scripts/web/generate_data.py for the native precomputed run) through STRATO_BUILD_COMMIT;
+//! of the tree it was built from. The commit is passed in by `strato-webtools build-wasm` (and by
+//! `strato-webtools precomputed` for the native precomputed run) through STRATO_BUILD_COMMIT;
 //! without it the stamp reads "unknown". Nothing here touches the numerics.
 
 use std::{env, fs, path::Path};

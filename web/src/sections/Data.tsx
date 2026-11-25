@@ -6,7 +6,7 @@ import { ParameterProvenance, References } from '../panels/Provenance';
 import { useStrato } from '../state/store';
 import { SectionHeading } from './common';
 
-/** Precomputed native output of the synthetic case (web/public/data, written by scripts/web/generate_data.py). */
+/** Precomputed native output of the synthetic case (web/public/data, written by strato-webtools precomputed). */
 const PRECOMPUTED: { file: string; title: string; text: string }[] = [
   { file: 'synthetic_run.timeseries.csv', title: 'Time series of the native run (CSV)', text: 'inventory, release, release fraction and balance residual at every output time.' },
   { file: 'synthetic_run.final_profile.csv', title: 'Final concentration profile (CSV)', text: 'concentration in every cell at the end time.' },
@@ -88,7 +88,7 @@ export function Data() {
             Guide lines of the convergence plots (CSV)
           </a>
           : the lines of slope 2 and 1 drawn on the convergence plots under Verify, through the coarsest point of each study; written from{' '}
-          <code>convergence_study.json</code> by <code>scripts/web/generate_data.py figures</code>. A reading aid, not a result.
+          <code>convergence_study.json</code> by <code>strato-webtools figures</code>. A reading aid, not a result.
         </li>
         <li>
           <a href={`${import.meta.env.BASE_URL}data/agr1_reference_geometry.csv`} download data-testid="download-agr1-geometry">
@@ -96,12 +96,12 @@ export function Data() {
           </a>
           : the registered kernel diameter and coating thicknesses of each AGR-1 set with row ids, status, source, location in the
           source and public link where the register holds one, and the outer radii drawn by the reference view; written from{' '}
-          <code>data/geometry/geometry.csv</code> by <code>scripts/web/generate_data.py geometry</code>. Registered geometry, not a
+          <code>data/geometry/geometry.csv</code> by <code>strato-webtools geometry</code>. Registered geometry, not a
           simulation.
         </li>
       </ul>
       <p>
-        The precomputed files are written by <code>scripts/web/precompute.sh</code> from the native release build of STRATO; each starts with
+        The precomputed files are written by <code>strato-webtools precomputed</code> from the native release build of STRATO; each starts with
         a provenance header (generator, STRATO version, commit, input file and its SHA-256, command, toolchain), and continuous integration
         regenerates them and fails if they differ. In every generated file, including the AGR-1 geometry file, the commit in the header is
         the source commit the file was generated from: a file cannot record the commit that contains it. The AGR-1 geometry file and the

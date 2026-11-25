@@ -10,8 +10,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "check:catalogue": "node scripts/check_catalogue.mjs",
-    "build": "node scripts/check_catalogue.mjs && node scripts/check_wasm_pkg.mjs && tsc -p tsconfig.json --noEmit && vite build",
+    "check:catalogue": "cargo run --locked --release --quiet --manifest-path ../crates/Cargo.toml -p strato-webtools -- check-catalogue --root ..",
+    "build": "npm run check:catalogue && node scripts/check_wasm_pkg.mjs && tsc -p tsconfig.json --noEmit && vite build",
     "preview": "vite preview --port 4173 --strictPort",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
