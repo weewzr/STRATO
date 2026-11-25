@@ -249,7 +249,10 @@ fn the_bound_reproduces_the_recorded_values_at_n20() {
     let b = &v["balance"];
     let max_rel = b["max_abs_residual_relative"].as_f64().unwrap();
     let fb = b["tolerance"]["final_bound_relative"].as_f64().unwrap();
-    assert!(max_rel.is_finite() && max_rel >= 0.0 && max_rel <= fb, "{max_rel:e} vs {fb:e}");
+    assert!(
+        max_rel.is_finite() && max_rel >= 0.0 && max_rel <= fb,
+        "{max_rel:e} vs {fb:e}"
+    );
     assert!(equals_printed(fb, 6.56e-9), "{fb:e}");
 }
 
