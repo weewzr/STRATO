@@ -42,6 +42,24 @@
 //!   observed order of the release fraction to about one (Document 1 Section 7); the control
 //!   passes if the order of the last pair is below 1.5. The result is reported either way.
 //!
+//! # Revisions after the first run (recorded, not hidden)
+//!
+//! The first run failed three checks for reasons in the test design. No tolerance on a solver
+//! quantity was loosened; each change corrects a statement that the test had written wrongly.
+//!
+//! 1. P7: the test asserted that the centre values of two runs with different start centre values
+//!    stay different at every step. Row 0 reads `(1 + 6 Fo) C_0^{j+1} - 6 Fo C_1^{j+1} = C_0^j`,
+//!    so the difference is damped by `1 / (1 + 6 Fo)` per step (`1/13` on this grid) and is below
+//!    rounding after 16 steps. The control now asserts the difference at the first step only.
+//! 2. P12: the rounding allowance of the closed-form comparison (32 u) omitted the rounding of the
+//!    argument `x = pi r / R` of the sine of the exact solution, whose absolute error `4 pi u` is
+//!    amplified by `1 / a` in `sin(x)` near `x = pi` (`a = pi delta / R`). It failed at the coarsest
+//!    grid by 5.4e-15 against 3.5e-15; the allowance is now `32 u + 4 pi u / a`.
+//! 3. P11 row `N-1`: the test asserted the order band 2 +- 0.2. Document 1 states `O(h^2)` for
+//!    that row; on the single-mode solution the leading coefficient carries `u = r C`, which
+//!    vanishes at `R`, so the observed order is 3 (2.99 and 3.53 on the unequal grid, 3.00 and
+//!    3.07 on the uniform grid). The class is held to "at least 2".
+//!
 //! Measured numbers are printed as `BTCS_RESULT|test|quantity|value` lines.
 
 // The loops mirror the index form of the equations (node `i`, node `j`).
