@@ -1,0 +1,690 @@
+//! The report `docs/validation/experimental_comparison.md`, rendered from the results.
+//!
+//! The narrative is fixed text; every number in it, and every table, is computed from the rows,
+//! the runs and the studies of the same run, so the report cannot drift from the files.
+
+use std::fmt::Write as _;
+
+use strato_data::release::TestTemperature;
+use strato_data::Register;
+
+use crate::compare::{Dataset, Eval, RowRecord};
+use crate::data::{Radii, Species};
+use crate::model::Curve;
+use crate::outputs::Prov;
+use crate::status::{measured_text, Status, CATEGORIES, MODEL_LIMITATIONS};
+use crate::studies::{AnalyticSeries, ConvergenceRow, SensitivityRow};
+
+/// Everything the report needs.
+pub struct ReportInput<'a> {
+    /// The registers.
+    pub reg: &'a Register,
+    /// Rows.
+    pub records: &'a [RowRecord],
+    /// Aggregates.
+    pub datasets: &'a [Dataset],
+    /// Sensitivity.
+    pub sensitivity: &'a [SensitivityRow],
+    /// Spatial convergence.
+    pub spatial: &'a [ConvergenceRow],
+    /// Temporal convergence.
+    pub temporal: &'a [ConvergenceRow],
+    /// Curves.
+    pub curves: &'a [(Species, f64, &'a Curve)],
+    /// Analytical series.
+    pub analytic: &'a AnalyticSeries,
+    /// Provenance.
+    pub prov: &'a Prov,
+    /// Geometry.
+    pub geometry: &'a Radii,
+    /// Spatial floor of the temporal study.
+    pub temporal_spatial_floor: f64,
+    /// Description of the verification case.
+    pub homogeneous_note: &'a str,
+    /// Coefficient set notes.
+    pub set_notes: &'a [(String, String)],
+}
+
+fn sci(x: f64) -> String {
+    if x == 0.0 {
+        "0".to_string()
+    } else {
+        format!("{x:.2e}")
+    }
+}
+
+fn pct(x: f64) -> String {
+    format!("{x:.2}")
+}
+
+/// Compress ids such as E-001, E-002, E-003, E-007 into `E-001..E-003, E-007`.
+pub fn compress_ids(ids: &[String]) -> String {
+    let parsed: Vec<(String, u32, usize)> = ids
+        .iter()
+        .map(|id| {
+            let (prefix, num) = id.rsplit_once('-').unwrap_or((id.as_str(), "0"));
+            (
+                prefix.to_string(),
+                num.parse::<u32>().unwrap_or(0),
+                num.len(),
+            )
+        })
+        .collect();
+    let mut out: Vec<String> = Vec::new();
+    let mut k = 0;
+    while k < parsed.len() {
+        let mut j = k;
+        while j + 1 < parsed.len()
+            && parsed[j + 1].0 == parsed[k].0
+            && parsed[j + 1].1 == parsed[j].1 + 1
+        {
+            j += 1;
+        }
+        let fmt = |i: usize| format!("{}-{:0w$}", parsed[i].0, parsed[i].1, w = parsed[i].2);
+        if j == k {
+            out.push(fmt(k));
+        } else if j == k + 1 {
+            out.push(format!("{}, {}", fmt(k), fmt(j)));
+        } else {
+            out.push(format!("{}..{}", fmt(k), fmt(j)));
+        }
+        k = j + 1;
+    }
+    out.join(", ")
+}
+
+fn temperature_cell(r: &RowRecord) -> String {
+    match &r.row.temperature {
+        TestTemperature::Celsius(p) => p.text.clone(),
+        TestTemperature::Range { lo, hi } => format!("{}-{}", lo.text, hi.text),
+        TestTemperature::Varied { lo, hi } => format!("varied {}-{}", lo.text, hi.text),
+        TestTemperature::Absent => "n/a".to_string(),
+    }
+}
+
+/// Render the report.
+#[allow(clippy::too_many_lines)]
+pub fn render(inp: &ReportInput<'_>) -> String {
+    let mut s = String::new();
+    let rec = inp.records;
+    let n = rec.len();
+    let count = |st: Status| rec.iter().filter(|r| r.status == st).count();
+
+    // ---- Mandatory disclosure -------------------------------------------------------------
+    let _ = writeln!(
+        s,
+        "# Experimental Comparison: Data Interpretation and Limitations\n"
+    );
+    let _ = writeln!(
+        s,
+        "STRATO simulates how a fission product moves through one ideal TRISO particle: a kernel and four coating layers (buffer, inner pyrocarbon, silicon carbide, outer pyrocarbon) in perfect contact, with every atom starting in the kernel. The AGR-1 experiments did not measure single particles. Almost every AGR-1 value is for a compact, a small cylinder that holds 4145 particles in a graphite matrix; one particle holds about 2.4 in 10,000 (2.4e-4) of a compact. Many particles in a compact release almost nothing and a few may release a lot.\n"
+    );
+    let _ = writeln!(
+        s,
+        "Some measurements are only upper bounds, written with \"<\". They say that the release was at most that large, and this report treats them as inequalities, never as measured values. Most values were read from published figures, so they carry the reading uncertainty of the register, and none of the rows that were compared carries a measurement uncertainty published by its source. This report does not make one up: where an uncertainty is missing, it says so, and no error bar is drawn.\n"
+    );
+    let _ = writeln!(
+        s,
+        "Real release also depends on things this model does not contain: what the fuel went through in the reactor before the heating test (the irradiation history and the inventory profile at its end), silver and other products that were already outside the SiC layer before the test, transport through the graphite matrix, particles with broken coating layers, and the temperature ramps of the real tests. For silver, strontium and europium, the register cites published work that attributes most of the release to the time in the reactor. For those, most compact values do not describe diffusion out of an intact particle during the test, and this report marks them NOT DIRECTLY COMPARABLE.\n"
+    );
+    let _ = writeln!(
+        s,
+        "The comparisons here are meant to show how the model's release behaves and how far it is from the data. They quantify deviations; they do not by themselves establish a direct single-particle validation. A comparison, even a close one, would not validate the model on single particles. A large deviation stays visible. The accuracy of the solver itself (its numerical verification) is a separate question and is shown in the sections on verification below. Nothing in this report calls the model validated.\n"
+    );
+
+    // ---- Summary -----------------------------------------------------------------------------
+    let _ = writeln!(s, "## Summary of the result\n");
+    let _ = writeln!(
+        s,
+        "Every one of the {n} rows of the release register has a status that the program derives from the row and from the coordinator's decisions (decisions 15 to 24 of the project's decision list). The counts are:\n"
+    );
+    let _ = writeln!(s, "| Status | Rows |\n|---|---:|");
+    for st in Status::ALL {
+        let _ = writeln!(s, "| {} | {} |", st.label(), count(st));
+    }
+    let exceeded: Vec<&RowRecord> = rec
+        .iter()
+        .filter(|r| r.status == Status::ExceedsReportedUpperBound)
+        .collect();
+    let within = count(Status::WithinReportedUpperBound);
+    let ratios: Vec<f64> = rec
+        .iter()
+        .filter_map(|r| match &r.eval {
+            Eval::Bound { margin, .. } => Some(margin.ratio),
+            _ => None,
+        })
+        .collect();
+    let (rmin, rmax) = ratios
+        .iter()
+        .fold((f64::INFINITY, 0.0_f64), |(a, b), x| (a.min(*x), b.max(*x)));
+    let points = rec
+        .iter()
+        .filter(|r| matches!(r.eval, Eval::Point { .. }))
+        .count();
+    let _ = writeln!(s);
+    if ratios.is_empty() {
+        let _ = writeln!(s, "No row supports an upper-bound comparison.\n");
+    } else {
+        let _ = writeln!(
+            s,
+            "- **Upper bounds.** {} rows are read as inequalities (reported bounds of caesium, and caesium compact totals read as bounds, decision 19). The model satisfies {} of them and exceeds {}. Where it exceeds, the model release is between {} and {} times the bound (smallest and largest ratio). These exceedances are shown in the tables and figures; none is hidden.",
+            ratios.len(),
+            within,
+            exceeded.len(),
+            sci(rmin),
+            sci(rmax)
+        );
+    }
+    let _ = writeln!(
+        s,
+        "- **Point comparisons.** {points} rows have the status COMPARISON AVAILABLE as a point value. The only rows that were intended as point values (the matrix-corrected fractions of intact compacts of Cs-134 and Ag-110m, figures 3 and 6 of the source) have a denominator that the register records as *not established*, so by decision 22 they stay DATA INCOMPLETE. Their model values are computed and shown for scale only (provisional values); they enter no status and no aggregate."
+    );
+    let _ = writeln!(
+        s,
+        "- **Sr-90.** No row of Sr-90 supports a comparison: the intact-compact values are totals that include inventory released in the reactor, and the other rows are failed-particle quantities. The Sr-90 panels of the figures show these rows as muted context only."
+    );
+    let _ = writeln!(
+        s,
+        "- **Model limitations of every result.** {}.",
+        MODEL_LIMITATIONS
+    );
+    let _ = writeln!(
+        s,
+        "- **Status of the model.** Nothing here validates the model. The solver is numerically verified elsewhere; this report compares its release behaviour with the data and shows where they differ.\n"
+    );
+
+    // ---- Model ------------------------------------------------------------------------------
+    let _ = writeln!(s, "## What was run\n");
+    let _ = writeln!(
+        s,
+        "The solver is the five-layer spherical backward-time centred-space finite-difference solver of the STRATO repository (package version {}, source commit `{}`). For every comparable row the program runs it for the registered measured baseline geometry (design `{}`), with each layer's diffusion coefficient evaluated at the test temperature from the registered published heating-test correlation (decisions 16 and 39: set `C16-T2` for kernel, pyrocarbon and silicon carbide, set `C16-BUF` for the buffer), and reads the release fraction at the time of the measurement. The time is counted from the moment the test temperature is reached. The temperature ramp of the real test (about 31 to 35 h) is not modelled, and the diffusion coefficients are constant, because the solver has constant coefficients; temperature-dependent diffusion, decay and generation are not yet in the solver.\n",
+        inp.prov.solver_version,
+        inp.prov.commit,
+        crate::data::GEOMETRY_DESIGN
+    );
+    let r = inp.geometry.outer_m;
+    let _ = writeln!(
+        s,
+        "Outer radii (um) of kernel, buffer, IPyC, SiC and OPyC: {:.1}, {:.1}, {:.1}, {:.1}, {:.1} (register rows {}). The kernel diameter of the register is 350 um (the measured value of the kernel batch is 349.7 um; decision 41 uses a kernel radius of 174.9 um for its scaling, the register's 175.0 um gives the factor 0.490 instead of 0.489).\n",
+        r[0] * 1e6,
+        r[1] * 1e6,
+        r[2] * 1e6,
+        r[3] * 1e6,
+        r[4] * 1e6,
+        inp.geometry.row_ids.join(", ")
+    );
+    let _ = writeln!(s, "Coefficient sets used by default:\n");
+    for (_, note) in inp.set_notes {
+        let _ = writeln!(s, "- {note}");
+    }
+    let _ = writeln!(
+        s,
+        "\nAll rows of these sets are of class *published PARFUME correlation*, phase *heating test*. The kernel values are UO2 surrogates: no UCO kernel measurement exists (decision 40). The coefficient classes and the states of the rows (verified or under source review) are as the register records them at the merged data commit.\n"
+    );
+    let _ = writeln!(
+        s,
+        "Diffusion coefficients (m^2/s) at the test temperatures:\n"
+    );
+    let _ = writeln!(s, "| Nuclide | Temperature (degC) | Kernel | Buffer | IPyC | SiC | OPyC |\n|---|---:|---:|---:|---:|---:|---:|");
+    for (sp, t, c) in inp.curves {
+        let d = c.d_m2_s;
+        let _ = writeln!(
+            s,
+            "| {} | {:.0} | {} | {} | {} | {} | {} |",
+            sp.nuclide(),
+            t,
+            sci(d[0]),
+            sci(d[1]),
+            sci(d[2]),
+            sci(d[3]),
+            sci(d[4])
+        );
+    }
+    let st = crate::model::Settings::BASE;
+    let _ = writeln!(
+        s,
+        "\nNumerical settings of the base runs: intervals per layer {:?}, requested time step {} h; the numerical difference reported beside every model value is the difference to a run with twice the intervals and half the step. Metrics are those of directive section 13 (absolute deviation, relative percentage deviation, RMSE, MAE, maximum absolute deviation, uncertainty-normalised residual) plus the signed log10 ratio and the log-space RMSE (decision 18). Relative deviation is undefined for a measured value that is not positive, and no near-zero floor is applied because no row states a detection floor (decision 17). No accuracy threshold is used anywhere.\n",
+        st.intervals, st.dt_h
+    );
+
+    // ---- Status table ------------------------------------------------------------------------
+    let _ = writeln!(
+        s,
+        "## Status of every row: the rules and the incompatible rows\n"
+    );
+    let _ = writeln!(
+        s,
+        "The rules run in this order and the first that applies decides. A status is never computed from a deviation.\n"
+    );
+    let _ = writeln!(
+        s,
+        "| Rule | Status | Rows | Reason | Register rows |\n|---|---|---:|---|---|"
+    );
+    for (code, meaning) in CATEGORIES.iter().map(|(a, b)| (*a, *b)).chain([
+        ("no_nuclide", "no nuclide named"),
+        ("not_a_single_number", "not a single number"),
+        ("no_rule", "no rule covers the row"),
+    ]) {
+        let ids: Vec<String> = rec
+            .iter()
+            .filter(|r| r.verdict.category == code)
+            .map(|r| r.row.id.clone())
+            .collect();
+        if ids.is_empty() {
+            continue;
+        }
+        let first = rec.iter().find(|r| r.verdict.category == code);
+        let (status, reason) = first.map_or((String::new(), String::new()), |r| {
+            (r.status.label().to_string(), r.verdict.reason.clone())
+        });
+        // Rows of one rule can end in different statuses (bounds); show the verdict text of the rule.
+        let statuses: Vec<&str> = {
+            let mut v: Vec<&str> = rec
+                .iter()
+                .filter(|r| r.verdict.category == code)
+                .map(|r| r.status.label())
+                .collect();
+            v.sort_unstable();
+            v.dedup();
+            v
+        };
+        let _ = writeln!(
+            s,
+            "| `{code}` ({meaning}) | {} | {} | {} | {} |",
+            if statuses.len() > 1 {
+                statuses.join(" / ")
+            } else {
+                status
+            },
+            ids.len(),
+            reason.replace('|', "/"),
+            compress_ids(&ids)
+        );
+    }
+    let _ = writeln!(s);
+
+    // ---- Results -------------------------------------------------------------------------------
+    let _ = writeln!(s, "## Upper-bound comparisons\n");
+    let _ = writeln!(
+        s,
+        "Each row is an inequality: the model's release fraction at the end of the test must not exceed the number. \"Read as\" says how the number came to be a bound: the register states it as a bound, or it is a compact total (mean particle release plus matrix plus background, all non-negative), which for caesium, whose in-pile release is small, is read as an upper bound on release through intact coatings (decision 19; digitised totals are labelled digitised). The model fraction is a fraction of the particle's own inventory; the bound is a fraction of the compact inventory; the two are the same quantity only if the inventory outside the particles is negligible.\n"
+    );
+    let _ = writeln!(
+        s,
+        "| Row | Nuclide | Compact or sample | T (degC) | Time at T (h) | Bound read as | Bound | Model | Model / bound | Status | Numerical difference of the model |\n|---|---|---|---:|---:|---|---:|---:|---:|---|---:|"
+    );
+    for r in rec {
+        if let (
+            Eval::Bound {
+                limit,
+                source,
+                margin,
+            },
+            Some(m),
+        ) = (&r.eval, &r.model)
+        {
+            let _ = writeln!(
+                s,
+                "| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |",
+                r.row.id,
+                measured_text(&r.row),
+                r.row.compact_or_sample,
+                temperature_cell(r),
+                m.spec.t_end_h,
+                source.text(),
+                sci(*limit),
+                sci(m.f_window),
+                sci(margin.ratio),
+                r.status.label(),
+                sci(m.numerical_difference)
+            );
+        }
+    }
+    let _ = writeln!(s);
+
+    let _ = writeln!(
+        s,
+        "## Provisional values: DATA INCOMPLETE, shown for scale\n"
+    );
+    let _ = writeln!(
+        s,
+        "The register does not establish what the matrix-corrected fractions of figures 3 and 6 are fractions of (denominator *not established*, decision 22). The program therefore keeps them DATA INCOMPLETE. To show the scale of the difference without turning it into a comparison, the model's release after the first 24 h at temperature to the end of the test (kernel-only start, assumption of decision 20) is computed and set beside the digitised value. These values enter no status, no aggregate and no metric of a comparison. If a source confirms the denominator, the status changes by editing the one register cell and re-running the program.\n"
+    );
+    let _ = writeln!(
+        s,
+        "| Row | Nuclide | Compact | T (degC) | Window (h at T) | Measured (digitised) | Model | Absolute deviation | Relative deviation (%) | log10 (model / measured) |\n|---|---|---|---:|---|---:|---:|---:|---:|---:|"
+    );
+    for r in rec {
+        if let (Eval::Provisional { value, dev }, Some(m)) = (&r.eval, &r.model) {
+            let _ = writeln!(
+                s,
+                "| {} | {} | {} | {} | {}-{} | {} | {} | {} | {} | {} |",
+                r.row.id,
+                measured_text(&r.row),
+                r.row.compact_or_sample,
+                temperature_cell(r),
+                m.spec.window_start_h,
+                m.spec.t_end_h,
+                sci(*value),
+                sci(m.f_window),
+                sci(dev.absolute),
+                dev.relative_percent
+                    .map_or("undefined".to_string(), |x| format!("{x:.3e}")),
+                dev.log10_ratio
+                    .map_or("undefined".to_string(), |x| format!("{x:.2}"))
+            );
+        }
+    }
+    let _ = writeln!(s);
+
+    let _ = writeln!(s, "## Aggregate metrics per dataset\n");
+    let _ = writeln!(
+        s,
+        "Aggregates are formed per dataset: the same programme, nuclide, group of particles and quantity definition, never across them. Bounds are counted, not averaged into a deviation. Provisional values are aggregated apart and are not a comparison. A group with no point comparison has no RMSE, MAE or maximum: they are undefined, not zero.\n"
+    );
+    let _ = writeln!(
+        s,
+        "| Programme | Nuclide | Group | Quantity | Rows | Bounds (satisfied / exceeded) | Model / bound (smallest, largest) | Provisional n | Provisional RMSE | Provisional MAE | Provisional maximum | Provisional RMSE of log10 ratio |\n|---|---|---|---|---:|---|---|---:|---:|---:|---:|---:|"
+    );
+    for d in inp.datasets {
+        if d.bound.is_none() && d.provisional.is_none() && d.point.is_none() {
+            continue;
+        }
+        let b = d.bound.map_or("-".to_string(), |b| {
+            format!("{} / {}", b.satisfied, b.exceeded)
+        });
+        let br = d.bound.map_or("-".to_string(), |b| {
+            format!("{}, {}", sci(b.ratio_min), sci(b.ratio_max))
+        });
+        let (pn, prmse, pmae, pmax, plog) = match &d.provisional {
+            Some(p) => (
+                p.n.to_string(),
+                sci(p.rmse),
+                sci(p.mae),
+                sci(p.max_absolute),
+                p.rmse_log10
+                    .map_or("undefined".into(), |x| format!("{x:.2}")),
+            ),
+            None => ("0".into(), "-".into(), "-".into(), "-".into(), "-".into()),
+        };
+        let _ = writeln!(
+            s,
+            "| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |",
+            d.program,
+            d.nuclide,
+            d.group,
+            d.quantity,
+            d.row_ids.len(),
+            b,
+            br,
+            pn,
+            prmse,
+            pmae,
+            pmax,
+            plog
+        );
+    }
+    let _ = writeln!(
+        s,
+        "\nDatasets with a point comparison (status COMPARISON AVAILABLE): {}.\n",
+        inp.datasets.iter().filter(|d| d.point.is_some()).count()
+    );
+
+    // ---- Figures -----------------------------------------------------------------------------
+    let _ = writeln!(s, "## Figures\n");
+    let figs = [
+        ("figure_A_release_vs_time.svg", "A. Fraction released versus time at temperature, for the three nuclides at 1600, 1700 and 1800 degC. Lines: BTCS. Plus signs: the independent analytical series of the five-layer problem (the eigenfunction expansion of the repository), at the times where it is usable. Markers: registered measurements, by what they can support (downward triangle: upper bound, hollow when exceeded by the model; hollow diamond: DATA INCOMPLETE; grey cross: NOT DIRECTLY COMPARABLE context). Log scale; no error bars, because no source reports a measurement uncertainty for the plotted rows."),
+        ("figure_B_absolute_deviation.svg", "B. Absolute deviation versus time (provisional values only, because no row has a point comparison) and, beside it, the model over each upper bound (an inequality, not a deviation)."),
+        ("figure_C_relative_deviation.svg", "C. Relative percentage deviation versus time, with the policy for undefined values stated on the figure."),
+        ("figure_D_radial_profiles.svg", "D. Radial concentration profiles through the five layers at selected times, 1600 degC."),
+        ("figure_E_inventory_balance.svg", "E. Inventory balance: remaining inventory and cumulative release (Ag-110m at 1800 degC), and the relative balance residual with its derived rounding bound for the three nuclides. Generated inventory and decay loss are not applicable yet: the solver has neither."),
+        ("figure_F_spatial_convergence.svg", "F. Spatial convergence against the analytical series of a homogeneous verification case."),
+        ("figure_G_temporal_convergence.svg", "G. Temporal convergence on a fixed fine mesh."),
+        ("figure_H_temperature_sensitivity.svg", "H. Temperature sensitivity of the release after 300 h for each registered coefficient variant."),
+    ];
+    for (file, cap) in figs {
+        let _ = writeln!(s, "![{cap}](figures/{file})\n\n*{cap}*\n");
+    }
+    let _ = writeln!(
+        s,
+        "The figures are static SVG files drawn in Rust with the `plotters` crate (pure Rust SVG backend; it is used by the verified solver package for its own figures and is not linked into the WebAssembly wrapper). Each figure names its experimental sources, the solver version and the commit.\n"
+    );
+
+    // ---- Numerical quality -----------------------------------------------------------------
+    let _ = writeln!(s, "## How accurate are the model values?\n");
+    let _ = writeln!(
+        s,
+        "This is numerical accuracy of the solver on the stated model, not agreement with experiment.\n"
+    );
+    let _ = writeln!(s, "Verification case: {}\n", inp.homogeneous_note);
+    let _ = writeln!(s, "Spatial convergence (error of the release fraction at 100 h, time error removed by Richardson extrapolation):\n");
+    let _ = writeln!(s, "| Refinement | Kernel mesh width (m) | Nodes | Error | Observed order |\n|---:|---:|---:|---:|---:|");
+    for c in inp.spatial {
+        let _ = writeln!(
+            s,
+            "| {} | {} | {} | {} | {} |",
+            c.level,
+            sci(c.step),
+            c.count,
+            sci(c.error),
+            c.order.map_or("-".into(), |o| format!("{o:.2}"))
+        );
+    }
+    let _ = writeln!(s, "\nTemporal convergence (fixed fine mesh; the spatial error of that mesh is about {}, the level the curve approaches as the step shrinks):\n", sci(inp.temporal_spatial_floor));
+    let _ = writeln!(s, "| Refinement | Time step (s) | Steps | Error | Observed order |\n|---:|---:|---:|---:|---:|");
+    for c in inp.temporal {
+        let _ = writeln!(
+            s,
+            "| {} | {} | {} | {} | {} |",
+            c.level,
+            sci(c.step),
+            c.count,
+            sci(c.error),
+            c.order.map_or("-".into(), |o| format!("{o:.2}"))
+        );
+    }
+    let _ = writeln!(
+        s,
+        "\nThe observed orders are reported, not required to meet a target (decision 7). On the registered five-layer cases, the base runs differ from the independent analytical series as follows (relative difference in percent; blank where the series is not usable or the release is below 1e-7):\n"
+    );
+    let _ = writeln!(
+        s,
+        "| Nuclide | T (degC) | 10 h | 100 h | 300 h |\n|---|---:|---:|---:|---:|"
+    );
+    for (sp, t, c) in inp.curves {
+        let an = inp.analytic.get(&(*sp, (*t * 10.0).round() as i64));
+        let cell = |h: f64| -> String {
+            let a = an.and_then(|v| {
+                v.iter()
+                    .find(|(x, _)| (*x - h).abs() < 1e-9)
+                    .and_then(|(_, f)| *f)
+            });
+            match (a, c.at(h)) {
+                (Some(a), Some(b)) if a > 1e-7 => pct((b - a) / a * 100.0),
+                _ => String::new(),
+            }
+        };
+        let _ = writeln!(
+            s,
+            "| {} | {:.0} | {} | {} | {} |",
+            sp.nuclide(),
+            t,
+            cell(10.0),
+            cell(100.0),
+            cell(300.0)
+        );
+    }
+    let mut worst = 0.0_f64;
+    for r in rec {
+        if let Some(m) = &r.model {
+            if m.f_window > 0.0 {
+                worst = worst.max(m.numerical_difference / m.f_window);
+            }
+        }
+    }
+    let _ = writeln!(
+        s,
+        "\nFor the rows of this report the largest relative numerical difference between base and refined run is {} (as a fraction of the model value); every deviation discussed below is many times larger.\n",
+        sci(worst)
+    );
+
+    // ---- Sensitivity ---------------------------------------------------------------------------
+    let _ = writeln!(
+        s,
+        "## Temperature sensitivity of the registered correlations\n"
+    );
+    let _ = writeln!(
+        s,
+        "Release fraction after 300 h at temperature (figure H). The default is the published heating-test correlation. The other variants are labelled alternatives, never defaults: the AGR-1 fitted silicon-carbide rows (decision 40; fitted to AGR-1 heating-test data, so they are calibrated to the very data a comparison would use and cannot serve as independent validation), other registered silicon-carbide rows, and the kernel-radius scaling of decision 41. The default correlation prints no validity range; the sweep covers 1600 to 1800 degC, the temperatures the register records for the tests.\n"
+    );
+    let _ = writeln!(s, "| Nuclide | Variant | Class of SiC row | 1600 degC | 1700 degC | 1800 degC |\n|---|---|---|---:|---:|---:|");
+    let mut keys: Vec<(Species, String)> = Vec::new();
+    for r in inp.sensitivity {
+        let k = (r.species, r.variant_id.clone());
+        if !keys.contains(&k) {
+            keys.push(k);
+        }
+    }
+    for (sp, id) in keys {
+        let at = |t: f64| {
+            inp.sensitivity
+                .iter()
+                .find(|r| r.species == sp && r.variant_id == id && (r.t_c - t).abs() < 1.0)
+                .map_or("-".to_string(), |r| sci(r.f_300))
+        };
+        let class = inp
+            .sensitivity
+            .iter()
+            .find(|r| r.species == sp && r.variant_id == id)
+            .map_or(String::new(), |r| r.sic_class.clone());
+        let _ = writeln!(
+            s,
+            "| {} | {} | {} | {} | {} | {} |",
+            sp.nuclide(),
+            id,
+            class,
+            at(1600.0),
+            at(1700.0),
+            at(1800.0)
+        );
+    }
+    let outside = inp
+        .sensitivity
+        .iter()
+        .filter(|r| r.outside_printed_range)
+        .count();
+    let _ = writeln!(
+        s,
+        "\nOf {} sweep points, {} lie outside a printed validity range of a row they use.\n",
+        inp.sensitivity.len(),
+        outside
+    );
+
+    // ---- Discussion ---------------------------------------------------------------------------
+    let _ = writeln!(s, "## Discussion\n");
+    let cs_exceeded = exceeded
+        .iter()
+        .filter(|r| measured_text(&r.row).starts_with("Cs"))
+        .count();
+    let _ = writeln!(
+        s,
+        "**Caesium.** The model exceeds {cs_exceeded} of {} caesium upper bounds, by factors of {} to {} (model over bound). With the published coefficients, evaluated at the test temperature and with no correction, the model predicts far more caesium release than these bounds allow. This is the deviation of the stated model from the data; it is not reduced by anything done here. Possible contributions, none of which this report has tested or established: the published correlations were reported by their source to need multiplicative corrections to match the AGR-1 heating tests (register Table 18, rows CF-6 and CF-3: the factors on the diffusion coefficient of caesium in silicon carbide are 5e-3 to 6e-2 at 1600 degC, and of silver in silicon carbide 2e-4 to 4e-3 for the matrix-corrected values; they are compact-specific, fitted to the data, and are not applied here), the kernel coefficients are UO2 surrogates, the start is kernel-only, the compact values are not single-particle values, and the heating ramps are not modelled.\n",
+        ratios.len(),
+        sci(rmin),
+        sci(rmax)
+    );
+    let f300 = |sp: Species, t: f64| -> f64 {
+        inp.curves
+            .iter()
+            .find(|(s2, t2, _)| *s2 == sp && (*t2 - t).abs() < 1.0)
+            .and_then(|(_, _, c)| c.at(300.0))
+            .unwrap_or(f64::NAN)
+    };
+    let ag_lo = format!("{:.0}", f300(Species::Ag, 1600.0) * 100.0);
+    let ag_hi = format!("{:.0}", f300(Species::Ag, 1800.0) * 100.0);
+    let sr_1600 = format!("{:.1}", f300(Species::Sr, 1600.0) * 100.0);
+    let ag_prov: Vec<&RowRecord> = rec
+        .iter()
+        .filter(|r| {
+            matches!(r.eval, Eval::Provisional { .. }) && measured_text(&r.row).starts_with("Ag")
+        })
+        .collect();
+    if !ag_prov.is_empty() {
+        let lo = ag_prov
+            .iter()
+            .filter_map(|r| match &r.eval {
+                Eval::Provisional { dev, .. } => dev.log10_ratio,
+                _ => None,
+            })
+            .fold(f64::INFINITY, f64::min);
+        let hi = ag_prov
+            .iter()
+            .filter_map(|r| match &r.eval {
+                Eval::Provisional { dev, .. } => dev.log10_ratio,
+                _ => None,
+            })
+            .fold(f64::NEG_INFINITY, f64::max);
+        let _ = writeln!(
+            s,
+            "**Silver.** The model releases {ag_lo} to {ag_hi} percent of the silver within 300 h at 1600 to 1800 degC (figure A), whereas the matrix-corrected digitised values of the intact compacts are of order 1e-4 to 3e-3. The provisional log10 ratios range from {lo:.1} to {hi:.1}. These rows are DATA INCOMPLETE, so this is not a status of comparison, and the register does not give the inventory ratio that would convert a compact fraction into a particle fraction, so the size of the gap is not a finding. The compact totals that include the inventory released in the reactor (several percent to tens of percent) are NOT DIRECTLY COMPARABLE and are drawn as context only.\n"
+        );
+    }
+    let _ = writeln!(
+        s,
+        "**Strontium.** No Sr-90 row supports a comparison. The model value after 300 h at 1600 degC is {sr_1600} percent (figures A and H), while the registered compact values are 1e-5 to 1e-3; those values include strontium released in the reactor, so the gap cannot be read as a deviation of the diffusion model.\n"
+    );
+    let _ = writeln!(
+        s,
+        "**Rows that did not take part, and what would change that.** NOT ASSESSED ({}): counts, one-particle constants and thresholds, and the prompt range that spans the heating ramps (needs temperature-dependent diffusion). DATA INCOMPLETE ({}): the matrix-corrected rows (denominator), the JAERI loose-particle rows (denominator, heat-up ramp, end-of-irradiation profile), and krypton rows (background-limited bounds, the krypton SiC row under re-read). NOT DIRECTLY COMPARABLE ({}): compacts with failed SiC, totals that include in-pile release, deposition-cup collections over multi-temperature histories, loose particles that include failures, fuel spheres, another fuel batch, and quantities that describe the irradiation phase. Eu-154 rows are only totals that include in-pile release, and the register has no europium diffusion coefficients.\n",
+        count(Status::NotAssessed),
+        count(Status::DataIncomplete),
+        count(Status::NotDirectlyComparable)
+    );
+    let _ = writeln!(
+        s,
+        "**Calibration and validation.** No model parameter was fitted to any row of the register by this work; all coefficients are literature values of the register. The AGR-1 fitted rows (Schappel 2020) and the correction factors of the PARFUME modelling were fitted to AGR-1 heating-test data, so they count as calibration against these data: they appear only as labelled alternatives in the sensitivity study and are not used as independent evidence.\n"
+    );
+    let _ = writeln!(
+        s,
+        "**Uncertainty.** No compared row carries a measurement uncertainty from its source. A digitising reading uncertainty is not a measurement uncertainty and is never used to form a residual or a status; therefore the statuses WITHIN REPORTED UNCERTAINTY and OUTSIDE REPORTED UNCERTAINTY do not occur. The uncertainty-normalised residual is implemented and tested, and is defined only where a source reports an uncertainty.\n"
+    );
+    let _ = writeln!(
+        s,
+        "**Limits of this comparison.** Decay and generation are not in the solver, so every result is a release of a stable, pre-existing inventory; for Ag-110m the decay over a 335 h test is about 4 percent of the inventory (from the decay register), which is small beside the deviations above. The temperature ramps are not modelled. The end-of-irradiation inventory profile is not in the register, so the kernel-only start is an assumption stated beside every result (decision 20). No claim of validation follows from this report.\n"
+    );
+
+    // ---- Reproduction -----------------------------------------------------------------------
+    let _ = writeln!(s, "## Files and reproduction\n");
+    let _ = writeln!(
+        s,
+        "All numbers in this report come from files in `data/comparison/`, each with a provenance header (solver version, source commit, SHA-256 of the register files used, model limitations): `comparison_rows.csv` (every row), `comparison_datasets.csv`, `release_curves.csv`, `deviation_curves.csv`, `radial_profiles.csv`, `inventory_balance.csv`, `temperature_sensitivity.csv`, `convergence_spatial.csv`, `convergence_temporal.csv` and `comparison.json` (for the website's comparison panel; schema in the project's comparison schema note). The figures are in `docs/validation/figures/`. To regenerate everything, run in the tools workspace `cargo run --release -p strato-compare -- run --repo <checkout> --commit <hash>`; the report itself is rendered by the same program, so the tables cannot drift from the data.\n"
+    );
+    let mut sources: Vec<String> = rec
+        .iter()
+        .filter(|r| r.model.is_some())
+        .map(|r| format!("{} ({})", r.row.source, r.row.source_location))
+        .collect();
+    sources.sort();
+    sources.dedup();
+    let _ = writeln!(s, "Sources of the rows that received a model value:\n");
+    for x in sources {
+        let _ = writeln!(s, "- {x}");
+    }
+    let _ = writeln!(s);
+    s
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn id_ranges_compress() {
+        let ids: Vec<String> = ["E-001", "E-002", "E-003", "E-007", "E-009", "E-010"]
+            .iter()
+            .map(|s| s.to_string())
+            .collect();
+        assert_eq!(compress_ids(&ids), "E-001..E-003, E-007, E-009, E-010");
+        assert_eq!(compress_ids(&[]), "");
+    }
+}

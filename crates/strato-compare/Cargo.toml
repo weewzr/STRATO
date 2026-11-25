@@ -1,0 +1,27 @@
+[package]
+name = "strato-compare"
+version = "0.1.0"
+description = "Experimental comparison of the BTCS solver with the AGR-1 release register: status rules, metrics, output files and static figures. A tool, not part of the WebAssembly solver."
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+name = "strato_compare"
+path = "src/lib.rs"
+
+[[bin]]
+name = "strato-compare"
+path = "src/bin/strato_compare.rs"
+
+[dependencies]
+# The verified solver, the property functions and the metrics of the repository.
+strato = { path = "../.." }
+# Typed readers of the scientific registers (no dependency of its own).
+strato-data = { path = "../strato-data" }
+# Static figures as SVG. The verified package already uses plotters for its figures
+# (src/postprocessing/plots.rs); this crate takes the same crate with the pure Rust SVG backend
+# only (no font library, no bitmap backend). It lives in the tools workspace, so it never reaches
+# crates/strato-wasm, which depends on the solver package alone.
+plotters = { version = "0.3", default-features = false, features = ["svg_backend", "line_series", "point_series"] }
