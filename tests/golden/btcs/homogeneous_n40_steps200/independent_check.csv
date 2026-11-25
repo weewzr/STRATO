@@ -1,5 +1,5 @@
 # REGRESSION REFERENCE, NOT TRUTH.
-# These values were produced by the BTCS solver itself at commit b948870. A mismatch with a later run means that the code changed; the file is never edited by hand.
+# These values were produced by the BTCS solver itself at commit 06420d4. A mismatch with a later run means that the code changed; the file is never edited by hand.
 # Why the values are believable: independent_check.csv beside this file compares the release fraction of this case with a reference that contains no BTCS code.
 # case: homogeneous_n40_steps200
 # input: inputs/btcs_regression/synthetic_homogeneous_sphere.toml
