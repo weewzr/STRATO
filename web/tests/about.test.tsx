@@ -52,3 +52,26 @@ describe('About page, contents of this build', () => {
     }
   });
 });
+
+describe('About page, documents', () => {
+  it('links only rendered pages that crates/strato-docsite publishes, each beside its source', () => {
+    // The published set is the DOCS list of the Rust tool; a page link here must name one of them.
+    const site = readFileSync(join(process.cwd(), '..', 'crates', 'strato-docsite', 'src', 'site.rs'), 'utf8');
+    const published = [...site.matchAll(/src: "([^"]+\.md)"/g)].map((m) => m[1]);
+    expect(published.length).toBeGreaterThan(0);
+    render(<About />);
+    const hrefs = within(screen.getByTestId('about-documents'))
+      .getAllByRole('link')
+      .map((a) => a.getAttribute('href') ?? '');
+    const pages = hrefs.filter((h) => h.endsWith('.html'));
+    expect(pages.length).toBeGreaterThan(0);
+    for (const h of pages) {
+      expect(h.startsWith(import.meta.env.BASE_URL), h).toBe(true);
+      const src = h.slice(import.meta.env.BASE_URL.length).replace(/\.html$/, '.md');
+      expect(published, h).toContain(src);
+      expect(hrefs.some((x) => x.endsWith(`/${src}`)), `${src} is linked on GitHub too`).toBe(true);
+    }
+    const list = screen.getByRole('link', { name: 'all documents rendered on this site' });
+    expect(list.getAttribute('href')).toBe(`${import.meta.env.BASE_URL}docs/index.html`);
+  });
+});

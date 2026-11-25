@@ -32,11 +32,30 @@ const BUILD_CONTENTS: { part: string; here: boolean; phase: string }[] = [
   { part: 'Measured release data and, after phase 6, model predictions', here: false, phase: '7' },
 ];
 
-const docs = [
-  { path: 'docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md', title: 'Full Mathematical Derivation (v1.0)' },
-  { path: 'docs/mathematics/v1.0.0/STRATO_Final_Deliverable.md', title: 'Final Deliverable: equations, pseudocode and Rust code (v1.0)' },
-  { path: 'docs/mathematics/STRATO_Phase2_Derivations.md', title: 'Phase 2 derivations (design only, not implemented)' },
-  { path: 'docs/mathematics/STRATO_Phase2_Pseudocode.md', title: 'Phase 2 pseudocode (design only, not implemented)' },
+// `page`: the page that crates/strato-docsite renders from the same file into this site (web phase 8),
+// with the mathematics typeset; documents without one are linked on GitHub only.
+const docs: { path: string; title: string; page?: string }[] = [
+  {
+    path: 'docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md',
+    title: 'Full Mathematical Derivation (v1.0)',
+    page: 'docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.html',
+  },
+  {
+    path: 'docs/mathematics/v1.0.0/STRATO_Final_Deliverable.md',
+    title: 'Final Deliverable: equations, pseudocode and Rust code (v1.0)',
+    page: 'docs/mathematics/v1.0.0/STRATO_Final_Deliverable.html',
+  },
+  {
+    path: 'docs/mathematics/STRATO_Phase2_Derivations.md',
+    title: 'Phase 2 derivations (design only, not implemented)',
+    page: 'docs/mathematics/STRATO_Phase2_Derivations.html',
+  },
+  {
+    path: 'docs/mathematics/STRATO_Phase2_Pseudocode.md',
+    title: 'Phase 2 pseudocode (design only, not implemented)',
+    page: 'docs/mathematics/STRATO_Phase2_Pseudocode.html',
+  },
+  { path: 'data/reference/STRATO_Parameter_Register.md', title: 'Parameter register', page: 'data/reference/STRATO_Parameter_Register.html' },
   { path: 'docs/development/provenance.md', title: 'Provenance and verification evidence' },
 ];
 
@@ -144,10 +163,22 @@ export function About() {
       </TableBox>
 
       <h2>Documents</h2>
-      <ul className="prose-list">
+      <p>
+        The derivation and register documents are rendered on this site with the mathematics typeset; the Markdown files on GitHub are their
+        source. See <a href={`${import.meta.env.BASE_URL}docs/index.html`}>all documents rendered on this site</a>.
+      </p>
+      <ul className="prose-list" data-testid="about-documents">
         {docs.map((d) => (
           <li key={d.path}>
-            <a href={repoFile(d.path)}>{d.title}</a>
+            {d.page ? (
+              <>
+                <a href={`${import.meta.env.BASE_URL}${d.page}`}>{d.title}</a> (<a href={repoFile(d.path)}>Markdown source on GitHub</a>)
+              </>
+            ) : (
+              <>
+                <a href={repoFile(d.path)}>{d.title}</a> (on GitHub)
+              </>
+            )}
           </li>
         ))}
       </ul>

@@ -8,12 +8,18 @@ name: Web demo
 # describes), lint, type check, unit tests, build, content check, browser tests (including the
 # browser parity tests and the self-test) and the build artefact.
 #
-# Deployment: on main (push or manual run) the build that passed every step above is published to
-# GitHub Pages by the deploy job. The job needs the repository's Pages source set to
-# "GitHub Actions" (Settings > Pages > Build and deployment); while the source is still
-# "Deploy from a branch" the job fails at its only step and a manual run after the switch
-# publishes the site. The published site is the demonstration only; the rendered derivation
-# documents follow with web phase 8.
+# Documents (web phase 8): after the Vite build, crates/strato-docsite (a Rust tool in the tools
+# workspace crates/Cargo.toml) renders the derivation and register documents of docs/mathematics/
+# and data/reference/ into web/dist with the mathematics typeset in the browser by the KaTeX copy
+# the site ships; prompt/, the README, the CHANGELOG and docs/development/ are not published. Its
+# link check then fails the job if any link of the built site does not resolve, and the content
+# check runs on the complete site.
+#
+# Deployment: on main (push or manual run) the build that passed every step above, documents
+# included, is published to GitHub Pages by the deploy job. The repository's Pages source is
+# "GitHub Actions" (switched by the owner on 2026-11-25). Should the source ever be set back to
+# "Deploy from a branch", the deploy job fails at its only step; after switching it back, a manual
+# run (workflow_dispatch on main) publishes the site again.
 
 on:
   push:
@@ -28,6 +34,7 @@ on:
       - 'data/geometry/**'
       - 'docs/research/**'
       - 'docs/mathematics/**'
+      - 'data/reference/**'
       - 'prompt/PROGRESS.md'
       - 'Cargo.toml'
       - 'Cargo.lock'
@@ -88,6 +95,7 @@ jobs:
         working-directory: .
         run: |
           rustup target add wasm32-unknown-unknown
+          rustup component add clippy rustfmt
           rustc -V
           cargo -V
       - name: Cache the wasm-bindgen CLI
@@ -122,7 +130,20 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
-      - name: Content check of the build
+      # The tools workspace (crates/Cargo.toml) is not checked by ci.yml, which stays unchanged.
+      - name: Tools workspace format, lint and tests (crates/Cargo.toml)
+        working-directory: .
+        run: |
+          cargo fmt --manifest-path crates/Cargo.toml --all --check
+          cargo clippy --locked --manifest-path crates/Cargo.toml --all-targets -- -D warnings
+          cargo test --locked --manifest-path crates/Cargo.toml
+      - name: Render the derivation and register documents into the build
+        working-directory: .
+        run: cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-docsite -- build --repo . --out web/dist --commit "$GITHUB_SHA"
+      - name: Every link of the built site resolves
+        working-directory: .
+        run: cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-docsite -- check-links web/dist --base /STRATO/
+      - name: Content check of the build (demonstration and documents)
         run: npm run check:content
       - name: Install the browser
         id: browser
@@ -173,7 +194,12 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      # Fails here while the Pages source is "Deploy from a branch"; see the note at the top.
+      # Fails here if the Pages source is "Deploy from a branch"; see the note at the top.
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v5
+      - name: Explain a failed deployment
+        if: failure()
+        run: |
+          echo "::error title=GitHub Pages deployment failed::The verified build was not published. If the log above reports that Pages is not enabled or not set to GitHub Actions, set Settings > Pages > Build and deployment > Source to 'GitHub Actions' and re-run this workflow on main (Actions > Web demo > Run workflow). The build itself passed every check of the web job."
+          exit 1

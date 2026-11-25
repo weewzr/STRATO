@@ -1,0 +1,16 @@
+# Tools workspace of STRATO (docs/development/rust_migration_plan.md, stage R0, Section 4): the
+# generators, converters and checkers of the repository, written in Rust, with one lock file of their
+# own. The verified package `strato` (root Cargo.toml) and the WebAssembly wrapper
+# (crates/strato-wasm, its own workspace and lock file) are not members and stay byte for byte as
+# they are.
+
+[workspace]
+resolver = "2"
+members = ["strato-docsite"]
+exclude = ["strato-wasm"]
+
+[workspace.package]
+edition = "2021"
+license = "AGPL-3.0-only"
+repository = "https://github.com/weewzr/STRATO"
+publish = false

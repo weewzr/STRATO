@@ -1,0 +1,16 @@
+[package]
+name = "strato-docsite"
+version = "0.1.0"
+description = "Renders the derivation and register documents of STRATO into the web build (Markdown to HTML; the mathematics is typeset in the browser by the KaTeX copy the site ships) and checks every link of the built site."
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "strato-docsite"
+path = "src/main.rs"
+
+[dependencies]
+# Only the HTML writer; no command-line feature.
+pulldown-cmark = { version = "0.13.6", default-features = false, features = ["html"] }
