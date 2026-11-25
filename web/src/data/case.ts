@@ -1,5 +1,5 @@
 // Input cases available to the demo. The values come from the generated JSON files written by
-// scripts/web/generate_data.py from the TOML inputs in inputs/; none is typed here.
+// strato-webtools case from the TOML inputs in inputs/; none is typed here.
 import syntheticCase from '../generated/synthetic_five_layer.case.json';
 
 /** Mirrors strato::config::RegionConfig (src/config.rs at v1.0.1). */

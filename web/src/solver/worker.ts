@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-// Web Worker that loads the STRATO WebAssembly wrapper (built by scripts/web/build_wasm.py into
+// Web Worker that loads the STRATO WebAssembly wrapper (built by strato-webtools build-wasm into
 // ./pkg) and answers requests from client.ts. It passes JSON text to the wrapper and parses the
 // reply; it does no arithmetic on the values. After a trap (a panic aborts on wasm32) the
 // instance is unusable; the worker reports it and the client replaces the worker.
