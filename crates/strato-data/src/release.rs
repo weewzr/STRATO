@@ -15,7 +15,7 @@ use crate::table::{Printed, Row, Table};
 pub const FILE: &str = "experimental/release_measurements.csv";
 
 /// The exact header.
-pub const HEADER: [&str; 24] = [
+pub const HEADER: [&str; 26] = [
     "id",
     "program",
     "compact_or_sample",
@@ -40,6 +40,8 @@ pub const HEADER: [&str; 24] = [
     "link",
     "status",
     "notes",
+    "reading_uncertainty",
+    "denominator",
 ];
 
 string_enum! {
@@ -51,6 +53,8 @@ string_enum! {
         Jaeri => "JAERI",
         /// IAEA CRP-6 benchmark text values.
         Crp6 => "CRP-6",
+        /// AGR-2 safety tests (UCO TRISO, a different irradiation and fuel batch from AGR-1).
+        Agr2 => "AGR-2",
     }
 }
 
@@ -61,8 +65,12 @@ string_enum! {
         Baseline => "Baseline",
         /// AGR-1 variant 1.
         Variant1 => "Variant 1",
+        /// AGR-1 variant 2.
+        Variant2 => "Variant 2",
         /// AGR-1 variant 3.
         Variant3 => "Variant 3",
+        /// AGR-2 UCO TRISO.
+        UcoTriso => "UCO TRISO",
         /// Mixed fuel types.
         Mixed => "mixed",
         /// UO2 TRISO particles.
@@ -105,6 +113,16 @@ string_enum! {
         FractionOfAgInventoryInMatrixRange => "fraction of Ag inventory in matrix (range)",
         /// Sphere release fraction, an approximate text value.
         SphereReleaseFractionApproximate => "sphere release fraction (approximate text value)",
+        /// Cumulative compact release fraction.
+        CumulativeCompactReleaseFraction => "cumulative compact release fraction",
+        /// Capsule inventory found outside the compacts: in-pile release.
+        CapsuleFractionOutsideCompacts => "capsule fraction measured outside the fuel compacts (in-pile release)",
+        /// Release in particle equivalents of 75 loose particles.
+        CumulativeParticleEquivalentsLoose75 => "cumulative release in particle equivalents (75 loose particles)",
+        /// Inventory found in matrix and OPyC after irradiation (DLBL).
+        FractionInMatrixAndOpycDlbl => "fraction of compact inventory in matrix and OPyC (DLBL)",
+        /// Cumulative fraction collected on deposition cups.
+        CumulativeFractionOnDepositionCups => "cumulative fraction of compact inventory collected on deposition cups",
         /// Number of particles with failed IPyC and SiC.
         ParticlesWithFailedIpycAndSic => "particles with failed IPyC and SiC",
         /// Failed SiC over particles tested.
@@ -141,6 +159,127 @@ string_enum! {
         PieEstimate => "M (PIE estimate)",
         /// An upper bound.
         UpperBound => "M-UB",
+        /// A non-detect: below the minimum detectable activity; the number is a typical
+        /// detection limit and not a limit measured for the test.
+        NonDetect => "M-ND",
+    }
+}
+
+string_enum! {
+    /// The `group` column: which particles the measurement concerns.
+    pub enum Group ("group") {
+        /// Compact with intact particles only.
+        Intact => "intact",
+        /// Compact with particles of failed SiC.
+        FailedSic => "failed SiC",
+        /// All particles.
+        All => "all",
+        /// Loose particles without matrix.
+        LooseParticles => "loose particles",
+        /// Intact, no failure detected by Kr-85 monitoring.
+        IntactNoKrDetected => "intact (no failure detected by Kr-85)",
+        /// Count of failed particles.
+        FailureCount => "failure count",
+        /// A value at the level of one particle.
+        OneParticleLevel => "one-particle level",
+        /// Indicator of failed SiC.
+        FailedSicIndicator => "failed SiC indicator",
+        /// Between two failures.
+        BetweenFailures => "between failures",
+        /// Intact phase.
+        IntactPhase => "intact phase",
+        /// No counted failure, but one particle is known to have released fission products.
+        NoCountedFailureReleasingParticle => "no counted failure; one particle released fission products",
+    }
+}
+
+string_enum! {
+    /// The `denominator` column: what the fraction is a fraction of.
+    pub enum Denominator ("denominator") {
+        /// The calculated compact inventory (about 4145 particles; decay-corrected).
+        CompactInventory => "calculated compact inventory",
+        /// The calculated capsule inventory.
+        CapsuleInventory => "calculated capsule inventory",
+        /// The average particle inventory: the value is in particle equivalents.
+        ParticleInventory => "average particle inventory (particle equivalents)",
+        /// The record does not establish the denominator (the comparison status is DATA INCOMPLETE).
+        NotEstablished => "not established",
+        /// A count or another quantity without a denominator.
+        NotApplicable => "not applicable",
+    }
+}
+
+/// The size of the uncertainty of the value of a digitised row.
+#[derive(Debug, Clone, PartialEq)]
+pub enum ValueReading {
+    /// Plus and minus this percentage of the value.
+    RelativePercent(Printed),
+    /// Plus and minus a percentage between two bounds (the source gives a range).
+    RelativePercentRange {
+        /// Smaller percentage.
+        lo: Printed,
+        /// Larger percentage.
+        hi: Printed,
+    },
+    /// Plus and minus this amount, in the unit of the row.
+    Absolute(Printed),
+    /// A multiplicative factor (the value may be this factor above or below).
+    Factor(Printed),
+}
+
+/// The reading uncertainty of a row: what reading a value off a figure adds. It is not an
+/// experimental uncertainty.
+#[derive(Debug, Clone, PartialEq)]
+pub enum ReadingUncertainty {
+    /// The value was not read from a figure (empty cell).
+    NotDigitised,
+    /// The value was read from a figure and the record states no reading uncertainty.
+    NotRecorded,
+    /// The record states the reading uncertainty.
+    Stated {
+        /// On the value, when stated.
+        value: Option<ValueReading>,
+        /// On the time, hours, when stated.
+        time_h: Option<Printed>,
+    },
+}
+
+impl ReadingUncertainty {
+    /// Parse the cell: empty, `not recorded`, or `key=value` items joined by `;` with the keys
+    /// `rel_value_pct` (a number or `lo..hi`), `abs_value`, `factor`, `time_h`.
+    pub fn parse(cell: &str) -> std::result::Result<ReadingUncertainty, String> {
+        match cell {
+            "" => return Ok(ReadingUncertainty::NotDigitised),
+            "not recorded" => return Ok(ReadingUncertainty::NotRecorded),
+            _ => {}
+        }
+        let mut value = None;
+        let mut time_h = None;
+        for item in cell.split(';') {
+            let (k, v) = item
+                .split_once('=')
+                .ok_or_else(|| format!("`{item}` is not key=value"))?;
+            let p = Printed::parse;
+            match k {
+                "rel_value_pct" => {
+                    value = Some(match v.split_once("..") {
+                        Some((a, b)) => ValueReading::RelativePercentRange {
+                            lo: p(a)?,
+                            hi: p(b)?,
+                        },
+                        None => ValueReading::RelativePercent(p(v)?),
+                    })
+                }
+                "abs_value" => value = Some(ValueReading::Absolute(p(v)?)),
+                "factor" => value = Some(ValueReading::Factor(p(v)?)),
+                "time_h" => time_h = Some(p(v)?),
+                other => return Err(format!("`{other}` is not a reading-uncertainty key")),
+            }
+        }
+        if value.is_none() && time_h.is_none() {
+            return Err("the cell states nothing".to_string());
+        }
+        Ok(ReadingUncertainty::Stated { value, time_h })
     }
 }
 
@@ -165,6 +304,14 @@ pub enum TestTemperature {
         /// Lower end.
         lo: Printed,
         /// Upper end.
+        hi: Printed,
+    },
+    /// The temperature changes during the test between these two values, degC
+    /// (`varied (lo-hi)`): a multi-temperature history, not a test temperature.
+    Varied {
+        /// Lowest temperature of the history.
+        lo: Printed,
+        /// Highest temperature of the history.
         hi: Printed,
     },
     /// No temperature in the row.
@@ -232,8 +379,8 @@ pub struct ReleaseRow {
     pub compact_or_sample: String,
     /// Fuel type.
     pub fuel_type: FuelType,
-    /// Group as printed (`intact`, `failed SiC`, ...).
-    pub group: String,
+    /// Group.
+    pub group: Group,
     /// What was measured.
     pub measured: Measured,
     /// Test temperature.
@@ -266,6 +413,10 @@ pub struct ReleaseRow {
     pub status: Status,
     /// Notes.
     pub notes: String,
+    /// Reading uncertainty of a digitised value.
+    pub reading_uncertainty: ReadingUncertainty,
+    /// What the fraction is a fraction of.
+    pub denominator: Denominator,
 }
 
 fn read_value(row: &Row<'_>, quantity: Quantity) -> Result<ReleaseValue> {
@@ -326,6 +477,14 @@ fn read_temperature(row: &Row<'_>) -> Result<TestTemperature> {
             if let Ok(p) = Printed::parse(t) {
                 return Ok(TestTemperature::Celsius(p));
             }
+            if let Some(inner) = t.strip_prefix("varied (").and_then(|x| x.strip_suffix(')')) {
+                if let Some((a, b)) = inner.split_once('-') {
+                    return Ok(TestTemperature::Varied {
+                        lo: Printed::parse(a).map_err(|m| row.err(Some("T_C"), m))?,
+                        hi: Printed::parse(b).map_err(|m| row.err(Some("T_C"), m))?,
+                    });
+                }
+            }
             match t.split_once('-') {
                 Some((a, b)) => Ok(TestTemperature::Range {
                     lo: Printed::parse(a).map_err(|m| row.err(Some("T_C"), m))?,
@@ -353,7 +512,7 @@ fn read_row(row: Row<'_>) -> Result<ReleaseRow> {
         program: row.vocab("program")?,
         compact_or_sample: row.required("compact_or_sample")?.to_string(),
         fuel_type: row.vocab("fuel_type")?,
-        group: row.required("group")?.to_string(),
+        group: row.vocab("group")?,
         measured,
         temperature: read_temperature(&row)?,
         time_h: row.opt_number("time_h")?,
@@ -372,6 +531,9 @@ fn read_row(row: Row<'_>) -> Result<ReleaseRow> {
         link: row.required("link")?.to_string(),
         status: row.vocab("status")?,
         notes: row.text("notes")?.to_string(),
+        reading_uncertainty: ReadingUncertainty::parse(row.text("reading_uncertainty")?)
+            .map_err(|m| row.err(Some("reading_uncertainty"), m))?,
+        denominator: row.vocab("denominator")?,
     })
 }
 

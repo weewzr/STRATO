@@ -18,7 +18,7 @@ use crate::table::{Printed, Row, Table};
 pub const FILE: &str = "diffusivity/arrhenius.csv";
 
 /// The exact header.
-pub const HEADER: [&str; 23] = [
+pub const HEADER: [&str; 27] = [
     "id",
     "set_id",
     "nuclide",
@@ -42,6 +42,10 @@ pub const HEADER: [&str; 23] = [
     "link",
     "status",
     "notes",
+    "coefficient_class",
+    "phase_of_use",
+    "reference_radius_um",
+    "fluence_definition",
 ];
 
 /// Kernel radius of the reduced coefficients of TECDOC-1674 Table 7.1, metre (250 um, register note of T71-01).
@@ -96,6 +100,42 @@ string_enum! {
         TemperatureIndependent => "1T (T-independent)",
         /// Instantaneous release (infinite D).
         Instantaneous => "instantaneous",
+        /// One term of the AGR-1 irradiation-phase PARFUME set (Collin 2015 Table 2).
+        IrradiationPhaseSingleTerm => "1T (single term; irradiation-phase set)",
+        /// A single term fitted to AGR-1 heating-test data.
+        Fitted => "1T (fitted)",
+        /// A hypothesis of the source, not a fit to a measured coefficient.
+        Hypothesis => "1T (hypothesis)",
+    }
+}
+
+string_enum! {
+    /// The `coefficient_class` column: the four classes of owner ruling 16 (decision 16 of the
+    /// coordinator), exactly one per row. A row whose class could not be established would carry
+    /// `NOT VERIFIED`, the register's existing word; no row does at present.
+    pub enum CoefficientClass ("coefficient class") {
+        /// Measured on AGR-1 fuel. No row has this class: no AGR-1 diffusion coefficient was measured.
+        Agr1ExperimentalMeasurement => "AGR-1 experimental measurement",
+        /// Fitted to AGR-1 data (Schappel 2020).
+        Agr1SpecificFittedCorrelation => "AGR-1-specific fitted correlation",
+        /// The correlation PARFUME (or BISON) uses for AGR-1.
+        PublishedParfumeCorrelation => "published PARFUME correlation",
+        /// A published correlation for another fuel or material, transferred to AGR-1.
+        TransferredMaterialCorrelation => "transferred material correlation",
+        /// The class could not be established.
+        Unverified => "NOT VERIFIED",
+    }
+}
+
+string_enum! {
+    /// The `phase_of_use` column: the phase for which the source prints or fits the coefficient.
+    pub enum PhaseOfUse ("phase of use") {
+        /// The irradiation phase.
+        Irradiation => "irradiation",
+        /// The post-irradiation heating tests (safety tests).
+        HeatingTest => "heating test",
+        /// The source ties the row to no phase.
+        NotSpecified => "not specified",
     }
 }
 
@@ -122,6 +162,8 @@ string_enum! {
         SingleTemperature => "single temperature",
         /// Isothermal heating tests.
         IsothermalHeatingTests => "isothermal heating tests (p. 162)",
+        /// Fitted to the 1600 and 1800 C AGR-1 heating tests (Schappel 2020).
+        FittedToAgr1HeatingTests => "none printed; fitted to the 1600 and 1800 C post-irradiation heating tests (printed p. 13-14)",
     }
 }
 
@@ -288,6 +330,14 @@ pub struct ArrheniusRow {
     pub status: Status,
     /// Notes.
     pub notes: String,
+    /// The class of owner ruling 16.
+    pub coefficient_class: CoefficientClass,
+    /// The phase the source ties the coefficient to.
+    pub phase_of_use: PhaseOfUse,
+    /// The kernel radius, um, to which the original publication refers the coefficient (kernel rows only).
+    pub reference_radius_um: Option<Printed>,
+    /// How the fluence of the `exp(Gamma/5)` factor is defined, or that the factor is not applied (empty when the row has no factor).
+    pub fluence_definition: String,
 }
 
 /// A diffusion coefficient with the kind of number it is.
@@ -466,6 +516,10 @@ fn read_row(row: Row<'_>) -> Result<ArrheniusRow> {
         link: row.required("link")?.to_string(),
         status: row.vocab("status")?,
         notes: row.text("notes")?.to_string(),
+        coefficient_class: row.vocab("coefficient_class")?,
+        phase_of_use: row.vocab("phase_of_use")?,
+        reference_radius_um: row.opt_number("reference_radius_um")?,
+        fluence_definition: row.text("fluence_definition")?.to_string(),
     })
 }
 
