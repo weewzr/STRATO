@@ -542,7 +542,15 @@ $$
 
 **Proof.** $\Phi_{R,\mathrm{inner}} - \Phi_{R,\mathrm{outer}} = \Phi_{i,\mathrm{inner}} - \Phi_{i,\mathrm{outer}} - 4\pi\left(R\right)^2\frac{\Delta r_- + \Delta r_+}{2}\,\frac{C_i^{j+1} - C_i^j}{\Delta t} = \Phi_{i,\mathrm{inner}} - \Phi_{i,\mathrm{outer}} - 4\pi V_i\,\frac{C_i^{j+1} - C_i^j}{\Delta t} = 0$, by the statement after Eq. (30). $\square$
 
-**Accuracy.** Let $m_- = R - \Delta r_-/2$ be the midpoint of the inner interval. $\Phi_{i,\mathrm{inner}}$ approximates the exact outward flow at $m_-$ to second order: its conductance factor is $r_{i-1}r_i = \left(m_-\right)^2 - \frac{1}{4}\left(\Delta r_-\right)^2$, and the difference quotient is the derivative at $m_-$ up to $O\left(\left(\Delta r_-\right)^2\right)$. Integrating Eq. (2) from $m_-$ to $R$ gives $\Phi(R) = \Phi(m_-) - 4\pi\left(R\right)^2\frac{\Delta r_-}{2}\,\partial_t C(R) + O\left(\left(\Delta r_-\right)^2\right)$. So the reconstructed value (30a) approximates the exact interface flow $\Phi(R, t^{j+1})$ to $O\left(\left(\Delta r\right)^2 + \Delta t\right)$, from either side, while the raw one-sided values $\Phi_{i,\mathrm{inner}}$ and $\Phi_{i,\mathrm{outer}}$ are only first-order approximations of it. In derivation B's synthetic run (archive, Section 10.2) the raw values differed by up to 6% at $R_1$, and the two reconstructed values agreed to a relative $7.4\times10^{-11}$ or better, rounding. **Decision:** a post-processor that reports the flux at an interface reports Eq. (30a). This is the quantity that directive Phase D, test E, can use.
+**Accuracy.** Two statements must be kept apart, as for the release rate in Section 6: the consistency of formula (30a), which is proved, and the convergence of the computed interface flow, which is observed only.
+
+*Consistency (PROVED, for a solution that is three times continuously differentiable in $r$ on each closed layer and twice continuously differentiable in $t$).* Insert the exact solution into Eq. (30a). Let $m_- = R - \Delta r_-/2$ be the midpoint of the inner interval. $\Phi_{i,\mathrm{inner}}$ approximates the exact outward flow at $m_-$ to second order: its conductance factor is $r_{i-1}r_i = \left(m_-\right)^2 - \frac{1}{4}\left(\Delta r_-\right)^2$, and the difference quotient is the derivative at $m_-$ up to $O\left(\left(\Delta r_-\right)^2\right)$. Integrating Eq. (2) from $m_-$ to $R$ gives $\Phi(R) = \Phi(m_-) - 4\pi\left(R\right)^2\frac{\Delta r_-}{2}\,\partial_t C(R) + O\left(\left(\Delta r_-\right)^2\right)$. The backward difference $\left(C(R, t^{j+1}) - C(R, t^j)\right)/\Delta t$ equals $\partial_t C(R, t^{j+1}) + O(\Delta t)$, and it is multiplied by $4\pi\left(R\right)^2\Delta r_-/2$. So Eq. (30a), evaluated on the exact solution, equals the exact interface flow $\Phi(R, t^{j+1})$ to $O\left(\left(\Delta r\right)^2 + \Delta r\,\Delta t\right)$, from either side. The raw one-sided values $\Phi_{i,\mathrm{inner}}$ and $\Phi_{i,\mathrm{outer}}$, evaluated on the exact solution, are only first-order approximations of it, because they omit the storage of a half-interval.
+
+*Convergence of the computed interface flow (OBSERVED, NOT PROVEN).* Eq. (30a) contains $K_{i,\mathrm{inner}}\left(C_{i-1} - C_i\right)$ with $K_{i,\mathrm{inner}} \approx D_{\mathrm{in}}\left(R\right)^2/\Delta r_-$, and the storage term contains $\Delta r_-/\Delta t$ times a difference of computed values. A nodal error of order $\left(\Delta r\right)^2$ would therefore allow only first order in the computed flow. The nodal error bounds that are proved for five layers do not close this gap: the maximum-norm bound P15 of Document 2, $O\left(\Delta t + \Delta r\right)$, divided by $\Delta r$, gives no convergence at all, and the weighted $L^2$ bound of Section 9.5 is not pointwise. So no order of convergence of the computed interface flow is proved, not even first order. A reconciliation scratch run (synthetic case of Section 11, $m$ intervals in every layer, backward Euler extrapolated to $\Delta t \to 0$ by three-level Richardson extrapolation from $\Delta t = 100$, $50$ and $25\ \mathrm{s}$, flow divided by $M^0$, $t = 2\times10^5\ \mathrm{s}$) gave differences between successive grids $m = 10, 20, \dots, 320$ that fell by a factor of four at every refinement, at all four interfaces: observed orders $1.98$ to $2.00$ (at $R_1$: $1.997$, $1.999$, $2.000$, $1.999$). This is self-convergence; no independent reference for the interface flow was used.
+
+*Equality of the two sides.* In derivation B's synthetic run (archive, Section 10.2) the raw values differed by up to 6% at $R_1$, and the two reconstructed values agreed to a relative $7.4\times10^{-11}$ or better, rounding.
+
+**Decision:** a post-processor that reports the flux at an interface reports Eq. (30a). This is the quantity that directive Phase D, test E, can use, with the status above: consistent to second order (proved), convergent at second order (observed only).
 
 ### 5.5 Consistency of the interface row
 
@@ -568,7 +576,7 @@ $$
 - By Eq. (5) on each side, $D_{\mathrm{out}}\left[C''_+ + \frac{2}{R}C'_+\right]$ and $D_{\mathrm{in}}\left[C''_- + \frac{2}{R}C'_-\right]$ are the one-sided limits of $\partial C/\partial t$ at $R$. They are equal, because $C$ is continuous at $R$ for all $t$ (Eq. (26)), and so is its time derivative.
 - The difference of flows is therefore $\left(R\right)^2\frac{\Delta r_- + \Delta r_+}{2}\,\frac{\partial C}{\partial t} + O\left(\left(\Delta r\right)^2\right) = V_i\,\frac{\partial C}{\partial t} + O\left(\left(\Delta r\right)^2\right)$.
 
-Dividing by $V_i$: the interface row approximates $\partial C/\partial t$ with a local truncation error of order $\Delta r$. The surviving $O\left(\left(\Delta r\right)^2\right)$ terms of the difference of flows contain $C'''_\pm$ and the second-order Taylor terms on each side; they do not cancel in general (both derivations reached this conclusion independently). A first-order local error confined to isolated nodes is the usual situation at interfaces. That it does not reduce the global order is shown in the weighted $L^2$ norm by the proof outline of Section 9.5, and observed: in scratch runs of the synthetic five-layer case (Section 11), the global error in the release fraction converged at order $1.99$ to $2.05$.
+Dividing by $V_i$: the interface row approximates $\partial C/\partial t$ with a local truncation error of order $\Delta r$. The surviving $O\left(\left(\Delta r\right)^2\right)$ terms of the difference of flows contain $C'''_\pm$ and the second-order Taylor terms on each side; they do not cancel in general (both derivations reached this conclusion independently). A first-order local error confined to isolated nodes is the usual situation at interfaces. That it does not reduce the global order is shown in the weighted $L^2$ norm by the proof outline of Section 9.5, and observed: in scratch runs of the synthetic five-layer case (Section 11), the global error in the release fraction converged at order $1.99$ to $2.00$ (Section 7, with the note on the $m = 160$ entry).
 
 ### 5.6 Alternatives, and why the half-interval balance is chosen (coordinator's hypothesis 3)
 
@@ -742,10 +750,12 @@ On a general kernel grid, θ is computed directly from Eq. (40). Three propertie
 
 | $\theta$ | error, $m = 10$ | $m = 20$ | $m = 40$ | $m = 80$ | $m = 160$ | observed order |
 |---|---|---|---|---|---|---|
-| Eq. (41) (tends to $\frac{2}{3}$) | $-7.99\times10^{-5}$ | $-2.00\times10^{-5}$ | $-5.00\times10^{-6}$ | $-1.25\times10^{-6}$ | $-3.03\times10^{-7}$ | $2.00$ |
+| Eq. (41) (tends to $\frac{2}{3}$) | $-7.99\times10^{-5}$ | $-2.00\times10^{-5}$ | $-5.00\times10^{-6}$ | $-1.25\times10^{-6}$ | $-3.13\times10^{-7}$ (note) | $2.00$ |
 | $\frac{1}{2}$ | $+1.82\times10^{-2}$ | $+9.82\times10^{-3}$ | $+5.09\times10^{-3}$ | $+2.59\times10^{-3}$ | $+1.31\times10^{-3}$ | $0.9$ to $1.0$ |
 | $1$ (kernel value) | $-4.51\times10^{-2}$ | $-2.18\times10^{-2}$ | $-1.07\times10^{-2}$ | $-5.32\times10^{-3}$ | $-2.65\times10^{-3}$ | $1.0$ |
 | $0$ (buffer value) | $+8.15\times10^{-2}$ | $+4.15\times10^{-2}$ | $+2.09\times10^{-2}$ | $+1.05\times10^{-2}$ | $+5.26\times10^{-3}$ | $1.0$ |
+
+*Note on the $m = 160$ entry of the first row.* Derivation A's exact-time-integration program gave $-3.03\times10^{-7}$ there, and with it a last observed order of $2.05$. That value is attributed to rounding in the eigen-decomposition of the $800 \times 800$ symmetrised operator: an independent dense eigen-decomposition reproduced $-3.033\times10^{-7}$ at $m = 160$ and gave an implausible $-3.83\times10^{-8}$ at $m = 320$ (order $2.99$), while two independent backward-Euler programs with three-level Richardson extrapolation in $\Delta t$ (the verifier's, and a reconciliation run with four sequences of $\Delta t$ from $100$ down to $3.125\ \mathrm{s}$) gave $-3.129\times10^{-7}$ to $-3.132\times10^{-7}$ at $m = 160$ and $-1.2511\times10^{-6}$ to $-1.2512\times10^{-6}$ at $m = 80$: order $2.00$. The table shows the time-extrapolated value. The cause was not isolated further than this comparison.
 
 On this grid only the inventory-matched value keeps second-order convergence. The reason is algebraic. A choice $\theta$ changes the initial inventory by $4\pi\left(\theta - \theta_{(41)}\right)V_{N_{\mathrm{kernel}}}C_{\mathrm{init}}$, a relative error of
 $$
@@ -955,7 +965,7 @@ In time every row is first order, with residual $-\frac{\Delta t}{2}\ddot C$.
 $$
 \max_j\left\|\mathbf{e}^j\right\|_\infty \le \left\|\mathbf{e}^0\right\|_\infty + T\max_j\left\|\boldsymbol{\tau}^j\right\|_\infty = O\left(\Delta t + \left(\Delta r\right)^2\right), \tag{46c}
 $$
-because every row, including rows 0 and 1, is second order in space. The same argument on the five-layer grid gives only $O\left(\Delta t + \Delta r\right)$ in the maximum norm, because of the first-order interface residuals: proved, but pessimistic.
+because every row, including rows 0 and 1, is second order in space. The same argument on the five-layer grid gives only $O\left(\Delta t + \Delta r\right)$ in the maximum norm, because of the first-order interface residuals: proved, but pessimistic. Its hypotheses are those of the argument itself: on $[t_*, T]$ the solution is four times continuously differentiable in $r$ on each closed layer and twice continuously differentiable in $t$; the grid is piecewise uniform with the interfaces at nodes; and the initial error is bounded in the maximum norm, $\left\|\mathbf{e}(t_*)\right\|_\infty = O(\Delta r)$. A weighted $L^2$ bound on the initial error, as in the next paragraph, is not sufficient for this maximum-norm statement.
 
 **Five layers, weighted $L^2$ norm, second order (PROOF OUTLINE, from derivation B, steps checked in the reconciliation).** Hypotheses: (a) on $[t_*, T]$, $t_* \ge 0$, the solution is four times continuously differentiable in $r$ on each closed layer and twice continuously differentiable in $t$; (b) the grid is piecewise uniform with the interfaces at nodes, with largest spacing $h$; (c) $\left\|\mathbf{e}(t_*)\right\|_V = O\left(\left(h\right)^2\right)$. Claim: $\max_j\left\|\mathbf{e}^j\right\|_V = O\left(\left(h\right)^2 + \Delta t\right)$ on $[t_*, T]$. Steps:
 
@@ -978,7 +988,9 @@ The constants are not tracked, hence the label PROOF OUTLINE. It gives no pointw
 | Stability | $\left\lVert \mathbf{C}^{j+1}\right\rVert _\infty \le \left\lVert \mathbf{C}^j\right\rVert _\infty$ and $\left\lVert \mathbf{C}^{j+1}\right\rVert _V \le \left\lVert \mathbf{C}^j\right\rVert _V$, every $\Delta t > 0$ | PROVED (Eqs. (46), (46a), (46b)) |
 | Positivity and maximum principle | $0 \le C_i^{j+1} \le \max_k C_k^j$, every $\Delta t > 0$; also in floating point for the Thomas algorithm of Section 9.2 (vi) | PROVED |
 | Thomas algorithm | pivots $m_i \ge 1 + \vert U_i\vert$, multipliers below one, no pivoting | PROVED (Section 9.3) |
-| Interface continuity | concentration exact (one shared node value); reconstructed flux (30a) equal from both sides, second order | PROVED (Section 5.4) |
+| Interface continuity | concentration exact (one shared node value); reconstructed flux (30a) equal from both sides | PROVED (Section 5.4) |
+| Interface flux formula (30a) | evaluated on the exact solution, equals the exact interface flow to $O\left(\left(\Delta r\right)^2 + \Delta r\,\Delta t\right)$ | PROVED (Section 5.4, consistency) |
+| Computed interface flux (30a) | second order in space | OBSERVED (Section 5.4); NOT PROVEN (no order proved) |
 | Conservation | $M^j + M_{\mathrm{rel}}^j = M^0$ exactly in exact arithmetic, any grid, any $\Delta t$, any centre row | PROVED (Eqs. (21), (35), (37)) |
 | Conservation in floating point | rounding residual $10^{-13}$ to $10^{-10}$ relative | OBSERVED (Section 9.4) |
 | Consistency | all rows; local order 2, except 1 at interface nodes and spacing jumps | PROVED (Section 9.5) |
@@ -987,7 +999,7 @@ The constants are not tracked, hence the label PROOF OUTLINE. It gives no pointw
 | Temporal order | 1; observed $0.998$ to $1.000$ ($F$ at $2\times10^5\ \mathrm{s}$, $\Delta t = 2000$ to $125\ \mathrm{s}$, 40 intervals per layer; reproduced in the reconciliation) | PROVED for smooth solutions (Eq. (46c), Section 9.5); OBSERVED for the discontinuous start |
 | Spatial order, homogeneous sphere | 2, maximum norm | PROVED (Eq. (46c)) |
 | Spatial order, five layers | 2, weighted $L^2$ norm | PROOF OUTLINE (Section 9.5) |
-| Spatial order, release fraction, synthetic case | observed $1.99$ to $2.05$ | OBSERVED (Section 7) |
+| Spatial order, release fraction, synthetic case | observed $1.99$ to $2.00$ ($m = 5$ to $160$; an earlier $2.05$ for the last refinement is attributed to eigen-solver rounding, Section 7, note) | OBSERVED (Section 7) |
 | Spatial order, discontinuous start | 2 at fixed $t > 0$ | OBSERVED; NOT PROVEN |
 
 ---
@@ -1088,7 +1100,8 @@ The zero in position $(1,0)$ is $L_1 = 0$ (Section 4.3).
 | Hypothesis (3), ghost (33a) vs. balance (33b) at unequal spacing | balance residual $3.15\times10^{-4}$ vs. rounding level, obtained independently by A and B |
 | Hypothesis (4), positivity | no negative value in any run; proved in Section 9.2 |
 | Hypothesis (5), $\theta$ | on unequal spacing only Eq. (40)/(41) gives order 2; on equal spacing $\theta = \frac{1}{2}$ is also second order (Section 7) |
-| Spatial order, $F(2\times10^5\ \mathrm{s})$ vs. reference | $1.988$, $1.997$, $1.999$, $1.997$, $2.050$; reconciliation: $2.00$, $2.00$, $2.00$, $2.01$ |
+| Spatial order, $F(2\times10^5\ \mathrm{s})$ vs. reference | $1.988$, $1.997$, $1.999$, $1.997$, and $2.050$ for the last refinement, which is attributed to eigen-solver rounding (Section 7, note); backward Euler with Richardson extrapolation in $\Delta t$ gives $2.00$ for that refinement. Reconciliation: $2.00$, $2.00$, $2.00$, $2.01$ |
+| Computed interface flux (30a), $t = 2\times10^5\ \mathrm{s}$, self-convergence $m = 10$ to $320$ | observed orders $1.98$ to $2.00$ at all four interfaces (Section 5.4) |
 | Temporal order, BE | $0.998$ to $1.000$; reproduced in the reconciliation |
 | Release rate, homogeneous sphere | order $2.00$ to $2.03$ with exact $M^0$; reproduced in the reconciliation |
 | $F(2\times10^5\ \mathrm{s})$, 40 intervals per layer, $\Delta t = 200\ \mathrm{s}$ | $0.43242910455$ (archive) and $0.432429104571$ (reconciliation), equal within the rounding residual of Section 9.4 |
@@ -1098,7 +1111,7 @@ The zero in position $(1,0)$ is $L_1 = 0$ (Section 4.3).
 1. Directive A7 asks for an independent review. The reconciliation compared two independent derivations and checked each difference; the coordinator decides whether that satisfies A7 or whether Document 2 needs a further review before Phase C.
 2. Floating-point conservation (Section 9.4): analyse the rounding of the Rust Thomas solve and choose the Phase D tolerance from that analysis.
 3. Grid counts per layer for production runs: a convergence study on the AGR-1 geometry with literature diffusivities (Phase D), including whether grading towards $R_1$ helps at early times.
-4. A proof of second-order convergence of the computed release rate (Section 6), and of the discontinuous start (Section 9.5), are open.
+4. A proof of second-order convergence of the computed release rate (Section 6), of the computed interface flux (30a) (Section 5.4), and of the discontinuous start (Section 9.5), are open.
 5. Phase G hooks (Document 2, Section 9, gives the places; none is derived here):
    - decay adds $\lambda\,\Delta t$ to every $B_i$, with the decayed amount $4\pi\lambda\,\Delta t\sum V_iC_i^{j+1}$ booked separately from the release;
    - generation adds $\Delta t\,G_i$ to the right-hand side, with the generated amount $4\pi\sum V_i\,\Delta t\,G_i$. Derivation B found two points that the G1 derivation must settle: a source that differs between two materials needs the half-interval split of $V_i$ at an interface node, and a source that is non-zero at $R_5$ breaks the cancellation in Eq. (36a), so the release then needs the generation in the outer half-interval of node $N$ (archive, Section 9). These findings are recorded, not adopted;

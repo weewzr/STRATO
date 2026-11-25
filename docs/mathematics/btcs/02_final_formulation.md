@@ -336,8 +336,10 @@ The sum may equally run from $i = 0$ to $i = N$, because $V_0 = 0$ and $C_N^j = 
 The outward flow through the last interval, at the new time level (D1, Eq. (36)):
 
 $$
-\Phi^{j+1} = 4\pi\,K_{N-1,\mathrm{outer}}\,C_{N-1}^{j+1} = 4\pi\,\frac{D_{\mathrm{OPyC}}\,r_{N-1}\,R_5}{\Delta r_{\mathrm{OPyC}}}\,C_{N-1}^{j+1}, \qquad j \ge 0. \tag{F26}
+\Phi^{j+1} = 4\pi\,K_{N-1,\mathrm{outer}}\,C_{N-1}^{j+1}, \qquad j \ge 0. \tag{F26}
 $$
+
+**Normative rule.** $K_{N-1,\mathrm{outer}}$ in (F26) is the stored value computed by (F6) with the spacing $\Delta r_{N-1,\mathrm{outer}} = r_N - r_{N-1}$ of (F5): the same number that enters $U_{N-1}$ in (F11) and hence $B_{N-1}$ in (F17). It is not recomputed. Written out, $K_{N-1,\mathrm{outer}} = D_{\mathrm{OPyC}}\,r_{N-1}\,R_5/\Delta r_{N-1,\mathrm{outer}}$, and in exact arithmetic $\Delta r_{N-1,\mathrm{outer}} = \Delta r_{\mathrm{OPyC}}$ of (F2). That second form is explanatory only: in floating point $r_N - r_{N-1}$ and $\left(R_5 - R_4\right)/n_{\mathrm{OPyC}}$ can differ by rounding, and a release computed with a different number from the one in row $N-1$ would add a residual to (F29).
 
 $\Phi^0$ is not defined and not needed. (F26) is the only release formula for which the balance (F29) is exact; it uses the same $K_{N-1,\mathrm{outer}}$ as row $N-1$ and the same time level as the implicit flows.
 
@@ -379,7 +381,7 @@ $$
 \Phi_{R}^{j+1} = 4\pi K_{i,\mathrm{inner}}\left(C_{i-1}^{j+1} - C_i^{j+1}\right) - 4\pi\left(R\right)^2\frac{\Delta r_{i,\mathrm{inner}}}{2}\,\frac{C_i^{j+1} - C_i^j}{\Delta t} = 4\pi K_{i,\mathrm{outer}}\left(C_i^{j+1} - C_{i+1}^{j+1}\right) + 4\pi\left(R\right)^2\frac{\Delta r_{i,\mathrm{outer}}}{2}\,\frac{C_i^{j+1} - C_i^j}{\Delta t}. \tag{F31}
 $$
 
-The two expressions are equal in exact arithmetic (Property P8). Their difference in floating point is a diagnostic.
+The two expressions are equal in exact arithmetic (Property P8). Their difference in floating point is a diagnostic. (F31) is consistent to second order (P8a); the second-order convergence of the computed value is observed only (P8b).
 
 **Centre value.** $C_0^j$ from (F12) is reported as the concentration at $r = 0$. It does not enter (F25) to (F30).
 
@@ -400,14 +402,16 @@ The two expressions are equal in exact arithmetic (Property P8). Their differenc
 | P5 Thomas algorithm | pivots $m_i \ge 1 + \left\lvert U_i\right\rvert$; multipliers $\left\lvert U_i\right\rvert /m_i < 1$; no pivoting needed; cost proportional to $N$ | (H) | PROVED | D1, Section 9.3 |
 | P6 Positivity in floating point | (F24) with $\mathbf{b} \ge 0$ returns a computed solution $\ge 0$ | (H), (F24) coded as written, every computed pivot $m_i > 0$ | PROVED | D1, Section 9.2 (vi) |
 | P7 One-way centre coupling | $L_1 = 0$; rows $1$ to $N-1$, the inventory, the release and (F29) do not depend on row 0 or on $C_0^j$; $\left\lvert e_0^j\right\rvert  \le \max\left(\left\lvert e_0^0\right\rvert , \max_{k\le j}\left\lvert e_1^k\right\rvert \right) + t^j\max\left\lvert \tau_0\right\rvert$ | (H) | PROVED | D1, Section 4.3 |
-| P8 Interface continuity | one shared value per interface node (concentration continuity exact); the two expressions of (F31) are equal; (F31) approximates the exact interface flow to $O\left(\left(\Delta r\right)^2 + \Delta t\right)$ | (H); for the accuracy, a solution smooth on each closed layer | PROVED | D1, Section 5.4 |
-| P9 Conservation | (F29) holds exactly in exact arithmetic | (H); the same $K$ in rows $i$, $i+1$ and in (F26); $V_i$ the weight by which row $i$ was divided; $V_0 = 0$ with $K_{0,\mathrm{outer}} = 0$; release at level $j+1$ | PROVED | D1, Eqs. (21), (35), (37) |
+| P8 Interface continuity | one shared value per interface node (concentration continuity exact); the two expressions of (F31) are equal | (H) | PROVED | D1, Section 5.4 |
+| P8a Interface flux formula (consistency) | (F31) evaluated on the exact solution equals the exact interface flow $\Phi(R, t^{j+1})$ to $O\left(\left(\Delta r\right)^2 + \Delta r\,\Delta t\right)$ | (H); solution three times continuously differentiable in $r$ on each closed layer and twice continuously differentiable in $t$ | PROVED | D1, Section 5.4 |
+| P8b Computed interface flux | (F31) evaluated on the computed solution converges to the exact interface flow at second order in space | as P8a | OBSERVED (orders $1.98$ to $2.00$, self-convergence, synthetic case); NOT PROVEN: no order is proved, because the proved nodal error bounds, divided by $\Delta r$, give none | D1, Section 5.4 |
+| P9 Conservation | (F29) holds exactly in exact arithmetic | (H); the same stored $K$ in rows $i$, $i+1$ and in (F26), in particular the stored $K_{N-1,\mathrm{outer}}$ of (F6) with (F5) in row $N-1$ and in (F26); $V_i$ the weight by which row $i$ was divided; $V_0 = 0$ with $K_{0,\mathrm{outer}} = 0$; release at level $j+1$ | PROVED | D1, Eqs. (21), (35), (37) |
 | P10 Exact initial inventory | $M^0 = \frac{4\pi}{3}\left(R_1\right)^3C_{\mathrm{init}}$ | (F21), (F22) | PROVED | D1, Section 7 |
 | P11 Consistency | every row residual tends to zero; local spatial order 2 at the centre, node 1, interior nodes and row $N-1$; order 1 at the four interface nodes; first order in time | solution four times continuously differentiable in $r$ on each closed layer, twice continuously differentiable in $t$ | PROVED | D1, Section 9.5 |
 | P12 Release formula | (F26) evaluated on the exact solution equals the exact release $-4\pi\left(R_5\right)^2D_{\mathrm{OPyC}}\,\partial_rC(R_5,t)$ to $O\left(\left(\Delta r_{\mathrm{OPyC}}\right)^2\right)$ | solution smooth in the OPyC near $R_5$; no source at $R_5$ | PROVED | D1, Eq. (36a) |
 | P13 Convergence, one material | $\max_j\left\lVert \mathbf{e}^j\right\rVert _\infty = O\left(\Delta t + \left(\Delta r\right)^2\right)$ | one material, uniform grid, smooth solution on $[0,T]$ | PROVED | D1, Eq. (46c) |
 | P14 Convergence, five layers | $\max_j\left\lVert \mathbf{e}^j\right\rVert _V = O\left(\left(\Delta r\right)^2 + \Delta t\right)$ on $[t_*, T]$ | solution four times continuously differentiable in $r$ on each closed layer and twice continuously differentiable in $t$ on $[t_*,T]$; $\left\lVert \mathbf{e}(t_*)\right\rVert _V = O\left(\left(\Delta r\right)^2\right)$ | PROOF OUTLINE | D1, Section 9.5 |
-| P15 Five-layer, maximum norm | $O\left(\Delta t + \Delta r\right)$ | as P14 | PROVED (pessimistic) | D1, Section 9.5 |
+| P15 Five-layer, maximum norm | $\max_j\left\lVert \mathbf{e}^j\right\rVert _\infty = O\left(\Delta t + \Delta r\right)$ on $[t_*, T]$ | (H); solution four times continuously differentiable in $r$ on each closed layer and twice continuously differentiable in $t$ on $[t_*,T]$; $\left\lVert \mathbf{e}(t_*)\right\rVert _\infty = O(\Delta r)$ | PROVED (pessimistic) | D1, Section 9.5 |
 | P16 Discontinuous start | second order in space for $F^j$ and the profile at fixed $t > 0$; first order in time | (F21), (F22) | OBSERVED; NOT PROVEN | D1, Sections 7 and 9.5 |
 | P17 Computed release rate | second order in space | as P12 | OBSERVED; NOT PROVEN | D1, Section 6 |
 | P18 Conservation in floating point | relative residual $\left\lvert \varepsilon^j\right\rvert /M^0$ of $10^{-13}$ to $10^{-10}$ in scratch runs | none | OBSERVED | D1, Section 9.4 |
@@ -451,4 +455,4 @@ The G1 derivation must also fix the time level of the source, its weighting at i
 | Normalisation of $F$ | (F28) with the discrete $M^0$, which equals the exact inventory by P10 | none needed | D1, Section 7 |
 | Row scaling | rows divided by $V_i$, (F11) | rows multiplied by $V_i$: equal in exact arithmetic; no rounding advantage was shown (D1, Section 9.4) | reconciliation |
 | Linear solver | Thomas algorithm (F24) | marching for $C_{i+1}$: unstable | D1, Section 9.3 |
-| Interface flux diagnostic | (F31) | raw one-sided flows: first order only | D1, Section 5.4 |
+| Interface flux diagnostic | (F31) | raw one-sided flows: only first-order consistent | D1, Section 5.4 |
