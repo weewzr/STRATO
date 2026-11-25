@@ -569,7 +569,7 @@ fn inverse_is_nonnegative_p2() {
         report("P2", &format!("entry_tolerance_{label}"), tol);
 
         // The same inverse by (F24) on unit vectors: non-negative exactly (P6).
-        let f = ThomasFactors::new(&m.lower, &m.diag, &m.upper).unwrap();
+        let f = ThomasFactors::new(&m.lower[1..n], &m.diag, &m.upper[..n - 1]).unwrap();
         let mut work = vec![0.0; n];
         let mut col = vec![0.0; n];
         let mut inv_t = vec![vec![0.0; n]; n];

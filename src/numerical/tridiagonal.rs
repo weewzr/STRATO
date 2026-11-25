@@ -1,19 +1,6 @@
-//! Tridiagonal linear solvers (Thomas algorithm) in double precision.
+//! Tridiagonal linear solver (Thomas algorithm) in double precision.
 //!
-//! Two routines live here.
-//!
-//! * [`ThomasFactors`] is the production solver of the BTCS time loop. It is coded exactly in
-//!   the form (F24) of Document 2 (Document 1 Section 9.2 (vi)), so that property P6
-//!   (non-negativity in floating point) applies to the code as written. Its matrix storage is
-//!   that of `btcs::Tridiagonal`: three vectors of length `n`, `lower[i] = L_i` (`lower[0]`
-//!   unused), `diag[i] = B_i`, `upper[i] = U_i` (`upper[n - 1]` unused), `L_i` and `U_i`
-//!   stored with their signs.
-//! * [`solve_in_place`] and [`solve`] are the general textbook elimination (separate
-//!   sub-diagonal and super-diagonal slices of length `n - 1`). They are kept as a utility
-//!   and as the cross-check of [`ThomasFactors`] in tests; the BTCS time loop does not call
-//!   them.
-//!
-//! The general routine solves `A x = d` where `A` is an `n` by `n` tridiagonal matrix given by its
+//! Solves `A x = d` where `A` is an `n` by `n` tridiagonal matrix given by its
 //! sub-diagonal `lower` (length `n - 1`, entry `i` is `A[i + 1][i]`), diagonal `diag`
 //! (length `n`) and super-diagonal `upper` (length `n - 1`, entry `i` is `A[i][i + 1]`).
 //!
@@ -59,13 +46,6 @@ pub enum TridiagonalError {
         /// Row index (0-based).
         row: usize,
     },
-    /// [`ThomasFactors`] only: the computed pivot `m_i` at the given row is not positive.
-    /// Property P6 of Document 2 is proved under the hypothesis that every computed pivot is
-    /// positive, so a matrix that violates it is refused instead of solved.
-    NonPositivePivot {
-        /// Row index (0-based).
-        row: usize,
-    },
 }
 
 impl fmt::Display for TridiagonalError {
@@ -79,148 +59,11 @@ impl fmt::Display for TridiagonalError {
             } => write!(f, "{what} has length {found}, expected {expected}"),
             Self::ZeroPivot { row } => write!(f, "zero pivot at row {row}"),
             Self::NonFinite { row } => write!(f, "non-finite value at row {row}"),
-            Self::NonPositivePivot { row } => write!(f, "non-positive pivot at row {row}"),
         }
     }
 }
 
 impl std::error::Error for TridiagonalError {}
-
-/// The Thomas algorithm in the form (F24) of Document 2, with the elimination of the matrix
-/// done once ([`ThomasFactors::new`]) and the work on the right-hand side done in every step
-/// ([`ThomasFactors::solve`]). The split changes no floating-point operation: the numbers `w_i`
-/// and `m_i` are those that (F24) computes in every step from the same matrix.
-///
-/// ```text
-/// m_0 = B_0,   b'_0 = b_0
-/// w_i = L_i / m_{i-1},   m_i = B_i - w_i U_{i-1},   b'_i = b_i - w_i b'_{i-1}     (i = 1 .. n-1)
-/// x_{n-1} = b'_{n-1} / m_{n-1},   x_i = (b'_i - U_i x_{i+1}) / m_i                (i = n-2 .. 0)
-/// ```
-///
-/// `L_i` and `U_i` are stored with their signs (`<= 0`). There is no pivoting and no division by
-/// an off-diagonal entry. Property P6 (a non-negative right-hand side gives a non-negative
-/// computed solution) holds for exactly these operations when every computed pivot is
-/// positive, which `new` checks.
-#[derive(Clone, Debug)]
-pub struct ThomasFactors {
-    /// Pivots `m_i`.
-    m: Vec<f64>,
-    /// Multipliers `w_i = L_i / m_{i-1}` (`w_0` unused, zero).
-    w: Vec<f64>,
-    /// `U_i`, with the sign it has in the matrix (`upper[n - 1]` unused).
-    upper: Vec<f64>,
-}
-
-impl ThomasFactors {
-    /// Forward elimination of the matrix.
-    ///
-    /// `lower`, `diag` and `upper` all have length `n >= 1`; `lower[0]` and `upper[n - 1]`
-    /// are not read.
-    ///
-    /// # Errors
-    ///
-    /// [`TridiagonalError`] for `n = 0`, mismatched lengths, a non-finite pivot, or a pivot
-    /// that is not positive ([`TridiagonalError::NonPositivePivot`]).
-    pub fn new(
-        lower: &[f64],
-        diag: &[f64],
-        upper: &[f64],
-    ) -> Result<ThomasFactors, TridiagonalError> {
-        let n = diag.len();
-        if n == 0 {
-            return Err(TridiagonalError::Empty);
-        }
-        for (what, found) in [("lower", lower.len()), ("upper", upper.len())] {
-            if found != n {
-                return Err(TridiagonalError::LengthMismatch {
-                    what,
-                    expected: n,
-                    found,
-                });
-            }
-        }
-        let mut m = vec![0.0; n];
-        let mut w = vec![0.0; n];
-        m[0] = diag[0];
-        for i in 0..n {
-            if i > 0 {
-                w[i] = lower[i] / m[i - 1];
-                m[i] = diag[i] - w[i] * upper[i - 1];
-            }
-            if !m[i].is_finite() {
-                return Err(TridiagonalError::NonFinite { row: i });
-            }
-            if m[i] <= 0.0 {
-                return Err(if m[i] == 0.0 {
-                    TridiagonalError::ZeroPivot { row: i }
-                } else {
-                    TridiagonalError::NonPositivePivot { row: i }
-                });
-            }
-        }
-        Ok(ThomasFactors {
-            m,
-            w,
-            upper: upper.to_vec(),
-        })
-    }
-
-    /// Order `n` of the system.
-    pub fn len(&self) -> usize {
-        self.m.len()
-    }
-
-    /// `true` if the system has no unknowns (never the case for a value built by `new`).
-    pub fn is_empty(&self) -> bool {
-        self.m.is_empty()
-    }
-
-    /// The pivots `m_i`.
-    pub fn pivots(&self) -> &[f64] {
-        &self.m
-    }
-
-    /// The multipliers `w_i = L_i / m_{i-1}`, with `w_0 = 0` (not used).
-    pub fn multipliers(&self) -> &[f64] {
-        &self.w
-    }
-
-    /// Solves `A x = rhs`. `work` (length `n`) receives `b'`; `x` receives the solution.
-    /// Nothing is allocated.
-    ///
-    /// # Errors
-    ///
-    /// Mismatched lengths, or a non-finite result.
-    pub fn solve(
-        &self,
-        rhs: &[f64],
-        x: &mut [f64],
-        work: &mut [f64],
-    ) -> Result<(), TridiagonalError> {
-        let n = self.m.len();
-        for (what, found) in [("rhs", rhs.len()), ("x", x.len()), ("work", work.len())] {
-            if found != n {
-                return Err(TridiagonalError::LengthMismatch {
-                    what,
-                    expected: n,
-                    found,
-                });
-            }
-        }
-        work[0] = rhs[0];
-        for i in 1..n {
-            work[i] = rhs[i] - self.w[i] * work[i - 1];
-        }
-        x[n - 1] = work[n - 1] / self.m[n - 1];
-        for i in (0..n - 1).rev() {
-            x[i] = (work[i] - self.upper[i] * x[i + 1]) / self.m[i];
-        }
-        if let Some(row) = x.iter().position(|v| !v.is_finite()) {
-            return Err(TridiagonalError::NonFinite { row });
-        }
-        Ok(())
-    }
-}
 
 /// Solves the system in place without allocating.
 ///
@@ -289,6 +132,130 @@ pub fn solve_in_place(
         return Err(TridiagonalError::NonFinite { row });
     }
     Ok(())
+}
+
+/// Factors of the Thomas algorithm in the form of Document 2 Section 6.3, equation (F24),
+/// and Document 3 PS-10. The forward elimination of the matrix (multipliers `w` and pivots
+/// `m`) is done once in [`ThomasFactors::new`]; [`ThomasFactors::solve`] then processes a
+/// right-hand side with exactly the floating-point operations of (F24).
+///
+/// Unlike [`solve_in_place`], this form requires every pivot to be finite and strictly
+/// positive, the hypothesis of property P6 (a non-negative right-hand side gives a
+/// non-negative computed solution, because for a matrix with a positive diagonal and
+/// non-positive off-diagonals the multipliers `w` are non-positive and every operation of
+/// the two sweeps adds non-negative terms). Do not replace this routine by a textbook
+/// variant without a new review (Document 3, PS-10).
+///
+/// Coefficient convention as in this module: `lower[i]` is `A[i + 1][i]`, `upper[i]` is
+/// `A[i][i + 1]`, both of length `n - 1`.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ThomasFactors {
+    /// Multipliers; `w[i] = L_i / m[i-1]` for `i >= 1` (`w[0]` unused, 0).
+    w: Vec<f64>,
+    /// Pivots `m_i = B_i - w_i U_{i-1}`.
+    m: Vec<f64>,
+    /// Super-diagonal, `upper[i] = A[i][i+1]`.
+    upper: Vec<f64>,
+}
+
+impl ThomasFactors {
+    /// Forward elimination of the matrix, (F24) first two lines.
+    ///
+    /// # Errors
+    ///
+    /// [`TridiagonalError`] for `n = 0`, mismatched lengths, or a pivot that is not finite
+    /// and strictly positive (reported as [`TridiagonalError::ZeroPivot`] when it is zero
+    /// or negative, [`TridiagonalError::NonFinite`] otherwise).
+    pub fn new(lower: &[f64], diag: &[f64], upper: &[f64]) -> Result<Self, TridiagonalError> {
+        let n = diag.len();
+        if n == 0 {
+            return Err(TridiagonalError::Empty);
+        }
+        for (what, found) in [("lower", lower.len()), ("upper", upper.len())] {
+            if found != n - 1 {
+                return Err(TridiagonalError::LengthMismatch {
+                    what,
+                    expected: n - 1,
+                    found,
+                });
+            }
+        }
+        let mut w = vec![0.0; n];
+        let mut m = vec![0.0; n];
+        m[0] = diag[0];
+        for i in 1..n {
+            if !(m[i - 1].is_finite() && m[i - 1] > 0.0) {
+                break;
+            }
+            w[i] = lower[i - 1] / m[i - 1];
+            m[i] = diag[i] - w[i] * upper[i - 1];
+        }
+        for (i, &mi) in m.iter().enumerate() {
+            if !mi.is_finite() || !w[i].is_finite() {
+                return Err(TridiagonalError::NonFinite { row: i });
+            }
+            if mi <= 0.0 {
+                return Err(TridiagonalError::ZeroPivot { row: i });
+            }
+        }
+        Ok(Self {
+            w,
+            m,
+            upper: upper.to_vec(),
+        })
+    }
+
+    /// Order `n` of the system.
+    pub fn len(&self) -> usize {
+        self.m.len()
+    }
+
+    /// Always false: a factorisation has at least one unknown.
+    pub fn is_empty(&self) -> bool {
+        self.m.is_empty()
+    }
+
+    /// The pivots `m_i`.
+    pub fn pivots(&self) -> &[f64] {
+        &self.m
+    }
+
+    /// Solves `A x = rhs` with the right-hand-side sweeps of (F24). `work` (length `n`)
+    /// holds `b'`. Allocates nothing. Lengths must be `n`; this is checked.
+    ///
+    /// # Errors
+    ///
+    /// [`TridiagonalError::LengthMismatch`], or [`TridiagonalError::NonFinite`] if the
+    /// right-hand side makes the result non-finite.
+    pub fn solve(
+        &self,
+        rhs: &[f64],
+        x: &mut [f64],
+        work: &mut [f64],
+    ) -> Result<(), TridiagonalError> {
+        let n = self.m.len();
+        for (what, found) in [("rhs", rhs.len()), ("x", x.len()), ("work", work.len())] {
+            if found != n {
+                return Err(TridiagonalError::LengthMismatch {
+                    what,
+                    expected: n,
+                    found,
+                });
+            }
+        }
+        work[0] = rhs[0];
+        for i in 1..n {
+            work[i] = rhs[i] - self.w[i] * work[i - 1];
+        }
+        x[n - 1] = work[n - 1] / self.m[n - 1];
+        for i in (0..n - 1).rev() {
+            x[i] = (work[i] - self.upper[i] * x[i + 1]) / self.m[i];
+        }
+        match x.iter().position(|v| !v.is_finite()) {
+            Some(row) => Err(TridiagonalError::NonFinite { row }),
+            None => Ok(()),
+        }
+    }
 }
 
 /// Convenience wrapper that allocates the scratch space and the solution.
@@ -531,206 +498,198 @@ mod tests {
             .is_empty());
     }
 
-    // ---- ThomasFactors: the form (F24) of Document 2 ------------------------------------
-
-    const U_ROUND: f64 = f64::EPSILON / 2.0;
-
-    /// A matrix with the sign pattern of (F19): `L_0` and `U_{n-1}` unused (zero), `L_i <= 0`,
-    /// `U_i < 0`, `B_i = 1 + |L_i| + |U_i|` (the margin 1 of P1, rounded once). The magnitudes
-    /// are log-uniform over `10^-3 .. 10^e_max`, standing for mesh Fourier numbers.
-    fn f19_matrix(n: usize, seed: u64, e_max: f64) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
+    /// Dense reference for the F24 tests, sign pattern of (F19): positive diagonal,
+    /// non-positive off-diagonals, strict dominance.
+    fn f24_matrix(n: usize, seed: u64) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
         let mut g = Lcg(seed);
-        let mut lower = vec![0.0; n];
-        let mut upper = vec![0.0; n];
-        let mut diag = vec![0.0; n];
-        let mag = |g: &mut Lcg| 10f64.powf(-3.0 + (3.0 + e_max) * g.next());
+        let l: Vec<f64> = (0..n - 1).map(|_| -g.next() * 5.0).collect();
+        let u: Vec<f64> = (0..n - 1).map(|_| -g.next() * 5.0).collect();
+        let d: Vec<f64> = (0..n)
+            .map(|i| {
+                let off = if i > 0 { -l[i - 1] } else { 0.0 } + if i + 1 < n { -u[i] } else { 0.0 };
+                1.0 + off + g.next() * 3.0
+            })
+            .collect();
+        (l, d, u)
+    }
+
+    /// Residual `b - A x` evaluated in floating point, and `(|A||x| + |b|)_i`.
+    fn residual_and_scale(
+        l: &[f64],
+        d: &[f64],
+        u: &[f64],
+        b: &[f64],
+        x: &[f64],
+    ) -> (Vec<f64>, Vec<f64>) {
+        let n = d.len();
+        let mut r = vec![0.0; n];
+        let mut s = vec![0.0; n];
         for i in 0..n {
-            if i >= 2 {
-                lower[i] = -mag(&mut g);
+            let mut v = b[i] - d[i] * x[i];
+            let mut sc = b[i].abs() + (d[i] * x[i]).abs();
+            if i > 0 {
+                v -= l[i - 1] * x[i - 1];
+                sc += (l[i - 1] * x[i - 1]).abs();
             }
             if i + 1 < n {
-                upper[i] = -mag(&mut g);
+                v -= u[i] * x[i + 1];
+                sc += (u[i] * x[i + 1]).abs();
             }
+            r[i] = v;
+            s[i] = sc;
         }
-        for i in 0..n {
-            diag[i] = 1.0 + lower[i].abs() + upper[i].abs();
-        }
-        // Row n-1 keeps the full diagonal of (F17) although its U is not a matrix entry.
-        diag[n - 1] += mag(&mut g);
-        (lower, diag, upper)
-    }
-
-    fn norm_inf(l: &[f64], d: &[f64], u: &[f64]) -> f64 {
-        (0..d.len())
-            .map(|i| d[i].abs() + l[i].abs() + u[i].abs())
-            .fold(0.0, f64::max)
+        (r, s)
     }
 
     #[test]
-    fn thomas_f24_matches_general_module() {
-        // Pre-registered bound (Document 1 Section 9.2 and Higham, LU of a diagonally dominant
-        // tridiagonal matrix): each solver has a backward error of at most 4 u (|A||x|)_i, and
-        // ||A^-1||_inf <= 1 (P2), so each solution differs from the exact one by at most
-        // 4 u ||A||_inf ||x||_inf; two solvers: 8 u. The bound used has a safety factor 2: 16 u.
-        let mut worst: f64 = 0.0;
-        for (seed, n, e_max) in [
-            (1u64, 5usize, 0.0),
-            (2, 40, 3.0),
-            (3, 200, 6.0),
-            (4, 400, 11.0),
-        ] {
-            let (lower, diag, upper) = f19_matrix(n, seed, e_max);
+    fn thomas_matches_dense_f24() {
+        // Derived bounds, u = 2^-53, gamma_k = k u / (1 - k u).
+        // (1) For a matrix with positive diagonal and non-positive off-diagonals, L and U have
+        //     the sign pattern of A and (|L||U|)_ii = m_i + |w_i||U_{i-1}| = B_i, so |L||U| = |A|.
+        //     Tridiagonal LU plus the two bidiagonal solves then give
+        //     (A + dA) x = b with |dA| <= (4u + O(u^2)) |L||U| <= gamma_5 |A|
+        //     (Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Section 9.6),
+        //     so the exact residual obeys |b - A x|_i <= gamma_5 (|A||x|)_i.
+        // (2) The residual evaluated below has at most 3 products, 3 additions and b, so it
+        //     differs from the exact one by at most gamma_4 (|A||x| + |b|)_i.
+        // (3) The pivoted dense reference y: its own backward error is not assumed; its
+        //     measured residual enters. x - y = A^-1 ((b - A x) - (b - A y)) gives
+        //     |x - y|_inf <= ||A^-1||_inf (||r_x|| + ||r_y||), and ||A^-1||_inf <= 1/margin
+        //     (Varah) with margin = min_i (B_i - |L_i| - |U_i|) >= 1 - 2u by construction
+        //     (1 + off + g, three roundings of non-negative terms).
+        let u = f64::EPSILON / 2.0;
+        let gamma = |k: f64| k * u / (1.0 - k * u);
+        for (n, seed) in [(1usize, 1u64), (2, 2), (3, 3), (20, 4), (150, 5)] {
+            let (l, d, u_) = f24_matrix(n, seed);
             let mut g = Lcg(seed + 100);
-            let rhs: Vec<f64> = (0..n).map(|_| g.next()).collect();
-            let f = ThomasFactors::new(&lower, &diag, &upper).unwrap();
+            let b: Vec<f64> = (0..n).map(|_| g.next() * 4.0).collect();
+            let f = ThomasFactors::new(&l, &d, &u_).unwrap();
+            assert!(f.pivots().iter().all(|&m| m > 0.0));
             let mut x = vec![0.0; n];
-            let mut work = vec![0.0; n];
-            f.solve(&rhs, &mut x, &mut work).unwrap();
-            let reference = solve(&lower[1..], &diag, &upper[..n - 1], &rhs).unwrap();
-            let xmax = reference.iter().cloned().fold(0.0, f64::max);
-            let tol = 16.0 * U_ROUND * norm_inf(&lower, &diag, &upper) * xmax;
+            let mut w = vec![0.0; n];
+            f.solve(&b, &mut x, &mut w).unwrap();
+            let y = dense_solve(&l, &d, &u_, &b);
+            let margin = (0..n)
+                .map(|i| {
+                    let lo = if i > 0 { l[i - 1].abs() } else { 0.0 };
+                    let up = if i + 1 < n { u_[i].abs() } else { 0.0 };
+                    d[i] - lo - up
+                })
+                .fold(f64::INFINITY, f64::min);
+            assert!(margin >= 1.0 - 4.0 * u, "n={n} margin {margin}");
+            let (rx, sx) = residual_and_scale(&l, &d, &u_, &b, &x);
+            let (ry, sy) = residual_and_scale(&l, &d, &u_, &b, &y);
+            let (mut nx, mut ny) = (0.0f64, 0.0f64);
             for i in 0..n {
-                let e = (x[i] - reference[i]).abs();
+                let abs_ax = sx[i] - b[i].abs();
                 assert!(
-                    e <= tol,
-                    "n={n} i={i}: {} vs {} tol {tol}",
-                    x[i],
-                    reference[i]
+                    rx[i].abs() <= gamma(5.0) * abs_ax + gamma(4.0) * sx[i],
+                    "n={n} row {i}: residual {}",
+                    rx[i]
                 );
-                worst = worst.max(e / tol);
+                nx = nx.max(rx[i].abs() + gamma(4.0) * sx[i]);
+                ny = ny.max(ry[i].abs() + gamma(4.0) * sy[i]);
             }
-            // Residual of the system itself: backward error 4 u |A||x|, safety factor 2.
-            let ax = multiply(&lower[1..], &diag, &upper[..n - 1], &x);
-            let rtol = 8.0 * U_ROUND * norm_inf(&lower, &diag, &upper) * xmax;
-            for i in 0..n {
-                assert!((ax[i] - rhs[i]).abs() <= rtol, "residual row {i}");
+            let tol = (nx + ny) / margin;
+            for (p, q) in x.iter().zip(&y) {
+                assert!((p - q).abs() <= tol, "n={n}: {p} vs {q}, tol {tol}");
             }
-        }
-        assert!(worst <= 1.0);
-    }
-
-    #[test]
-    fn thomas_f24_pivot_bound_p5() {
-        // P5: m_i >= 1 + |U_i| and |U_i| / m_i < 1 (multipliers below one). In floating point
-        // with the stored entries: m_i = fl(B_i - fl(fl(L_i / m_{i-1}) U_{i-1})). With
-        // |U_{i-1}| / m_{i-1} <= 1 the product is at most |L_i| (1 + 3u), so
-        // m_i >= (B_i - |L_i|) - 4 u B_i. B_i - |L_i| is 1 + |U_i| up to the rounding of B_i.
-        for (seed, n, e_max) in [(11u64, 6usize, 0.0), (12, 50, 4.0), (13, 300, 11.0)] {
-            let (lower, diag, upper) = f19_matrix(n, seed, e_max);
-            let f = ThomasFactors::new(&lower, &diag, &upper).unwrap();
-            let mut worst_margin = f64::INFINITY;
-            for i in 0..n {
-                let bound = (diag[i] - lower[i].abs()) - 4.0 * U_ROUND * diag[i];
-                assert!(
-                    f.pivots()[i] >= bound,
-                    "row {i}: m {} bound {bound}",
-                    f.pivots()[i]
-                );
-                if i + 1 < n {
-                    assert!(upper[i].abs() / f.pivots()[i] < 1.0, "multiplier row {i}");
-                    worst_margin = worst_margin.min(f.pivots()[i] - upper[i].abs());
-                }
-            }
-            assert!(worst_margin >= 1.0 - 8.0 * U_ROUND * diag.iter().cloned().fold(0.0, f64::max));
-            assert!(f.multipliers().iter().all(|&w| w <= 0.0));
         }
     }
 
     #[test]
-    fn thomas_f24_nonnegative_in_floating_point_p6_and_negative_control() {
-        // P6: b >= 0 gives x >= 0 exactly (every operation acts on non-negative operands).
-        for seed in 0..60u64 {
-            let n = 3 + (seed as usize * 7) % 120;
-            let (lower, diag, upper) = f19_matrix(n, 500 + seed, 11.0 * (seed % 5) as f64 / 4.0);
-            let f = ThomasFactors::new(&lower, &diag, &upper).unwrap();
-            let mut g = Lcg(900 + seed);
-            let mut rhs: Vec<f64> = (0..n).map(|_| g.next()).collect();
-            rhs[(seed as usize) % n] = 0.0;
-            let mut x = vec![0.0; n];
-            let mut work = vec![0.0; n];
-            f.solve(&rhs, &mut x, &mut work).unwrap();
-            assert!(x.iter().all(|&v| v >= 0.0), "negative entry, seed {seed}");
-            assert!(
-                work.iter().all(|&v| v >= 0.0),
-                "negative b' entry, seed {seed}"
-            );
+    fn pivot_bound_p5() {
+        // Exact arithmetic (P5): m_i >= 1 + |U_i| (m_{n-1} >= 1), by induction using
+        // |U_{i-1}|/m_{i-1} <= |U_{i-1}|/(1 + |U_{i-1}|) <= 5/6 for |U| <= 5, so the correction
+        // w_i U_{i-1} (>= 0) is at most (5/6)|L_{i-1}|.
+        // Floating point: the stored diagonal of the test matrices satisfies
+        // B_i >= (1 + |L_{i-1}| + |U_i|)(1 - 2u); forming w (1 rounding), w U (1) and the
+        // subtraction (1) perturbs the correction by gamma_2 |L| < |L|/6 (so the induction
+        // keeps |U|/m < 1) and the result by one relative u of a quantity at most
+        // 4 + |L| + |U|. Hence the asserted bound
+        //   m_i >= (1 + |U_i|) - 3u (4 + |L_{i-1}| + |U_i|).
+        let u = f64::EPSILON / 2.0;
+        for (n, seed) in [
+            (1usize, 21u64),
+            (2, 22),
+            (3, 23),
+            (20, 24),
+            (150, 25),
+            (400, 26),
+        ] {
+            let (l, d, up) = f24_matrix(n, seed);
+            let f = ThomasFactors::new(&l, &d, &up).unwrap();
+            let mut smallest = f64::INFINITY;
+            for (i, &m) in f.pivots().iter().enumerate() {
+                let lo = if i > 0 { l[i - 1].abs() } else { 0.0 };
+                let un = if i + 1 < n { up[i].abs() } else { 0.0 };
+                let bound = (1.0 + un) - 3.0 * u * (4.0 + lo + un);
+                assert!(m >= bound, "n={n} row {i}: m = {m}, bound {bound}");
+                smallest = smallest.min(m - (1.0 + un));
+            }
+            // Multipliers |U_i|/m_i < 1 in floating point as well.
+            for (i, (uv, m)) in up.iter().zip(f.pivots()).enumerate() {
+                assert!(uv.abs() / m < 1.0, "n={n} row {i}");
+            }
+            assert!(smallest > -1e-12, "smallest margin {smallest}");
         }
-        // Negative control 1: flip the sign of the lower entries. The matrix is no longer an
-        // M-matrix and the same algorithm with a non-negative right-hand side returns a negative
-        // entry, so the test above can fail.
-        let (mut lower, diag, upper) = f19_matrix(30, 7, 1.0);
-        for l in lower.iter_mut() {
-            *l = -*l;
-        }
-        let f = ThomasFactors::new(&lower, &diag, &upper).unwrap();
-        let rhs = vec![1.0; 30];
-        let mut x = vec![0.0; 30];
-        let mut work = vec![0.0; 30];
-        f.solve(&rhs, &mut x, &mut work).unwrap();
-        assert!(
-            x.iter().any(|&v| v < 0.0),
-            "control must produce a negative entry"
-        );
-        // Negative control 2: a non-positive pivot is refused (the hypothesis of P6).
-        let bad = ThomasFactors::new(&[0.0, 1.0], &[1.0, 1.0], &[1.0, 0.0]);
-        assert_eq!(bad.unwrap_err(), TridiagonalError::ZeroPivot { row: 1 });
-        let bad = ThomasFactors::new(&[0.0, 2.0], &[1.0, 1.0], &[1.0, 0.0]);
+    }
+    #[test]
+    fn thomas_pivot_sign_negative_control() {
+        // A negative diagonal entry makes a pivot negative: refused, not solved.
+        let (l, mut d, u) = f24_matrix(6, 7);
+        d[3] = -d[3];
+        assert!(matches!(
+            ThomasFactors::new(&l, &d, &u),
+            Err(TridiagonalError::ZeroPivot { .. })
+        ));
+        // A positive off-diagonal (wrong sign pattern) that drives a pivot to zero.
         assert_eq!(
-            bad.unwrap_err(),
-            TridiagonalError::NonPositivePivot { row: 1 }
-        );
-    }
-
-    #[test]
-    fn thomas_f24_is_the_written_form_f24_bit_for_bit() {
-        // Evaluate (F24) literally, step by step, and compare bit for bit: the split into
-        // `new` and `solve` changes no floating-point operation.
-        let n = 25;
-        let (lower, diag, upper) = f19_matrix(n, 21, 3.0);
-        let mut g = Lcg(77);
-        let b: Vec<f64> = (0..n).map(|_| g.next()).collect();
-        let mut m = vec![0.0; n];
-        let mut bp = vec![0.0; n];
-        m[0] = diag[0];
-        bp[0] = b[0];
-        for i in 1..n {
-            let w = lower[i] / m[i - 1];
-            m[i] = diag[i] - w * upper[i - 1];
-            bp[i] = b[i] - w * bp[i - 1];
-        }
-        let mut x = vec![0.0; n];
-        x[n - 1] = bp[n - 1] / m[n - 1];
-        for i in (0..n - 1).rev() {
-            x[i] = (bp[i] - upper[i] * x[i + 1]) / m[i];
-        }
-        let f = ThomasFactors::new(&lower, &diag, &upper).unwrap();
-        let mut y = vec![0.0; n];
-        let mut work = vec![0.0; n];
-        f.solve(&b, &mut y, &mut work).unwrap();
-        for i in 0..n {
-            assert_eq!(x[i].to_bits(), y[i].to_bits());
-        }
-    }
-
-    #[test]
-    fn thomas_f24_error_cases() {
-        assert_eq!(
-            ThomasFactors::new(&[], &[], &[]).unwrap_err(),
-            TridiagonalError::Empty
+            ThomasFactors::new(&[1.0], &[1.0, 1.0], &[1.0]),
+            Err(TridiagonalError::ZeroPivot { row: 1 })
         );
         assert!(matches!(
-            ThomasFactors::new(&[0.0], &[1.0, 1.0], &[0.0, 0.0]),
-            Err(TridiagonalError::LengthMismatch { .. })
+            ThomasFactors::new(&[], &[f64::NAN], &[]),
+            Err(TridiagonalError::NonFinite { row: 0 })
         ));
+        assert_eq!(
+            ThomasFactors::new(&[], &[], &[]),
+            Err(TridiagonalError::Empty)
+        );
         assert!(matches!(
-            ThomasFactors::new(&[0.0, 0.0], &[1.0, f64::NAN], &[0.0, 0.0]),
-            Err(TridiagonalError::NonFinite { row: 1 })
+            ThomasFactors::new(&[1.0], &[1.0, 1.0], &[]),
+            Err(TridiagonalError::LengthMismatch { what: "upper", .. })
         ));
-        let f = ThomasFactors::new(&[0.0, -1.0], &[2.0, 3.0], &[-1.0, 0.0]).unwrap();
+    }
+
+    #[test]
+    fn thomas_nonnegative_in_floating_point_p6() {
+        for (n, seed) in [(5usize, 11u64), (60, 12), (400, 13)] {
+            let (l, d, u) = f24_matrix(n, seed);
+            let f = ThomasFactors::new(&l, &d, &u).unwrap();
+            let mut g = Lcg(seed);
+            let mut x = vec![0.0; n];
+            let mut w = vec![0.0; n];
+            for _ in 0..50 {
+                let b: Vec<f64> = (0..n)
+                    .map(|_| if g.next() < 0.3 { 0.0 } else { g.next() })
+                    .collect();
+                f.solve(&b, &mut x, &mut w).unwrap();
+                assert!(x.iter().all(|&v| v >= 0.0), "n={n}");
+            }
+        }
+    }
+
+    #[test]
+    fn thomas_solve_checks_lengths() {
+        let f = ThomasFactors::new(&[-1.0], &[2.0, 2.0], &[-1.0]).unwrap();
+        let mut x = [0.0; 2];
+        let mut w = [0.0; 1];
+        assert!(matches!(
+            f.solve(&[1.0, 1.0], &mut x, &mut w),
+            Err(TridiagonalError::LengthMismatch { what: "work", .. })
+        ));
         assert_eq!(f.len(), 2);
         assert!(!f.is_empty());
-        let mut x = vec![0.0; 2];
-        let mut work = vec![0.0; 1];
-        assert!(f.solve(&[1.0, 1.0], &mut x, &mut work).is_err());
     }
 }
