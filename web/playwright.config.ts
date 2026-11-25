@@ -12,13 +12,20 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: 0,
   workers: process.env.CI ? 2 : 4,
-  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list']],
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never', outputFolder: process.env.PW_REPORT_DIR ?? 'playwright-report' }]] : [['list']],
   use: {
     baseURL: `http://localhost:${port}/STRATO/`,
     trace: 'off',
     ...(channel ? { channel } : {}),
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'], ...(channel ? { channel } : {}) } }],
+  // The frame-rate tests (tagged @perf) form their own project with one worker. Continuous
+  // integration runs `--project=chromium` and then `--project=performance` in a separate step, so a
+  // frame rate is never measured while another browser shares the machine. Locally, run
+  // `npx playwright test --project=performance` on its own for a measurement that means something.
+  projects: [
+    { name: 'chromium', grepInvert: /@perf/, use: { ...devices['Desktop Chrome'], ...(channel ? { channel } : {}) } },
+    { name: 'performance', grep: /@perf/, workers: 1, fullyParallel: false, use: { ...devices['Desktop Chrome'], ...(channel ? { channel } : {}) } },
+  ],
   webServer: {
     command: 'npm run preview',
     url: `http://localhost:${port}/STRATO/`,

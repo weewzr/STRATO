@@ -33,6 +33,99 @@ async function row(page: Page): Promise<number> {
   return Number(await page.getByTestId('playback').getAttribute('data-row'));
 }
 
+// Frame-rate measurement (prompt/TESTING_AND_VALIDATION.md Section 3, row 4: playback at 30 fps or
+// more, measured in e2e). The tests tagged @perf run in the Playwright project "performance" with
+// one worker, and continuous integration runs that project in its own step after the other tests,
+// so no other browser shares the machine while a frame rate is measured.
+const PERF_WINDOW_MS = 1000;
+
+interface FrameRate {
+  fps: number;
+  frames: number;
+  ms: number;
+  medianIntervalMs: number;
+  maxIntervalMs: number;
+  idleRafHz: number;
+  renderer: string;
+}
+
+/** The WebGL renderer of this browser (software or hardware), recorded with every measurement. */
+async function webglRenderer(page: Page): Promise<string> {
+  return page.evaluate(() => {
+    const gl = document.createElement('canvas').getContext('webgl2');
+    if (!gl) return 'no WebGL 2';
+    const ext = gl.getExtension('WEBGL_debug_renderer_info');
+    const name = String(gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER));
+    gl.getExtension('WEBGL_lose_context')?.loseContext();
+    return name;
+  });
+}
+
+/** Animation-frame callbacks per second of the idle page (the browser's own frame cadence). */
+async function idleRafRate(page: Page): Promise<number> {
+  return page.evaluate(
+    () =>
+      new Promise<number>((resolve) => {
+        let n = 0;
+        let start = 0;
+        const step = (t: number) => {
+          if (n === 0) start = t;
+          n += 1;
+          if (n === 61) resolve(60_000 / (t - start));
+          else requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      }),
+  );
+}
+
+/**
+ * Plays from row 0 at 8x and measures the rate at which the view draws, from the page's own clock:
+ * every change of the view's frame counter (`attr` on `testId`) is time-stamped in the page, and the
+ * rate is the counter's increase over the time between the first change after the click (playback
+ * has begun) and the last change inside the following PERF_WINDOW_MS.
+ */
+async function measurePlayback(page: Page, testId: string, attr: string): Promise<FrameRate> {
+  const renderer = await webglRenderer(page);
+  await page.getByTestId('pb-slider').fill('0');
+  await page.getByTestId('pb-speed').selectOption('8');
+  const idleRafHz = await idleRafRate(page);
+  await page.getByTestId(testId).evaluate((el, a) => {
+    const w = window as unknown as { __frameSamples: { t: number; n: number }[] };
+    w.__frameSamples = [];
+    new MutationObserver((records) => {
+      const t = performance.now();
+      for (let i = 0; i < records.length; i++) w.__frameSamples.push({ t, n: Number(el.getAttribute(a) ?? '0') });
+    }).observe(el, { attributes: true, attributeFilter: [a] });
+  }, attr);
+  await page.getByTestId('pb-play').click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __frameSamples: unknown[] }).__frameSamples.length), { timeout: 10_000 }).toBeGreaterThan(0);
+  await page.waitForTimeout(PERF_WINDOW_MS + 300);
+  const samples = await page.evaluate(() => (window as unknown as { __frameSamples: { t: number; n: number }[] }).__frameSamples);
+  const first = samples[0]!;
+  const inside = samples.filter((s) => s.t <= first.t + PERF_WINDOW_MS);
+  const last = inside[inside.length - 1]!;
+  const intervals = inside.slice(1).map((s, i) => s.t - inside[i]!.t).sort((a, b) => a - b);
+  const ms = last.t - first.t;
+  return {
+    fps: ms > 0 ? ((last.n - first.n) / ms) * 1000 : 0,
+    frames: last.n - first.n,
+    ms,
+    medianIntervalMs: intervals.length ? intervals[Math.floor(intervals.length / 2)]! : NaN,
+    maxIntervalMs: intervals.length ? intervals[intervals.length - 1]! : NaN,
+    idleRafHz,
+    renderer,
+  };
+}
+
+function recordFrameRate(info: { annotations: { type: string; description?: string }[] }, name: string, r: FrameRate, extra: Record<string, unknown> = {}): void {
+  const line = `${name}: ${r.fps.toFixed(1)} fps (${r.frames} frames in ${r.ms.toFixed(0)} ms; median interval ${r.medianIntervalMs.toFixed(1)} ms, longest ${r.maxIntervalMs.toFixed(1)} ms; idle animation frames ${r.idleRafHz.toFixed(1)} per s; renderer ${r.renderer})`;
+  info.annotations.push({ type: name, description: line });
+  // Printed so that the workflow log of continuous integration carries the measurement.
+  process.stdout.write(`${line}\n`);
+  if (dir) writeFileSync(join(dir, `${name}.json`), JSON.stringify({ ...r, ...extra }, null, 2));
+}
+
 test.describe('particle colouring and layer shares', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -119,7 +212,7 @@ test.describe('playback', () => {
     expect(await row(page)).toBe(at - 1);
   });
 
-  test('frame rate of the 2D playback at 8x over 1001 output rows', async ({ page, problems }, info) => {
+  test('frame rate of the 2D playback at 8x over 1001 output rows', { tag: '@perf' }, async ({ page, problems }, info) => {
     void problems;
     await gotoSection(page, 'explore');
     await waitForRun(page);
@@ -127,19 +220,10 @@ test.describe('playback', () => {
     await page.getByTestId('output-every-field').press('Enter');
     await expect.poll(async () => Number(await page.getByTestId('pb-slider').getAttribute('max')), { timeout: 20_000 }).toBe(1000);
     await waitForRun(page);
-    await page.getByTestId('pb-slider').fill('0');
-    await page.getByTestId('pb-speed').selectOption('8');
-    const canvas = page.getByTestId('xsec-canvas');
-    const d0 = Number((await canvas.getAttribute('data-draws')) ?? '0');
-    const t0 = await page.evaluate(() => performance.now());
-    await page.getByTestId('pb-play').click();
-    await page.waitForTimeout(1000);
-    const d1 = Number((await canvas.getAttribute('data-draws')) ?? '0');
-    const t1 = await page.evaluate(() => performance.now());
-    const fps = (d1 - d0) / ((t1 - t0) / 1000);
-    info.annotations.push({ type: 'fps-2d', description: fps.toFixed(1) });
-    if (dir) writeFileSync(join(dir, 'fps-2d.json'), JSON.stringify({ draws: d1 - d0, ms: t1 - t0, fps }, null, 2));
-    expect(fps).toBeGreaterThanOrEqual(30);
+    const r = await measurePlayback(page, 'xsec-canvas', 'data-draws');
+    recordFrameRate(info, 'fps-2d', r, { rows: 1001 });
+    expect(r.ms, 'measured over most of the window').toBeGreaterThanOrEqual(0.8 * PERF_WINDOW_MS);
+    expect(r.fps).toBeGreaterThanOrEqual(30);
   });
 });
 
@@ -161,7 +245,7 @@ test.describe('reduced motion', () => {
 test.describe('3D cutaway', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('renders, rotates with the arrow keys, zooms and resets, and keeps the equation, the particle box with its controls and the profile on the first screen', async ({ page, problems }, info) => {
+  test('renders, rotates with the arrow keys, zooms and resets, and keeps the equation, the particle box with its controls and the profile on the first screen', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     await waitForRun(page);
@@ -212,26 +296,24 @@ test.describe('3D cutaway', () => {
     expect(Number(await c.getAttribute('data-azimuth'))).toBe(az0);
     // The buttons were on screen, so using them did not scroll the page.
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
-    // Playback in 3D: one rendered frame per new row, measured.
-    await page.getByTestId('pb-slider').fill('0');
-    await page.getByTestId('pb-speed').selectOption('8');
-    const f0 = Number(await c.getAttribute('data-frames'));
-    const t0 = await page.evaluate(() => performance.now());
-    await page.getByTestId('pb-play').click();
-    await page.waitForTimeout(1000);
-    const f1 = Number(await c.getAttribute('data-frames'));
-    const t1 = await page.evaluate(() => performance.now());
-    const fps = (f1 - f0) / ((t1 - t0) / 1000);
-    info.annotations.push({ type: 'fps-3d', description: fps.toFixed(1) });
-    if (dir) {
-      writeFileSync(join(dir, 'fps-3d.json'), JSON.stringify({ frames: f1 - f0, ms: t1 - t0, fps, rows: NATIVE.profiles.length }, null, 2));
-      await page.getByTestId('pb-play').click();
-      await page.screenshot({ path: join(dir, 'explore-3d-1440.png') });
-    }
-    // 101 rows in 1.25 s at 8x: at most about 80 new rows per second can arrive.
-    expect(fps).toBeGreaterThanOrEqual(30);
+    if (dir) await page.screenshot({ path: join(dir, 'explore-3d-1440.png') });
     await page.getByTestId('view-2d').click();
     await expect(page.getByTestId('xsec')).toBeVisible();
+  });
+
+  test('frame rate of the 3D playback at 8x', { tag: '@perf' }, async ({ page, problems }, info) => {
+    void problems;
+    await gotoSection(page, 'explore');
+    await waitForRun(page);
+    await page.getByTestId('view-3d').click();
+    const c = page.getByTestId('p3d-canvas');
+    await expect(c).toBeVisible({ timeout: 20_000 });
+    await expect.poll(async () => Number((await c.getAttribute('data-frames')) ?? '0'), { timeout: 20_000 }).toBeGreaterThan(0);
+    // One rendered frame per new row: 101 rows in 1.25 s at 8x, so at most about 80 new rows per second arrive.
+    const r = await measurePlayback(page, 'p3d-canvas', 'data-frames');
+    recordFrameRate(info, 'fps-3d', r, { rows: NATIVE.profiles.length });
+    expect(r.ms, 'measured over most of the window').toBeGreaterThanOrEqual(0.8 * PERF_WINDOW_MS);
+    expect(r.fps).toBeGreaterThanOrEqual(30);
   });
 
   test('falls back to the 2D cross-section where WebGL 2 is not available', async ({ page, problems }) => {
