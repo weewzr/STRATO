@@ -9,7 +9,7 @@ import { ControlPanel } from '../panels/ControlPanel';
 import { Playback } from '../panels/Playback';
 import { ParticleView } from '../particle/ParticleView';
 import { ReferenceParticle } from '../particle/ReferenceParticle';
-import { Placeholder } from '../panels/Placeholder';
+import { FutureResearch } from '../research/FutureResearch';
 import { SimPlots } from '../plots/SimPlots';
 import { hrefFor } from '../route';
 import { configDifferences, inputKey, useStrato } from '../state/store';
@@ -22,8 +22,8 @@ import { useHeadingFocus } from './common';
  * order at every width. Web phase 1 built the frame; web phase 3 connects the Rust solver in block B
  * (release readout, inventory balance, diagnostics); web phase 4 colours the particle from the
  * solver's profiles, adds playback, the 3D cutaway and the AGR-1 reference particle (geometry only);
- * web phase 5 adds the radial profile and the release curves beside the particle; each remaining
- * placeholder names its phase.
+ * web phase 5 adds the radial profile and the release curves beside the particle; web phase 5.5
+ * fills block E with the summary of the research catalogue.
  */
 export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenControls: () => void }) {
   const config = useStrato((s) => s.config);
@@ -179,20 +179,13 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
 
       {/* E: future research mechanisms */}
       <section className="block block--e" data-block="E" aria-labelledby={ids.e} data-testid="block-e">
-        <div className="block__head">
+        <div className="block__head block__head--row">
           <h2 id={ids.e} className="block__title">
             Future research
           </h2>
+          <p className="block__context">From the research catalogue of the repository. Nothing in this block is simulated.</p>
         </div>
-        <div className="prose">
-          <Placeholder phase="5.5" title="Research catalogue summary" testId="catalogue-placeholder">
-            <p>
-              The transport regimes, the species entries and the brick-by-brick roadmap, each with its research status, read from the
-              research catalogue files of the repository. Nothing in it is simulated. The full catalogue will be in the{' '}
-              <a href={hrefFor('research')}>Research</a> section.
-            </p>
-          </Placeholder>
-        </div>
+        <FutureResearch />
       </section>
     </article>
   );

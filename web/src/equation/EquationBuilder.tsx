@@ -1,6 +1,9 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { statusOf, useCatalogue, type Catalogue, type MechanismRow } from '../research/catalogue';
+import { distinctStatuses, entryHref, rowKey } from '../research/entries';
+import { CatalogueSwitch, RowChip } from '../research/parts';
 import { StatusChip } from '../research/StatusChip';
+import { hrefFor } from '../route';
 import { useStrato } from '../state/store';
 import { solvedStage } from './availability';
 import { codeHref, docHref, DOCS, type DocRef } from './links';
@@ -247,15 +250,22 @@ function TermList({
   );
 }
 
+/** A decimal or exponent number in TeX (the "no numbers in block A" rule of the builder tests). */
+const NUMERIC_CONSTANT = /\d\.\d|\de[+-]?\d/;
+
 /** A catalogue mechanism that needs coupled equations: shown as a system beside the transport equation. */
 export function CoupledSystem({ row, catalogue }: { row: MechanismRow; catalogue: Catalogue }) {
   const entry = row.entry ? catalogue.entries[row.entry] : undefined;
-  const concepts = entry?.concept_equations ?? [];
+  // Block A shows no number apart from equation numbers and units (Section 3.3): a research-concept
+  // equation that carries numerical constants is named here and shown on its entry page instead.
+  const all = entry?.concept_equations ?? [];
+  const concepts = all.filter((c) => !NUMERIC_CONSTANT.test(c));
+  const withConstants = all.length - concepts.length;
   return (
     <section className="coupled" data-testid={`coupled-${row.mechanism_id}`} aria-label={`${row.name}: research concept`}>
       <p className="coupled__head">
-        <span className="coupled__name">{row.name}</span>
-        <StatusChip status={row.status} mechanism={row.mechanism_id} compact />
+        <span className="coupled__name">{row.entry ? <a href={entryHref(row.entry)}>{row.name}</a> : row.name}</span>
+        <StatusChip status={row.status} mechanism={row.mechanism_id} row={rowKey(row)} compact />
       </p>
       {concepts.length > 0 ? (
         <div className="coupled__system">
@@ -266,9 +276,15 @@ export function CoupledSystem({ row, catalogue }: { row: MechanismRow; catalogue
             </div>
           ))}
         </div>
-      ) : (
+      ) : all.length === 0 ? (
         <p className="coupled__label">No candidate equation in the catalogue entry yet.</p>
-      )}
+      ) : null}
+      {withConstants > 0 && row.entry ? (
+        <p className="coupled__label" data-testid={`coupled-more-${row.mechanism_id}`}>
+          Further candidate equations with numerical constants are on the{' '}
+          <a href={entryHref(row.entry, 'candidate-governing-equations-research-concepts')}>entry page</a>.
+        </p>
+      ) : null}
       <button
         type="button"
         role="switch"
@@ -282,6 +298,51 @@ export function CoupledSystem({ row, catalogue }: { row: MechanismRow; catalogue
         <span className="mech__state">Off</span>
       </button>
     </section>
+  );
+}
+
+/**
+ * Stage 6 lists the species-specific catalogue rows (prompt/DESIGN_SPECIFICATION.md Section 3.1):
+ * none is implemented, so the list sits behind one disclosure, closed by default, under the
+ * equation. A mechanism with coupled equations is shown once as its coupled system; every other
+ * row as a line with its status and its disabled switch.
+ */
+function Stage6Catalogue({ rows, catalogue }: { rows: MechanismRow[]; catalogue: Catalogue }) {
+  const [open, setOpen] = useState(false);
+  const panel = useId();
+  const coupledShown = new Set<string>();
+  return (
+    <div className="stage6" data-testid="stage6">
+      <button type="button" className="stage6__toggle" aria-expanded={open} aria-controls={panel} onClick={() => setOpen(!open)} data-testid="stage6-toggle">
+        <span className="stage6__title">Species-specific catalogue entries</span>
+        <span className="stage6__counts">
+          <span className="stage6__n">{distinctStatuses(rows).length === 1 ? 'every row at' : 'rows at'}</span>
+          {distinctStatuses(rows).map((s) => (
+            <StatusChip key={s} status={s} legend compact />
+          ))}
+        </span>
+      </button>
+      <div id={panel} className="stage6__panel" hidden={!open}>
+        {rows.map((r) => {
+          if (r.coupled) {
+            if (coupledShown.has(r.mechanism_id)) return null;
+            coupledShown.add(r.mechanism_id);
+            return <CoupledSystem key={rowKey(r)} row={r} catalogue={catalogue} />;
+          }
+          return (
+            <div className="stage6__row" key={rowKey(r)}>
+              <p className="stage6__name">
+                {r.entry ? <a href={entryHref(r.entry)}>{r.name}</a> : r.name} <RowChip row={r} compact />
+              </p>
+              <CatalogueSwitch row={r} compact />
+            </div>
+          );
+        })}
+        <p className="stage6__more">
+          Full entries in the <a href={hrefFor('research')}>research catalogue</a>.
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -316,11 +377,10 @@ function PreviewBanner({ stage, solved, catalogue }: { stage: Stage; solved: Sta
             </span>{' '}
             selecting it changes no input and no result.
           </>
+        ) : catalogue.mechanisms.some((m) => m.builder_stage === stage) ? (
+          <>No species-specific mechanism is implemented; the catalogue entries of this stage are listed above with their research status, and selecting the stage changes no input and no result.</>
         ) : (
-          <>
-            No species-specific mechanism is implemented and no catalogue entry is assigned to this stage yet (catalogue:{' '}
-            <Ref>web phase 5.5</Ref>).
-          </>
+          <>No species-specific mechanism is implemented and no catalogue entry is assigned to this stage.</>
         )}
         {solved === 0 ? ' The solver is loading.' : null}
       </p>
@@ -463,13 +523,7 @@ export function EquationBuilder({ compact }: { compact: boolean }) {
             ) : null}
             .
           </p>
-          {stage === 6 && catalogueRows.length > 0 ? (
-            <div className="stage6" data-testid="stage6">
-              {catalogueRows.map((r) => (
-                <CoupledSystem key={`${r.mechanism_id}-${r.species}-${r.material_domain}`} row={r} catalogue={catalogue} />
-              ))}
-            </div>
-          ) : null}
+          {stage === 6 && catalogueRows.length > 0 ? <Stage6Catalogue rows={catalogueRows} catalogue={catalogue} /> : null}
           <PreviewBanner stage={stage} solved={solved} catalogue={catalogue} />
         </div>
         <div className="builder__side">

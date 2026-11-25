@@ -6,7 +6,8 @@ import { DEFAULT_CASE } from '../data/case';
 import { isAvailable } from '../equation/availability';
 import { SWITCH_MECHANISM, type SwitchId } from '../equation/terms';
 import { CATALOGUE, statusOf } from '../research/catalogue';
-import { SECTIONS } from '../route';
+import { entryPage } from '../research/entries';
+import { hrefResearch, SECTIONS } from '../route';
 import { compareArrays } from '../solver/compare';
 import { solverClient } from '../solver/session';
 import { GOLDEN_RTOL, PARITY_RTOL } from '../solver/tolerances';
@@ -170,8 +171,12 @@ export async function runSelftest(): Promise<void> {
   add('explore_block_order', letters === 'ABCDE' && increasing, `order=${letters} tops_increasing=${increasing}`);
 
   // 4c. Every research status shown equals the generated catalogue (value comparison only).
+  //     A chip of one catalogue row (data-status-row) is compared with that row.
   const chips = Array.from(document.querySelectorAll<HTMLElement>('[data-status-for]'));
-  const wrong = chips.filter((c) => c.dataset.status !== statusOf(CATALOGUE, c.dataset.statusFor ?? ''));
+  const wrong = chips.filter((c) => {
+    const row = c.dataset.statusRow ? CATALOGUE.mechanisms.find((m) => `${m.mechanism_id}|${m.species}|${m.material_domain}` === c.dataset.statusRow) : undefined;
+    return c.dataset.status !== (c.dataset.statusRow ? row?.status : statusOf(CATALOGUE, c.dataset.statusFor ?? ''));
+  });
   add(
     'research_statuses',
     chips.length > 0 && wrong.length === 0,
@@ -196,6 +201,34 @@ export async function runSelftest(): Promise<void> {
   const katexCount = document.querySelectorAll('[data-section="explore"] .katex').length;
   const katexErrors = document.querySelectorAll('.katex-error').length;
   add('katex_renders', katexCount > 0 && katexErrors === 0, `katex elements=${katexCount} errors=${katexErrors}`);
+
+  // 4f. Research catalogue (web phase 5.5): every page renders, its row statuses equal the catalogue,
+  //     and no switch on it is active.
+  const pages = ['', 'gallery', 'roadmap', 'references', ...Object.keys(CATALOGUE.entries).map(entryPage).filter((p) => p !== 'gallery' && p !== 'roadmap')];
+  const pageProblems: string[] = [];
+  let pageChips = 0;
+  for (const p of pages) {
+    window.location.hash = hrefResearch(p);
+    const ok = await waitFor(() => document.querySelector(`[data-section="research"][data-research-page="${p || 'overview'}"] h1`) !== null);
+    if (!ok) {
+      pageProblems.push(`${p || 'overview'}: no heading`);
+      continue;
+    }
+    for (const c of Array.from(document.querySelectorAll<HTMLElement>('[data-section="research"] [data-status-row]'))) {
+      pageChips += 1;
+      const row = CATALOGUE.mechanisms.find((m) => `${m.mechanism_id}|${m.species}|${m.material_domain}` === c.dataset.statusRow);
+      if (!row || row.status !== c.dataset.status) pageProblems.push(`${p}: ${c.dataset.statusRow ?? ''}`);
+    }
+    for (const s of Array.from(document.querySelectorAll<HTMLElement>('[data-section="research"] [role="switch"]'))) {
+      if (s.getAttribute('aria-disabled') !== 'true') pageProblems.push(`${p}: active switch ${s.dataset.testid ?? ''}`);
+    }
+    if (document.querySelector('.katex-error')) pageProblems.push(`${p}: KaTeX error`);
+  }
+  add(
+    'research_pages',
+    pageProblems.length === 0 && pageChips > 0,
+    pageProblems.length === 0 ? `${pages.length} pages, ${pageChips} row chips equal the catalogue, no active switch` : pageProblems.join('; '),
+  );
   window.location.hash = startHash || '#/explore';
   await nextFrame();
 

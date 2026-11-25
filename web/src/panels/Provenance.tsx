@@ -3,6 +3,7 @@ import { repoFile } from '../build';
 import type { CaseEntry, V1Config } from '../data/case';
 import { plain } from '../format';
 import { useCatalogue } from '../research/catalogue';
+import { linkCheckedDate } from '../research/entries';
 import { useStrato } from '../state/store';
 import { TableBox } from '../sections/common';
 
@@ -187,7 +188,11 @@ export function References() {
           <li key={r.reference_id} data-ref={r.reference_id}>
             {r.citation}{' '}
             {/^https?:\/\//.test(r.doi_or_url) ? <a href={r.doi_or_url}>{r.doi_or_url}</a> : <span className="muted">{r.doi_or_url || 'no link'}</span>}
-            {r.link_checked ? <span className="muted"> (link checked {r.link_checked})</span> : <span className="muted"> (link not checked)</span>}
+            {linkCheckedDate(r.link_checked) ? (
+              <span className="muted"> (link checked {r.link_checked})</span>
+            ) : (
+              <span className="muted"> (link: {r.link_checked || 'not checked'})</span>
+            )}
           </li>
         ))}
       </ul>

@@ -2,12 +2,21 @@
 // A mechanism is live only when the Rust wrapper reports it in build_info().capabilities AND its
 // research status in the generated catalogue is the live status. Switches, stage live updates and
 // solver requests all ask this function; no component decides availability by itself.
-import { CATALOGUE, statusOf, type Catalogue } from '../research/catalogue';
+import { CATALOGUE, statusOf, type Catalogue, type MechanismRow } from '../research/catalogue';
 import { LIVE_STATUS } from '../research/status';
 import { STAGE_DEFS, STAGES, type Stage } from './terms';
 
 export function isAvailable(id: string, capabilities: readonly string[], catalogue: Catalogue = CATALOGUE): boolean {
   return capabilities.includes(id) && statusOf(catalogue, id) === LIVE_STATUS;
+}
+
+/**
+ * Whether one catalogue row (a mechanism for one species and material domain) may drive the live
+ * simulation: it names a solver capability, its own status is the live status, and isAvailable()
+ * accepts that capability. A row without a solver capability is never live.
+ */
+export function isRowAvailable(row: MechanismRow, capabilities: readonly string[], catalogue: Catalogue = CATALOGUE): boolean {
+  return row.solver_capability !== '' && row.status === LIVE_STATUS && isAvailable(row.solver_capability, capabilities, catalogue);
 }
 
 /**

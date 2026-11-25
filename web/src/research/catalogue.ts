@@ -36,10 +36,60 @@ export interface ReferenceRow {
   notes: string;
 }
 
+export interface SpeciesRow {
+  species: string;
+  element: string;
+  nuclides: string[];
+  layers: string[];
+  regimes: string[];
+  summary: string;
+  reference_ids: string[];
+  entry: string;
+}
+
+export type GalleryKind = 'screenshot' | 'reconstruction' | 'placeholder';
+
+export interface GalleryRow {
+  item_id: string;
+  kind: GalleryKind;
+  title: string;
+  caption: string;
+  alt_text: string;
+  material: string;
+  species: string;
+  method: string;
+  conditions: string;
+  provenance: string;
+  file: string;
+  status: ResearchStatus;
+  mechanism_ids: string[];
+  reference_ids: string[];
+}
+
+/** Inline spans of an entry text, as the generator writes them (display data; nothing to parse). */
+export type Span =
+  | { t: 'text'; v: string }
+  | { t: 'code'; v: string }
+  | { t: 'math'; v: string }
+  | { t: 'ref'; id: string }
+  | { t: 'strong'; c: Span[] }
+  | { t: 'em'; c: Span[] }
+  | { t: 'link'; href?: string; entry?: string; anchor?: string; c: Span[] };
+
+export type Block =
+  | { t: 'h'; level: number; id: string; c: Span[] }
+  | { t: 'p'; c: Span[] }
+  | { t: 'ul'; items: Span[][] }
+  | { t: 'ol'; items: Span[][]; start: number }
+  | { t: 'table'; head: Span[][]; rows: Span[][][] }
+  | { t: 'math'; tex: string };
+
 export interface EntryInfo {
   path: string;
   title: string;
   concept_equations: string[];
+  /** The entry text as blocks; absent only in older test fixtures. */
+  blocks?: Block[];
 }
 
 export interface Catalogue {
@@ -50,7 +100,12 @@ export interface Catalogue {
   mechanisms: MechanismRow[];
   references: ReferenceRow[];
   entries: Record<string, EntryInfo>;
+  species: SpeciesRow[];
+  gallery: GalleryRow[];
+  referenceLabels: Record<string, string>;
 }
+
+const GALLERY_KINDS: readonly string[] = ['screenshot', 'reconstruction', 'placeholder'];
 
 /** Builds a typed catalogue from the generated JSON (or a test fixture of the same shape). */
 export function parseCatalogue(raw: unknown): Catalogue {
@@ -59,11 +114,23 @@ export function parseCatalogue(raw: unknown): Catalogue {
     generator: string;
     inputs: { path: string; sha256: string }[];
     tables_absent: string[];
-    data: { mechanisms: Record<string, unknown>[]; references: ReferenceRow[]; entries: Record<string, EntryInfo> };
+    data: {
+      mechanisms: Record<string, unknown>[];
+      references: ReferenceRow[];
+      entries: Record<string, EntryInfo>;
+      species?: SpeciesRow[];
+      gallery?: Record<string, unknown>[];
+      reference_labels?: Record<string, string>;
+    };
   };
   const mechanisms = doc.data.mechanisms.map((m) => {
     if (!isStatus(m.status)) throw new Error(`research catalogue: unknown status for ${String(m.mechanism_id)}`);
     return m as unknown as MechanismRow;
+  });
+  const gallery = (doc.data.gallery ?? []).map((g) => {
+    if (!isStatus(g.status)) throw new Error(`research catalogue: unknown status for gallery item ${String(g.item_id)}`);
+    if (typeof g.kind !== 'string' || !GALLERY_KINDS.includes(g.kind)) throw new Error(`research catalogue: unknown kind for gallery item ${String(g.item_id)}`);
+    return g as unknown as GalleryRow;
   });
   return {
     commit: doc.commit,
@@ -73,6 +140,9 @@ export function parseCatalogue(raw: unknown): Catalogue {
     mechanisms,
     references: doc.data.references,
     entries: doc.data.entries,
+    species: doc.data.species ?? [],
+    gallery,
+    referenceLabels: doc.data.reference_labels ?? {},
   };
 }
 

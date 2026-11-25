@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 // Sections of prompt/DESIGN_SPECIFICATION.md Section 2.2, in its order. Research holds the full
-// research catalogue from web phase 5.5 and shows a placeholder until then.
+// research catalogue (web phase 5.5), with its own pages under #/research/.
 export const SECTIONS = [
   { id: 'explore', label: 'Explore' },
   { id: 'compare', label: 'Compare' },
@@ -21,6 +21,32 @@ export function sectionFromHash(hash: string): SectionId {
 
 export function hrefFor(id: SectionId): string {
   return `#/${id}`;
+}
+
+/**
+ * Page inside the Research section: `#/research/<page>/<anchor>`. The page is "" (overview),
+ * "gallery", "roadmap", "references" or the slug of an entry file of docs/research/ (its name
+ * without ".md"); the anchor names a heading of that entry.
+ */
+export function researchPathFromHash(hash: string): { page: string; anchor: string } {
+  const parts = hash.replace(/^#\/?/, '').split('?')[0]?.split('/') ?? [];
+  if (parts[0] !== 'research') return { page: '', anchor: '' };
+  return { page: decodeURIComponent(parts[1] ?? ''), anchor: decodeURIComponent(parts[2] ?? '') };
+}
+
+export function hrefResearch(page = '', anchor = ''): string {
+  return `#/research${page ? `/${encodeURIComponent(page)}` : ''}${anchor ? `/${encodeURIComponent(anchor)}` : ''}`;
+}
+
+/** Current Research page from location.hash; updates on hashchange. */
+export function useResearchPath(): { page: string; anchor: string } {
+  const [path, setPath] = useState(() => researchPathFromHash(window.location.hash));
+  useEffect(() => {
+    const on = () => setPath(researchPathFromHash(window.location.hash));
+    window.addEventListener('hashchange', on);
+    return () => window.removeEventListener('hashchange', on);
+  }, []);
+  return path;
 }
 
 /** Current section from location.hash; updates on hashchange. */

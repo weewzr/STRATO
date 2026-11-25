@@ -1,6 +1,7 @@
 /// <reference types="vitest/config" />
 import { execSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
@@ -44,9 +45,44 @@ function stampPlugin(): Plugin {
   };
 }
 
+/**
+ * Serves the files of the Materials Studio gallery folder (docs/research/gallery/, listed in
+ * data/research/gallery.csv; prompt/TECHNICAL_ARCHITECTURE.md Section 5.1) at research/gallery/ of
+ * the site: copied into the build, and served by the development server. Today the folder does not
+ * exist (no screenshot has been supplied), so nothing is copied.
+ */
+function galleryPlugin(): Plugin {
+  const dir = join(repoRoot, 'docs', 'research', 'gallery');
+  const list = (d: string, out: string[] = []): string[] => {
+    if (!existsSync(d)) return out;
+    for (const name of readdirSync(d)) {
+      const p = join(d, name);
+      if (statSync(p).isDirectory()) list(p, out);
+      else out.push(p);
+    }
+    return out;
+  };
+  return {
+    name: 'strato-research-gallery',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const m = /^\/STRATO\/research\/gallery\/([^?#]+)/.exec(req.url ?? '');
+        const file = m ? join(dir, decodeURIComponent(m[1] ?? '')) : '';
+        if (!m || !file.startsWith(dir) || !existsSync(file)) return next();
+        res.end(readFileSync(file));
+      });
+    },
+    generateBundle() {
+      for (const p of list(dir)) {
+        this.emitFile({ type: 'asset', fileName: `research/gallery/${relative(dir, p).split(sep).join('/')}`, source: readFileSync(p) });
+      }
+    },
+  };
+}
+
 export default defineConfig({
   base: '/STRATO/',
-  plugins: [react(), stampPlugin()],
+  plugins: [react(), stampPlugin(), galleryPlugin()],
   define: {
     __STRATO_BUILD__: JSON.stringify(stamp),
   },

@@ -147,8 +147,10 @@ describe('Explore page (owner decision M7)', () => {
     // Web phase 2 filled the two phase-2 placeholders (equation builder in A, terms in D); web
     // phase 3 filled the two phase-3 placeholders (inventory balance and diagnostics in B); web
     // phase 4 filled the phase-4 placeholder (the AGR-1 reference particle); web phase 5 filled the
-    // two phase-5 placeholders (radial profile and release curves in B).
-    expect(ph.map((p) => p.dataset.placeholderPhase)).toEqual(['5.5']);
+    // two phase-5 placeholders (radial profile and release curves in B); web phase 5.5 filled the
+    // last one (the research catalogue summary in E), so none is left.
+    expect(ph.map((p) => p.dataset.placeholderPhase)).toEqual([]);
+    expect(within(screen.getByTestId('block-e')).getByTestId('future-research')).toBeTruthy();
     for (const p of ph) {
       expect(p.textContent).toMatch(/^Placeholder/);
       expect(p.querySelector('.badge')).toBeNull();

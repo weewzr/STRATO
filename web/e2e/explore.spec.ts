@@ -91,8 +91,9 @@ test.describe('placeholders', () => {
     // explanations; web phase 3 replaced the two phase-3 placeholders with the solver's inventory
     // balance and diagnostics; web phase 4 replaced the AGR-1 reference placeholder with the
     // registered-geometry view; web phase 5 replaced the profile and release placeholders with the
-    // plots. The catalogue summary (web phase 5.5) remains.
-    expect(phases).toEqual(['5.5']);
+    // plots; web phase 5.5 replaced the last one with the research catalogue summary in block E.
+    expect(phases).toEqual([]);
+    await expect(page.getByTestId('block-e').getByTestId('future-research')).toBeVisible();
     expect(phases).not.toContain('2');
     expect(phases).not.toContain('3');
     expect(phases).not.toContain('4');

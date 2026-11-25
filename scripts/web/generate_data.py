@@ -20,7 +20,11 @@ catalogue
          web/src/generated/research_catalogue.json, the only source of the
          research statuses the web demo shows. A table that does not exist
          yet is listed under ``tables_absent``. Values are copied; nothing is
-         computed.
+         computed. Each entry file is also written as a list of display
+         blocks (headings, paragraphs, lists, tables, display maths, with
+         inline code, maths, links and [ref:id] citations), so the web page
+         renders the text without parsing Markdown; and each reference gets a
+         short in-text label taken from its citation.
 
 precomputed
          Run the native release binary (cargo run --locked --release) and the
@@ -323,7 +327,20 @@ def read_table(root: pathlib.Path, name: str) -> tuple[list[str], list[list[str]
 
 
 def split_list(cell: str) -> list[str]:
-    return [p.strip() for p in cell.split(";") if p.strip()]
+    """Items of a ';'-separated cell; a ';' inside parentheses belongs to its item."""
+    items, cur, depth = [], [], 0
+    for ch in cell:
+        if ch == "(":
+            depth += 1
+        elif ch == ")" and depth > 0:
+            depth -= 1
+        if ch == ";" and depth == 0:
+            items.append("".join(cur))
+            cur = []
+        else:
+            cur.append(ch)
+    items.append("".join(cur))
+    return [p.strip() for p in items if p.strip()]
 
 
 def _record(header: list[str], row: list[str]) -> dict:
@@ -342,7 +359,7 @@ def _record(header: list[str], row: list[str]) -> dict:
 
 
 def _entry_info(root: pathlib.Path, rel: str) -> dict | None:
-    """Title and the research-concept equations of one entry file (display data only)."""
+    """Title, research-concept equations and the text blocks of one entry file (display data only)."""
     if not rel:
         return None
     path = root / rel
@@ -359,9 +376,224 @@ def _entry_info(root: pathlib.Path, rel: str) -> dict | None:
     for i, h in enumerate(headings):
         if "candidate governing equations" not in h.group(2).lower():
             continue
-        end = headings[i + 1].start() if i + 1 < len(headings) else len(text)
+        # The section runs to the next heading of the same or a higher level (its sub-headings,
+        # such as "### Concept 1", belong to it).
+        level = len(h.group(1))
+        nxt = [g for g in headings[i + 1:] if len(g.group(1)) <= level]
+        end = nxt[0].start() if nxt else len(text)
         concepts += [e.strip() for e in _DISPLAY_MATH.findall(text[h.end():end])]
-    return {"path": rel, "title": title, "concept_equations": concepts}
+    return {"path": rel, "title": title, "concept_equations": concepts, "blocks": markdown_blocks(text, rel)}
+
+
+# ---------------------------------------------------------------------------
+# Entry text as blocks (display data for web phase 5.5)
+#
+# The web page shows the entry files of docs/research/ without parsing Markdown
+# in the browser: the generator turns the small Markdown subset that these
+# files use into a tree of blocks and inline spans, which the components only
+# render. Nothing is computed; the text is copied. Supported: ATX headings,
+# paragraphs, "-" and "1." lists (one level, continuation lines allowed),
+# pipe tables, display maths between $$ lines, and inline code, $...$ maths,
+# [ref:id] citations, [text](target) links, **strong** and *emphasis*.
+# Anything else is kept as plain text, so nothing is silently dropped.
+# ---------------------------------------------------------------------------
+
+_INLINE = re.compile(
+    r"`(?P<code>[^`]+)`"
+    r"|(?<!\$)\$(?!\$)(?P<math>[^$\n]+?)(?<!\\)\$(?!\$)"
+    r"|\[ref:(?P<ref>[^\]\s]+)\]"
+    r"|\[(?P<ltext>[^\]]+)\]\((?P<lhref>[^)\s]+)\)"
+    r"|\*\*(?P<strong>.+?)\*\*"
+    r"|(?<![*\w])\*(?=\S)(?P<em>[^*]+?)(?<=\S)\*(?![*\w])"
+)
+_LIST_ITEM = re.compile(r"^(?:(?P<ul>[-*])|(?P<ol>\d+)\.)\s+(?P<text>.*)$")
+_TABLE_SEP = re.compile(r"^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$")
+
+
+def heading_slug(text: str) -> str:
+    """GitHub-style anchor of a heading: lower case, punctuation dropped, spaces to hyphens."""
+    plain = re.sub(r"\[ref:[^\]]+\]", "", text)
+    plain = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", plain)
+    plain = re.sub(r"[`*$]", "", plain).strip().lower()
+    plain = re.sub(r"[^\w\- ]", "", plain)
+    return plain.replace(" ", "-")
+
+
+def _link(target: str, rel: str) -> dict:
+    """A link target: an entry of docs/research/ (with an optional anchor) or an outside address."""
+    if re.match(r"^[a-z]+://", target):
+        return {"href": target}
+    page, _, anchor = target.partition("#")
+    base = pathlib.PurePosixPath(rel).parent
+    path = (base / page).as_posix() if page else rel
+    return {"entry": path, "anchor": anchor}
+
+
+def inline_spans(text: str, rel: str) -> list[dict]:
+    out: list[dict] = []
+    pos = 0
+    for m in _INLINE.finditer(text):
+        if m.start() > pos:
+            out.append({"t": "text", "v": text[pos:m.start()]})
+        if m.group("code") is not None:
+            out.append({"t": "code", "v": m.group("code")})
+        elif m.group("math") is not None:
+            out.append({"t": "math", "v": m.group("math").strip()})
+        elif m.group("ref") is not None:
+            out.append({"t": "ref", "id": m.group("ref")})
+        elif m.group("ltext") is not None:
+            out.append({"t": "link", **_link(m.group("lhref"), rel), "c": inline_spans(m.group("ltext"), rel)})
+        elif m.group("strong") is not None:
+            out.append({"t": "strong", "c": inline_spans(m.group("strong"), rel)})
+        else:
+            out.append({"t": "em", "c": inline_spans(m.group("em"), rel)})
+        pos = m.end()
+    if pos < len(text):
+        out.append({"t": "text", "v": text[pos:]})
+    return out
+
+
+def _table_cells(line: str) -> list[str]:
+    """Cells of a pipe-table row; a '|' inside `code` or $maths$ does not split."""
+    s = line.strip()
+    if s.startswith("|"):
+        s = s[1:]
+    if s.endswith("|") and not s.endswith("\\|"):
+        s = s[:-1]
+    cells, cur, code, math = [], [], False, False
+    for ch in s:
+        if ch == "`" and not math:
+            code = not code
+        elif ch == "$" and not code:
+            math = not math
+        if ch == "|" and not code and not math:
+            cells.append("".join(cur).strip())
+            cur = []
+        else:
+            cur.append(ch)
+    cells.append("".join(cur).strip())
+    return cells
+
+
+def markdown_blocks(text: str, rel: str) -> list[dict]:
+    lines = text.replace("\r\n", "\n").split("\n")
+    blocks: list[dict] = []
+    para: list[str] = []
+    seen: dict[str, int] = {}
+
+    def flush() -> None:
+        if para:
+            blocks.append({"t": "p", "c": inline_spans(" ".join(s.strip() for s in para), rel)})
+            para.clear()
+
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+        if not stripped:
+            flush()
+            i += 1
+            continue
+        h = re.match(r"^(#{1,6})\s+(.*?)\s*$", line)
+        if h:
+            flush()
+            slug = heading_slug(h.group(2))
+            n = seen.get(slug, 0)
+            seen[slug] = n + 1
+            blocks.append({"t": "h", "level": len(h.group(1)), "id": slug if n == 0 else f"{slug}-{n}", "c": inline_spans(h.group(2), rel)})
+            i += 1
+            continue
+        if stripped.startswith("$$"):
+            flush()
+            body = stripped[2:]
+            if body.endswith("$$") and len(body) >= 2:
+                tex = body[:-2]
+                i += 1
+            else:
+                buf = [body] if body else []
+                i += 1
+                while i < len(lines) and not lines[i].strip().endswith("$$"):
+                    buf.append(lines[i])
+                    i += 1
+                if i < len(lines):
+                    last = lines[i].strip()[:-2]
+                    if last:
+                        buf.append(last)
+                    i += 1
+                tex = "\n".join(buf)
+            blocks.append({"t": "math", "tex": tex.strip()})
+            continue
+        if stripped.startswith("|") and i + 1 < len(lines) and _TABLE_SEP.match(lines[i + 1].strip()):
+            flush()
+            head = [inline_spans(c, rel) for c in _table_cells(stripped)]
+            rows = []
+            i += 2
+            while i < len(lines) and lines[i].strip().startswith("|"):
+                rows.append([inline_spans(c, rel) for c in _table_cells(lines[i])])
+                i += 1
+            blocks.append({"t": "table", "head": head, "rows": rows})
+            continue
+        li = _LIST_ITEM.match(stripped)
+        if li and not line.startswith(" "):
+            flush()
+            ordered = li.group("ol") is not None
+            items: list[list[str]] = []
+            start = int(li.group("ol")) if ordered else 1
+            while i < len(lines):
+                cur = lines[i]
+                m = _LIST_ITEM.match(cur.strip())
+                if m and not cur.startswith(" ") and (m.group("ol") is not None) == ordered:
+                    items.append([m.group("text")])
+                    i += 1
+                elif cur.strip() and cur.startswith(" ") and items:
+                    items[-1].append(cur.strip())
+                    i += 1
+                else:
+                    break
+            block: dict = {"t": "ol" if ordered else "ul", "items": [inline_spans(" ".join(it), rel) for it in items]}
+            if ordered:
+                block["start"] = start
+            blocks.append(block)
+            continue
+        para.append(line)
+        i += 1
+    flush()
+    return blocks
+
+
+def reference_label(row: dict) -> str:
+    """Short in-text label of a reference ("Author et al. 2016"), from its register citation or its APA author list."""
+    if row.get("register_link"):
+        return re.sub(r"\s*\((\d{4}[a-z]?)\)\s*$", r" \1", row["register_link"].strip())
+    citation = row.get("citation", "")
+    m = re.match(r"^(?P<authors>.+?)\s*\((?P<year>\d{4}[a-z]?)\)", citation)
+    if not m:
+        return row.get("reference_id", "")
+    authors = m.group("authors").strip().rstrip(".")
+    year = m.group("year")
+    if "&" not in authors:
+        first = authors.split(",")[0].strip()
+        return f"{first} {year}"
+    names = [p.strip() for p in re.split(r",?\s*&\s*", authors)]
+    count = authors.count(".,") + 1
+    first = names[0].split(",")[0].strip()
+    if count == 2:
+        second = names[-1].split(",")[0].strip()
+        return f"{first} and {second} {year}"
+    return f"{first} et al. {year}"
+
+
+def reference_labels(rows: list[dict]) -> dict[str, str]:
+    """Labels of all references; equal labels get the letters a, b, ... after the year, in table order."""
+    labels = {r["reference_id"]: reference_label(r) for r in rows}
+    groups: dict[str, list[str]] = {}
+    for rid, label in labels.items():
+        groups.setdefault(label, []).append(rid)
+    for label, ids in groups.items():
+        if len(ids) > 1:
+            for k, rid in enumerate(ids):
+                labels[rid] = f"{label}{chr(ord('a') + k)}"
+    return labels
 
 
 def build_catalogue(root: pathlib.Path = ROOT) -> dict:
@@ -389,6 +621,8 @@ def build_catalogue(root: pathlib.Path = ROOT) -> dict:
             if info:
                 entries[rel] = info
     data["entries"] = entries
+    # Short in-text labels of the references (display data, derived from the citation text).
+    data["reference_labels"] = reference_labels(data.get("references", []))
 
     try:
         commit = _git("rev-parse", "HEAD", cwd=root) if (root / ".git").exists() else "unknown"
@@ -404,6 +638,7 @@ def build_catalogue(root: pathlib.Path = ROOT) -> dict:
         "command": f"python -I -X utf8 {GENERATOR} catalogue",
         "created_utc": _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "note": "CATALOGUE marks a data file of research statuses and references; it is not a result label.",
+        "entry_format": "blocks-1: the entry files of docs/research/ as heading, paragraph, list, table and display-maths blocks with inline spans; text copied, nothing computed",
         "inputs": sorted(inputs, key=lambda d: d["path"]),
         "tables_absent": absent,
     }

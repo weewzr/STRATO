@@ -23,6 +23,16 @@ export const STATUS_INFO: Record<ResearchStatus, { shape: StatusShape; definitio
   },
 };
 
+/** Position of a status in the order of the five levels (0 for the lowest). */
+export function statusRank(status: ResearchStatus): number {
+  return STATUSES.indexOf(status);
+}
+
+/** True for a status that says the mechanism exists in the solver (IMPLEMENTED or higher). */
+export function isImplementedStatus(status: ResearchStatus): boolean {
+  return statusRank(status) >= statusRank('IMPLEMENTED');
+}
+
 export function isStatus(value: unknown): value is ResearchStatus {
   return typeof value === 'string' && (STATUSES as readonly string[]).includes(value);
 }
