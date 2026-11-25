@@ -74,7 +74,9 @@ mod tests {
         // Equal spacings and equal Fo: the interface row equals the interior row (F14).
         let (l, b, u) = interface_row_explicit(2.0, 2.0, 0.5, 0.5, 4.0);
         let (li, bi, ui) = interior_row_explicit(2.0, 0.5, 4.0);
-        assert!((l - li).abs() < 1e-14 && (b - bi).abs() < 1e-14 && (u - ui).abs() < 1e-14);
+        // No tolerance: every number here is a small dyadic rational (2, 0.5, 4, 1/8, 7/8,
+        // 9/8), so all operations are exact: l = li = -1.75, u = ui = -2.25, b = bi = 5.
+        assert_eq!((l, b, u), (li, bi, ui));
     }
 
     #[test]
