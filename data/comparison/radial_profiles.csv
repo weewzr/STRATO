@@ -1,15 +1,15 @@
 # STRATO experimental comparison: radial concentration profiles through the five layers; the initial kernel concentration is the unit
 # label: numerical solution of the stated model; not experimental validation; the comparison with the register is a comparison of release behaviour, not a validation
 # solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1
-# commit: ef34d34169360c8790a559e40c5952aa65561c73
+# commit: e483c9b8869214fea88352ee9debebfa66f904ba
 # model_limitations: kernel-only start (inventory-matched start node); constant diffusion coefficient per layer evaluated at the test temperature from the first hour (heating ramps are not modelled); no radioactive decay and no fission-product generation in the solver yet; perfect interface contact; absorbing outer surface; one intact particle, no matrix; the model fraction is a fraction of the particle's own inventory
-# parameter_source: geometry design AGR1-B-M16 (register rows G-01 G-02 G-03 G-04 G-05); diffusion coefficients of register sets C16-T2 and C16-BUF evaluated at the test temperature, class published PARFUME correlation, phase heating test (the kernel rows are UO2 surrogates: no UCO measurement exists, decision 40); every coefficient row and its class are in the sensitivity file and in comparison.json
+# parameter_source: geometry design AGR1-B-M16 (register rows G-01 G-02 G-03 G-04 G-05); diffusion coefficients chosen by the strato-data selection function (decision 47) for the heating-test phase, that is the rows of register sets C16-T2 and C16-BUF as printed, evaluated at the test temperature, class published PARFUME correlation, phase heating test (the kernel rows are UO2 surrogates: no UCO measurement exists, decision 40); every coefficient row and its class are in the sensitivity file and in comparison.json
 # parameter_class: coefficients are the published heating-test correlation of the register (class and phase per row in the sensitivity file); radii are the registered measured baseline geometry; every measurement keeps its register row id
-# release_measurements_sha256: 1aa5680164e947e5df73079af882edd418d30be1ff7324c84470021f71475230
-# arrhenius_sha256: 4167c3bbdfcad6e37cc6badcd66c9dff1c1f7022d651d3c5947a2bbdadd5217e
+# release_measurements_sha256: 80d14e97b256cb447187cd53d837c3af740145650a5e5efc1f962ff3c5fa305c
+# arrhenius_sha256: 64a47ef90b9ab1f3e4e6ad9a784232d479468b4d090d16979eb3831674430b55
 # geometry_sha256: 8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f
 # temperature_histories_sha256: 6ab3201672afd15f92ec9e529318377c829afaa5804288a3a694032145ab4af0
-Nuclide,Test temperature (degC),Time at temperature (h),Node index (dimensionless),Radius (um),Material region,Concentration over initial kernel concentration (dimensionless)
+Nuclide,Test temperature (°C),Time at temperature (h),Node index (dimensionless),Radius (µm),Material region,Concentration over initial kernel concentration (dimensionless)
 Ag-110m,1600,1e0,0,0e0,kernel,9.998418150782987e-1
 Ag-110m,1600,1e0,1,1.09375e0,kernel,9.998414846356343e-1
 Ag-110m,1600,1e0,2,2.1875e0,kernel,9.998404914939355e-1

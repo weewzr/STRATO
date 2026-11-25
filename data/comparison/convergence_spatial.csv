@@ -1,12 +1,12 @@
-# STRATO experimental comparison: spatial convergence of the release fraction; all five regions share the diffusion coefficient 4.316e-14 m^2/s, the outer radius is 394.2 um, the kernel radius 175.0 um, the end time 100 h, so the mesh Fourier number D t / R^2 is 0.1; the reference is the exact series of a sphere with the same diffusivity everywhere.
+# STRATO experimental comparison: spatial convergence of the release fraction; all five regions share the diffusion coefficient 4.316e-14 m²/s, the outer radius is 394.2 µm, the kernel radius 175.0 µm, the end time 100 h, so the Fourier number D t / R^2, with R the outer radius, is 0.1 for the whole sphere; the reference is the exact series of a sphere with the same diffusivity everywhere.
 # label: numerical solution of the stated model; not experimental validation; the comparison with the register is a comparison of release behaviour, not a validation
 # solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1
-# commit: ef34d34169360c8790a559e40c5952aa65561c73
+# commit: e483c9b8869214fea88352ee9debebfa66f904ba
 # model_limitations: kernel-only start (inventory-matched start node); constant diffusion coefficient per layer evaluated at the test temperature from the first hour (heating ramps are not modelled); no radioactive decay and no fission-product generation in the solver yet; perfect interface contact; absorbing outer surface; one intact particle, no matrix; the model fraction is a fraction of the particle's own inventory
-# parameter_source: geometry design AGR1-B-M16 (register rows G-01 G-02 G-03 G-04 G-05); diffusion coefficients of register sets C16-T2 and C16-BUF evaluated at the test temperature, class published PARFUME correlation, phase heating test (the kernel rows are UO2 surrogates: no UCO measurement exists, decision 40); every coefficient row and its class are in the sensitivity file and in comparison.json
+# parameter_source: geometry design AGR1-B-M16 (register rows G-01 G-02 G-03 G-04 G-05); diffusion coefficients chosen by the strato-data selection function (decision 47) for the heating-test phase, that is the rows of register sets C16-T2 and C16-BUF as printed, evaluated at the test temperature, class published PARFUME correlation, phase heating test (the kernel rows are UO2 surrogates: no UCO measurement exists, decision 40); every coefficient row and its class are in the sensitivity file and in comparison.json
 # parameter_class: coefficients are the published heating-test correlation of the register (class and phase per row in the sensitivity file); radii are the registered measured baseline geometry; every measurement keeps its register row id
-# release_measurements_sha256: 1aa5680164e947e5df73079af882edd418d30be1ff7324c84470021f71475230
-# arrhenius_sha256: 4167c3bbdfcad6e37cc6badcd66c9dff1c1f7022d651d3c5947a2bbdadd5217e
+# release_measurements_sha256: 80d14e97b256cb447187cd53d837c3af740145650a5e5efc1f962ff3c5fa305c
+# arrhenius_sha256: 64a47ef90b9ab1f3e4e6ad9a784232d479468b4d090d16979eb3831674430b55
 # geometry_sha256: 8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f
 # temperature_histories_sha256: 6ab3201672afd15f92ec9e529318377c829afaa5804288a3a694032145ab4af0
 Refinement factor (dimensionless),Kernel mesh width (m),Number of nodes or steps (dimensionless),"Release fraction, BTCS (dimensionless)","Release fraction, analytical (dimensionless)",Truncation bound of the analytical series (dimensionless),Absolute error of the release fraction (dimensionless),Observed order (dimensionless)

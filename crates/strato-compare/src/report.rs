@@ -366,7 +366,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     if !element_only.is_empty() {
         let _ = writeln!(
             s,
-            "Rows {} name the element only (\"Cs\"). {}.\n",
+            "For rows {}, {}.\n",
             compress_ids(&element_only),
             crate::outputs::ELEMENT_ONLY_STATEMENT
         );

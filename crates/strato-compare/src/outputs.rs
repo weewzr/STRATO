@@ -16,7 +16,7 @@ use crate::status::{measured_text, Status, CATEGORIES, MODEL_LIMITATIONS};
 use crate::studies::{AnalyticSeries, ConvergenceRow, ProfileRow, SensitivityRow};
 
 /// The statement made wherever a row labelled with the element only is compared (decision 21).
-pub const ELEMENT_ONLY_STATEMENT: &str = "the row names the element only: compared as elemental caesium with the caesium coefficient rows and without decay (decision 21)";
+pub const ELEMENT_ONLY_STATEMENT: &str = "the row is labelled with the element only (\"Cs\"): it is compared as elemental caesium with the caesium coefficient rows and without decay (decision 21)";
 
 /// Where every file came from.
 #[derive(Debug, Clone)]

@@ -3,13 +3,13 @@
   "provenance": {
     "solver": "STRATO BTCS five-layer spherical finite difference",
     "solver_package_version": "1.0.1",
-    "commit": "ef34d34169360c8790a559e40c5952aa65561c73",
+    "commit": "e483c9b8869214fea88352ee9debebfa66f904ba",
     "label": "numerical solution of the stated model; not experimental validation",
-    "release_measurements_sha256": "1aa5680164e947e5df73079af882edd418d30be1ff7324c84470021f71475230",
-    "arrhenius_sha256": "4167c3bbdfcad6e37cc6badcd66c9dff1c1f7022d651d3c5947a2bbdadd5217e",
+    "release_measurements_sha256": "80d14e97b256cb447187cd53d837c3af740145650a5e5efc1f962ff3c5fa305c",
+    "arrhenius_sha256": "64a47ef90b9ab1f3e4e6ad9a784232d479468b4d090d16979eb3831674430b55",
     "geometry_sha256": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
     "temperature_histories_sha256": "6ab3201672afd15f92ec9e529318377c829afaa5804288a3a694032145ab4af0",
-    "parameter_source": "geometry design AGR1-B-M16 (register rows G-01 G-02 G-03 G-04 G-05); diffusion coefficients of register sets C16-T2 and C16-BUF evaluated at the test temperature, class published PARFUME correlation, phase heating test (the kernel rows are UO2 surrogates: no UCO measurement exists, decision 40); every coefficient row and its class are in the sensitivity file and in comparison.json"
+    "parameter_source": "geometry design AGR1-B-M16 (register rows G-01 G-02 G-03 G-04 G-05); diffusion coefficients chosen by the strato-data selection function (decision 47) for the heating-test phase, that is the rows of register sets C16-T2 and C16-BUF as printed, evaluated at the test temperature, class published PARFUME correlation, phase heating test (the kernel rows are UO2 surrogates: no UCO measurement exists, decision 40); every coefficient row and its class are in the sensitivity file and in comparison.json"
   },
   "disclosure_title": "Experimental Comparison: Data Interpretation and Limitations",
   "model_limitations": "kernel-only start (inventory-matched start node); constant diffusion coefficient per layer evaluated at the test temperature from the first hour (heating ramps are not modelled); no radioactive decay and no fission-product generation in the solver yet; perfect interface contact; absorbing outer surface; one intact particle, no matrix; the model fraction is a fraction of the particle's own inventory",
@@ -30,15 +30,15 @@
   "coefficient_sets": [
     {
       "set": "C16-T2-published (Ag)",
-      "description": "Ag - published heating-test correlation as printed (C16-T2 and C16-BUF): kernel: C16-01; buffer: C16-22; IPyC: C16-02; SiC: C16-03; OPyC: C16-02"
+      "description": "Ag - published heating-test correlation as printed (Collin 2016 Table 2, rows C16-T2 and C16-BUF), chosen by the strato-data selection function: kernel: C16-01; buffer: C16-22; IPyC: C16-02; SiC: C16-03; OPyC: C16-02. Statements of the selection function: kernel: UO2 coefficient used for the UCO kernel; no UCO measurement exists; kernel: referred to a 250 um kernel radius and applied unscaled, as the published AGR-1 modelling does; buffer: modelling convention: the buffer is taken as non-retentive; IPyC: one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02); SiC: the published correlation over-estimates the silver release of AGR-1 (factor about 1000 at 1600 to 1700 C and 100 at 1800 C, Collin 2016); OPyC: one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)"
     },
     {
       "set": "C16-T2-published (Cs)",
-      "description": "Cs - published heating-test correlation as printed (C16-T2 and C16-BUF): kernel: C16-05+C16-06; buffer: C16-22; IPyC: C16-07; SiC: C16-08+C16-09; OPyC: C16-07"
+      "description": "Cs - published heating-test correlation as printed (Collin 2016 Table 2, rows C16-T2 and C16-BUF), chosen by the strato-data selection function: kernel: C16-05+C16-06; buffer: C16-22; IPyC: C16-07; SiC: C16-08+C16-09; OPyC: C16-07. Statements of the selection function: kernel: UO2 coefficient used for the UCO kernel; no UCO measurement exists; kernel: referred to a 250 um kernel radius and applied unscaled, as the published AGR-1 modelling does; buffer: modelling convention: the buffer is taken as non-retentive; IPyC: one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02); SiC: fluence factor not applied; correlation form under source review; OPyC: one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)"
     },
     {
       "set": "C16-T2-published (Sr)",
-      "description": "Sr - published heating-test correlation as printed (C16-T2 and C16-BUF): kernel: C16-11; buffer: C16-22; IPyC: C16-12; SiC: C16-13+C16-14; OPyC: C16-12"
+      "description": "Sr - published heating-test correlation as printed (Collin 2016 Table 2, rows C16-T2 and C16-BUF), chosen by the strato-data selection function: kernel: C16-11; buffer: C16-22; IPyC: C16-12; SiC: C16-13+C16-14; OPyC: C16-12. Statements of the selection function: kernel: UO2 coefficient used for the UCO kernel; no UCO measurement exists; kernel: referred to a 250 um kernel radius and applied unscaled, as the published AGR-1 modelling does; buffer: modelling convention: the buffer is taken as non-retentive; IPyC: one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02); OPyC: one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)"
     }
   ],
   "status_counts": {
@@ -160,8 +160,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -189,16 +188,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": {
-        "n": 5,
-        "rmse": 1.5771472785795165e-3,
-        "mae": 1.3283298188303339e-3,
-        "max_absolute_deviation": 3.028839095503881e-3,
-        "rmse_log10_ratio": 3.7492962751448595e0,
-        "mae_log10_ratio": 3.6243410959670497e0,
-        "n_relative_deviation_defined": 5
-      }
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -240,8 +230,7 @@
         "exceeded": 13,
         "model_over_bound_min": 1.808382499323894e2,
         "model_over_bound_max": 5.972576466272322e5
-      },
-      "provisional_metrics_not_a_comparison": null
+      }
     },
     {
       "programme": "AGR-1",
@@ -278,8 +267,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -309,8 +297,7 @@
         "exceeded": 1,
         "model_over_bound_min": 9.04191249661947e1,
         "model_over_bound_max": 9.04191249661947e1
-      },
-      "provisional_metrics_not_a_comparison": null
+      }
     },
     {
       "programme": "AGR-1",
@@ -341,8 +328,7 @@
         "exceeded": 2,
         "model_over_bound_min": 1.808382499323894e2,
         "model_over_bound_max": 2.1288439872264356e4
-      },
-      "provisional_metrics_not_a_comparison": null
+      }
     },
     {
       "programme": "AGR-1",
@@ -366,8 +352,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -391,8 +376,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -422,8 +406,7 @@
         "exceeded": 1,
         "model_over_bound_min": 1.808382499323894e2,
         "model_over_bound_max": 1.808382499323894e2
-      },
-      "provisional_metrics_not_a_comparison": null
+      }
     },
     {
       "programme": "AGR-1",
@@ -451,16 +434,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": {
-        "n": 5,
-        "rmse": 6.537659225241269e-1,
-        "mae": 6.493688102914428e-1,
-        "max_absolute_deviation": 7.729381156047614e-1,
-        "rmse_log10_ratio": 2.8418180705003278e0,
-        "mae_log10_ratio": 2.799790858888558e0,
-        "n_relative_deviation_defined": 5
-      }
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -491,8 +465,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -527,8 +500,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -568,8 +540,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -593,8 +564,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -618,8 +588,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -643,8 +612,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -673,8 +641,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -707,8 +674,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -732,8 +698,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -771,8 +736,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -803,8 +767,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -829,8 +792,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -859,8 +821,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -884,8 +845,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -909,8 +869,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -934,8 +893,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -973,8 +931,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1000,8 +957,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "JAERI",
@@ -1036,8 +992,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "JAERI",
@@ -1070,8 +1025,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "JAERI",
@@ -1100,8 +1054,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "JAERI",
@@ -1129,8 +1082,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "CRP-6",
@@ -1156,8 +1108,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "CRP-6",
@@ -1181,8 +1132,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "CRP-6",
@@ -1206,8 +1156,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "CRP-6",
@@ -1232,8 +1181,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1262,8 +1210,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1295,8 +1242,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1325,8 +1271,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1358,8 +1303,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1385,8 +1329,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1415,8 +1358,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1442,8 +1384,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1472,8 +1413,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1499,8 +1439,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1529,8 +1468,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1556,8 +1494,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1586,8 +1523,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1622,8 +1558,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1658,8 +1593,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1694,8 +1628,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1730,8 +1663,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1774,8 +1706,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1825,8 +1756,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1860,8 +1790,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1894,8 +1823,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1934,8 +1862,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -1974,8 +1901,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -2014,8 +1940,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-1",
@@ -2067,8 +1992,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-2",
@@ -2094,8 +2018,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-2",
@@ -2125,8 +2048,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-2",
@@ -2150,8 +2072,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-2",
@@ -2177,8 +2098,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-2",
@@ -2208,8 +2128,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     },
     {
       "programme": "AGR-2",
@@ -2233,8 +2152,7 @@
         "EXCEEDS REPORTED UPPER BOUND": 0
       },
       "point_metrics": null,
-      "bound_metrics": null,
-      "provisional_metrics_not_a_comparison": null
+      "bound_metrics": null
     }
   ],
   "rows": [
@@ -2466,7 +2384,7 @@
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
       "status_reason": "the register does not establish what this fraction is a fraction of (decision 22)",
-      "evaluation_kind": "provisional point value (denominator not established; not a comparison)",
+      "evaluation_kind": "measured and model value for scale only (denominator not established; no deviation formed)",
       "model": {
         "element": "Cs",
         "element_label_only": false,
@@ -2485,18 +2403,14 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "provisional: the denominator is not established, so this model value is shown for scale and is not a comparison"
+          "provisional: the denominator is not established, so this model value is shown for scale only; no deviation, relative deviation or aggregate is formed from it"
         ],
         "diffusion_coefficients_m2_s": [1.2503921785549537e-13,1e-8,4.062559476131478e-14,9.228940631020239e-17,4.062559476131478e-14]
       },
-      "deviation": {
+      "for_scale_only": {
         "measured_value": 8.5e-8,
-        "signed": 9.04106249661947e-4,
-        "absolute": 9.04106249661947e-4,
-        "relative_percent": 1.0636544113669966e6,
         "log10_ratio": 4.0268413741063895e0,
-        "normalised_residual": null,
-        "provisional": true
+        "note": "denominator not established (decision 22): no deviation, relative deviation or aggregate is formed"
       }
     },
     {
@@ -2512,7 +2426,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 7.4 %",
       "reported_measurement_uncertainty": null,
       "denominator": "not established",
       "source": "Collin et al. (2016)",
@@ -2520,7 +2434,7 @@
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
       "status_reason": "the register does not establish what this fraction is a fraction of (decision 22)",
-      "evaluation_kind": "provisional point value (denominator not established; not a comparison)",
+      "evaluation_kind": "measured and model value for scale only (denominator not established; no deviation formed)",
       "model": {
         "element": "Cs",
         "element_label_only": false,
@@ -2539,18 +2453,14 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "provisional: the denominator is not established, so this model value is shown for scale and is not a comparison"
+          "provisional: the denominator is not established, so this model value is shown for scale only; no deviation, relative deviation or aggregate is formed from it"
         ],
         "diffusion_coefficients_m2_s": [1.2503921785549537e-13,1e-8,4.062559476131478e-14,9.228940631020239e-17,4.062559476131478e-14]
       },
-      "deviation": {
+      "for_scale_only": {
         "measured_value": 3.7e-7,
-        "signed": 9.038212496619471e-4,
-        "absolute": 9.038212496619471e-4,
-        "relative_percent": 2.4427601342214784e5,
         "log10_ratio": 3.3880585757536874e0,
-        "normalised_residual": null,
-        "provisional": true
+        "note": "denominator not established (decision 22): no deviation, relative deviation or aggregate is formed"
       }
     },
     {
@@ -2566,7 +2476,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 7.4 %",
       "reported_measurement_uncertainty": null,
       "denominator": "not established",
       "source": "Collin et al. (2016)",
@@ -2574,7 +2484,7 @@
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
       "status_reason": "the register does not establish what this fraction is a fraction of (decision 22)",
-      "evaluation_kind": "provisional point value (denominator not established; not a comparison)",
+      "evaluation_kind": "measured and model value for scale only (denominator not established; no deviation formed)",
       "model": {
         "element": "Cs",
         "element_label_only": false,
@@ -2593,18 +2503,14 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "provisional: the denominator is not established, so this model value is shown for scale and is not a comparison"
+          "provisional: the denominator is not established, so this model value is shown for scale only; no deviation, relative deviation or aggregate is formed from it"
         ],
         "diffusion_coefficients_m2_s": [1.2503921785549537e-13,1e-8,4.062559476131478e-14,9.228940631020239e-17,4.062559476131478e-14]
       },
-      "deviation": {
+      "for_scale_only": {
         "measured_value": 1.9e-6,
-        "signed": 9.022912496619471e-4,
-        "absolute": 9.022912496619471e-4,
-        "relative_percent": 4.748901314010248e4,
         "log10_ratio": 2.6775066988678535e0,
-        "normalised_residual": null,
-        "provisional": true
+        "note": "denominator not established (decision 22): no deviation, relative deviation or aggregate is formed"
       }
     },
     {
@@ -2620,7 +2526,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 7.4 %",
       "reported_measurement_uncertainty": null,
       "denominator": "not established",
       "source": "Collin et al. (2016)",
@@ -2628,7 +2534,7 @@
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
       "status_reason": "the register does not establish what this fraction is a fraction of (decision 22)",
-      "evaluation_kind": "provisional point value (denominator not established; not a comparison)",
+      "evaluation_kind": "measured and model value for scale only (denominator not established; no deviation formed)",
       "model": {
         "element": "Cs",
         "element_label_only": false,
@@ -2647,18 +2553,14 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "provisional: the denominator is not established, so this model value is shown for scale and is not a comparison"
+          "provisional: the denominator is not established, so this model value is shown for scale only; no deviation, relative deviation or aggregate is formed from it"
         ],
         "diffusion_coefficients_m2_s": [1.2503921785549537e-13,1e-8,4.062559476131478e-14,9.228940631020239e-17,4.062559476131478e-14]
       },
-      "deviation": {
+      "for_scale_only": {
         "measured_value": 1.6e-6,
-        "signed": 9.02591249661947e-4,
-        "absolute": 9.02591249661947e-4,
-        "relative_percent": 5.641195310387169e4,
         "log10_ratio": 2.752140317164758e0,
-        "normalised_residual": null,
-        "provisional": true
+        "note": "denominator not established (decision 22): no deviation, relative deviation or aggregate is formed"
       }
     },
     {
@@ -2674,7 +2576,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 7.4 %",
       "reported_measurement_uncertainty": null,
       "denominator": "not established",
       "source": "Collin et al. (2016)",
@@ -2682,7 +2584,7 @@
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
       "status_reason": "the register does not establish what this fraction is a fraction of (decision 22)",
-      "evaluation_kind": "provisional point value (denominator not established; not a comparison)",
+      "evaluation_kind": "measured and model value for scale only (denominator not established; no deviation formed)",
       "model": {
         "element": "Cs",
         "element_label_only": false,
@@ -2701,18 +2603,14 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "provisional: the denominator is not established, so this model value is shown for scale and is not a comparison"
+          "provisional: the denominator is not established, so this model value is shown for scale only; no deviation, relative deviation or aggregate is formed from it"
         ],
         "diffusion_coefficients_m2_s": [1.2503921785549537e-13,1e-8,4.062559476131478e-14,9.228940631020239e-17,4.062559476131478e-14]
       },
-      "deviation": {
+      "for_scale_only": {
         "measured_value": 1.6e-8,
-        "signed": 3.028839095503881e-3,
-        "absolute": 3.028839095503881e-3,
-        "relative_percent": 1.8930244346899252e7,
         "log10_ratio": 5.277158513942563e0,
-        "normalised_residual": null,
-        "provisional": true
+        "note": "denominator not established (decision 22): no deviation, relative deviation or aggregate is formed"
       }
     },
     {
@@ -3463,7 +3361,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 4.9 %",
       "reported_measurement_uncertainty": null,
       "denominator": "not established",
       "source": "Collin et al. (2016)",
@@ -3471,7 +3369,7 @@
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
       "status_reason": "the register does not establish what this fraction is a fraction of (decision 22)",
-      "evaluation_kind": "provisional point value (denominator not established; not a comparison)",
+      "evaluation_kind": "measured and model value for scale only (denominator not established; no deviation formed)",
       "model": {
         "element": "Ag",
         "element_label_only": false,
@@ -3490,18 +3388,14 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "provisional: the denominator is not established, so this model value is shown for scale and is not a comparison"
+          "provisional: the denominator is not established, so this model value is shown for scale only; no deviation, relative deviation or aggregate is formed from it"
         ],
         "diffusion_coefficients_m2_s": [1.678793071604177e-13,1e-8,2.691142804624656e-13,3.638806119652386e-15,2.691142804624656e-13]
       },
-      "deviation": {
+      "for_scale_only": {
         "measured_value": 1.8e-3,
-        "signed": 5.900821931398587e-1,
-        "absolute": 5.900821931398587e-1,
-        "relative_percent": 3.278234406332548e4,
         "log10_ratio": 2.5169627692536993e0,
-        "normalised_residual": null,
-        "provisional": true
+        "note": "denominator not established (decision 22): no deviation, relative deviation or aggregate is formed"
       }
     },
     {
@@ -3517,7 +3411,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 4.9 %",
       "reported_measurement_uncertainty": null,
       "denominator": "not established",
       "source": "Collin et al. (2016)",
@@ -3525,7 +3419,7 @@
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
       "status_reason": "the register does not establish what this fraction is a fraction of (decision 22)",
-      "evaluation_kind": "provisional point value (denominator not established; not a comparison)",
+      "evaluation_kind": "measured and model value for scale only (denominator not established; no deviation formed)",
       "model": {
         "element": "Ag",
         "element_label_only": false,
@@ -3544,18 +3438,14 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "provisional: the denominator is not established, so this model value is shown for scale and is not a comparison"
+          "provisional: the denominator is not established, so this model value is shown for scale only; no deviation, relative deviation or aggregate is formed from it"
         ],
         "diffusion_coefficients_m2_s": [1.678793071604177e-13,1e-8,2.691142804624656e-13,3.638806119652386e-15,2.691142804624656e-13]
       },
-      "deviation": {
+      "for_scale_only": {
         "measured_value": 2.5e-3,
-        "signed": 5.893821931398587e-1,
-        "absolute": 5.893821931398587e-1,
-        "relative_percent": 2.357528772559435e4,
         "log10_ratio": 2.3742952656849674e0,
-        "normalised_residual": null,
-        "provisional": true
+        "note": "denominator not established (decision 22): no deviation, relative deviation or aggregate is formed"
       }
     },
     {
@@ -3571,7 +3461,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 4.9 %",
       "reported_measurement_uncertainty": null,
       "denominator": "not established",
       "source": "Collin et al. (2016)",
@@ -3579,7 +3469,7 @@
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
       "status_reason": "the register does not establish what this fraction is a fraction of (decision 22)",
-      "evaluation_kind": "provisional point value (denominator not established; not a comparison)",
+      "evaluation_kind": "measured and model value for scale only (denominator not established; no deviation formed)",
       "model": {
         "element": "Ag",
         "element_label_only": false,
@@ -3598,18 +3488,14 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "provisional: the denominator is not established, so this model value is shown for scale and is not a comparison"
+          "provisional: the denominator is not established, so this model value is shown for scale only; no deviation, relative deviation or aggregate is formed from it"
         ],
         "diffusion_coefficients_m2_s": [1.678793071604177e-13,1e-8,2.691142804624656e-13,3.638806119652386e-15,2.691142804624656e-13]
       },
-      "deviation": {
+      "for_scale_only": {
         "measured_value": 6e-4,
-        "signed": 5.912821931398586e-1,
-        "absolute": 5.912821931398586e-1,
-        "relative_percent": 9.854703218997645e4,
         "log10_ratio": 2.9940840239733615e0,
-        "normalised_residual": null,
-        "provisional": true
+        "note": "denominator not established (decision 22): no deviation, relative deviation or aggregate is formed"
       }
     },
     {
@@ -3625,7 +3511,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 4.9 %",
       "reported_measurement_uncertainty": null,
       "denominator": "not established",
       "source": "Collin et al. (2016)",
@@ -3633,7 +3519,7 @@
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
       "status_reason": "the register does not establish what this fraction is a fraction of (decision 22)",
-      "evaluation_kind": "provisional point value (denominator not established; not a comparison)",
+      "evaluation_kind": "measured and model value for scale only (denominator not established; no deviation formed)",
       "model": {
         "element": "Ag",
         "element_label_only": false,
@@ -3652,18 +3538,14 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "provisional: the denominator is not established, so this model value is shown for scale and is not a comparison"
+          "provisional: the denominator is not established, so this model value is shown for scale only; no deviation, relative deviation or aggregate is formed from it"
         ],
         "diffusion_coefficients_m2_s": [1.678793071604177e-13,1e-8,2.691142804624656e-13,3.638806119652386e-15,2.691142804624656e-13]
       },
-      "deviation": {
+      "for_scale_only": {
         "measured_value": 1.5e-4,
-        "signed": 7.031593564328766e-1,
-        "absolute": 7.031593564328766e-1,
-        "relative_percent": 4.687729042885845e5,
         "log10_ratio": 3.6710551360061534e0,
-        "normalised_residual": null,
-        "provisional": true
+        "note": "denominator not established (decision 22): no deviation, relative deviation or aggregate is formed"
       }
     },
     {
@@ -3679,7 +3561,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 4.9 %",
       "reported_measurement_uncertainty": null,
       "denominator": "not established",
       "source": "Collin et al. (2016)",
@@ -3687,7 +3569,7 @@
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
       "status_reason": "the register does not establish what this fraction is a fraction of (decision 22)",
-      "evaluation_kind": "provisional point value (denominator not established; not a comparison)",
+      "evaluation_kind": "measured and model value for scale only (denominator not established; no deviation formed)",
       "model": {
         "element": "Ag",
         "element_label_only": false,
@@ -3706,18 +3588,14 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "provisional: the denominator is not established, so this model value is shown for scale and is not a comparison"
+          "provisional: the denominator is not established, so this model value is shown for scale only; no deviation, relative deviation or aggregate is formed from it"
         ],
         "diffusion_coefficients_m2_s": [2.871980919431712e-13,1e-8,4.4419687680746096e-13,7.324959578150807e-15,4.4419687680746096e-13]
       },
-      "deviation": {
+      "for_scale_only": {
         "measured_value": 2.8e-3,
-        "signed": 7.729381156047614e-1,
-        "absolute": 7.729381156047614e-1,
-        "relative_percent": 2.7604932700170055e4,
         "log10_ratio": 2.442557099524608e0,
-        "normalised_residual": null,
-        "provisional": true
+        "note": "denominator not established (decision 22): no deviation, relative deviation or aggregate is formed"
       }
     },
     {
@@ -3733,7 +3611,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 5.8 %",
       "reported_measurement_uncertainty": null,
       "denominator": "not established",
       "source": "Collin et al. (2016)",
@@ -3756,7 +3634,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 5.8 %",
       "reported_measurement_uncertainty": null,
       "denominator": "not established",
       "source": "Collin et al. (2016)",
@@ -3779,7 +3657,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 5.8 %",
       "reported_measurement_uncertainty": null,
       "denominator": "not established",
       "source": "Collin et al. (2016)",
@@ -3802,7 +3680,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 5.8 %",
       "reported_measurement_uncertainty": null,
       "denominator": "not established",
       "source": "Collin et al. (2016)",
@@ -3825,7 +3703,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 5.8 %",
       "reported_measurement_uncertainty": null,
       "denominator": "not established",
       "source": "Collin et al. (2016)",
@@ -3848,7 +3726,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 5.8 %",
       "reported_measurement_uncertainty": null,
       "denominator": "not established",
       "source": "Collin et al. (2016)",
@@ -3871,7 +3749,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 5.8 %",
       "reported_measurement_uncertainty": null,
       "denominator": "not established",
       "source": "Collin et al. (2016)",
@@ -3894,7 +3772,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 5.8 %",
       "reported_measurement_uncertainty": null,
       "denominator": "not established",
       "source": "Collin et al. (2016)",
@@ -4308,7 +4186,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 7.4 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4331,7 +4209,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 7.4 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4354,7 +4232,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 7.4 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4377,7 +4255,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 7.4 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4400,7 +4278,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 7.4 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4423,7 +4301,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 7.4 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4446,7 +4324,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 5.8 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4469,7 +4347,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 5.8 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4492,7 +4370,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 5.8 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4515,7 +4393,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 5.8 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4538,7 +4416,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 5.8 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4561,7 +4439,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 5.8 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4584,7 +4462,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 5.8 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4607,7 +4485,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 5.8 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4630,7 +4508,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 5.8 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4653,7 +4531,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 5.8 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4929,7 +4807,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 4.3 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4952,7 +4830,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 4.3 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4975,7 +4853,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 4.3 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -4998,7 +4876,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 4.3 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -5021,7 +4899,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 4.3 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",
@@ -5044,7 +4922,7 @@
       "range_min_or_count_text": null,
       "range_max_or_count_text": null,
       "value_class": "R-dig",
-      "reading_uncertainty": "digitised, reading uncertainty not recorded",
+      "reading_uncertainty": "digitising reading uncertainty only: value +/- 4.3 %",
       "reported_measurement_uncertainty": null,
       "denominator": "calculated compact inventory",
       "source": "Collin et al. (2016)",

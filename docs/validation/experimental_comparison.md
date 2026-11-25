@@ -1,6 +1,6 @@
 # Experimental Comparison: Data Interpretation and Limitations
 
-STRATO simulates how a fission product moves through one ideal TRISO particle: a kernel and four coating layers (buffer, inner pyrocarbon, silicon carbide, outer pyrocarbon) in perfect contact, with every atom starting in the kernel. The AGR-1 experiments did not measure single particles. Almost every AGR-1 value is for a compact, a small cylinder that holds 4145 particles in a graphite matrix; one particle holds about 2.4 in 10,000 (2.4e-4) of a compact. Many particles in a compact release almost nothing and a few may release a lot.
+STRATO simulates how a fission product moves through one ideal TRISO particle: a kernel and four coating layers (buffer, inner pyrocarbon, silicon carbide, outer pyrocarbon) in perfect contact, with every atom starting in the kernel. The AGR-1 experiments did not measure single particles. Almost every AGR-1 value is for a compact, a small cylinder that holds 4145 particles in a graphite matrix; one particle holds about 2.4 in 10,000 (2.4e-4) of a compact.
 
 Some measurements are only upper bounds, written with "<". They say that the release was at most that large, and this report treats them as inequalities, never as measured values. Most values were read from published figures, so they carry the reading uncertainty of the register, and none of the rows that were compared carries a measurement uncertainty published by its source. This report does not make one up: where an uncertainty is missing, it says so, and no error bar is drawn.
 
@@ -24,28 +24,28 @@ Every one of the 482 rows of the release register has a status that the program 
 | EXCEEDS REPORTED UPPER BOUND | 17 |
 
 - **Upper bounds.** 17 rows are read as inequalities (reported bounds of caesium, and caesium compact totals read as bounds, decision 19). The model satisfies 0 of them and exceeds 17. Where it exceeds, the model release is between 9.04e1 and 5.97e5 times the bound (smallest and largest ratio). These exceedances are shown in the tables and figures; none is hidden.
-- **Point comparisons.** 0 rows have the status COMPARISON AVAILABLE as a point value. The only rows that were intended as point values (the matrix-corrected fractions of intact compacts of Cs-134 and Ag-110m, figures 3 and 6 of the source) have a denominator that the register records as *not established*, so by decision 22 they stay DATA INCOMPLETE. Their model values are computed and shown for scale only (provisional values); they enter no status and no aggregate.
+- **Point comparisons.** 0 rows have the status COMPARISON AVAILABLE as a point value. The only rows that were intended as point values (the matrix-corrected fractions of intact compacts of Cs-134 and Ag-110m, figures 3 and 6 of the source) have a denominator that the register records as *not established*, so by decision 22 they stay DATA INCOMPLETE. For these rows only the measured value, the model value and the log10 ratio of the two are given, for scale; no deviation, relative deviation, RMSE, MAE or maximum is formed for them, and they enter no status and no aggregate.
 - **Sr-90.** No row of Sr-90 supports a comparison: the intact-compact values are totals that include inventory released in the reactor, and the other rows are failed-particle quantities. The Sr-90 panels of the figures show these rows as muted context only.
 - **Model limitations of every result.** kernel-only start (inventory-matched start node); constant diffusion coefficient per layer evaluated at the test temperature from the first hour (heating ramps are not modelled); no radioactive decay and no fission-product generation in the solver yet; perfect interface contact; absorbing outer surface; one intact particle, no matrix; the model fraction is a fraction of the particle's own inventory.
 - **Status of the model.** Nothing here validates the model. The solver is numerically verified elsewhere; this report compares its release behaviour with the data and shows where they differ.
 
 ## What was run
 
-The solver is the five-layer spherical backward-time centred-space finite-difference solver of the STRATO repository (package version 1.0.1, source commit `ef34d34169360c8790a559e40c5952aa65561c73`). For every comparable row the program runs it for the registered measured baseline geometry (design `AGR1-B-M16`), with each layer's diffusion coefficient evaluated at the test temperature from the registered published heating-test correlation (decisions 16 and 39: set `C16-T2` for kernel, pyrocarbon and silicon carbide, set `C16-BUF` for the buffer), and reads the release fraction at the time of the measurement. The time is counted from the moment the test temperature is reached. The temperature ramp of the real test (about 31 to 35 h) is not modelled, and the diffusion coefficients are constant, because the solver has constant coefficients; temperature-dependent diffusion, decay and generation are not yet in the solver.
+The solver is the five-layer spherical backward-time centred-space finite-difference solver of the STRATO repository (package version 1.0.1, source commit `e483c9b8869214fea88352ee9debebfa66f904ba`). For every comparable row the program runs it for the registered measured baseline geometry (design `AGR1-B-M16`), with each layer's diffusion coefficient evaluated at the test temperature from the registered published heating-test correlation, chosen by the selection function of the `strato-data` crate (decisions 16, 39, 40 and 47: the rows of set `C16-T2` for kernel, pyrocarbon and silicon carbide, set `C16-BUF` for the buffer), and reads the release fraction at the time of the measurement. The time is counted from the moment the test temperature is reached. The temperature ramp of the real test (about 31 to 35 h) is not modelled, and the diffusion coefficients are constant, because the solver has constant coefficients; temperature-dependent diffusion, decay and generation are not yet in the solver.
 
-Outer radii (um) of kernel, buffer, IPyC, SiC and OPyC: 175.0, 278.5, 317.9, 353.2, 394.2 (register rows G-01, G-02, G-03, G-04, G-05). The kernel diameter of the register is 350 um (the measured value of the kernel batch is 349.7 um; decision 41 uses a kernel radius of 174.9 um for its scaling, the register's 175.0 um gives the factor 0.490 instead of 0.489).
+Outer radii (µm) of kernel, buffer, IPyC, SiC and OPyC: 175.0, 278.5, 317.9, 353.2, 394.2 (register rows G-01, G-02, G-03, G-04, G-05). The kernel diameter of the register is 350 µm (the measured value of the kernel batch is 349.7 µm; decision 41 uses a kernel radius of 174.9 µm for its scaling, the register's 175.0 µm gives the factor 0.490 instead of 0.489).
 
 Coefficient sets used by default:
 
-- Ag - published heating-test correlation as printed (C16-T2 and C16-BUF): kernel: C16-01; buffer: C16-22; IPyC: C16-02; SiC: C16-03; OPyC: C16-02
-- Cs - published heating-test correlation as printed (C16-T2 and C16-BUF): kernel: C16-05+C16-06; buffer: C16-22; IPyC: C16-07; SiC: C16-08+C16-09; OPyC: C16-07
-- Sr - published heating-test correlation as printed (C16-T2 and C16-BUF): kernel: C16-11; buffer: C16-22; IPyC: C16-12; SiC: C16-13+C16-14; OPyC: C16-12
+- Ag - published heating-test correlation as printed (Collin 2016 Table 2, rows C16-T2 and C16-BUF), chosen by the strato-data selection function: kernel: C16-01; buffer: C16-22; IPyC: C16-02; SiC: C16-03; OPyC: C16-02. Statements of the selection function: kernel: UO2 coefficient used for the UCO kernel; no UCO measurement exists; kernel: referred to a 250 um kernel radius and applied unscaled, as the published AGR-1 modelling does; buffer: modelling convention: the buffer is taken as non-retentive; IPyC: one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02); SiC: the published correlation over-estimates the silver release of AGR-1 (factor about 1000 at 1600 to 1700 C and 100 at 1800 C, Collin 2016); OPyC: one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)
+- Cs - published heating-test correlation as printed (Collin 2016 Table 2, rows C16-T2 and C16-BUF), chosen by the strato-data selection function: kernel: C16-05+C16-06; buffer: C16-22; IPyC: C16-07; SiC: C16-08+C16-09; OPyC: C16-07. Statements of the selection function: kernel: UO2 coefficient used for the UCO kernel; no UCO measurement exists; kernel: referred to a 250 um kernel radius and applied unscaled, as the published AGR-1 modelling does; buffer: modelling convention: the buffer is taken as non-retentive; IPyC: one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02); SiC: fluence factor not applied; correlation form under source review; OPyC: one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)
+- Sr - published heating-test correlation as printed (Collin 2016 Table 2, rows C16-T2 and C16-BUF), chosen by the strato-data selection function: kernel: C16-11; buffer: C16-22; IPyC: C16-12; SiC: C16-13+C16-14; OPyC: C16-12. Statements of the selection function: kernel: UO2 coefficient used for the UCO kernel; no UCO measurement exists; kernel: referred to a 250 um kernel radius and applied unscaled, as the published AGR-1 modelling does; buffer: modelling convention: the buffer is taken as non-retentive; IPyC: one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02); OPyC: one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)
 
 All rows of these sets are of class *published PARFUME correlation*, phase *heating test*. The kernel values are UO2 surrogates: no UCO kernel measurement exists (decision 40). The coefficient classes and the states of the rows (verified or under source review) are as the register records them at the merged data commit.
 
-Diffusion coefficients (m^2/s) at the test temperatures:
+Diffusion coefficients (m²/s) at the test temperatures:
 
-| Nuclide | Temperature (degC) | Kernel | Buffer | IPyC | SiC | OPyC |
+| Nuclide | Temperature (°C) | Kernel | Buffer | IPyC | SiC | OPyC |
 |---|---:|---:|---:|---:|---:|---:|
 | Ag-110m | 1600 | 1.68e-13 | 1.00e-8 | 2.69e-13 | 3.64e-15 | 2.69e-13 |
 | Ag-110m | 1700 | 2.87e-13 | 1.00e-8 | 4.44e-13 | 7.32e-15 | 4.44e-13 |
@@ -84,7 +84,7 @@ The rules run in this order and the first that applies decides. A status is neve
 
 Each row is an inequality: the model's release fraction at the end of the test must not exceed the number. "Read as" says how the number came to be a bound: the register states it as a bound, or it is a compact total (mean particle release plus matrix plus background, all non-negative), which for caesium, whose in-pile release is small, is read as an upper bound on release through intact coatings (decision 19; digitised totals are labelled digitised). The model fraction is a fraction of the particle's own inventory; the bound is a fraction of the compact inventory; the two are the same quantity only if the inventory outside the particles is negligible.
 
-| Row | Nuclide | Compact or sample | T (degC) | Time at T (h) | Bound read as | Bound | Model | Model / bound | Status | Numerical difference of the model |
+| Row | Nuclide | Compact or sample | T (°C) | Time at T (h) | Bound read as | Bound | Model | Model / bound | Status | Numerical difference of the model |
 |---|---|---|---:|---:|---|---:|---:|---:|---|---:|
 | E-015 | Cs-134 | 3-2-2 | 1600 | 300 | digitised total read as an upper bound | 2.70e-7 | 9.04e-4 | 3.35e3 | EXCEEDS REPORTED UPPER BOUND | 1.08e-6 |
 | E-016 | Cs-134 | 4-3-3 | 1600 | 300 | digitised total read as an upper bound | 7.00e-7 | 9.04e-4 | 1.29e3 | EXCEEDS REPORTED UPPER BOUND | 1.08e-6 |
@@ -104,67 +104,67 @@ Each row is an inequality: the model's release fraction at the end of the test m
 | E-199 | Cs-134 | 6-2-1 | 1600 | 300 | printed total read as an upper bound | 4.75e-6 | 9.04e-4 | 1.90e2 | EXCEEDS REPORTED UPPER BOUND | 1.08e-6 |
 | E-201 | Cs-134 | 6-4-3 | 1600 | 400 | printed total read as an upper bound | 9.41e-7 | 3.03e-3 | 3.22e3 | EXCEEDS REPORTED UPPER BOUND | 1.57e-6 |
 
-## Provisional values: DATA INCOMPLETE, shown for scale
+Rows E-028, E-029 name the element only ("Cs"). the row names the element only: compared as elemental caesium with the caesium coefficient rows and without decay (decision 21).
 
-The register does not establish what the matrix-corrected fractions of figures 3 and 6 are fractions of (denominator *not established*, decision 22). The program therefore keeps them DATA INCOMPLETE. To show the scale of the difference without turning it into a comparison, the model's release after the first 24 h at temperature to the end of the test (kernel-only start, assumption of decision 20) is computed and set beside the digitised value. These values enter no status, no aggregate and no metric of a comparison. If a source confirms the denominator, the status changes by editing the one register cell and re-running the program.
+## DATA INCOMPLETE rows with a model value, for scale only
 
-| Row | Nuclide | Compact | T (degC) | Window (h at T) | Measured (digitised) | Model | Absolute deviation | Relative deviation (%) | log10 (model / measured) |
-|---|---|---|---:|---|---:|---:|---:|---:|---:|
-| E-010 | Cs-134 | 3-2-2 | 1600 | 24-300 | 8.50e-8 | 9.04e-4 | 9.04e-4 | 1.064e6 | 4.03 |
-| E-011 | Cs-134 | 4-3-3 | 1600 | 24-300 | 3.70e-7 | 9.04e-4 | 9.04e-4 | 2.443e5 | 3.39 |
-| E-012 | Cs-134 | 5-3-3 | 1600 | 24-300 | 1.90e-6 | 9.04e-4 | 9.02e-4 | 4.749e4 | 2.68 |
-| E-013 | Cs-134 | 6-2-1 | 1600 | 24-300 | 1.60e-6 | 9.04e-4 | 9.03e-4 | 5.641e4 | 2.75 |
-| E-014 | Cs-134 | 6-4-3 | 1600 | 24-400 | 1.60e-8 | 3.03e-3 | 3.03e-3 | 1.893e7 | 5.28 |
-| E-033 | Ag-110m | 4-3-3 | 1600 | 24-300 | 1.80e-3 | 5.92e-1 | 5.90e-1 | 3.278e4 | 2.52 |
-| E-034 | Ag-110m | 5-3-3 | 1600 | 24-300 | 2.50e-3 | 5.92e-1 | 5.89e-1 | 2.358e4 | 2.37 |
-| E-035 | Ag-110m | 6-2-1 | 1600 | 24-300 | 6.00e-4 | 5.92e-1 | 5.91e-1 | 9.855e4 | 2.99 |
-| E-036 | Ag-110m | 6-4-3 | 1600 | 24-400 | 1.50e-4 | 7.03e-1 | 7.03e-1 | 4.688e5 | 3.67 |
-| E-037 | Ag-110m | 4-4-3 | 1700 | 24-303 | 2.80e-3 | 7.76e-1 | 7.73e-1 | 2.760e4 | 2.44 |
+The register does not establish what the matrix-corrected fractions of figures 3 and 6 are fractions of (denominator *not established*, decision 22), so the program keeps them DATA INCOMPLETE and forms no deviation for them: a relative deviation, an RMSE, a MAE or a maximum computed against an unknown denominator would not mean anything. Only the measured value, the model's release after the first 24 h at temperature to the end of the test (kernel-only start, assumption of decision 20) and the log10 ratio of the two are given, so that the order of magnitude of the difference can be seen. They enter no status and no aggregate. If a source confirms the denominator, the status changes by editing the one register cell and re-running the program.
+
+| Row | Nuclide | Compact | T (°C) | Window (h at T) | Measured (digitised) | Model over the same window | log10 (model / measured), for scale |
+|---|---|---|---:|---|---:|---:|---:|
+| E-010 | Cs-134 | 3-2-2 | 1600 | 24-300 | 8.50e-8 | 9.04e-4 | 4.03 |
+| E-011 | Cs-134 | 4-3-3 | 1600 | 24-300 | 3.70e-7 | 9.04e-4 | 3.39 |
+| E-012 | Cs-134 | 5-3-3 | 1600 | 24-300 | 1.90e-6 | 9.04e-4 | 2.68 |
+| E-013 | Cs-134 | 6-2-1 | 1600 | 24-300 | 1.60e-6 | 9.04e-4 | 2.75 |
+| E-014 | Cs-134 | 6-4-3 | 1600 | 24-400 | 1.60e-8 | 3.03e-3 | 5.28 |
+| E-033 | Ag-110m | 4-3-3 | 1600 | 24-300 | 1.80e-3 | 5.92e-1 | 2.52 |
+| E-034 | Ag-110m | 5-3-3 | 1600 | 24-300 | 2.50e-3 | 5.92e-1 | 2.37 |
+| E-035 | Ag-110m | 6-2-1 | 1600 | 24-300 | 6.00e-4 | 5.92e-1 | 2.99 |
+| E-036 | Ag-110m | 6-4-3 | 1600 | 24-400 | 1.50e-4 | 7.03e-1 | 3.67 |
+| E-037 | Ag-110m | 4-4-3 | 1700 | 24-303 | 2.80e-3 | 7.76e-1 | 2.44 |
 
 ## Aggregate metrics per dataset
 
-Aggregates are formed per dataset: the same programme, nuclide, group of particles and quantity definition, never across them. Bounds are counted, not averaged into a deviation. Provisional values are aggregated apart and are not a comparison. A group with no point comparison has no RMSE, MAE or maximum: they are undefined, not zero.
+Aggregates are formed per dataset: the same programme, nuclide, group of particles and quantity definition, never across them. Bounds are counted, not averaged into a deviation. Rows that are DATA INCOMPLETE enter no aggregate. A group with no point comparison has no RMSE, MAE or maximum: they are undefined, not zero.
 
-| Programme | Nuclide | Group | Quantity | Rows | Bounds (satisfied / exceeded) | Model / bound (smallest, largest) | Provisional n | Provisional RMSE | Provisional MAE | Provisional maximum | Provisional RMSE of log10 ratio |
-|---|---|---|---|---:|---|---|---:|---:|---:|---:|---:|
-| AGR-1 | Cs-134 | intact | compact release fraction | 5 | - | - | 5 | 1.58e-3 | 1.33e-3 | 3.03e-3 | 3.75 |
-| AGR-1 | Cs-134 | intact | total compact release fraction | 13 | 0 / 13 | 1.81e2, 5.97e5 | 0 | - | - | - | - |
-| AGR-1 | Cs-134 | intact | cumulative compact release fraction (upper bound) | 1 | 0 / 1 | 9.04e1, 9.04e1 | 0 | - | - | - | - |
-| AGR-1 | Cs | intact | cumulative compact release fraction (upper bound) | 2 | 0 / 2 | 1.81e2, 2.13e4 | 0 | - | - | - | - |
-| AGR-1 | Cs-134 | intact | compact release fraction (upper bound) | 1 | 0 / 1 | 1.81e2, 1.81e2 | 0 | - | - | - | - |
-| AGR-1 | Ag-110m | intact | compact release fraction | 5 | - | - | 5 | 6.54e-1 | 6.49e-1 | 7.73e-1 | 2.84 |
+| Programme | Nuclide | Group | Quantity | Rows | Point comparisons | Bounds (satisfied / exceeded) | Model / bound (smallest, largest) |
+|---|---|---|---|---:|---:|---|---|
+| AGR-1 | Cs-134 | intact | total compact release fraction | 13 | 0 | 0 / 13 | 1.81e2, 5.97e5 |
+| AGR-1 | Cs-134 | intact | cumulative compact release fraction (upper bound) | 1 | 0 | 0 / 1 | 9.04e1, 9.04e1 |
+| AGR-1 | Cs | intact | cumulative compact release fraction (upper bound) | 2 | 0 | 0 / 2 | 1.81e2, 2.13e4 |
+| AGR-1 | Cs-134 | intact | compact release fraction (upper bound) | 1 | 0 | 0 / 1 | 1.81e2, 1.81e2 |
 
 Datasets with a point comparison (status COMPARISON AVAILABLE): 0.
 
 ## Figures
 
-![A. Fraction released versus time at temperature, for the three nuclides at 1600, 1700 and 1800 degC. Lines: BTCS. Plus signs: the independent analytical series of the five-layer problem (the eigenfunction expansion of the repository), at the times where it is usable. Markers: registered measurements, by what they can support (downward triangle: upper bound, hollow when exceeded by the model; hollow diamond: DATA INCOMPLETE; grey cross: NOT DIRECTLY COMPARABLE context). Log scale; no error bars, because no source reports a measurement uncertainty for the plotted rows.](figures/figure_A_release_vs_time.svg)
+![A. Fraction released versus time at temperature, for the three elements at 1600, 1700 and 1800 °C (the model has no decay, so each panel is the element; the nuclides measured are listed in the panel). Lines: BTCS. Plus signs: the independent analytical series of the five-layer problem (the eigenfunction expansion of the repository), only at the times where it meets its validity criterion (truncation valid, and the value above the series' own estimated accuracy; negative or unresolved values are not drawn). Hollow squares: the model's own value over the 24 h-to-end window of a matrix-corrected measurement, drawn beside it because that measurement is a window release, not cumulative from t = 0. Markers: registered measurements, by what they can support (downward triangle: upper bound, hollow when exceeded by the model; hollow diamond: DATA INCOMPLETE; grey cross: NOT DIRECTLY COMPARABLE context). Log scale; no error bars, because no source reports a measurement uncertainty for the plotted rows.](figures/figure_A_release_vs_time.svg)
 
-*A. Fraction released versus time at temperature, for the three nuclides at 1600, 1700 and 1800 degC. Lines: BTCS. Plus signs: the independent analytical series of the five-layer problem (the eigenfunction expansion of the repository), at the times where it is usable. Markers: registered measurements, by what they can support (downward triangle: upper bound, hollow when exceeded by the model; hollow diamond: DATA INCOMPLETE; grey cross: NOT DIRECTLY COMPARABLE context). Log scale; no error bars, because no source reports a measurement uncertainty for the plotted rows.*
+*A. Fraction released versus time at temperature, for the three elements at 1600, 1700 and 1800 °C (the model has no decay, so each panel is the element; the nuclides measured are listed in the panel). Lines: BTCS. Plus signs: the independent analytical series of the five-layer problem (the eigenfunction expansion of the repository), only at the times where it meets its validity criterion (truncation valid, and the value above the series' own estimated accuracy; negative or unresolved values are not drawn). Hollow squares: the model's own value over the 24 h-to-end window of a matrix-corrected measurement, drawn beside it because that measurement is a window release, not cumulative from t = 0. Markers: registered measurements, by what they can support (downward triangle: upper bound, hollow when exceeded by the model; hollow diamond: DATA INCOMPLETE; grey cross: NOT DIRECTLY COMPARABLE context). Log scale; no error bars, because no source reports a measurement uncertainty for the plotted rows.*
 
-![B. Absolute deviation versus time (provisional values only, because no row has a point comparison) and, beside it, the model over each upper bound (an inequality, not a deviation).](figures/figure_B_absolute_deviation.svg)
+![B. Absolute deviation versus time of the point comparisons (none exist, so the panel is empty and says so; DATA INCOMPLETE rows have no deviation) and, beside it, the model over each upper bound (an inequality, not a deviation).](figures/figure_B_absolute_deviation.svg)
 
-*B. Absolute deviation versus time (provisional values only, because no row has a point comparison) and, beside it, the model over each upper bound (an inequality, not a deviation).*
+*B. Absolute deviation versus time of the point comparisons (none exist, so the panel is empty and says so; DATA INCOMPLETE rows have no deviation) and, beside it, the model over each upper bound (an inequality, not a deviation).*
 
-![C. Relative percentage deviation versus time, with the policy for undefined values stated on the figure.](figures/figure_C_relative_deviation.svg)
+![C. Relative percentage deviation versus time of the point comparisons (none exist), with the policy for undefined values stated on the figure, and the model over each upper bound.](figures/figure_C_relative_deviation.svg)
 
-*C. Relative percentage deviation versus time, with the policy for undefined values stated on the figure.*
+*C. Relative percentage deviation versus time of the point comparisons (none exist), with the policy for undefined values stated on the figure, and the model over each upper bound.*
 
-![D. Radial concentration profiles through the five layers at selected times, 1600 degC.](figures/figure_D_radial_profiles.svg)
+![D. Radial concentration profiles through the five layers at selected times, 1600 °C.](figures/figure_D_radial_profiles.svg)
 
-*D. Radial concentration profiles through the five layers at selected times, 1600 degC.*
+*D. Radial concentration profiles through the five layers at selected times, 1600 °C.*
 
-![E. Inventory balance: remaining inventory and cumulative release (Ag-110m at 1800 degC), and the relative balance residual with its derived rounding bound for the three nuclides. Generated inventory and decay loss are not applicable yet: the solver has neither.](figures/figure_E_inventory_balance.svg)
+![E. Inventory balance: remaining inventory and cumulative release (Ag-110m at 1800 °C), and the relative balance residual with its derived rounding bound for the three nuclides. Generated inventory and decay loss are not applicable yet: the solver has neither.](figures/figure_E_inventory_balance.svg)
 
-*E. Inventory balance: remaining inventory and cumulative release (Ag-110m at 1800 degC), and the relative balance residual with its derived rounding bound for the three nuclides. Generated inventory and decay loss are not applicable yet: the solver has neither.*
+*E. Inventory balance: remaining inventory and cumulative release (Ag-110m at 1800 °C), and the relative balance residual with its derived rounding bound for the three nuclides. Generated inventory and decay loss are not applicable yet: the solver has neither.*
 
-![F. Spatial convergence against the analytical series of a homogeneous verification case.](figures/figure_F_spatial_convergence.svg)
+![F. Spatial convergence against the exact series of a homogeneous verification case (synthetic diffusion coefficient, not AGR-1 data).](figures/figure_F_spatial_convergence.svg)
 
-*F. Spatial convergence against the analytical series of a homogeneous verification case.*
+*F. Spatial convergence against the exact series of a homogeneous verification case (synthetic diffusion coefficient, not AGR-1 data).*
 
-![G. Temporal convergence on a fixed fine mesh.](figures/figure_G_temporal_convergence.svg)
+![G. Temporal convergence on a fixed fine mesh, same homogeneous verification case.](figures/figure_G_temporal_convergence.svg)
 
-*G. Temporal convergence on a fixed fine mesh.*
+*G. Temporal convergence on a fixed fine mesh, same homogeneous verification case.*
 
 ![H. Temperature sensitivity of the release after 300 h for each registered coefficient variant.](figures/figure_H_temperature_sensitivity.svg)
 
@@ -176,7 +176,7 @@ The figures are static SVG files drawn in Rust with the `plotters` crate (pure R
 
 This is numerical accuracy of the solver on the stated model, not agreement with experiment.
 
-Verification case: all five regions share the diffusion coefficient 4.316e-14 m^2/s, the outer radius is 394.2 um, the kernel radius 175.0 um, the end time 100 h, so the mesh Fourier number D t / R^2 is 0.1; the reference is the exact series of a sphere with the same diffusivity everywhere.
+Verification case: all five regions share the diffusion coefficient 4.316e-14 m²/s, the outer radius is 394.2 µm, the kernel radius 175.0 µm, the end time 100 h, so the Fourier number D t / R^2, with R the outer radius, is 0.1 for the whole sphere; the reference is the exact series of a sphere with the same diffusivity everywhere.
 
 Spatial convergence (error of the release fraction at 100 h, time error removed by Richardson extrapolation):
 
@@ -203,9 +203,9 @@ Temporal convergence (fixed fine mesh; the spatial error of that mesh is about 2
 | 128 | 1.12e2 | 3200 | 5.18e-5 | 1.04 |
 | 256 | 5.62e1 | 6400 | 2.45e-5 | 1.08 |
 
-The observed orders are reported, not required to meet a target (decision 7). On the registered five-layer cases, the base runs differ from the independent analytical series as follows (relative difference in percent; blank where the series is not usable or the release is below 1e-7):
+The observed orders are reported, not required to meet a target (decision 7). On the registered five-layer cases, the base runs differ from the independent analytical series as follows (relative difference in percent; blank where the series does not meet its validity criterion, namely truncation valid and the value above the series' own estimated absolute accuracy, which is also stated in the header of `release_curves.csv`):
 
-| Nuclide | T (degC) | 10 h | 100 h | 300 h |
+| Nuclide | T (°C) | 10 h | 100 h | 300 h |
 |---|---:|---:|---:|---:|
 | Ag-110m | 1600 | 4.45 | -0.01 | -0.01 |
 | Ag-110m | 1700 | 1.03 | -0.02 | -0.01 |
@@ -221,23 +221,23 @@ For the rows of this report the largest relative numerical difference between ba
 
 ## Temperature sensitivity of the registered correlations
 
-Release fraction after 300 h at temperature (figure H). The default is the published heating-test correlation. The other variants are labelled alternatives, never defaults: the AGR-1 fitted silicon-carbide rows (decision 40; fitted to AGR-1 heating-test data, so they are calibrated to the very data a comparison would use and cannot serve as independent validation), other registered silicon-carbide rows, and the kernel-radius scaling of decision 41. The default correlation prints no validity range; the sweep covers 1600 to 1800 degC, the temperatures the register records for the tests.
+Release fraction after 300 h at temperature (figure H). The default is the published heating-test correlation. The other variants are labelled alternatives, never defaults: the AGR-1 fitted silicon-carbide rows (decision 40; fitted to AGR-1 heating-test data, so they are calibrated to the very data a comparison would use and cannot serve as independent validation), other registered silicon-carbide rows, and the kernel-radius scaling of decision 41. The AGR-1 fitted silicon-carbide rows of Schappel (2020) disagree with the correction factors of Collin (2016) by 4 to 220 times (decision 40). The default correlation prints no validity range; the sweep covers 1600 to 1800 °C, the temperatures the register records for the tests.
 
-| Nuclide | Variant | Class of SiC row | 1600 degC | 1700 degC | 1800 degC |
+| Nuclide | Variant | Class of SiC row | 1600 °C | 1700 °C | 1800 °C |
 |---|---|---|---:|---:|---:|
 | Ag-110m | C16-T2-published | published PARFUME correlation | 6.14e-1 | 8.61e-1 | 9.76e-1 |
 | Ag-110m | kernel-radius-scaled | published PARFUME correlation | 6.09e-1 | 8.58e-1 | 9.76e-1 |
-| Ag-110m | S20-T6-fitted-SiC | AGR-1-specific fitted correlation | 8.15e-3 | 4.25e-2 | 1.16e-1 |
+| Ag-110m | S20-fitted-SiC | AGR-1-specific fitted correlation | 8.16e-3 | 4.25e-2 | 1.16e-1 |
 | Ag-110m | S20-T3-fitted-SiC | AGR-1-specific fitted correlation | 8.01e-3 | 4.20e-2 | 1.15e-1 |
 | Ag-110m | A3-21-SiC | transferred material correlation | 6.01e-2 | 1.61e-1 | 3.13e-1 |
 | Cs-134 | C16-T2-published | published PARFUME correlation | 9.05e-4 | 6.36e-2 | 3.67e-1 |
 | Cs-134 | kernel-radius-scaled | published PARFUME correlation | 8.56e-4 | 6.30e-2 | 3.66e-1 |
-| Cs-134 | S20-T6-fitted-SiC | AGR-1-specific fitted correlation | 1.47e-8 | 1.00e-5 | 3.50e-4 |
+| Cs-134 | S20-fitted-SiC | AGR-1-specific fitted correlation | 1.47e-8 | 1.00e-5 | 3.50e-4 |
 | Cs-134 | S20-T3-fitted-SiC | AGR-1-specific fitted correlation | 2.10e-7 | 2.42e-5 | 4.00e-4 |
 | Cs-134 | A3-14-SiC | transferred material correlation | 1.90e-2 | 2.42e-1 | 7.45e-1 |
 | Sr-90 | C16-T2-published | published PARFUME correlation | 5.28e-2 | 2.07e-1 | 5.24e-1 |
-| Sr-90 | kernel-radius-scaled | published PARFUME correlation | 3.76e-2 | 1.49e-1 | 3.89e-1 |
-| Sr-90 | S20-T6-fitted-SiC | AGR-1-specific fitted correlation | 7.29e-5 | 1.43e-3 | 1.09e-2 |
+| Sr-90 | kernel-radius-scaled | published PARFUME correlation | 3.75e-2 | 1.49e-1 | 3.89e-1 |
+| Sr-90 | S20-fitted-SiC | AGR-1-specific fitted correlation | 7.29e-5 | 1.43e-3 | 1.09e-2 |
 | Sr-90 | S20-T3-fitted-SiC | AGR-1-specific fitted correlation | 2.33e-4 | 2.20e-3 | 1.16e-2 |
 | Sr-90 | A3-15-SiC | transferred material correlation | 5.00e-2 | 1.70e-1 | 4.20e-1 |
 
@@ -245,11 +245,13 @@ Of 135 sweep points, 0 lie outside a printed validity range of a row they use.
 
 ## Discussion
 
-**Caesium.** The model exceeds 17 of 17 caesium upper bounds, by factors of 9.04e1 to 5.97e5 (model over bound). With the published coefficients, evaluated at the test temperature and with no correction, the model predicts far more caesium release than these bounds allow. This is the deviation of the stated model from the data; it is not reduced by anything done here. Possible contributions, none of which this report has tested or established: the published correlations were reported by their source to need multiplicative corrections to match the AGR-1 heating tests (register Table 18, rows CF-6 and CF-3: the factors on the diffusion coefficient of caesium in silicon carbide are 5e-3 to 6e-2 at 1600 degC, and of silver in silicon carbide 2e-4 to 4e-3 for the matrix-corrected values; they are compact-specific, fitted to the data, and are not applied here), the kernel coefficients are UO2 surrogates, the start is kernel-only, the compact values are not single-particle values, and the heating ramps are not modelled.
+**Caesium.** The model exceeds 17 of 17 caesium upper bounds, by factors of 9.04e1 to 5.97e5 (model over bound). With the published coefficients, evaluated at the test temperature and with no correction, the model predicts far more caesium release than these bounds allow. This is the deviation of the stated model from the data; it is not reduced by anything done here. Possible contributions, none of which this report has tested or established: the published correlations were reported by their source to need multiplicative corrections to match the AGR-1 heating tests (register Table 18, rows CF-6 and CF-3: the factors on the diffusion coefficient of caesium in silicon carbide are 5e-3 to 6e-2 at 1600 °C, and of silver in silicon carbide 2e-4 to 4e-3 at 1600 °C for the matrix-corrected values; they are compact-specific, fitted to the data, and are not applied here), the kernel coefficients are UO2 surrogates, the start is kernel-only, the compact values are not single-particle values, and the heating ramps are not modelled.
 
-**Silver.** The model releases 61 to 98 percent of the silver within 300 h at 1600 to 1800 degC (figure A), whereas the matrix-corrected digitised values of the intact compacts are of order 1e-4 to 3e-3. The provisional log10 ratios range from 2.4 to 3.7. These rows are DATA INCOMPLETE, so this is not a status of comparison, and the register does not give the inventory ratio that would convert a compact fraction into a particle fraction, so the size of the gap is not a finding. The compact totals that include the inventory released in the reactor (several percent to tens of percent) are NOT DIRECTLY COMPARABLE and are drawn as context only.
+**Robustness of the bound statuses.** The smallest exceedance is 9.04e1 times the bound; the largest reading uncertainty stated for an exceeded row corresponds to a factor of 1.50 on the bound. The exceedances are therefore far beyond the reading uncertainty of the digitised bounds, and no status of this section depends on it.
 
-**Strontium.** No Sr-90 row supports a comparison. The model value after 300 h at 1600 degC is 5.3 percent (figures A and H), while the registered compact values are 1e-5 to 1e-3; those values include strontium released in the reactor, so the gap cannot be read as a deviation of the diffusion model.
+**Silver.** The model releases 61 to 98 percent of the silver within 300 h at 1600 to 1800 °C (figure A), whereas the matrix-corrected digitised values of the intact compacts are of order 1e-4 to 3e-3. The log10 ratios of model to measured value, given for scale only, range from 2.4 to 3.7. These rows are DATA INCOMPLETE, so no deviation is formed, this is not a status of comparison, and the register does not give the inventory ratio that would convert a compact fraction into a particle fraction, so the size of the gap is not a finding. The compact totals that include the inventory released in the reactor (several percent to tens of percent) are NOT DIRECTLY COMPARABLE and are drawn as context only.
+
+**Strontium.** No Sr-90 row supports a comparison. The model value after 300 h at 1600 °C is 5.3 percent (figures A and H), while the registered compact values are 1e-5 to 1e-3; those values include strontium released in the reactor, so the gap cannot be read as a deviation of the diffusion model.
 
 **Rows that did not take part, and what would change that.** NOT ASSESSED (22): counts, one-particle constants and thresholds, and the prompt range that spans the heating ramps (needs temperature-dependent diffusion). DATA INCOMPLETE (50): the matrix-corrected rows (denominator), the JAERI loose-particle rows (denominator, heat-up ramp, end-of-irradiation profile), and krypton rows (background-limited bounds, the krypton SiC row under re-read). NOT DIRECTLY COMPARABLE (393): compacts with failed SiC, totals that include in-pile release, deposition-cup collections over multi-temperature histories, loose particles that include failures, fuel spheres, another fuel batch, and quantities that describe the irradiation phase. Eu-154 rows are only totals that include in-pile release, and the register has no europium diffusion coefficients.
 

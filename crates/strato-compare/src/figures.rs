@@ -602,7 +602,7 @@ fn sources_of(placed: &[Placed]) -> String {
 
 /// Figure A: release fraction versus time.
 pub fn figure_a(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
-    let root = SVGBackend::new(path, (1560, 760)).into_drawing_area();
+    let root = SVGBackend::new(path, (1560, 880)).into_drawing_area();
     root.fill(&WHITE).map_err(pe)?;
     title(
         &root,
@@ -610,7 +610,7 @@ pub fn figure_a(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
         "BTCS model of one intact TRISO particle against the register's measurements; log scale; hours counted from reaching the test temperature",
     )?;
     let placed = placed_rows(inp.reg, inp.records);
-    let panels = root.margin(70, 260, 10, 10);
+    let panels = root.margin(70, 380, 10, 10);
     let areas = panels.split_evenly((1, 3));
     for (k, species) in Species::ALL.iter().enumerate() {
         let mut chart = ChartBuilder::on(&areas[k])
@@ -819,7 +819,7 @@ fn deviation_figure(
             mark!(chart, Glyph::Dot { c }, vec![(*t, *y)]);
         }
         let msg = if n_comparisons == 0 {
-            "NO ROW HAS A POINT COMPARISON AVAILABLE (DATA INCOMPLETE rows have no deviation, decision 22)".to_string()
+            "NO ROW HAS A POINT COMPARISON AVAILABLE".to_string()
         } else {
             format!("{n_comparisons} point comparisons")
         };
@@ -833,7 +833,7 @@ fn deviation_figure(
         if pts.is_empty() {
             chart
                 .draw_series(std::iter::once(Text::new(
-                    "no model-versus-measurement point values to draw",
+                    "DATA INCOMPLETE rows have no deviation (decision 22)",
                     (210.0, (ylo * yhi).sqrt()),
                     ts_pos(16, HPos::Center, VPos::Center),
                 )))
@@ -901,31 +901,43 @@ fn deviation_figure(
             );
         }
     }
-    let mut items = vec![
-        entry(
+    let mut items: Vec<Entry> = Vec::new();
+    if !pts.is_empty() {
+        items.push(entry(
             "Filled circle: a point comparison (COMPARISON AVAILABLE)",
             Glyph::Dot { c: INK },
-        ),
-        entry(
+        ));
+    }
+    let satisfied: Vec<&RowRecord> = bounds
+        .iter()
+        .map(|b| b.0)
+        .filter(|r| matches!(r.status, Status::WithinReportedUpperBound))
+        .collect();
+    if !satisfied.is_empty() {
+        items.push(entry(
             "Filled triangle pointing down: upper bound satisfied by the model",
             Glyph::BoundDown {
                 c: INK,
                 filled: true,
             },
-        ),
-        entry(
+        ));
+    }
+    if bounds
+        .iter()
+        .any(|b| matches!(b.0.status, Status::ExceedsReportedUpperBound))
+    {
+        items.push(entry(
             "Hollow vermilion triangle pointing down: upper bound exceeded by the model",
             Glyph::BoundDown {
                 c: VERMILION,
                 filled: false,
             },
-        ),
-    ];
-    // Only the temperatures of marks actually drawn get a legend entry.
+        ));
+    } // Only the temperatures of marks actually drawn get a legend entry.
     let drawn: Vec<f64> = pts
         .iter()
         .map(|p| p.0)
-        .chain(bounds.iter().map(|b| b.0))
+        .chain(satisfied.iter().copied())
         .filter_map(|r| r.model.as_ref().map(|m| m.spec.t_c))
         .collect();
     for t in TEMPERATURES {
@@ -938,7 +950,7 @@ fn deviation_figure(
     }
     let y = legend(&root, 40, 480, 760, 2, &items)?;
     let mut text = String::from(
-        "Relative deviation is undefined for a measured value that is not positive and no near-zero floor is applied, because no row states a detection floor (decision 17); no accuracy threshold is used. A row whose denominator is not established (DATA INCOMPLETE, decision 22) has no deviation and is not drawn; its measured and model values are in figure A. Upper bounds are inequalities and never enter a deviation. ",
+        "Relative deviation is undefined for a measured value that is not positive and no near-zero floor is applied, because no row states a detection floor (decision 17); no accuracy threshold is used. A row whose denominator is not established (DATA INCOMPLETE, decision 22) has no deviation and is not drawn; its measured and model values are in figure A. Upper bounds are inequalities and never enter a deviation; an exceeded bound is drawn in vermilion whatever the test temperature. ",
     );
     text.push_str(&provenance_line(inp.prov));
     footer(&root, y + 14, 215, &text)?;
@@ -1376,7 +1388,7 @@ pub fn figure_h(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
         "H. Temperature sensitivity of the registered diffusion correlations",
         "Release fraction at 300 h at temperature against test temperature, one curve per registered coefficient variant; log scale",
     )?;
-    let areas = root.margin(70, 320, 10, 10).split_evenly((1, 3));
+    let areas = root.margin(70, 390, 10, 10).split_evenly((1, 3));
     // One style per variant, unique over the whole figure: eight colour and dash pairs, none
     // repeated, so no two variants of any panel share a style.
     let styles: [(RGBColor, Option<(u32, u32)>); 8] = [
