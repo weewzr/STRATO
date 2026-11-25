@@ -103,6 +103,29 @@ class CheckCatalogue(unittest.TestCase):
         self.assertIn(1, _failed_rules(rep))
         self.assertTrue(any("CR line ends" in l for l in rep.lines))
 
+    def test_overview_pages_need_no_row(self) -> None:
+        root = self._copy_good()
+        for rel in check.OVERVIEW_PAGES:
+            (root / rel).write_text("# Overview\n\nFixture overview page [ref:fixture2025].\n", encoding="utf-8", newline="\n")
+        self._generate(root)
+        rep = check.check(root)
+        self.assertFalse(rep.failed, "\n".join(rep.lines))
+
+    def test_other_unlisted_page_fails_rule_4(self) -> None:
+        root = self._copy_good()
+        (root / "docs" / "research" / "regime-d.md").write_text("# Stray\n", encoding="utf-8", newline="\n")
+        self._generate(root)
+        rep = check.check(root)
+        self.assertEqual(_failed_rules(rep), {4})
+        self.assertTrue(any("docs/research/regime-d.md is referenced by no catalogue row" in l for l in rep.lines))
+
+    def test_overview_page_reference_ids_are_checked(self) -> None:
+        root = self._copy_good()
+        (root / "docs" / "research" / "roadmap.md").write_text("# Roadmap\n\n[ref:nosuchref]\n", encoding="utf-8", newline="\n")
+        self._generate(root)
+        rep = check.check(root)
+        self.assertEqual(_failed_rules(rep), {3})
+
     def test_each_bad_fixture_fails_with_its_line(self) -> None:
         cases = sorted(p for p in FIXTURES.iterdir() if p.is_dir() and p.name.startswith("bad_"))
         self.assertGreaterEqual(len(cases), 14)

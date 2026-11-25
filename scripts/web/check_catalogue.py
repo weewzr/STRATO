@@ -39,6 +39,17 @@ SPECIES = ("Ag", "Pd", "Cs", "Sr", "Eu", "I", "Ru", "Xe", "Kr")
 REGIMES = ("baseline", "A", "B", "C")
 GALLERY_KINDS = ("screenshot", "reconstruction", "placeholder")
 NOT_IN_REGISTER = "(not in register)"
+# Overview pages of docs/research/ (Section 5.1). They describe several rows at
+# once, so no single row can name them in its entry column. Rule 4 accepts
+# exactly these names without a row; every other file must still be named by a
+# row, and rule 3 checks the [ref:...] ids of these pages like any other file.
+OVERVIEW_PAGES = (
+    "docs/research/regime-a.md",
+    "docs/research/regime-b.md",
+    "docs/research/regime-c.md",
+    "docs/research/materials_studio_gallery.md",
+    "docs/research/roadmap.md",
+)
 REF_IN_TEXT = re.compile(r"\[ref:([^\]\s]+)\]")
 
 
@@ -150,7 +161,7 @@ def check(root: pathlib.Path) -> Report:
                 probs.append(f"{table} line {r['__line']}: entry file '{entry}' does not exist")
     for md in md_files:
         rel = md.relative_to(root).as_posix()
-        if rel not in referenced:
+        if rel not in referenced and rel not in OVERVIEW_PAGES:
             probs.append(f"{rel} is referenced by no catalogue row")
     rep.rule(4, "entry files", probs)
 
