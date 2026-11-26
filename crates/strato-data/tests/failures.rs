@@ -288,6 +288,35 @@ fn the_fitted_range_of_the_schappel_rows_is_not_called_published() {
 }
 
 #[test]
+fn a_schappel_row_changed_from_fitted_to_printed_fails() {
+    for id in ["S20-01,", "S20-02,", "S20-03,"] {
+        let mut t = real_texts();
+        t.arrhenius = mutate_line(
+            &t.arrhenius,
+            id,
+            ",heating test,,,fitted",
+            ",heating test,,,printed",
+        );
+        assert_fails(&t, "DI.select.schappel-range");
+    }
+}
+
+#[test]
+fn a_row_with_a_printed_range_changed_to_fitted_fails() {
+    let mut t = real_texts();
+    let hit = t
+        .arrhenius
+        .split('\n')
+        .find(|l| l.starts_with("C16-20,"))
+        .unwrap()
+        .to_string();
+    assert!(hit.ends_with(",printed"), "{hit}");
+    let changed = format!("{}fitted", &hit[..hit.len() - "printed".len()]);
+    t.arrhenius = t.arrhenius.replace(&hit, &changed);
+    assert_fails(&t, "DI.select.schappel-range");
+}
+
+#[test]
 fn a_changed_default_row_breaks_the_equality_of_the_phases() {
     let mut t = real_texts();
     t.arrhenius = mutate_line(&t.arrhenius, "C15-05,", ",5.6e-8,", ",5.7e-8,");

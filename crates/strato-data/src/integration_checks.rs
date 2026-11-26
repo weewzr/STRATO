@@ -479,38 +479,62 @@ fn selection_checks(rep: &mut Report, reg: &Register) {
         "no coefficient is invented: Eu has none, Kr and Xe in SiC are not used during irradiation, the Schappel set offers nothing for the kernel (an Err, not a fallback to the default rows); Xe follows the Kr rows only where TECDOC-978 prints the row for Xe (A1-05, A1-06/07 in the kernel, A2-04/05 in the pyrocarbon, A3-17 in SiC for the heating tests) and every such selection carries a label naming that row",
         "",
     );
-    // fitted range of the Schappel rows is typed, so the selector marks 1000 C as outside it
-    let sch = sel.select(
-        "Cs",
-        ParticleLayer::SiC,
-        Phase::HeatingTest,
-        Variant::SchappelFitted,
-    );
-    let ok = match &sch {
-        Ok(s) => {
-            s.published_range_c == Some((1600.0, 1800.0))
-                && s.range_kind == Some(crate::arrhenius::RangeKind::Fitted)
-                && s.diffusivity_at(1000.0)
-                    .map_err(|e| e.to_string())
-                    .err()
-                    .is_some_and(|m| {
-                        m.contains("fitted range (not printed by the source)")
-                            && !m.contains("published range")
-                    })
-                && s.diffusivity_at(1700.0).is_ok()
-                && matches!(
-                    s.diffusivity_extrapolated(1000.0).range,
-                    crate::select::RangeStatus::Extrapolated { .. }
-                )
-                && s.labels.iter().any(|l| l.contains("R not printed"))
+    // range_kind of every row: fitted on S20-01 to S20-03 (the source prints no range), printed on
+    // every other row that has a range
+    let mut bad_kind = Vec::new();
+    for r in reg.arrhenius.rows.iter() {
+        let has_range = r.t_min_c.is_some() || r.t_max_c.is_some();
+        let want = match r.id.as_str() {
+            "S20-01" | "S20-02" | "S20-03" => Some(crate::arrhenius::RangeKind::Fitted),
+            _ if has_range => Some(crate::arrhenius::RangeKind::Printed),
+            _ => None,
+        };
+        if r.range_kind != want {
+            bad_kind.push(r.id.clone());
         }
-        Err(_) => false,
-    };
+    }
+    // the fitted range of each Schappel row is typed, so the selector marks 1000 C as outside it
+    let mut bad_sel = Vec::new();
+    for (el, id) in [("Ag", "S20-01"), ("Cs", "S20-02"), ("Sr", "S20-03")] {
+        let sch = sel.select(
+            el,
+            ParticleLayer::SiC,
+            Phase::HeatingTest,
+            Variant::SchappelFitted,
+        );
+        let ok = match &sch {
+            Ok(s) => {
+                s.rows[0].id == id
+                    && s.published_range_c == Some((1600.0, 1800.0))
+                    && s.range_kind == Some(crate::arrhenius::RangeKind::Fitted)
+                    && s.diffusivity_at(1000.0)
+                        .map_err(|e| e.to_string())
+                        .err()
+                        .is_some_and(|m| {
+                            m.contains("fitted range (not printed by the source)")
+                                && !m.contains("published range")
+                        })
+                    && s.diffusivity_at(1700.0).is_ok()
+                    && matches!(
+                        s.diffusivity_extrapolated(1000.0).range,
+                        crate::select::RangeStatus::Extrapolated {
+                            range_kind: crate::arrhenius::RangeKind::Fitted,
+                            ..
+                        }
+                    )
+                    && s.labels.iter().any(|l| l.contains("R not printed"))
+            }
+            Err(_) => false,
+        };
+        if !ok {
+            bad_sel.push(format!("{el} ({id})"));
+        }
+    }
     rep.add(
         "DI.select.schappel-range",
-        ok,
-        "the Schappel rows S20-01 to S20-03 carry the fitted range 1600 to 1800 C typed as fitted (range_kind; the source prints no range), the refusal says fitted range (not printed by the source), the selection refuses or marks a temperature outside it, and says that the source prints no gas constant",
-        "",
+        bad_kind.is_empty() && bad_sel.is_empty(),
+        "range_kind is fitted on the Schappel rows S20-01 to S20-03 (the source prints no range; 1600 to 1800 C are the temperatures of the tests it fitted to) and printed on every other row that has a range; for each of Ag, Cs and Sr in SiC the selection carries the fitted range, the refusal at 1000 C says fitted range (not printed by the source) and never published range, 1700 C is accepted, an extrapolation is marked as fitted, and the label says that the source prints no gas constant",
+        format!("rows with a wrong range kind: {bad_kind:?}; selections that fail: {bad_sel:?}"),
     );
     // labels of the sensitivity case
     let mut bad = Vec::new();
