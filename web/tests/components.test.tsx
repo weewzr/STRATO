@@ -235,12 +235,18 @@ describe('App', () => {
     expect(within(table).getByText('4e-14')).toBeTruthy();
   });
 
-  it('shows the case provenance on Data', () => {
-    window.location.hash = '#/data';
-    render(<App />);
+  it('shows the case provenance in Scientific Documentation and the searchable parameters on Data', () => {
+    // The case file, its digest and its commit moved from Data to Scientific Documentation (documentation/data.tsx).
+    window.location.hash = '#/documentation';
+    const { unmount } = render(<App />);
     const prov = screen.getByTestId('provenance');
     expect(within(prov).getByText(caseJson.input_sha256)).toBeTruthy();
     expect(within(prov).getByText(caseJson.input_file)).toBeTruthy();
+    unmount();
+    window.location.hash = '#/data';
+    render(<App />);
+    expect(screen.getByTestId('provenance-search')).toBeTruthy();
+    expect(screen.queryByTestId('provenance')).toBeNull();
   });
 
   it('opens the parameter sheet on narrow layouts and closes it with Escape', async () => {

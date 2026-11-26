@@ -13,40 +13,18 @@ import {
 import { Plot } from '../plots/Plot';
 import { precomputedUrl, usePrecomputed } from '../plots/precomputed';
 import { usePlotTheme } from '../plots/theme';
+import { hrefDocumentation } from '../route';
 import { useStrato } from '../state/store';
 import { Badge, Sci } from './Badge';
 import { TableBox } from '../sections/common';
 
-// The verification panels of the Verify section (web phase 5; prompt/DESIGN_SPECIFICATION.md Section
-// 8.3): Method A against Method B, the independent check with its observed orders in time and in
-// space, and the balance residual with its derived rounding bound, from the precomputed output of the
-// native program (label PRECOMPUTED, with its provenance header), and the live run's own diagnostics
-// from the wrapper (COMPUTED v2.0). The pointwise difference between the two methods is shown only
-// here, from the native file (coordinator decision of 2026-11-25). Numerical verification only.
-
-/** The provenance header of a precomputed file, as it is in the file. */
-export function ProvenanceNote({ doc, file }: { doc: PrecomputedHeader; file: string }) {
-  return (
-    <span className="figure__source" data-testid={`prov-${file}`}>
-      Source: <code>{file}</code> ({doc.label}), written by {doc.converter} from the native program {doc.solver}, solver version{' '}
-      {doc.strato_version}, at commit <code>{doc.commit.slice(0, 7)}</code>
-      {doc.input_file ? (
-        <>
-          {' '}
-          on <code>{doc.input_file}</code>
-          {doc.input_file_sha256 ? (
-            <>
-              {' '}
-              (SHA-256 <code className="hash">{doc.input_file_sha256.slice(0, 12)}</code>)
-            </>
-          ) : null}
-        </>
-      ) : null}
-      ; command <code>{doc.command}</code>
-      {doc.rustc ? <>, {doc.rustc}</> : null}; written {doc.created_utc}. <a href={precomputedUrl(file)}>Open the file</a>.
-    </span>
-  );
-}
+// The verification panels of the Verify section (prompt/DESIGN_SPECIFICATION.md Section 8.3): Method A
+// against Method B, the independent check with its observed orders in time and in space, and the
+// balance residual with its derived rounding bound, from the precomputed output of the native program
+// (label PRECOMPUTED), and the live run's own residual (COMPUTED v2.0). The pointwise difference between
+// the two methods is shown only here, from the native file (coordinator decision of 2026-11-25). The
+// provenance header of each file, the methodology and the numbers behind the captions are in Scientific
+// Documentation (documentation/verify.tsx). Numerical verification only.
 
 function Loading({ error, what }: { error: string | null; what: string }) {
   return (
@@ -61,22 +39,27 @@ function Fig({
   testId,
   children,
   caption,
-  label,
+  file,
+  anchor,
 }: {
   number: number;
   testId: string;
   children: ReactNode;
   caption: ReactNode;
-  label: 'PRECOMPUTED' | 'COMPUTED v2.0';
+  file: string;
+  anchor: string;
 }) {
   return (
     <figure className="figure plotfig" data-testid={testId}>
       <div className="figure__head">
-        <Badge label={label} />
+        <Badge label="PRECOMPUTED" />
+        <a className="figure__kind" href={precomputedUrl(file)}>
+          Data file
+        </a>
       </div>
       {children}
       <figcaption className="figure__caption">
-        <strong>Figure {number}.</strong> {caption}
+        <strong>Figure {number}.</strong> {caption} <a href={hrefDocumentation(anchor)}>Method and limits</a>
       </figcaption>
     </figure>
   );
@@ -94,17 +77,16 @@ export function MethodComparisonPanel() {
   const release = useMemo(() => (doc ? methodReleaseFigure(doc, theme) : null), [doc, theme]);
   const diff = useMemo(() => (doc ? methodDifferenceFigure(doc, floor, theme) : null), [doc, floor, theme]);
   if (!doc || !release || !diff) return <Loading error={error} what={`comparison of ${METHOD_1} and ${METHOD_2}`} />;
-  const a = doc.data.analytical;
   return (
     <div className="plot-grid plot-grid--two">
       <Fig
         number={1}
         testId="verify-bc-release"
-        label="PRECOMPUTED"
+        file="btcs_vs_analytical.json"
+        anchor="verify-methods"
         caption={
           <>
-            Release fraction of the verified synthetic case from {METHOD_1} (blue line) and {METHOD_2} (red line), the {a.name}, as the native
-            program wrote them (<code>btcs_vs_analytical.csv</code>). <ProvenanceNote doc={doc} file="btcs_vs_analytical.json" />
+            Release fraction from {METHOD_1} (blue) and {METHOD_2} (red).
           </>
         }
       >
@@ -119,19 +101,9 @@ export function MethodComparisonPanel() {
       <Fig
         number={2}
         testId="verify-bc-difference"
-        label="PRECOMPUTED"
-        caption={
-          <>
-            Absolute difference of the release fractions of {METHOD_1} and {METHOD_2} of the verified case at every output time, as the Rust
-            tool computed it from the native reply (column <code>Absolute difference of the release fractions (dimensionless)</code>); a
-            discretisation error of {METHOD_1}, not a defect. The thin grey horizontal line is the accuracy floor of {METHOD_2} ({a.accuracy_floor},
-            valid from the time {a.valid_from_s} s, {a.modes} eigenmodes; largest difference {a.max_abs_difference}, final difference{' '}
-            {a.final_abs_difference}). This plot is shown only from the native file: for inputs changed on Explore, the page shows the two
-            curves and the largest and final difference that the solver returns, because the pointwise difference of two nearly equal
-            numbers depends on their last digits, which differ between the browser build and the native build.{' '}
-            <ProvenanceNote doc={doc} file="btcs_vs_analytical.json" />
-          </>
-        }
+        file="btcs_vs_analytical.json"
+        anchor="verify-difference"
+        caption={<>Absolute difference of the two release fractions; the grey line is the accuracy floor of {METHOD_2}.</>}
       >
         <Plot
           figure={diff}
@@ -145,12 +117,35 @@ export function MethodComparisonPanel() {
   );
 }
 
-/** The independent check: observed orders in time and in space, and the differences from the reference. */
-export function ConvergencePanel() {
+/** Figure 3: the differences from the independent reference. */
+export function CheckFigurePanel() {
   const { doc, error } = usePrecomputed<CheckDoc>('btcs_independent_check.json');
   const theme = usePlotTheme();
   const fig = useMemo(() => (doc ? checkFigure(doc, theme) : null), [doc, theme]);
   if (!doc || !fig) return <Loading error={error} what="independent check" />;
+  return (
+    <Fig
+      number={3}
+      testId="verify-check"
+      file="btcs_independent_check.json"
+      anchor="verify-check"
+      caption={<>Differences of {METHOD_1} and of the estimated numerical limit from the independent reference (log-log).</>}
+    >
+      <Plot
+        figure={fig}
+        testId="verify-check-plot"
+        height={300}
+        label="Absolute differences of the BTCS release fraction and of the estimated numerical limit from the independent reference at four checkpoint times, log-log."
+        exportInfo={{ name: `strato-verify-check-${doc.commit.slice(0, 7)}`, source: exportSource(doc, 'btcs_independent_check.json') }}
+      />
+    </Fig>
+  );
+}
+
+/** Table 1: the independent check with the observed orders in time and in space. */
+export function ObservedOrdersTable() {
+  const { doc, error } = usePrecomputed<CheckDoc>('btcs_independent_check.json');
+  if (!doc) return <Loading error={error} what="independent check" />;
   const d = doc.data;
   const h = d.column_headers;
   const columns: { key: 't_s' | 'f_btcs' | 'f_reference' | 'abs_difference' | 'time_order' | 'space_order'; testId?: string }[] = [
@@ -162,99 +157,56 @@ export function ConvergencePanel() {
     { key: 'space_order', testId: 'orders-spatial' },
   ];
   return (
-    <>
-      <TableBox label="Independent check of the release fraction">
-        <table className="table check-table" data-testid="observed-orders">
-          <caption className="table__caption">
-            <strong>Table 1.</strong> The independent check of the regression suite for the verified case: the release fraction computed by {METHOD_1}{' '}
-            against a reference that contains no BTCS code, and the orders of accuracy observed from refined runs. Expected: about 1 in time and
-            about 2 in space (<Badge label="PRECOMPUTED" />, copied from <code>tests/golden/btcs/s5_n40_dt200/independent_check.csv</code>). The
-            file calls itself a regression reference, not truth.
-          </caption>
-          <thead>
-            <tr>
-              {columns.map((c) => (
-                <th key={c.key} scope="col" className="num-col">
-                  {c.key === 'f_btcs' ? `Release fraction by ${METHOD_1} (dimensionless)` : h[c.key]}
-                </th>
-              ))}
-              <th scope="col">{h.passed}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {d.t_s.map((t, i) => (
-              <tr key={t}>
-                {columns.map((c) => {
-                  const v = d[c.key][i];
-                  return (
-                    <td key={c.key} className="num-col num" data-testid={c.testId ? `${c.testId}-${i}` : undefined} data-value={String(v)}>
-                      {v === undefined ? '–' : <Sci value={v} digits={c.key.endsWith('order') ? 4 : 5} />}
-                    </td>
-                  );
-                })}
-                <td data-value={String(d.passed[i])}>{d.passed[i] ? 'yes' : 'no'}</td>
-              </tr>
+    <TableBox label="Independent check of the release fraction">
+      <table className="table check-table" data-testid="observed-orders">
+        <caption className="table__caption">
+          <strong>Table 1.</strong> Independent check: release fraction against a reference without BTCS code, and observed orders of accuracy
+          (expected 1 in time, 2 in space) <Badge label="PRECOMPUTED" />. <a href={hrefDocumentation('verify-check')}>Method and limits</a>
+        </caption>
+        <thead>
+          <tr>
+            {columns.map((c) => (
+              <th key={c.key} scope="col" className="num-col">
+                {c.key === 'f_btcs' ? `Release fraction by ${METHOD_1} (dimensionless)` : h[c.key]}
+              </th>
             ))}
-          </tbody>
-        </table>
-      </TableBox>
-      <div className="plot-grid plot-grid--two">
-        <Fig
-          number={3}
-          testId="verify-check"
-          label="PRECOMPUTED"
-          caption={
-            <>
-              Absolute difference of the release fraction computed by {METHOD_1} from the independent reference, and of the reference from the
-              numerical limit estimated by refining the time step and the grid, at the four checkpoint times, on log-log axes. The reference is{' '}
-              {METHOD_2} (the multilayer Sturm-Liouville series). The check passes when the reference lies within the stated convention of the
-              estimated limit; that convention (5 percent of the difference plus the accuracy floor of the reference) is a labelled convention, not a
-              derived bound. <ProvenanceNote doc={doc} file="btcs_independent_check.json" />
-            </>
-          }
-        >
-          <Plot
-            figure={fig}
-            testId="verify-check-plot"
-            height={300}
-            label="Absolute differences of the BTCS release fraction and of the estimated numerical limit from the independent reference at four checkpoint times, log-log."
-            exportInfo={{ name: `strato-verify-check-${doc.commit.slice(0, 7)}`, source: exportSource(doc, 'btcs_independent_check.json') }}
-          />
-        </Fig>
-      </div>
-    </>
+            <th scope="col">{h.passed}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {d.t_s.map((t, i) => (
+            <tr key={t}>
+              {columns.map((c) => {
+                const v = d[c.key][i];
+                return (
+                  <td key={c.key} className="num-col num" data-testid={c.testId ? `${c.testId}-${i}` : undefined} data-value={String(v)}>
+                    {v === undefined ? '–' : <Sci value={v} digits={c.key.endsWith('order') ? 4 : 5} />}
+                  </td>
+                );
+              })}
+              <td data-value={String(d.passed[i])}>{d.passed[i] ? 'yes' : 'no'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </TableBox>
   );
 }
 
+/** Figure 4: the mass-balance residual of the native run, with the residual of the live run beside it. */
 export function BalancePanelVerify() {
   const { doc, error } = usePrecomputed<RunDoc>('btcs_run.json');
   const live = useStrato((s) => s.run);
   const theme = usePlotTheme();
   const fig = useMemo(() => (doc ? residualFigure(doc, theme) : null), [doc, theme]);
   if (!doc || !fig) return <Loading error={error} what="native run" />;
-  const s = doc.data.summary;
   return (
     <Fig
       number={4}
       testId="verify-balance"
-      label="PRECOMPUTED"
-      caption={
-        <>
-          Mass-balance residual of the native run at every output time with its derived a-posteriori rounding bound, as the program wrote
-          them; the residual is zero in exact arithmetic, so what remains is rounding. Largest relative residual as printed:{' '}
-          {s.worst_balance_residual_relative ?? '–'}, against a final relative bound of {s.final_balance_residual_bound_relative ?? '–'}.{' '}
-          {live ? (
-            <span data-testid="verify-live-residual">
-              The run now on Explore reports a largest relative residual of{' '}
-              <span data-value={String(live.balance.max_abs_residual_relative)}>
-                <Sci value={live.balance.max_abs_residual_relative} digits={3} />
-              </span>{' '}
-              (<Badge label={live.label} />, from the WebAssembly solver build <code>{live.engine.commit}</code>).
-            </span>
-          ) : null}{' '}
-          <ProvenanceNote doc={doc} file="btcs_run.json" />
-        </>
-      }
+      file="btcs_run.json"
+      anchor="verify-balance"
+      caption={<>Mass-balance residual of the native run and its derived rounding bound.</>}
     >
       <Plot
         figure={fig}
@@ -263,6 +215,15 @@ export function BalancePanelVerify() {
         label="Mass-balance residual of the native run and its derived rounding bound against time."
         exportInfo={{ name: `strato-verify-balance-${doc.commit.slice(0, 7)}`, source: exportSource(doc, 'btcs_run.json') }}
       />
+      {live ? (
+        <p className="figure__kind" data-testid="verify-live-residual">
+          Live run on Explore, largest relative residual:{' '}
+          <span data-value={String(live.balance.max_abs_residual_relative)}>
+            <Sci value={live.balance.max_abs_residual_relative} digits={3} />
+          </span>{' '}
+          <Badge label={live.label} />
+        </p>
+      ) : null}
     </Fig>
   );
 }

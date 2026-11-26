@@ -2326,6 +2326,12 @@ select.field__input {
   color: var(--text-muted);
   max-width: var(--measure);
 }
+/* In a table that scrolls sideways the caption stays in view at the left edge, at most the width of the screen. */
+.table-box .table__caption {
+  position: sticky;
+  left: 0;
+  width: min(var(--measure), calc(100vw - 2rem));
+}
 .table__caption strong {
   color: var(--text);
 }
