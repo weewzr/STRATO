@@ -1,26 +1,30 @@
-// Step and part table of the progressive equation builder for the BTCS solver (directive Section 16:
-// the fourteen steps, then three labelled previews). Display only: nothing here is evaluated. No
-// research status is written here; the builder reads every status from the generated catalogue.
+// Step and part table of the Numerical Interpretation of the Explore page (owner directive of 26 Nov 2026,
+// Section 4). The seventeen derivation steps below are the ones the page has always had; numerics.ts
+// groups them into the directive's fourteen items. Steps fifteen to seventeen (generation, decay,
+// temperature-dependent diffusion) are written from Document 5 and carry the mechanism they belong to;
+// whether the solver of the running build implements it is never written here: the page reads it from
+// the capability object (capability.ts). Display only: nothing here is evaluated. No research status is
+// written here; the page reads every status from the generated catalogue.
 //
 // Every equation shown is copied character for character from one of the BTCS documents
-// (docs/mathematics/btcs: Document 1 = d1, Document 2 = d2) and carries the equation number printed
-// there: a Document 1 number is shown as D1.n, a Document 2 number as written, for example F10.
+// (docs/mathematics/btcs: Document 1 = d1, Document 2 = d2, Document 5 = d5) and carries the equation
+// number printed there: a Document 1 number is shown as D1.n, a Document 5 number as D5.n, a Document 2
+// number as written, for example F10.
 // web/tests/terms.test.ts reads the documents and checks every copy, so the page cannot drift from
 // them. An untagged line is found by its section and says so. Where a line is only part of a
 // documented line, the shown text is a piece of it; nothing is rewritten.
 //
 // The notation is that of directive Section 5: i the radial node index, j the time-step index,
-// C_i^j the concentration, the powers parenthesised. Generation, decay and temperature dependence
-// are labelled previews (coordinator decision 11): they show only the places that Document 2,
-// Section 9 marks for them.
-import type { CodeRef, DocId, DocRef } from './links';
+// C_i^j the concentration, the powers parenthesised.
+import type { PhysicsId } from './capability';
+import { displayTag, type CodeRef, type DevCodeRef, type DocId, type DocRef } from './links';
 
-/** Steps one to fourteen are the BTCS steps; fifteen to seventeen are the labelled previews. */
+/** Steps one to fourteen are the baseline steps; fifteen to seventeen are the three mechanism steps (generation, decay, temperature). */
 export type Stage = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17;
 export const STAGES: readonly Stage[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
-export const CORE_STAGES: readonly Stage[] = STAGES.filter((s) => s <= 14);
-export const PREVIEW_STAGES: readonly Stage[] = STAGES.filter((s) => s >= 15);
-/** The last step whose equations the BTCS solver solves; steps thirteen and fourteen are content, not equations of a run. */
+export const BASELINE_STAGES: readonly Stage[] = STAGES.filter((s) => s <= 14);
+export const MECHANISM_STAGES: readonly Stage[] = STAGES.filter((s) => s >= 15);
+/** The last baseline step whose equations the BTCS solver solves; steps thirteen and fourteen are content, not equations of a run. */
 export const LAST_SOLVED_STEP: Stage = 12;
 
 export type SwitchId = 'source' | 'decay' | 'arrhenius';
@@ -63,9 +67,9 @@ export interface PartDef {
   symbol: string;
   /** The piece of a shown equation that this part stands for, copied from it; empty when the part is listed but not marked. */
   latex: string;
-  /** Mechanism colour of the highlight, for the labelled previews. */
+  /** Mechanism colour of the highlight, for the part that a mechanism introduces. */
   highlight?: 'source' | 'decay' | 'arrhenius';
-  /** Catalogue mechanism whose research status the part shows; null for the BTCS steps (their evidence is in the documents). */
+  /** Catalogue mechanism whose research status the part shows; null for the baseline steps (their evidence is in the documents). */
   mechanism: string | null;
   /** Plain-language meaning first, then the symbols. Written without numerals (block A shows it). */
   meaning: string;
@@ -88,6 +92,8 @@ export interface Implementation {
   equations: ShownEquation[];
   /** Code of the BTCS solver (branch feat/btcs-solver) that implements the step. */
   code: (CodeRef & { label: string })[];
+  /** Code of the mechanism steps that exists on a development branch only: named, not linked (see links.ts). */
+  devCode?: DevCodeRef[];
   /** Pseudocode routines of Document 3 to read beside the code. */
   pseudocode: (DocRef & { label?: string })[];
   derivation: DocRef[];
@@ -97,10 +103,11 @@ export interface Implementation {
 export interface StepDef {
   stage: Stage;
   name: string;
-  /** Short name for the step picker. */
+  /** Short name of the step. */
   short: string;
-  kind: 'step' | 'preview';
-  /** Catalogue mechanism whose research status the picker shows; null for the BTCS steps. */
+  /** A baseline step, or the step of one of the three mechanisms (whose status the build reports). */
+  kind: 'step' | 'mechanism';
+  /** Catalogue mechanism whose research status the step shows; null for the baseline steps. */
   mechanism: string | null;
   summary: string;
   main: ShownEquation[];
@@ -133,7 +140,17 @@ const D2_5 = '5. The matrix rows';
 const D2_6 = '6. Right-hand side, initial vector and solution';
 const D2_7 = '7. Inventory, release and balance';
 const D2_8 = '8. Proven properties and their hypotheses';
-const D2_9 = '9. Placeholders for the approved additional physics (directive Section 17)';
+const D5_12 = '1.2 Flux balance with a source';
+const D5_13 = '1.3 The weights at interior, interface, centre and outer nodes';
+const D5_15 = '1.5 Time treatment of the source';
+const D5_21 = '2.1 Implicit decay and the matrix';
+const D5_22 = '2.2 Decay booked separately from release';
+const D5_31 = '3.1 The laws, units and range';
+const D5_32 = '3.2 Time level and reassembly';
+const D5_41 = '4.1 Rows';
+const D5_42 = '4.2 Discrete balance (P30, PROVED)';
+const D5_11 = '1.1 The physical source';
+const D5_14 = '1.4 The outer node: release correction';
 
 const L = (s: TemplateStringsArray) => String.raw(s);
 
@@ -228,10 +245,21 @@ const F31 = eq('interface_flow', 'Outward flow at an interface node, from the in
 const P13 = eq('order_one_material', 'Convergence for one material, proved', 'd2', null, D2_8, L`\max_j\left\lVert \mathbf{e}^j\right\rVert _\infty = O\left(\Delta t + \left(\Delta r\right)^2\right)`, { numberAs: 'P13', note: 'Hypotheses (Document 2, Section 8): one material, a uniform grid, and a smooth solution on the whole time interval from the start to T. Proved.' });
 const P14 = eq('order_five_layers', 'Convergence for five layers, a proof outline: the constants are not tracked', 'd2', null, D2_8, L`\max_j\left\lVert \mathbf{e}^j\right\rVert _V = O\left(\left(\Delta r\right)^2 + \Delta t\right)`, { numberAs: 'P14', note: String.raw`Valid on $[t_*, T]$, not from the first step: for a solution four times continuously differentiable in $r$ on each closed layer and twice continuously differentiable in $t$ on $[t_*, T]$, with the error at $t_*$ of order $\left(\Delta r\right)^2$. The discontinuous start profile does not satisfy the smoothness hypothesis near the start. A proof outline.` });
 const OUTER_CONT = eq('outer_continuous', 'Outer surface: absorbing', 'd2', null, D2_1, L`C(R_5, t) = 0`);
-const G1_RHS = eq('g1_rhs', 'Right-hand side with the place of a source term', 'd2', null, D2_9, L`b_i^j = C_i^j + \left[\text{G1 source term}\right]`, { note: 'Not derived: the term is a placeholder that is zero until the derivation, review and verification of this mechanism exist.' });
-const G1_BAL = eq('g1_balance', 'Balance with a generated amount', 'd2', null, D2_9, L`M^0 + M_{\mathrm{gen}}^j = M^j + M_{\mathrm{rel}}^j + \left[\text{G2 decayed amount}\right]`);
-const G2_DIAG = eq('g2_diag', 'Diagonal with the place of a decay term', 'd2', null, D2_9, L`B_i = 1 + \left|L_i\right| + \left|U_i\right| + \left[\text{G2 decay term}\right]`, { note: 'Not derived: the term is a placeholder that is zero until the derivation, review and verification of this mechanism exist.' });
-const G3_D = eq('g3_d', 'The diffusivity of each material becomes a function of temperature', 'd2', null, D2_9, L`D_{\mathrm{material}}(T)`, { note: 'Not derived in the documents of this build: only the place where the temperature enters is fixed.' });
+
+// Document 5 (generation, decay, temperature-dependent diffusivity). Its equations are numbered (1), (2), ... and shown as D5.n.
+const D5_EQ2 = eq('d5_source_kernel', 'The source of a direct fission product, in the kernel only', 'd5', '2', D5_11, L`G_{\mathrm{kernel}}(t) = \frac{y\,\dot F(t)}{N_{\mathrm{A}}}, \qquad G_{\mathrm{buffer}} = G_{\mathrm{IPyC}} = G_{\mathrm{SiC}} = G_{\mathrm{OPyC}} = 0`);
+const D5_EQ3 = eq('d5_flux_balance', 'Flux balance of a node with a source: the matrix is unchanged', 'd5', '3', D5_12, L`V_i\,\frac{C_i^{j+1} - C_i^j}{\Delta t} = K_{i,\mathrm{outer}}\left(C_{i+1}^{j+1} - C_i^{j+1}\right) - K_{i,\mathrm{inner}}\left(C_i^{j+1} - C_{i-1}^{j+1}\right) + \bar Q_i^j, \qquad 1 \le i \le N-1`);
+const D5_EQ9 = eq('d5_nodal_source', 'Nodal source density that enters the right-hand side', 'd5', '9', D5_13, L`g_0^j = \bar G_{\mathrm{kernel}}^j, \qquad g_i^j = \frac{\bar Q_i^j}{V_i} \quad \left(1 \le i \le N-1\right)`);
+const D5_EQ12 = eq('d5_release_generated', 'Release rate and generated amount with a source', 'd5', '12', D5_14, L`\Phi^{j+1} = 4\pi K_{N-1,\mathrm{outer}}^j\,C_{N-1}^{j+1} + 4\pi\bar Q_N^j, \qquad M_{\mathrm{gen}}^{j+1} = M_{\mathrm{gen}}^j + 4\pi\,\Delta t\sum_{i=1}^{N}\bar Q_i^j`);
+const D5_EQ13 = eq('d5_step_average', 'Average of the source over a step', 'd5', '13', D5_15, L`\bar G_{\mathrm{material}}^j = \frac{1}{\Delta t}\int_{t^j}^{t^{j+1}}G_{\mathrm{material}}(t)\,dt`);
+const D5_EQ15 = eq('d5_decay_balance', 'Flux balance of a node with decay at the new time level', 'd5', '15', D5_21, L`V_i\,\frac{C_i^{j+1} - C_i^j}{\Delta t} = K_{i,\mathrm{outer}}\left(C_{i+1}^{j+1} - C_i^{j+1}\right) - K_{i,\mathrm{inner}}\left(C_i^{j+1} - C_{i-1}^{j+1}\right) + \bar Q_i^j - \lambda V_i\,C_i^{j+1}`);
+const D5_EQ16 = eq('d5_decay_diagonal', 'Decay adds the decay number to every diagonal entry', 'd5', '16', D5_21, L`B_i = 1 + \left|L_i\right| + \left|U_i\right| + \kappa \quad \left(1 \le i \le N-1\right), \qquad B_0 = 1 + 6\,\mathrm{Fo}_{\mathrm{kernel}} + \kappa`);
+const D5_EQ19 = eq('d5_decayed_amount', 'Decayed amount, booked apart from the release', 'd5', '19', D5_22, L`M_{\mathrm{dec}}^0 = 0, \qquad M_{\mathrm{dec}}^{j+1} = M_{\mathrm{dec}}^j + \kappa\,M^{j+1}`);
+const D5_EQ22 = eq('d5_arrhenius', 'Diffusivity of a material as a function of temperature', 'd5', '22', D5_31, L`D_{\mathrm{material}}(T) = D_{0,\mathrm{material}}\exp\left(-\frac{E_{a,\mathrm{material}}}{R_{\mathrm{gas}}T}\right)`);
+const D5_EQ23 = eq('d5_step_diffusivity', 'Diffusivity used in a step: the value at the middle of the step', 'd5', '23', D5_32, L`\bar D_{\mathrm{material}}^j = D_{\mathrm{material}}\left(T\left(t^j + \tfrac{1}{2}\Delta t\right)\right)`);
+const D5_EQ26 = eq('d5_combined_balance', 'Flux balance of a node in the combined model', 'd5', '26', D5_41, L`V_i\,\frac{C_i^{j+1} - C_i^j}{\Delta t} = K_{i,\mathrm{outer}}^j\left(C_{i+1}^{j+1} - C_i^{j+1}\right) - K_{i,\mathrm{inner}}^j\left(C_i^{j+1} - C_{i-1}^{j+1}\right) + \bar Q_i^j - \lambda V_i\,C_i^{j+1}`);
+const D5_ROW = eq('d5_row', 'Row of the system of a step, with its right-hand side vector', 'd5', null, D5_41, L`L_i^jC_{i-1}^{j+1} + B_i^jC_i^{j+1} + U_i^jC_{i+1}^{j+1} = C_i^j + \Delta t\,g_i^j`, { note: 'The line that follows the flux balance of the combined model in the document on generation, decay and temperature: the row of the matrix and the right-hand side vector. The right-hand side gains the nodal source density multiplied by the time step.' });
+const D5_EQ27 = eq('d5_combined_balance_sum', 'Balance of a step with the generated and the decayed amount', 'd5', '27', D5_42, L`M^{j+1} - M^j = -\Delta t\,\Phi^{j+1} + \left(M_{\mathrm{gen}}^{j+1} - M_{\mathrm{gen}}^j\right) - \left(M_{\mathrm{dec}}^{j+1} - M_{\mathrm{dec}}^j\right)`);
 
 // ---------------------------------------------------------------------------
 // Units
@@ -262,6 +290,24 @@ const U_EPS = u(String.raw`\varepsilon^j`, 'balance residual', String.raw`\mathr
 
 const doc1 = (section: string): DocRef => ({ doc: 'd1', section });
 const doc2 = (section: string): DocRef => ({ doc: 'd2', section });
+const doc5 = (section: string): DocRef => ({ doc: 'd5', section });
+
+/**
+ * Rust of the mechanisms on the development branch origin/feat/results-pipeline (not in the running build, so
+ * named and not linked). Each names the function and the equation of Document 5 or Document 2, Section 11
+ * that it implements; web/tests/terms.test.ts looks the definition up on that branch when it is available.
+ */
+const DEV = 'src/numerical/physics_run.rs';
+const DEV_CODE = {
+  meanOver: { label: 'TimeFunction::mean_over, the step average of the source (D5 Eq. 13, F32)', path: DEV, symbol: 'pub fn mean_over' },
+  sourceNodes: { label: 'source_nodes, the source weights and nodal source densities (D5 Eq. 9, F33, F34)', path: DEV, symbol: 'pub fn source_nodes' },
+  stepWithSource: { label: 'Stepper::step_with_source, the right-hand side C + dt g (F38)', path: 'src/numerical/btcs.rs', symbol: 'pub fn step_with_source' },
+  yieldSource: { label: 'FissionYield::source_mol_per_m3_s, the kernel source (D5 Eq. 2)', path: 'src/physics/source.rs', symbol: 'pub fn source_mol_per_m3_s' },
+  newWithDecay: { label: 'Stepper::new_with_decay, the decay number on every diagonal entry (D5 Eq. 16, F35, F37)', path: 'src/numerical/btcs.rs', symbol: 'pub fn new_with_decay' },
+  assembleWithDecay: { label: 'assemble_with_decay, the rows of the matrix with kappa', path: 'src/numerical/btcs.rs', symbol: 'pub fn assemble_with_decay' },
+  runPhysics: { label: 'run_physics, the time loop: T at the middle of the step, matrix reassembled when D or dt changes (D5 Eq. 23, F36)', path: DEV, symbol: 'pub fn run_physics' },
+  arrhenius: { label: 'ArrheniusTerm, one term of the diffusivity law (D5 Eq. 22)', path: 'src/physics/arrhenius.rs', symbol: 'pub struct ArrheniusTerm' },
+} satisfies Record<string, DevCodeRef>;
 
 const part = (p: Omit<PartDef, 'mechanism' | 'units' | 'assumptions'> & { units?: UnitRow[]; assumptions?: string[]; mechanism?: string | null }): PartDef => ({
   mechanism: null,
@@ -949,11 +995,11 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
   },
   14: {
     stage: 14,
-    name: 'Experimental comparisons',
-    short: 'Comparison',
+    name: 'Release fraction for comparison',
+    short: 'Release fraction',
     kind: 'step',
     mechanism: null,
-    summary: 'Placeholder. The comparison of the computed release fraction with measured release is not part of this build: the comparison data and their metrics do not exist on this site yet.',
+    summary: 'The release fraction is the quantity that a comparison with measured release sets beside the measurement. The comparison itself is under Compare and Validate; no measurement is shown here.',
     main: [F28],
     parts: [
       part({
@@ -961,9 +1007,9 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
         name: 'Computed release fraction',
         symbol: String.raw`F^j`,
         latex: String.raw`F^j = \frac{M_{\mathrm{rel}}^j}{M^0}`,
-        meaning: 'The quantity of the model that a comparison will set beside a measured release fraction. A measured value is fixed data; the computed value changes with the inputs.',
+        meaning: 'The quantity of the model that a comparison sets beside a measured release fraction. A measured value is fixed data; the computed value changes with the inputs.',
         units: [U_F, U_MREL, U_M],
-        assumptions: ['Placeholder: no measurement is shown on this page and no agreement is claimed.', 'A comparison needs the data, the diffusivity rows and the assumptions stated beside every result; none of them is shown yet.'],
+        assumptions: ['No measurement is shown on this page and no agreement is claimed.', 'A comparison needs the data, the diffusivity rows and the assumptions stated beside every result; they are under Compare and Validate.'],
         derivation: doc2(D2_7),
       }),
     ],
@@ -972,84 +1018,184 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       code: [],
       pseudocode: [],
       derivation: [doc2(D2_7)],
-      note: 'Placeholder: no code of the comparison is linked until the comparison data and their metrics exist.',
+      note: 'The solver returns the release fraction; the comparison with measured release is not part of the solver and is under Validate.',
     },
-    live: 'Placeholder: the comparison with measured release is described under Validate; no measured data are shown here.',
+    live: 'The release fraction of the current run is under Results; the comparison with measured release is under Validate.',
   },
   15: {
     stage: 15,
-    name: 'Fission-product generation (preview)',
+    name: 'Generation source-term contribution',
     short: 'Generation',
-    kind: 'preview',
+    kind: 'mechanism',
     mechanism: 'generation',
-    summary: 'Preview only. A volumetric source would enter the right-hand side and the balance. The term is a placeholder: it is not derived, and the solver does not implement it.',
-    main: [G1_RHS],
+    summary:
+      'A volumetric source adds to the flux balance of each node. Divided by the weight of the node it becomes a nodal source density, and the right-hand side vector gains that density multiplied by the time step; the matrix is unchanged.',
+    main: [D5_EQ3],
     parts: [
       part({
         id: 'source',
-        name: 'Fission-product generation',
-        symbol: 'G',
-        latex: String.raw`\left[\text{G1 source term}\right]`,
+        name: 'Source weight of a node',
+        symbol: String.raw`Q_i^j`,
+        latex: String.raw`\bar Q_i^j`,
         highlight: 'source',
         mechanism: 'generation',
-        meaning: 'Atoms of the species born inside the particle, per unit volume and time. The documents fix only where it would enter: the right-hand side and the balance. Its derivation, its weighting at interface and centre nodes and its effect on the release formula are still to be done.',
-        units: [u('G', 'volumetric source', String.raw`\mathrm{mol\ m^{-3}\ s^{-1}}`), u(String.raw`M_{\mathrm{gen}}^j`, 'generated amount', String.raw`\mathrm{mol}`)],
-        assumptions: ['No source value is given by this page. The fission-rate density is not in the parameter register (register gap GAP-28); until it is, a source would be a plain user input with no default presented as a measurement.'],
-        derivation: doc2(D2_9),
+        meaning:
+          'The generation rate in the region around node i, divided by four pi, averaged over the step. Each material enters through the half-interval that lies in it, so no source is averaged across a jump; the kernel surface node has its own weight.',
+        units: [
+          u(String.raw`Q_i^j`, 'source weight of node i in step j (generation rate in the dual region of node i, divided by 4π)', String.raw`\mathrm{mol\ s^{-1}}`),
+          u(String.raw`V_i`, 'storage weight of node i (nodal volume divided by 4π)', String.raw`\mathrm{m^3}`),
+        ],
+        assumptions: ['The source is constant in space inside each material and may vary in time; the approved case is a source in the kernel only.'],
+        derivation: doc5(D5_13),
+      }),
+      part({
+        id: 'step_average',
+        name: 'Average of the source over a step',
+        symbol: String.raw`\bar G_{\mathrm{material}}^j`,
+        latex: '',
+        mechanism: 'generation',
+        meaning: 'The step uses the average of each material source over the step, so that the generated amount is the exact integral of the source history.',
+        units: [u(String.raw`\bar G_{\mathrm{material}}^j`, 'average of the source of the material over the step', String.raw`\mathrm{mol\ m^{-3}\ s^{-1}}`)],
+        derivation: doc5(D5_15),
+      }),
+      part({
+        id: 'nodal_source',
+        name: 'Nodal source density',
+        symbol: String.raw`g_i^j`,
+        latex: '',
+        mechanism: 'generation',
+        meaning: 'The source weight divided by the weight of the node. It is the amount that the right-hand side of the row gains per unit time.',
+        units: [u(String.raw`g_i^j`, 'nodal source density of row i', String.raw`\mathrm{mol\ m^{-3}\ s^{-1}}`)],
+        derivation: doc5(D5_13),
+      }),
+      part({
+        id: 'kernel_source',
+        name: 'Source of a direct fission product',
+        symbol: String.raw`G_{\mathrm{kernel}}(t)`,
+        latex: '',
+        mechanism: 'generation',
+        meaning:
+          'The yield times the fission-rate density, divided by the Avogadro constant, in the kernel only; the coatings have none. The fission-rate density is not in the parameter register, so until it is registered the source is a plain user input.',
+        units: [
+          u(String.raw`\dot F`, 'fission-rate density in the kernel', String.raw`\mathrm{m^{-3}\ s^{-1}}`),
+          u(String.raw`N_{\mathrm{A}}`, 'Avogadro constant', String.raw`\mathrm{mol^{-1}}`),
+        ],
+        derivation: doc5(D5_11),
       }),
     ],
-    implementation: { equations: [], code: [], pseudocode: [PSEUDO.hooks], derivation: [doc2(D2_9)], note: 'Preview, not implemented: no solver code exists for this mechanism.' },
-    live: 'Not offered: this mechanism is not solved. The switch in the controls stays off.',
+    implementation: {
+      equations: [D5_EQ13, D5_EQ9, D5_EQ2],
+      code: [],
+      devCode: [DEV_CODE.meanOver, DEV_CODE.sourceNodes, DEV_CODE.stepWithSource, DEV_CODE.yieldSource],
+      pseudocode: [PSEUDO.hooks],
+      derivation: [doc5(D5_12), doc5(D5_13), doc5(D5_15)],
+      note: 'The right-hand side vector that results is written out with the assembled system. The weights at the interface, centre and outer nodes, and the release next to the outer surface, are derived in Document 5.',
+    },
+    live: 'This mechanism has no live number of its own: its generated amount is part of the balance under Results when the build solves it.',
   },
   16: {
     stage: 16,
-    name: 'Radioactive decay (preview)',
+    name: 'Radioactive decay contribution',
     short: 'Decay',
-    kind: 'preview',
+    kind: 'mechanism',
     mechanism: 'decay',
-    summary: 'Preview only. A decay constant would add to the diagonal of every row and the lost amount would be booked apart from the release. The term is a placeholder: it is not derived, and the solver does not implement it.',
-    main: [G2_DIAG],
+    summary:
+      'Decay is evaluated at the new time level like every other term, so it changes only the diagonal: each diagonal entry gains the decay number of the step. The matrix stays a non-singular M-matrix, and the decayed amount is booked apart from the release.',
+    main: [D5_EQ16],
     parts: [
       part({
         id: 'decay',
-        name: 'Radioactive decay',
-        symbol: String.raw`\lambda`,
-        latex: String.raw`\left[\text{G2 decay term}\right]`,
+        name: 'Decay number of a step',
+        symbol: String.raw`\kappa`,
+        latex: String.raw`\kappa`,
         highlight: 'decay',
         mechanism: 'decay',
-        meaning: 'Loss of the species by radioactive decay, with a decay constant. The documents fix only where it would enter: the diagonal of the matrix and the balance, with a decayed amount booked apart from the physical release.',
-        units: [u(String.raw`\lambda`, 'decay constant', String.raw`\mathrm{s^{-1}}`), u(String.raw`M_{\mathrm{dec}}^j`, 'decayed amount', String.raw`\mathrm{mol}`)],
-        assumptions: ['Not derived in the documents of this build.'],
-        derivation: doc2(D2_9),
+        meaning:
+          'The decay constant times the time step: how much of the species decays during one step. It is added to the diagonal of every row, including the centre row and the row next to the outer surface.',
+        units: [u(String.raw`\kappa`, 'decay number of a step, κ = λ Δt', NONE), u(String.raw`\lambda`, 'decay constant', String.raw`\mathrm{s^{-1}}`)],
+        assumptions: ['The decay constant is the same in every material and constant in time.'],
+        derivation: doc5(D5_21),
+      }),
+      part({
+        id: 'decayed_amount',
+        name: 'Decayed amount',
+        symbol: String.raw`M_{\mathrm{dec}}^j`,
+        latex: '',
+        mechanism: 'decay',
+        meaning: 'The amount that has decayed inside the particle. It is never added to the cumulative release: the release is the flow through the outer surface only.',
+        units: [u(String.raw`M_{\mathrm{dec}}^j`, 'decayed amount up to step j', String.raw`\mathrm{mol}`)],
+        derivation: doc5(D5_22),
       }),
     ],
-    implementation: { equations: [], code: [], pseudocode: [PSEUDO.hooks], derivation: [doc2(D2_9)], note: 'Preview, not implemented: no solver code exists for this mechanism.' },
-    live: 'Not offered: this mechanism is not solved. The switch in the controls stays off.',
+    implementation: {
+      equations: [D5_EQ15],
+      code: [],
+      devCode: [DEV_CODE.newWithDecay, DEV_CODE.assembleWithDecay],
+      pseudocode: [PSEUDO.hooks],
+      derivation: [doc5(D5_21), doc5(D5_22)],
+      note: 'The off-diagonal entries are those of the baseline, so the matrix stays non-singular with a margin raised by the decay number. The decayed amount is accounted for with the inventory and the release.',
+    },
+    live: 'This mechanism has no live number of its own: its decayed amount is part of the balance under Results when the build solves it.',
   },
   17: {
     stage: 17,
-    name: 'Temperature-dependent diffusivity (preview)',
+    name: 'Temperature-dependent diffusion coefficients',
     short: 'Temperature',
-    kind: 'preview',
+    kind: 'mechanism',
     mechanism: 'diffusivity_temperature',
-    summary: 'Preview only. Each diffusivity would depend on the temperature. The law is not derived, and the solver does not implement it.',
-    main: [G3_D],
+    summary:
+      'Each step uses one diffusivity per material, the value of the temperature law at the middle of the step. The conductances, the Fourier numbers, the rows and the release use these values, and the matrix and its factors are assembled again whenever the diffusivity or the time step differs from the previous step. No term is added.',
+    main: [D5_EQ23],
     parts: [
       part({
         id: 'diffusion_T',
-        name: 'Temperature-dependent diffusivity',
-        symbol: String.raw`D_{\mathrm{material}}(T)`,
-        latex: String.raw`D_{\mathrm{material}}(T)`,
+        name: 'Diffusivity used in a step',
+        symbol: String.raw`\bar D_{\mathrm{material}}^j`,
+        latex: String.raw`\bar D_{\mathrm{material}}^j`,
         highlight: 'arrhenius',
         mechanism: 'diffusivity_temperature',
-        meaning: 'The diffusivity of each material would follow the temperature. The documents fix only that the conductances, the Fourier numbers, the rows and the release use the same values and that the matrix is assembled again when the temperature changes.',
-        units: [u(String.raw`D_{\mathrm{material}}(T)`, 'diffusivity of the material at temperature T', String.raw`\mathrm{m^2\ s^{-1}}`)],
-        assumptions: ['The time level at which the temperature is evaluated in a step is still to be fixed.'],
-        derivation: doc2(D2_9),
+        meaning:
+          'The diffusivity of the material at the temperature of the middle of the step. With end-of-step values the change of the diffusivity within a step would add a first-order term to the local residual, which the middle of the step avoids.',
+        units: [u(String.raw`\bar D_{\mathrm{material}}^j`, 'diffusivity of the material used in the step', String.raw`\mathrm{m^2\ s^{-1}}`)],
+        assumptions: ['The temperature is uniform in the particle at each time, T = T(t), and each material has its own positive law.'],
+        derivation: doc5(D5_32),
+      }),
+      part({
+        id: 'step_temperature',
+        name: 'Temperature at the middle of the step',
+        symbol: String.raw`T\left(t^j + \tfrac{1}{2}\Delta t\right)`,
+        latex: String.raw`T\left(t^j + \tfrac{1}{2}\Delta t\right)`,
+        highlight: 'arrhenius',
+        mechanism: 'diffusivity_temperature',
+        meaning: 'The prescribed temperature history evaluated half a time step after the start of the step. Where the history holds the temperature constant over a step, this is that temperature.',
+        units: [u(String.raw`T(t)`, 'particle temperature', String.raw`\mathrm{K}`), u(String.raw`\Delta t`, 'time step', String.raw`\mathrm{s}`)],
+        derivation: doc5(D5_32),
+      }),
+      part({
+        id: 'arrhenius_law',
+        name: 'Arrhenius law of a material',
+        symbol: String.raw`D_{\mathrm{material}}(T)`,
+        latex: '',
+        mechanism: 'diffusivity_temperature',
+        meaning:
+          'The diffusivity of a material as a function of the temperature, from its pre-exponential factor and activation energy. A correlation is used only inside the range that the register documents for it; a temperature outside it is reported, not extrapolated.',
+        units: [
+          u(String.raw`D_{0,\mathrm{material}}`, 'pre-exponential factor', String.raw`\mathrm{m^2\ s^{-1}}`),
+          u(String.raw`E_{a,\mathrm{material}}`, 'activation energy', String.raw`\mathrm{J\ mol^{-1}}`),
+          u(String.raw`R_{\mathrm{gas}}`, 'molar gas constant', String.raw`\mathrm{J\ mol^{-1}\ K^{-1}}`),
+        ],
+        derivation: doc5(D5_31),
       }),
     ],
-    implementation: { equations: [], code: [], pseudocode: [PSEUDO.hooks], derivation: [doc2(D2_9)], note: 'Preview, not implemented: no solver code exists for this mechanism.' },
-    live: 'Not offered: this mechanism is not solved. The switch in the controls stays off.',
+    implementation: {
+      equations: [D5_EQ22],
+      code: [],
+      devCode: [DEV_CODE.runPhysics, DEV_CODE.arrhenius],
+      pseudocode: [PSEUDO.hooks],
+      derivation: [doc5(D5_31), doc5(D5_32)],
+      note: 'The weights of the nodes, the start vector and the source weights do not depend on the diffusivity and are not computed again. With a constant temperature the run is the constant-diffusivity run.',
+    },
+    live: 'This mechanism has no live number of its own; the diffusivities of a run are shown with the coefficients under Results when the build solves it.',
   },
 };
 
@@ -1069,7 +1215,7 @@ export function termOf(id: TermId): PartDef & { stage: Stage } {
   return p;
 }
 
-/** The mechanism switches of block C, in the order of the previews (generation, decay, temperature). */
+/** The three mechanisms, in the order of their steps (generation, decay, temperature). */
 export const SWITCHES: { id: SwitchId; term: TermId; stage: Stage; latex: string; line: 'dashed' | 'solid' | 'dotted' }[] = [
   { id: 'source', term: 'source', stage: 15, latex: 'G', line: 'dashed' },
   { id: 'decay', term: 'decay', stage: 16, latex: String.raw`\lambda`, line: 'solid' },
@@ -1085,7 +1231,7 @@ export function stageTerms(stage: Stage): TermId[] {
   return STEP_DEFS[stage].parts.map((p) => p.id);
 }
 
-/** The switch that a preview step stands for, if any (keeps the step picker and the switches in step). */
+/** The switch that a mechanism step stands for, if any. */
 export function switchIntroducedBy(stage: Stage): SwitchId | null {
   return SWITCHES.find((s) => s.stage === stage)?.id ?? null;
 }
@@ -1118,55 +1264,102 @@ export function mainEquations(stage: Stage): ShownEquation[] {
 
 /** The number printed beside an equation (a line with no tag in the document may carry a name from its text). */
 export function equationNumber(e: ShownEquation): string | null {
-  if (e.source.tag) return e.source.doc === 'd1' ? `D1.${e.source.tag}` : e.source.tag;
+  if (e.source.tag) return displayTag(e.source.doc, e.source.tag);
   return e.numberAs ?? null;
 }
 
 const CONTINUOUS_CONDITIONS = [D1_EQ26, D1_EQ27, OUTER_CONT, D1_EQ38];
 const DISCRETE_CONDITIONS = [F1, F2, F18, F21, F22];
 
-export function conditionsFor(stage: Stage): { equations: ShownEquation[]; note: string } {
+/**
+ * The conditions of the problem, stated once: the continuous ones with the five-layer material model (step
+ * four) and the discrete ones with the assembly of the system (step ten). Every other step has none to
+ * state (the earlier builder repeated them under every step; the Numerical Interpretation says each thing once).
+ */
+export function conditionsFor(stage: Stage): { equations: ShownEquation[]; note: string } | null {
   const def = STEP_DEFS[stage];
   const shown = new Set(def.main.map(key));
-  if (def.kind === 'preview') {
-    return { equations: [], note: 'A preview changes no condition: the conditions of the base problem stay as stated in the documents.' };
+  if (stage === 4) {
+    return {
+      equations: CONTINUOUS_CONDITIONS.filter((e) => !shown.has(key(e))),
+      note: 'The conditions of the problem: perfect contact at the four interfaces, an absorbing outer surface and a start that is uniform in the kernel and empty in the coatings.',
+    };
   }
-  const base = stage <= 4 ? CONTINUOUS_CONDITIONS : DISCRETE_CONDITIONS;
-  const equations = base.filter((e) => !shown.has(key(e)));
-  return {
-    equations,
-    note:
-      stage <= 4
-        ? 'The conditions of the problem: perfect contact at the four interfaces, an absorbing outer surface and a start that is uniform in the kernel and empty in the coatings.'
-        : 'The conditions on the grid. Document 2, Section 8 states the standing hypotheses: every number of intervals is at least one, every diffusivity is positive and finite, and the time step is positive. No condition relates the time step to the spacing.',
-  };
+  if (stage === 10) {
+    return {
+      equations: DISCRETE_CONDITIONS.filter((e) => !shown.has(key(e))),
+      note: 'The conditions on the grid. Document 2, Section 8 states the standing hypotheses: every number of intervals is at least one, every diffusivity is positive and finite, and the time step is positive. No condition relates the time step to the spacing.',
+    };
+  }
+  return null;
 }
 
-export function balanceFor(stage: Stage): { equations: ShownEquation[]; note: string } {
-  const def = STEP_DEFS[stage];
-  const shown = new Set(def.main.map(key));
-  if (def.kind === 'preview') {
-    return { equations: [G1_BAL].filter((e) => !shown.has(key(e))), note: 'The balance would gain the generated and the decayed amount, each booked apart from the physical release.' };
+/** The physics selections that add to a baseline step (the baseline adds nothing). */
+export const ADDITION_PHYSICS: readonly PhysicsId[] = ['generation', 'decay', 'temperature', 'combined'];
+
+/**
+ * What the selected physics adds to a baseline step where the assembled system, the solution algorithm, the
+ * accounting or the verification is shown (owner directive of 26 Nov 2026, Section 4): the right-hand side
+ * vector with generation, the diagonal with decay (stated once, in its own step), the coefficients of the step
+ * with temperature dependence, and the complete formulation for the combined model. Every equation is shown
+ * in one place only: the row with its right-hand side vector and the combined flux balance with the assembled
+ * system, the generated, decayed and combined balance with the accounting. The baseline form of the step stays
+ * as it is; these are additions to it, never a replacement.
+ */
+export function physicsAdditions(stage: Stage, physics: PhysicsId): { equations: ShownEquation[]; note: string | null } {
+  const none = { equations: [], note: null };
+  if (physics === 'baseline') return none;
+  const gen = physics === 'generation' || physics === 'combined';
+  const dec = physics === 'decay' || physics === 'combined';
+  const tmp = physics === 'temperature' || physics === 'combined';
+  switch (stage) {
+    case 10: {
+      const parts: string[] = [];
+      if (gen) parts.push('the right-hand side vector gains the nodal source density multiplied by the time step');
+      if (dec) parts.push('every diagonal entry gains the decay number of the step, as stated under the radioactive decay contribution');
+      if (tmp) parts.push('the off-diagonal and diagonal entries are evaluated with the diffusivities of the step, as stated under the temperature-dependent diffusion coefficients');
+      const lead = physics === 'combined' ? 'The complete formulation of the combined model: ' : 'With the selected physics, ';
+      return {
+        equations: physics === 'combined' ? [D5_EQ26, D5_ROW] : gen ? [D5_ROW] : [],
+        note: `${lead}${parts.join('; ')}.`,
+      };
+    }
+    case 11:
+      return {
+        equations: [],
+        note: tmp
+          ? 'The sweep is unchanged. It is applied to the matrix and the right-hand side vector of each step, which are assembled again whenever the diffusivity or the time step differs from the previous step.'
+          : 'The sweep is unchanged. It is applied to the matrix and the right-hand side vector of the step, which the selected physics changes as stated with the assembled system.',
+      };
+    case 12:
+      return {
+        equations: [...(gen ? [D5_EQ12] : []), ...(dec ? [D5_EQ19] : []), ...(gen || dec ? [D5_EQ27] : [])],
+        note: gen || dec ? 'With a source or decay the release gains the source of the half-interval next to the outer surface, and the balance gains the generated and the decayed amount.' : 'With temperature dependence alone the rows and the release use the same stored conductances of the step, so the balance is that of the baseline.',
+      };
+    case 13: {
+      const lines: string[] = [];
+      if (gen) lines.push('Source: a zero source reproduces the baseline bit for bit, the generated amount is exact, and for a constant kernel-only source without decay the discrete steady state equals the exact one (proved in the document on generation, decay and temperature).');
+      if (dec) lines.push('Decay: the matrix stays a non-singular M-matrix, and without a source the decaying solution follows the discrete decay factor (proved in the same document).');
+      if (tmp) lines.push('Temperature: without source and decay the norms do not grow for any temperature history, the time order is first, and a constant temperature gives the constant-diffusivity run (proved in the same document).');
+      if (physics === 'combined') lines.push('Combined: the balance holds in exact arithmetic (proved); the convergence orders with source, decay and temperature history are observed, not proved.');
+      return { equations: [], note: lines.join(' ') };
+    }
+    default:
+      return none;
   }
-  if (stage <= 4) {
-    return { equations: [], note: 'The balance of the discrete scheme is stated from step five on; at this step the continuous balance is the equation itself.' };
-  }
-  const equations = [F29, F30].filter((e) => !shown.has(key(e)));
-  return {
-    equations,
-    note: 'The values of each term and the residual for the current run are under “Inventory balance” in the live simulation below, as the Rust wrapper returns them; nothing is computed in the browser.',
-  };
 }
 
-/** The mechanism-free list of every shown equation of every step, for the tests. */
+/** The list of every shown equation of every step and every physics addition, for the tests. */
 export function allEquations(): [string, ShownEquation][] {
-  return STAGES.flatMap((s) => {
-    const def = STEP_DEFS[s];
-    return [
-      ...def.main.map((e) => [`step ${s} main ${e.id}`, e] as [string, ShownEquation]),
-      ...def.implementation.equations.map((e) => [`step ${s} implementation ${e.id}`, e] as [string, ShownEquation]),
-      ...conditionsFor(s).equations.map((e) => [`step ${s} condition ${e.id}`, e] as [string, ShownEquation]),
-      ...balanceFor(s).equations.map((e) => [`step ${s} balance ${e.id}`, e] as [string, ShownEquation]),
-    ];
-  });
+  return [
+    ...STAGES.flatMap((s) => {
+      const def = STEP_DEFS[s];
+      return [
+        ...def.main.map((e) => [`step ${s} main ${e.id}`, e] as [string, ShownEquation]),
+        ...def.implementation.equations.map((e) => [`step ${s} implementation ${e.id}`, e] as [string, ShownEquation]),
+        ...(conditionsFor(s)?.equations ?? []).map((e) => [`step ${s} condition ${e.id}`, e] as [string, ShownEquation]),
+      ];
+    }),
+    ...STAGES.flatMap((s) => ADDITION_PHYSICS.flatMap((p) => physicsAdditions(s, p).equations.map((e) => [`step ${s} ${p} addition ${e.id}`, e] as [string, ShownEquation]))),
+  ];
 }

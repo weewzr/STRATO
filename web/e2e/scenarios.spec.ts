@@ -40,8 +40,8 @@ test.describe('scenario row at 1440 x 900', () => {
       await expect(page.getByTestId('physics-combined')).toHaveAttribute('aria-checked', 'true');
       await expect(page.getByTestId('governing-equation')).toHaveAttribute('data-scenario', s);
       // The Numerical Interpretation says that no simulation runs, not that one does.
-      await expect(page.getByTestId('live-note')).toContainText('No simulation runs for the selected physics or scenario');
-      await expect(page.getByTestId('live-note')).not.toContainText('Live: the simulation below solves');
+      await expect(page.getByTestId('numerical-status')).toContainText('No simulation runs for this selection');
+      await expect(page.getByTestId('numerical-status')).not.toContainText('The simulation solves these equations');
       // The same four pieces as the combined model, with the two symbols changed and highlighted.
       expect(await page.locator('[data-testid="equation-governing"] [data-piece]').evaluateAll((e) => e.map((p) => (p as HTMLElement).dataset.piece))).toEqual([
         'lhs',
@@ -74,7 +74,7 @@ test.describe('scenario row at 1440 x 900', () => {
     await waitForRun(page);
     await expect(page.getByTestId('particle')).toBeVisible();
     await expect(page.getByTestId('strip-stage')).toContainText('Physics: Baseline diffusion; scenario: none');
-    await expect(page.getByTestId('live-note')).toContainText('Live: the simulation below solves these equations');
+    await expect(page.getByTestId('numerical-status')).toContainText('The simulation solves these equations');
   });
 
   test('steady-state operation says that the concentration field is not assumed stationary, and why', async ({ page, problems }) => {
@@ -152,11 +152,15 @@ test.describe('scenario row at 1440 x 900', () => {
     void problems;
     await gotoSection(page, 'explore');
     await page.getByTestId('numerical-toggle').click();
+    await page.getByTestId('scenario-steady').click();
+    await page.getByTestId('num-toggle-9').click();
     for (const s of SCENARIOS) {
       await page.getByTestId(`scenario-${s}`).click();
       const text = await page.locator('[data-section="explore"]').innerText();
       expect(claimsIn(text), s).toEqual([]);
-      await expect(page.getByTestId('scenario-numerics')).toContainText(LABELS[SCENARIOS.indexOf(s)] ?? '');
+      // The scenario writes its numerical treatment inside the items where it acts (open item 9: the source), and nowhere else.
+      await expect(page.getByTestId('scenario-note-9')).toContainText(LABELS[SCENARIOS.indexOf(s)] ?? '');
+      await expect(page.getByTestId('scenario-note-9')).toHaveAttribute('data-scenario', s);
       await expect(page.getByTestId('scenario-params').locator('li')).toHaveCount(s === 'steady' ? 2 : 4);
       await expect(page.getByTestId('scenario-params')).toContainText('Unit:');
     }

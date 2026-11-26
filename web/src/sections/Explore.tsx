@@ -66,7 +66,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
       <ScenarioPicker />
 
       {/* C: Numerical Interpretation, one collapsed region */}
-      <NumericalInterpretation compact={compact} />
+      <NumericalInterpretation />
 
       {/* D: live simulation of the selection above */}
       <section

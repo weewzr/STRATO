@@ -34,22 +34,28 @@ test.describe('hierarchy and selection at 1440 x 900', () => {
     await gotoSection(page, 'explore');
     await page.getByTestId('physics-decay').click();
     await page.getByTestId('numerical-toggle').click();
-    await expect(page.getByTestId('equation-builder')).toBeVisible();
+    // The region opens with its items collapsed; decay reveals its own item.
+    await expect(page.getByTestId('num-items')).toBeVisible();
+    await expect(page.getByTestId('equation-builder')).toHaveCount(0);
+    await expect(page.getByTestId('num-item-10')).toBeVisible();
+    await expect(page.getByTestId('num-item-9')).toHaveCount(0);
     await expect(page).toHaveURL(/#\/explore\?physics=decay&open=numerical$/);
-    await page.getByTestId('stage-5').click();
-    await expect(page.getByTestId('equation-builder')).toHaveAttribute('data-stage', '5');
+    await page.getByTestId('num-toggle-3').click();
+    await expect(page.getByTestId('num-item-3').getByTestId('equation-builder')).toHaveAttribute('data-stage', '5');
     await expect(page.getByTestId('governing-equation')).toHaveAttribute('data-physics', 'decay');
+    await expect(page).toHaveURL(/#\/explore\?physics=decay&open=numerical,n3$/);
     await page.getByTestId('numerical-toggle').click();
     await expect(page.getByTestId('equation-builder')).toHaveCount(0);
-    await expect(page).toHaveURL(/#\/explore\?physics=decay$/);
+    await expect(page).toHaveURL(/#\/explore\?physics=decay&open=n3$/);
   });
 
   test('a copied address reproduces the view, and the selection survives navigation between the sections', async ({ page, problems }) => {
     void problems;
-    await page.goto('./#/explore?physics=combined&scenario=startup&open=numerical');
+    await page.goto('./#/explore?physics=combined&scenario=startup&open=numerical,n9,n11');
     await expect(page.locator('[data-section="explore"] h1')).toBeVisible();
     await expect(page.getByTestId('physics-combined')).toHaveAttribute('aria-checked', 'true');
-    await expect(page.getByTestId('equation-builder')).toBeVisible();
+    await expect(page.getByTestId('num-item-9').getByTestId('equation-builder')).toBeVisible();
+    await expect(page.getByTestId('num-toggle-10')).toHaveAttribute('aria-expanded', 'false');
     // Through the navigation links and back.
     const nav = page.getByRole('navigation', { name: 'Sections' });
     for (const name of ['Compare', 'Validate', 'Verify', 'Research', 'Data', 'About']) {
@@ -59,8 +65,11 @@ test.describe('hierarchy and selection at 1440 x 900', () => {
     await nav.getByRole('link', { name: 'Explore' }).click();
     await expect(page.locator('[data-section="explore"] h1')).toBeVisible();
     await expect(page.getByTestId('physics-combined')).toHaveAttribute('aria-checked', 'true');
-    await expect(page.getByTestId('equation-builder')).toBeVisible();
-    await expect(page).toHaveURL(/#\/explore\?physics=combined&scenario=startup&open=numerical$/);
+    // Which items are open is kept with the physics and the scenario.
+    await expect(page.getByTestId('num-toggle-9')).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByTestId('num-toggle-11')).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByTestId('num-toggle-10')).toHaveAttribute('aria-expanded', 'false');
+    await expect(page).toHaveURL(/#\/explore\?physics=combined&scenario=startup&open=numerical,n9,n11$/);
     // A reload of that address gives the same view; nothing is kept in the browser's storage.
     await page.reload();
     await expect(page.getByTestId('physics-combined')).toHaveAttribute('aria-checked', 'true');

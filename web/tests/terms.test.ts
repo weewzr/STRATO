@@ -8,16 +8,18 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { DOCS, headingSlug, type DocId, type DocRef } from '../src/equation/links';
+import { NOTATION, NUMERICAL_ITEMS } from '../src/equation/numerics';
 import {
+  ADDITION_PHYSICS,
   allEquations,
-  balanceFor,
+  BASELINE_STAGES,
   conditionsFor,
-  CORE_STAGES,
   equationNumber,
   LAST_SOLVED_STEP,
   mainEquations,
   markParts,
-  PREVIEW_STAGES,
+  MECHANISM_STAGES,
+  physicsAdditions,
   STAGES,
   STEP_DEFS,
   SWITCH_MECHANISM,
@@ -30,7 +32,7 @@ import { renderTex } from '../src/equation/Tex';
 
 const REPO = fileURLToPath(new URL('../..', import.meta.url));
 const docText = (doc: DocId) => readFileSync(join(REPO, DOCS[doc].path), 'utf8');
-const TEXT: Record<DocId, string> = { d1: docText('d1'), d2: docText('d2'), d3: docText('d3'), d4: docText('d4') };
+const TEXT: Record<DocId, string> = { d1: docText('d1'), d2: docText('d2'), d3: docText('d3'), d4: docText('d4'), d5: docText('d5') };
 /*
  * The patterns are written as \u escapes so that this file is pure ASCII and cannot be damaged by a re-encoding.
  * They are the forms that occurred: the right single quotation mark (U+2019, bytes E2 80 99), the Greek letters pi
@@ -43,7 +45,7 @@ export function findMojibake(text: string): string | null {
   return MOJIBAKE.find((bad) => text.includes(bad)) ?? null;
 }
 const squash = (s: string) => s.replace(/\s+/g, '');
-const MATHS = squash(TEXT.d1 + TEXT.d2);
+const MATHS = squash(TEXT.d1 + TEXT.d2 + TEXT.d5);
 
 /** Removes \htmlClass{classes}{body} wrappers, keeping the body (brace matching). */
 export function stripHtmlClass(latex: string): string {
@@ -213,9 +215,11 @@ function checkSource(src: EqSource, displayed: string, what: string, numberAs?: 
   // Nothing is rewritten: the displayed LaTeX is the copy.
   expect(squash(stripHtmlClass(displayed)), `${what}: displayed LaTeX differs from the document text`).toBe(v);
 }
-describe('the fourteen steps and the three previews', () => {
-  it('has the fourteen steps of directive Section 16 in order, then three previews', () => {
-    expect(CORE_STAGES.map((s) => STEP_DEFS[s].name)).toEqual([
+describe('the fourteen baseline steps and the three mechanism steps', () => {
+  // Rewritten with the directive of 26 Nov 2026: steps fifteen to seventeen are no longer previews with
+  // placeholder equations; they are written from Document 5 and carry their mechanism (their status is the build's).
+  it('has the fourteen baseline steps in order, then the three mechanism steps', () => {
+    expect(BASELINE_STAGES.map((s) => STEP_DEFS[s].name)).toEqual([
       'Conservation of mass',
       "Fick's law",
       'Spherical diffusion equation',
@@ -229,16 +233,16 @@ describe('the fourteen steps and the three previews', () => {
       'Rust solution algorithm',
       'Inventory and release',
       'Numerical verification',
-      'Experimental comparisons',
+      'Release fraction for comparison',
     ]);
-    expect(PREVIEW_STAGES.map((s) => STEP_DEFS[s].name)).toEqual([
-      'Fission-product generation (preview)',
-      'Radioactive decay (preview)',
-      'Temperature-dependent diffusivity (preview)',
+    expect(MECHANISM_STAGES.map((s) => STEP_DEFS[s].name)).toEqual([
+      'Generation source-term contribution',
+      'Radioactive decay contribution',
+      'Temperature-dependent diffusion coefficients',
     ]);
     expect(STAGES.length).toBe(17);
-    expect(CORE_STAGES.every((s) => STEP_DEFS[s].kind === 'step')).toBe(true);
-    expect(PREVIEW_STAGES.every((s) => STEP_DEFS[s].kind === 'preview' && STEP_DEFS[s].mechanism !== null)).toBe(true);
+    expect(BASELINE_STAGES.every((s) => STEP_DEFS[s].kind === 'step' && STEP_DEFS[s].mechanism === null)).toBe(true);
+    expect(MECHANISM_STAGES.every((s) => STEP_DEFS[s].kind === 'mechanism' && STEP_DEFS[s].mechanism !== null)).toBe(true);
     expect(LAST_SOLVED_STEP).toBe(12);
   });
 
@@ -253,16 +257,16 @@ describe('the fourteen steps and the three previews', () => {
     expect(Object.keys(TERMS).sort()).toEqual([...ids].sort());
   });
 
-  it('keeps the previews, the switches and the mechanism ids in step', () => {
+  it('keeps the mechanism steps, the switches and the mechanism ids in step', () => {
     expect(SWITCHES.map((s) => s.id)).toEqual(['source', 'decay', 'arrhenius']);
     expect(SWITCH_MECHANISM).toEqual({ source: 'generation', decay: 'decay', arrhenius: 'diffusivity_temperature' });
     for (const sw of SWITCHES) {
       expect(switchIntroducedBy(sw.stage)).toBe(sw.id);
-      expect(STEP_DEFS[sw.stage].kind).toBe('preview');
+      expect(STEP_DEFS[sw.stage].kind).toBe('mechanism');
       expect(STEP_DEFS[sw.stage].mechanism).toBe(SWITCH_MECHANISM[sw.id]);
       expect(TERMS[sw.term]?.stage).toBe(sw.stage);
     }
-    for (const s of CORE_STAGES) expect(switchIntroducedBy(s)).toBeNull();
+    for (const s of BASELINE_STAGES) expect(switchIntroducedBy(s)).toBeNull();
   });
 });
 
@@ -320,16 +324,55 @@ describe('every equation is the text of Document 1 or Document 2', () => {
   it('the equation number shown is the number printed in the document', () => {
     for (const [what, e] of allEquations()) {
       const n = equationNumber(e);
-      if (e.source.tag) expect(n, what).toBe(e.source.doc === 'd1' ? `D1.${e.source.tag}` : e.source.tag);
+      if (e.source.tag) expect(n, what).toBe(e.source.doc === 'd1' ? `D1.${e.source.tag}` : e.source.doc === 'd5' ? `D5.${e.source.tag}` : e.source.tag);
       else expect(n, what).toBe(e.numberAs ?? null);
       // Every number of Document 2 shown as an F-number is an F-number of that document.
       if (e.source.doc === 'd2' && e.source.tag) expect(e.source.tag, what).toMatch(/^F\d+[a-z]?$/);
       if (e.source.doc === 'd1' && e.source.tag) expect(e.source.tag, what).toMatch(/^\d+[a-z]?$/);
+      // A Document 5 number is shown as D5.n.
+      if (e.source.doc === 'd5' && e.source.tag) {
+        expect(e.source.tag, what).toMatch(/^\d+$/);
+        expect(n, what).toBe(`D5.${e.source.tag}`);
+      }
     }
   });
 
   it('only the BTCS documents are cited as the source of an equation', () => {
-    for (const [, e] of allEquations()) expect(['d1', 'd2']).toContain(e.source.doc);
+    for (const [, e] of allEquations()) expect(['d1', 'd2', 'd5']).toContain(e.source.doc);
+  });
+
+  it('every equation of the mechanism steps and every physics addition is the text of Document 5', () => {
+    const fromD5 = allEquations().filter(([what]) => /^step (15|16|17) (main|implementation)|addition/.test(what));
+    expect(fromD5.length).toBeGreaterThan(8);
+    for (const [what, e] of fromD5) expect(e.source.doc, what).toBe('d5');
+    // The generation, decay, temperature, combined additions exist where the assembled system, the algorithm, the accounting and the verification are shown.
+    for (const p of ADDITION_PHYSICS) {
+      for (const s of [10, 11, 12, 13] as const) expect(physicsAdditions(s, p).note, `${p} at step ${s}`).not.toBeNull();
+    }
+    expect(physicsAdditions(10, 'baseline')).toEqual({ equations: [], note: null });
+    expect(physicsAdditions(5, 'combined')).toEqual({ equations: [], note: null });
+  });
+
+  it('a Document 5 equation that is altered, cut or taken from the wrong place is refused (negative test)', () => {
+    const find = (id: string) => allEquations().map(([, e]) => e).find((e) => e.id === id)!;
+    const refuse = (id: string, latex: string) => {
+      const e = find(id);
+      expect(() => checkSource({ ...e.source, verbatim: latex }, latex, id, e.numberAs), `${id} mutated`).toThrow();
+    };
+    const d16 = find('d5_decay_diagonal');
+    refuse('d5_decay_diagonal', d16.source.verbatim.replace(' + \\kappa \\quad', ' \\quad')); // the decay number dropped from B_i
+    refuse('d5_step_diffusivity', find('d5_step_diffusivity').source.verbatim.replace('\\tfrac{1}{2}\\Delta t', '\\Delta t')); // end of the step instead of the middle
+    refuse('d5_combined_balance_sum', find('d5_combined_balance_sum').source.verbatim.replace(' - \\left(M_{\\mathrm{dec}}^{j+1}', ' + \\left(M_{\\mathrm{dec}}^{j+1}')); // a sign changed
+    refuse('d5_row', find('d5_row').source.verbatim.replace('\\Delta t\\,g_i^j', 'g_i^j')); // the time step dropped from the right-hand side
+    // A tag of another equation, or a tag the document does not have, is refused.
+    const e = find('d5_arrhenius');
+    expect(() => checkSource({ ...e.source, tag: '23' }, e.latex, 'wrong tag')).toThrow();
+    expect(() => checkSource({ ...e.source, tag: '9999' }, e.latex, 'absent tag')).toThrow();
+    // The untouched copies pass.
+    for (const id of ['d5_decay_diagonal', 'd5_step_diffusivity', 'd5_combined_balance_sum', 'd5_row', 'd5_arrhenius']) {
+      const x = find(id);
+      expect(() => checkSource(x.source, x.latex, id, x.numberAs)).not.toThrow();
+    }
   });
 
   it('the highlighted equation of a step is the copy with wrappers added', () => {
@@ -344,7 +387,7 @@ describe('every equation is the text of Document 1 or Document 2', () => {
     }
   });
 
-  it('every part marks a piece of a main equation of its step, and only the previews carry a mechanism colour', () => {
+  it('every part marks a piece of a main equation of its step, and only the parts that a mechanism introduces carry its colour', () => {
     for (const s of STAGES) {
       const def = STEP_DEFS[s];
       for (const p of def.parts) {
@@ -354,9 +397,14 @@ describe('every equation is the text of Document 1 or Document 2', () => {
             `step ${s} part ${p.id}: "${p.latex}" is not in a main equation`,
           ).toBe(true);
         }
-        expect(p.highlight !== undefined, `part ${p.id}`).toBe(def.kind === 'preview');
-        expect(p.mechanism !== null, `part ${p.id}`).toBe(def.kind === 'preview');
+        // A colour needs a mechanism step and a piece of the equation to colour; a baseline part has neither.
+        if (p.highlight !== undefined) {
+          expect(def.kind, `part ${p.id}`).toBe('mechanism');
+          expect(p.latex, `part ${p.id}`).not.toBe('');
+        }
+        expect(p.mechanism !== null, `part ${p.id}`).toBe(def.kind === 'mechanism');
       }
+      if (def.kind === 'mechanism') expect(def.parts.some((p) => p.highlight !== undefined), `step ${s} introduces something`).toBe(true);
       // The highlight wrappers do not overlap (markParts throws if they do).
       for (const e of def.main) expect(() => markParts(e.latex, def.parts)).not.toThrow();
     }
@@ -373,16 +421,17 @@ describe('every equation is the text of Document 1 or Document 2', () => {
         }
       }
     }
-    for (const sw of SWITCHES) expect(squash(TEXT.d2).includes(squash(sw.latex)), `switch ${sw.id}`).toBe(true);
+    for (const sw of SWITCHES) expect(MATHS.includes(squash(sw.latex)), `switch ${sw.id}`).toBe(true);
   });
 
-  it('the previews show only the places that Document 2, Section 9 marks', () => {
-    const section9 = squash(sectionText('d2', '9. Placeholders for the approved additional physics (directive Section 17)'));
-    for (const s of PREVIEW_STAGES) {
+  // Rewritten with the directive of 26 Nov 2026: the old test checked that the three previews showed only the
+  // placeholder lines of Document 2, Section 9; the mechanism steps now show the derived equations of Document 5.
+  it('the mechanism steps show tagged equations of Document 5 as their main equation', () => {
+    for (const s of MECHANISM_STAGES) {
       for (const e of STEP_DEFS[s].main) {
-        expect(e.source.doc).toBe('d2');
-        expect(e.source.tag).toBeNull();
-        expect(section9, `step ${s} ${e.id}`).toContain(squash(e.latex));
+        expect(e.source.doc).toBe('d5');
+        expect(e.source.tag).not.toBeNull();
+        expect(squash(sectionText('d5', e.source.section)), `step ${s} ${e.id}`).toContain(`\\tag{${e.source.tag}}`);
       }
     }
   });
@@ -505,19 +554,47 @@ describe('documentation and code anchors resolve', () => {
     }
   });
 
-  it('a preview or a placeholder says so and links no code', () => {
-    for (const s of PREVIEW_STAGES) {
-      expect(STEP_DEFS[s].implementation.code).toEqual([]);
-      expect(STEP_DEFS[s].implementation.note).toMatch(/^Preview, not implemented/);
+  // The mechanism steps cite Rust that is on a development branch, not in this build: named by function and
+  // equation, never linked and never given a line number (the file is not on the published branch).
+  const devRefs = MECHANISM_STAGES.flatMap((s) => STEP_DEFS[s].implementation.devCode ?? []);
+  function devSource(path: string): string | null {
+    try {
+      return execFileSync('git', ['show', `origin/feat/results-pipeline:${path}`], { cwd: REPO, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 16 * 1024 * 1024 });
+    } catch {
+      return null;
     }
-    expect(STEP_DEFS[14].implementation.note).toMatch(/^Placeholder/);
+  }
+  const devAvailable = devRefs.every((c) => devSource(c.path) !== null);
+
+  it('a mechanism step links no code of this build and names the development code it cites', () => {
+    for (const s of MECHANISM_STAGES) {
+      expect(STEP_DEFS[s].implementation.code, `step ${s}`).toEqual([]);
+      expect((STEP_DEFS[s].implementation.devCode ?? []).length, `step ${s}`).toBeGreaterThan(0);
+    }
+    for (const c of devRefs) {
+      expect(c.path).toMatch(/^src\/.+\.rs$/);
+      expect(Object.keys(c).sort(), 'no line number').toEqual(['label', 'path', 'symbol']);
+    }
   });
 
-  it('conditions and balance disclosures of every step are defined', () => {
-    for (const s of STAGES) {
-      expect(conditionsFor(s).note.length).toBeGreaterThan(0);
-      expect(balanceFor(s).note.length).toBeGreaterThan(0);
-    }
+  it.skipIf(!devAvailable)('every development-branch function named by a mechanism step is defined on origin/feat/results-pipeline', () => {
+    for (const c of devRefs) expect(devSource(c.path) ?? '', `${c.path}: ${c.symbol}`).toContain(c.symbol);
+  });
+
+  it('the release-fraction step is no longer a placeholder', () => {
+    expect(STEP_DEFS[14].implementation.note).not.toMatch(/placeholder/i);
+    expect(STEP_DEFS[14].summary).not.toMatch(/placeholder|does not exist/i);
+  });
+
+  // Rewritten with the directive of 26 Nov 2026: the conditions are stated once (steps four and ten), the
+  // balance disclosure is gone (its equations are the related equations of the accounting step), instead of
+  // both being repeated under every step.
+  it('the conditions are stated once, with the material model and with the assembly of the system', () => {
+    expect(STAGES.filter((s) => conditionsFor(s) !== null)).toEqual([4, 10]);
+    for (const s of [4, 10] as const) expect(conditionsFor(s)?.note.length, `step ${s}`).toBeGreaterThan(0);
+    expect(conditionsFor(10)?.equations.map((e) => e.source.tag)).toEqual(['F1', 'F2', 'F18', 'F21', 'F22']);
+    // The flux condition (27) is the main equation of step four and is not repeated; the outer surface has no tag in the document.
+    expect(conditionsFor(4)?.equations.map((e) => e.source.tag)).toEqual(['26', null, '38']);
   });
 });
 
@@ -531,11 +608,16 @@ describe('text encoding of the builder', () => {
     for (const s of STAGES) {
       const d = STEP_DEFS[s];
       strings.push(d.name, d.short, d.summary, d.implementation.note ?? '', d.live ?? '');
-      const shown = [...d.main, ...d.implementation.equations, ...conditionsFor(s).equations, ...balanceFor(s).equations];
+      const shown = [...d.main, ...d.implementation.equations, ...(conditionsFor(s)?.equations ?? [])];
       for (const e of shown) strings.push(e.label, e.note ?? '', e.latex);
       for (const p of d.parts) strings.push(p.name, p.meaning, p.symbol, ...p.units.flatMap((u) => [u.symbol, u.unit, u.meaning]));
-      strings.push(conditionsFor(s).note, balanceFor(s).note);
+      strings.push(conditionsFor(s)?.note ?? '');
+      for (const p of ADDITION_PHYSICS) {
+        const a = physicsAdditions(s, p);
+        strings.push(a.note ?? '', ...a.equations.flatMap((e) => [e.label, e.note ?? '', e.latex]));
+      }
     }
+    strings.push(NOTATION, ...NUMERICAL_ITEMS.map((i) => i.title));
     for (const t of strings) expect(findMojibake(t), `"${t.slice(0, 60)}" holds damaged text`).toBeNull();
   });
 
@@ -553,12 +635,12 @@ describe('text encoding of the builder', () => {
     for (const text of correct) expect(findMojibake(text), text).toBeNull();
   });
 
-  it('inline mathematics in the prose is taken from Documents 1 and 2, and no prose spells it out as plain text', () => {
-    const prose: string[] = [];
+  it('inline mathematics in the prose is taken from Documents 1, 2 and 5, and no prose spells it out as plain text', () => {
+    const prose: string[] = [NOTATION];
     for (const s of STAGES) {
       const d = STEP_DEFS[s];
-      prose.push(d.summary, d.implementation.note ?? '', d.live ?? '', conditionsFor(s).note, balanceFor(s).note);
-      for (const e of [...d.main, ...d.implementation.equations, ...conditionsFor(s).equations, ...balanceFor(s).equations]) prose.push(e.note ?? '');
+      prose.push(d.summary, d.implementation.note ?? '', d.live ?? '', conditionsFor(s)?.note ?? '');
+      for (const e of [...d.main, ...d.implementation.equations, ...(conditionsFor(s)?.equations ?? [])]) prose.push(e.note ?? '');
       for (const p of d.parts) prose.push(p.meaning);
     }
     let spans = 0;

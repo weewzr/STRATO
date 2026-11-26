@@ -4,7 +4,7 @@
 // solver requests all ask this function; no component decides availability by itself.
 import { CATALOGUE, statusOf, type Catalogue, type MechanismRow } from '../research/catalogue';
 import { LIVE_STATUS } from '../research/status';
-import { LAST_SOLVED_STEP, PREVIEW_STAGES, STEP_DEFS, type Stage } from './terms';
+import { LAST_SOLVED_STEP, MECHANISM_STAGES, STEP_DEFS, type Stage } from './terms';
 
 /**
  * Capability id of the BTCS solver (coordinator decision 10: diffusion_btcs_layered), also the
@@ -43,7 +43,7 @@ export function simulationMethod(capabilities: readonly string[], catalogue: Cat
 export function solvedStage(capabilities: readonly string[], catalogue: Catalogue = CATALOGUE): Stage | 0 {
   if (simulationMethod(capabilities, catalogue) !== 'btcs') return 0;
   let solved: Stage = LAST_SOLVED_STEP;
-  for (const s of PREVIEW_STAGES) {
+  for (const s of MECHANISM_STAGES) {
     const m = STEP_DEFS[s].mechanism;
     if (m !== null && isAvailable(m, capabilities, catalogue)) solved = s;
     else break;

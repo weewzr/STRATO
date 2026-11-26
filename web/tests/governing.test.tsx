@@ -336,11 +336,12 @@ describe('the hierarchy of Explore', () => {
     expect(screen.getByRole('heading', { name: 'Numerical Interpretation' })).toBeTruthy();
     const toggle = screen.getByTestId('numerical-toggle');
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
-    expect(screen.queryByTestId('equation-builder')).toBeNull();
-    // The derivation is in this one region, and opening it is part of the shared selection.
+    expect(screen.queryByTestId('num-items')).toBeNull();
+    // The derivation is in this one region, and opening it is part of the shared selection; its items start collapsed.
     act(() => toggle.click());
     expect(useStrato.getState().selection.expanded).toEqual(['numerical']);
-    expect(within(screen.getByTestId('block-c')).getByTestId('equation-builder')).toBeTruthy();
+    expect(within(screen.getByTestId('block-c')).getByTestId('num-items')).toBeTruthy();
+    expect(screen.queryByTestId('equation-builder')).toBeNull();
   });
 
   it('is typed with the TeX of every physics id', () => {

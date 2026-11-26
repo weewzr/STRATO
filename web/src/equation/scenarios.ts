@@ -55,9 +55,9 @@ export interface ScenarioInfo {
   explanation: string[];
   /** The symbols it changes or holds, with their definitions. */
   params: ScenarioParam[];
-  /** The numerical treatment in the Numerical Interpretation (two sentences; the equations themselves are in the numerical steps). */
-  numerics: string[];
 }
+// How a scenario enters the numerical scheme is written inside the items of the Numerical Interpretation
+// where it acts (equation/numerics.ts, scenarioNote), not here: one explanation, one place.
 
 const G_TIMED: ScenarioParam = {
   id: 'G',
@@ -103,10 +103,6 @@ export const SCENARIOS: Record<ScenarioId, ScenarioInfo> = {
       { ...G_TIMED, id: 'G', symbol: 'G', name: 'Fission-product generation, constant in time', meaning: 'The generation rate density in the kernel, held at one prescribed value.' },
       { ...T_TIMED, id: 'T', symbol: 'T', name: 'Particle temperature, constant in time', meaning: 'The particle temperature, held at one prescribed value.' },
     ],
-    numerics: [
-      'With constant inputs and one uniform time step, the diffusivities and the step do not change, so the matrix is assembled and factorised once; only the right-hand side changes from step to step, because it holds the concentration of the previous step.',
-      'A stationary field would need the concentration to repeat from step to step; constant inputs do not impose that, and the run does not assume it.',
-    ],
   },
   shutdown: {
     explanation: [
@@ -115,10 +111,6 @@ export const SCENARIOS: Record<ScenarioId, ScenarioInfo> = {
       'G becomes G(r,t), falling from its operating value, and D(r,T) becomes D(r,T(t)); the equation gains no term.',
     ],
     params: [G_TIMED, T_TIMED, D_TIMED, LAMBDA],
-    numerics: [
-      'From the shutdown time the step-averaged generation is zero, so the right-hand side of each step is the concentration of the previous step; the decay contribution stays on the diagonal of the matrix.',
-      'The diffusivity evaluated at the temperature of the middle of the step (F36) changes with every cooldown step, so the matrix is reassembled at each of those steps, held once the temperature is held, and reassembled again when the time step changes.',
-    ],
   },
   startup: {
     explanation: [
@@ -127,10 +119,6 @@ export const SCENARIOS: Record<ScenarioId, ScenarioInfo> = {
       'G becomes G(r,t) and D(r,T) becomes D(r,T(t)); the equation gains no term.',
     ],
     params: [G_TIMED, T_TIMED, D_TIMED, LAMBDA],
-    numerics: [
-      'While the power rises, the step average of the generation changes the right-hand side at every step, and the diffusivity evaluated at the temperature of the middle of the step changes the matrix at every step.',
-      'Both stay constant once the prescribed rise has ended.',
-    ],
   },
   'control-rod': {
     explanation: [
@@ -144,10 +132,6 @@ export const SCENARIOS: Record<ScenarioId, ScenarioInfo> = {
       D_TIMED,
       LAMBDA,
     ],
-    numerics: [
-      'The prescribed change enters only through the step-averaged generation on the right-hand side and the diffusivity evaluated at the temperature of the middle of the step in the matrix; no new term is assembled.',
-      'Both change during the transition and are held afterwards.',
-    ],
   },
   refuelling: {
     explanation: [
@@ -156,10 +140,6 @@ export const SCENARIOS: Record<ScenarioId, ScenarioInfo> = {
       'G becomes G(r,t) and D(r,T) becomes D(r,T(t)), as for shutdown; the equation gains no term.',
     ],
     params: [G_TIMED, T_TIMED, D_TIMED, LAMBDA],
-    numerics: [
-      'After removal the step-averaged generation is zero, as in shutdown, so the right-hand side of each step is the concentration of the previous step.',
-      'The matrix follows the storage temperature history and keeps the decay contribution on its diagonal.',
-    ],
   },
 };
 

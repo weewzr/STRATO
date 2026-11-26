@@ -116,9 +116,9 @@ test.describe('catalogue switches by keyboard', () => {
 
   test('the last step of the builder lists the catalogue rows behind one disclosure, with disabled switches', async ({ page, problems }) => {
     void problems;
-    await gotoNumerical(page);
-    await waitForRun(page);
-    await page.getByTestId('stage-17').click();
+    // The last step is the temperature step, in item 11, which the temperature-dependent physics reveals.
+    await gotoNumerical(page, [11], 'physics=temperature');
+    await expect(page.getByTestId('num-item-11').getByTestId('equation-builder')).toHaveAttribute('data-stage', '17');
     const toggle = page.getByTestId('stage6-toggle');
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
     const before = await solverRequests(page);

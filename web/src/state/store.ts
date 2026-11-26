@@ -4,11 +4,8 @@ import { create } from 'zustand';
 import { cloneConfig, DEFAULT_CASE, findCase, type RegionConfig, type CaseConfig } from '../data/case';
 import { DEFAULT_PHYSICS, DEFAULT_SCENARIO, PHYSICS_IDS, SCENARIO_IDS, type PhysicsId, type ScenarioId } from '../equation/capability';
 import { requiresCombined } from '../equation/scenarios';
-import type { Stage } from '../equation/terms';
+import { ITEM_EXPAND_IDS } from '../equation/numerics';
 import type { BtcsLimits, BuildInfo, CompareOk, Grid, RunResponse, ValidateReply } from '../solver/types';
-
-/** Builder step shown in the Numerical Interpretation region (prompt/DESIGN_SPECIFICATION.md Section 3.1). */
-export type { Stage };
 
 /**
  * The one selection state of the Explore page (owner directive of 26 Nov 2026, Section 6): the physics
@@ -20,12 +17,12 @@ export interface Selection {
   physics: PhysicsId;
   /** The selected operating scenario; null while none is selected (the default). */
   scenario: ScenarioId | null;
-  /** Ids of the expanded numerical regions (today only 'numerical', the Numerical Interpretation region). */
+  /** Ids of the expanded numerical regions: 'numerical' (the Numerical Interpretation region) and 'n1' to 'n14' (its items, expanded independently). */
   expanded: string[];
 }
 export const DEFAULT_SELECTION: Selection = { physics: DEFAULT_PHYSICS, scenario: DEFAULT_SCENARIO, expanded: [] };
-/** The ids that `expanded` may hold. */
-export const EXPANDABLE_IDS = ['numerical'] as const;
+/** The ids that `expanded` may hold, in the fixed order in which they are kept: the region, then the items in the directive's order. */
+export const EXPANDABLE_IDS: readonly string[] = ['numerical', ...ITEM_EXPAND_IDS];
 export type RunStatus = 'idle' | 'running' | 'ok' | 'rejected' | 'error';
 export type RegionField = 'outer_radius_m' | 'diffusivity_m2_s' | 'cells';
 export type TimeField = 'dt_s' | 'end_time_s' | 'output_every_steps';
@@ -97,8 +94,6 @@ export interface StratoState {
   caseId: string;
   config: CaseConfig;
   baselineConfig: CaseConfig;
-  /** Displayed builder stage. Selecting a stage changes the display only, never the inputs or a run. */
-  stage: Stage;
   /** Mechanism ids the wasm wrapper reports from build_info(); empty until the module has loaded (web phase 3). */
   capabilities: string[];
   /** The shared selection of the Explore page (physics, scenario, expanded regions); mirrored in the address. */
@@ -137,7 +132,6 @@ export interface StratoState {
   setTemperature: (value: number) => void;
   resetToBaseline: () => void;
   setCurrentAsBaseline: () => void;
-  setStage: (stage: Stage) => void;
   /** Replaces the selection (invalid parts fall back to the default); an equal selection changes nothing. */
   setSelection: (patch: Partial<Selection>) => void;
   /** Expands or collapses one numerical region; the rest of the selection is kept. */
@@ -198,7 +192,6 @@ export function initialState() {
     caseId: DEFAULT_CASE.id,
     config: cloneConfig(DEFAULT_CASE.config),
     baselineConfig: cloneConfig(DEFAULT_CASE.config),
-    stage: 1 as Stage,
     capabilities: [] as string[],
     selection: { ...DEFAULT_SELECTION, expanded: [] as string[] },
     run: null,
@@ -288,7 +281,6 @@ export const useStrato = create<StratoState>()((set, get) => ({
 
   setCurrentAsBaseline: () => set({ baselineConfig: cloneConfig(get().config), baselineRun: get().run }),
 
-  setStage: (stage) => set({ stage }),
 
   setSelection: (patch) => {
     // Choosing a physics that is not the combined model (without naming a scenario) clears the scenario.

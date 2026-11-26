@@ -143,8 +143,13 @@ export function runMechanisms(physics: PhysicsId): string[] {
   return [BTCS_CAPABILITY, ...mechanismsOf(physics).map((m) => WRAPPER_ID[m])];
 }
 
+/** What the build does not implement, as a phrase ("a, b and c"). */
+export function missingList(support: SelectionSupport): string {
+  return support.missing.length > 1 ? `${support.missing.slice(0, -1).join(', ')} and ${support.missing[support.missing.length - 1]}` : (support.missing[0] ?? '');
+}
+
 /** One sentence for the simulation and results blocks when the selection cannot be run. */
 export function unsupportedMessage(support: SelectionSupport): string {
-  const list = support.missing.length > 1 ? `${support.missing.slice(0, -1).join(', ')} and ${support.missing[support.missing.length - 1]}` : (support.missing[0] ?? '');
+  const list = missingList(support);
   return `The solver in this build does not implement ${list}, so no simulation is run and no result is shown for this selection. The equation and the explanations above remain available.`;
 }

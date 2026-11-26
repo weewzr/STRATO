@@ -38,13 +38,16 @@ export async function gotoSection(page: Page, id: string): Promise<void> {
 }
 
 /**
- * Opens Explore with the Numerical Interpretation region expanded. The expanded region is part of the
- * shared selection, so it is written to the address and the address opens it.
+ * Opens Explore with the Numerical Interpretation region expanded, and the given items of it (1 to 14;
+ * none by default: the items start collapsed). The expanded region and items are part of the shared
+ * selection, so they are written to the address and the address opens them.
  */
-export async function gotoNumerical(page: Page): Promise<void> {
-  await page.goto('./#/explore?open=numerical');
+export async function gotoNumerical(page: Page, items: readonly number[] = [], extra = ''): Promise<void> {
+  const open = ['numerical', ...items.map((i) => `n${i}`)].join(',');
+  await page.goto(`./#/explore?${extra}${extra ? '&' : ''}open=${open}`);
   await expect(page.locator('[data-section="explore"] h1')).toBeVisible();
-  await expect(page.getByTestId('equation-builder')).toBeVisible();
+  await expect(page.getByTestId('num-items')).toBeVisible();
+  if (items.length > 0) await expect(page.getByTestId('equation-builder').first()).toBeVisible();
 }
 
 /** Waits until the solver has answered for the current inputs (web phase 3); the simulation is block D of Explore. */

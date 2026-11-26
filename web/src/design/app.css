@@ -1545,24 +1545,30 @@ select.field__input {
 
 /* ---------- Block A: staged equation builder ---------- */
 
-/* Desktop: stage picker, equation and term list side by side, the disclosure row under them.
-   Tablet: picker in two rows of three, then the equation, then the terms. Phone: a select. */
+/* One derivation step inside an item of the Numerical Interpretation. Desktop: equation and term list side by
+   side, the additions and the disclosure row under them. Tablet and phone: one column. */
 .builder {
   display: grid;
   gap: var(--space-3);
+  min-width: 0;
+}
+.builder__step-title {
+  margin: 0;
+  font-family: var(--font-doc);
+  font-size: 1.0625rem;
 }
 @media (min-width: 1200px) {
   .builder {
-    grid-template-columns: 17rem minmax(0, 1fr) 20rem;
+    grid-template-columns: minmax(0, 1fr) 20rem;
     grid-template-areas:
-      'picker eq side'
-      'picker more more';
+      'eq side'
+      'add add'
+      'more more';
     column-gap: var(--space-4);
     align-items: start;
   }
-  .builder > .stages {
-    grid-area: picker;
-    align-self: start;
+  .builder > .step-additions {
+    grid-area: add;
   }
   .builder > .builder__main {
     display: contents;
@@ -2206,7 +2212,7 @@ select.field__input {
 
 /* ---------- Block D: the terms explained ---------- */
 
-.terms-explained h3 {
+.terms-explained h5 {
   margin-top: 0;
 }
 .term-x {
@@ -2986,20 +2992,6 @@ select.field__input {
   margin: 0;
   max-width: 70ch;
 }
-.scenario-numerics {
-  display: grid;
-  gap: var(--space-1);
-  padding: var(--space-2) var(--space-3);
-  border-left: 3px solid var(--accent);
-  background: var(--accent-bg);
-}
-.scenario-numerics__title,
-.scenario-numerics p {
-  margin: 0;
-}
-.scenario-numerics__title {
-  font-size: var(--fs-label);
-}
 .physics__legend {
   margin: 0;
   font-size: var(--fs-small);
@@ -3089,6 +3081,113 @@ select.field__input {
 }
 .disclosure {
   margin-top: var(--space-1);
+}
+.numerical__status,
+.numerical__notation {
+  margin: 0 0 var(--space-3);
+  max-width: 80ch;
+  font-size: var(--fs-label);
+  color: var(--text-muted);
+}
+/* The fourteen items: one heading button each, expanded and collapsed independently, never all open by default. */
+.num-items {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.num-item {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.num-item__head {
+  margin: 0;
+  font-size: 1rem;
+}
+.num-item__toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.num-item__num {
+  flex: none;
+  min-width: 1.5em;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.num-item__title {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.num-item__toggle .bstatus {
+  flex: none;
+  font-weight: 400;
+}
+.num-item__chevron {
+  flex: none;
+  width: 0.55em;
+  height: 0.55em;
+  margin-right: var(--space-1);
+  border-right: 2px solid currentcolor;
+  border-bottom: 2px solid currentcolor;
+  transform: rotate(45deg);
+}
+.num-item__toggle[aria-expanded='true'] .num-item__chevron {
+  transform: rotate(-135deg);
+}
+.num-item__body {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+.num-item__body[hidden] {
+  display: none;
+}
+.num-item__status {
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+/* How the selected scenario enters the scheme, written inside the item where it acts. */
+.scenario-note {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--accent);
+  background: var(--accent-bg);
+}
+/* What the selected physics adds to a step where the assembled system or the accounting is shown. */
+.step-additions {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--accent);
+  background: var(--accent-bg);
+}
+.step-additions__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0;
+}
+.step-additions__note {
+  min-width: 0;
 }
 
 /* Block D: numerical controls under the simulation; block E: the results in the full width */

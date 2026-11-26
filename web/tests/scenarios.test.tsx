@@ -20,6 +20,7 @@ import {
   type ScenarioId,
 } from '../src/equation/capability';
 import { GoverningEquation } from '../src/equation/GoverningEquation';
+import { ITEM_IDS, scenarioNote } from '../src/equation/numerics';
 import { equationPieces, equationTex, D_SCENARIO, G_SCENARIO } from '../src/equation/physics';
 import { renderTex } from '../src/equation/Tex';
 import { ScenarioPicker } from '../src/equation/ScenarioPicker';
@@ -122,11 +123,13 @@ describe('what a scenario changes in the equation', () => {
     expect([...symbols].sort()).toEqual(['D(r,T(t))', 'G', 'G(r,t)', String.raw`\lambda`, 'T', 'T(t)'].sort());
   });
 
-  it('describes the diffusivity at the middle of the step (F36), never as a step average', () => {
-    const numerics = SCENARIO_IDS.flatMap((s) => SCENARIOS[s].numerics).join(' ');
+  // Rewritten with the directive of 26 Nov 2026 (Section 5): the numerical treatment of a scenario is no longer a
+  // field of the scenario but a note inside the items of the Numerical Interpretation (equation/numerics.ts).
+  it('describes the diffusivity at the middle of the step, never as a step average', () => {
+    const numerics = SCENARIO_IDS.flatMap((s) => ITEM_IDS.map((i) => scenarioNote(s, i) ?? '')).join(' ');
     expect(numerics).not.toMatch(/step-averaged diffusivit/i);
-    expect(SCENARIOS.shutdown.numerics.join(' ')).toMatch(/temperature of the middle of the step \(F36\)/);
-    expect(SCENARIOS.shutdown.numerics.join(' ')).toMatch(/reassembled again when the time step changes/);
+    expect(scenarioNote('shutdown', 11)).toMatch(/temperature of the middle of the step/);
+    expect(scenarioNote('shutdown', 11)).toMatch(/reassembled again when the time step changes/);
     expect(SCENARIOS.shutdown.explanation.join(' ')).not.toMatch(/reduced or ends/);
     expect(SCENARIO_NAME.refuelling).toBe('fuel-removal');
   });

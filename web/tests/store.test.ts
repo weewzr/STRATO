@@ -17,9 +17,8 @@ describe('store defaults', () => {
     expect(useStrato.getState().baselineConfig.regions[3]?.diffusivity_m2_s).toBe(caseJson.data.config.regions[3]?.diffusivity_m2_s);
   });
 
-  it('start at builder stage 1 with no solver capabilities (nothing is live before the wasm module loads)', () => {
+  it('start with no solver capabilities (nothing is live before the wasm module loads)', () => {
     const s = useStrato.getState();
-    expect(s.stage).toBe(1);
     expect(s.capabilities).toEqual([]);
   });
 
