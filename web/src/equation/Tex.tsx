@@ -21,10 +21,28 @@ export function renderTex(latex: string, display: boolean): string {
   const key = `${display ? 'D' : 'I'}${latex}`;
   let html = cache.get(key);
   if (html === undefined) {
-    html = katex.renderToString(latex, { ...KATEX_OPTIONS, displayMode: display });
+    // A matrix row is a little taller than the default so that subscripts and superscripts of neighbouring rows do not touch (rendering option only; the LaTeX is unchanged).
+    html = katex.renderToString(latex, { ...KATEX_OPTIONS, displayMode: display, macros: { '\\arraystretch': '1.3' } });
     cache.set(key, html);
   }
   return html;
+}
+
+/** Splits prose into text and inline-mathematics pieces; mathematics is written between dollar signs (no dollar sign is used otherwise). */
+export function splitMath(text: string): { math: boolean; text: string }[] {
+  return text
+    .split('$')
+    .map((t, i) => ({ math: i % 2 === 1, text: t }))
+    .filter((p) => p.text !== '');
+}
+
+/** Prose with inline mathematics: the pieces between dollar signs are rendered by KaTeX, the rest stays text. */
+export function RichText({ text }: { text: string }) {
+  return (
+    <>
+      {splitMath(text).map((p, i) => (p.math ? <Tex key={i} latex={p.text} /> : <span key={i}>{p.text}</span>))}
+    </>
+  );
 }
 
 export function Tex({ latex, display = false, className, testId }: { latex: string; display?: boolean; className?: string; testId?: string }) {

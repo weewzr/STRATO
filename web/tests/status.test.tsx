@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import catalogueJson from '../src/generated/research_catalogue.json';
-import { filterRequestedMechanisms, isAvailable, solvedStage } from '../src/equation/availability';
+import { BTCS_CAPABILITY, filterRequestedMechanisms, isAvailable, simulationMethod, solvedStage } from '../src/equation/availability';
 import { CATALOGUE, statusOf } from '../src/research/catalogue';
 import { StatusChip } from '../src/research/StatusChip';
 import { STATUS_INFO, STATUSES, type ResearchStatus } from '../src/research/status';
@@ -74,17 +74,26 @@ describe('isAvailable(): live only for VERIFIED with the capability present', ()
 });
 
 describe('solved stage and the solver request filter', () => {
-  it('is 0 before the wasm module reports capabilities, and 1 with the v1.0 capability', () => {
+  it('is 0 before the wasm module reports capabilities and for the previous solver, and 12 with the BTCS capability', () => {
     expect(solvedStage([])).toBe(0);
-    expect(solvedStage(['diffusion_layered'])).toBe(1);
+    expect(solvedStage(['diffusion_layered'])).toBe(0);
+    expect(solvedStage([BTCS_CAPABILITY])).toBe(12);
     // Reporting a capability without the live status changes nothing.
-    expect(solvedStage(['diffusion_layered', 'generation', 'decay'])).toBe(1);
+    expect(solvedStage([BTCS_CAPABILITY, 'generation', 'decay'])).toBe(12);
   });
 
-  it('advances only through consecutive live stages', () => {
+  it('names the solver that runs the simulation', () => {
+    expect(simulationMethod([])).toBe('loading');
+    expect(simulationMethod(['diffusion_layered'])).toBe('previous');
+    expect(simulationMethod([BTCS_CAPABILITY])).toBe('btcs');
+    // The BTCS capability alone is not enough when the catalogue row is not at the live status.
+    expect(simulationMethod([BTCS_CAPABILITY], fixtureCatalogue({ diffusion_layered: 'IMPLEMENTED' }))).toBe('previous');
+  });
+
+  it('advances through the previews only in order', () => {
     const cat = fixtureCatalogue({ generation: 'VERIFIED', decay: 'VERIFIED' });
-    expect(solvedStage(['diffusion_layered', 'generation', 'decay'], cat)).toBe(3);
-    expect(solvedStage(['diffusion_layered', 'decay'], cat)).toBe(1);
+    expect(solvedStage([BTCS_CAPABILITY, 'generation', 'decay'], cat)).toBe(16);
+    expect(solvedStage([BTCS_CAPABILITY, 'decay'], cat)).toBe(12);
   });
 
   it('drops every mechanism for which isAvailable() is false and reports it', () => {

@@ -18,3 +18,4 @@ __pycache__/
 *.tmp
 .DS_Store
 Thumbs.db
+web/playwright.local.config.ts

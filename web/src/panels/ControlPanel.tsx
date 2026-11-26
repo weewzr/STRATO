@@ -3,7 +3,7 @@ import { repoFile } from '../build';
 import { CASES, type RegionConfig } from '../data/case';
 import { layerColour } from '../design/layers';
 import { isAvailable } from '../equation/availability';
-import { SWITCH_MECHANISM, SWITCHES, switchIntroducedBy, TERMS } from '../equation/terms';
+import { SWITCH_MECHANISM, SWITCHES, switchIntroducedBy, termOf } from '../equation/terms';
 import { Tex } from '../equation/Tex';
 import { clamp, sciText } from '../format';
 import { statusOf, useCatalogue } from '../research/catalogue';
@@ -219,14 +219,14 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
   );
 
   // Labels come from the term table (equation/terms.ts) and every status from the generated
-  // catalogue; availability only from isAvailable(). The switch that the selected builder stage
-  // introduces is marked, so the stage picker and the switches stay in step.
+  // catalogue; availability only from isAvailable(). The switch that the selected builder preview
+  // stands for is marked, so the step picker and the switches stay in step.
   const mechanismSwitches = (
     <fieldset className="group group--mechs">
       <legend className="group__legend">Mechanism switches</legend>
       <ul className="mechs" role="list">
         {SWITCHES.map((sw) => {
-          const term = TERMS[sw.term];
+          const term = termOf(sw.term);
           const mechId = SWITCH_MECHANISM[sw.id];
           const status = statusOf(catalogue, mechId);
           const live = isAvailable(mechId, capabilities, catalogue) && mechanisms[sw.id].available;
@@ -267,7 +267,7 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
                     <a href={repoFile('docs/development/phase2_review_package.md')}>Phase 2 review package</a>).
                   </>
                 )}
-                {current ? <span className="mech__stage"> Introduced by stage {stage}.</span> : null}
+                {current ? <span className="mech__stage"> Previewed at step {stage}.</span> : null}
               </p>
             </li>
           );

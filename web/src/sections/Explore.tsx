@@ -1,7 +1,7 @@
 import { useId } from 'react';
 import { repoFile } from '../build';
 import { findCase } from '../data/case';
-import { solvedStage } from '../equation/availability';
+import { simulationMethod } from '../equation/availability';
 import { EquationBuilder } from '../equation/EquationBuilder';
 import { BalancePanel, DiagnosticsPanel, ReleaseReadout, RunProblemNote } from '../panels/SimResults';
 import { TermExplanations } from '../equation/TermExplanations';
@@ -35,7 +35,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
   const requestRun = useStrato((s) => s.requestRun);
   const runInfo = useStrato((s) => s.runInfo);
   const capabilities = useStrato((s) => s.capabilities);
-  const solved = solvedStage(capabilities);
+  const method = simulationMethod(capabilities);
   const entry = findCase(caseId);
   const h1 = useHeadingFocus();
   const ids = { b: useId(), c: useId(), d: useId(), e: useId() };
@@ -94,7 +94,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
                 : 'Solver: loading'}
           </span>
           <span className="strip__item" data-testid="strip-stage">
-            Equation shown: stage {stage}; simulation: stage {solved > 0 ? solved : 1}
+            Step {stage} shown; simulation: {method === 'btcs' ? 'BTCS solver' : method === 'loading' ? 'solver loading' : 'previous solver, not BTCS'}
           </span>
           <Playback />
           {compact ? (
