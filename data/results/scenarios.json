@@ -1,0 +1,3500 @@
+{
+  "schema_version": "1",
+  "what": "scenario definitions (prescribed inputs)",
+  "provenance": {
+    "label": "numerical solution of the stated model; not experimental validation",
+    "solver": "STRATO BTCS five-layer spherical finite difference",
+    "solver_version": "1.0.1",
+    "pipeline": "strato-results 0.1.0",
+    "schema_version": "1",
+    "commit": "6e52ee0",
+    "solver_source_sha256": "acc5acc5b3fa6143504c93c62e99586ae33fb7308d9c20a2e0f1e935c32a010d",
+    "input_sha256": {
+      "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
+      "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
+      "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
+      "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
+      "temperature_histories.csv": "6ab3201672afd15f92ec9e529318377c829afaa5804288a3a694032145ab4af0",
+      "release_measurements.csv": "873352515ae4c64d57acce407100e40c1b11d8bbfde80beb948a98adb96ef2f2",
+      "agr1_irradiation_conditions.csv": "31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d",
+      "agr1_burnup_by_cycle.csv": "e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f",
+      "agr1_power_history_digitised.csv": "25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a",
+      "scenarios/s1_normal_operation.csv": "13dc0e4a301893a3aa47b669d6972dbd1dd50b72afb8817dcf6582890e47d77f",
+      "scenarios/s2_shutdown_cooldown.csv": "49bdaa0f434666efe9a6536ab407114d526aac81495a4e91bc7ddace9e3cce8f",
+      "scenarios/s3_startup.csv": "7f72d73cf0ac00aa1501c9e576fa2096f225f271c2f26ea535923fd35988bdac",
+      "scenarios/s4_control_rod_insertion.csv": "78a939b1ed4b940e56efb764c01a4b32e3ea3f2c5808fdd252e2073d142543b0",
+      "scenarios/s5_fuel_removal.csv": "1faace1e655c8b79999dc0ff85737ffe2bd7bde60da774f0b6b759081b77ea19"
+    }
+  },
+  "statement": "Every scenario is a prescribed-input simulation. Each number carries its source row id or the label prescribed input (assumed). No scenario is a validated reactor prediction. STRATO does not model neutron kinetics, control-rod motion, thermal-hydraulics, power redistribution or mechanical refuelling.",
+  "nuclides_meaningful": [
+    "Sr-90",
+    "Cs-137"
+  ],
+  "nuclides_not_meaningful": "Ag-110m, Cs-134 and Eu-154 get no direct fission-yield source term (decision 15)",
+  "scenarios": [
+    {
+      "id": "S1",
+      "file": "scenarios/s1_normal_operation.csv",
+      "variants": [
+        {
+          "variant": "",
+          "rate_density_target": "capsule:3",
+          "rate_density_per_m3_s": 8.69978329835975e19,
+          "rate_density_label": "derived from published AGR-1 burnup (calculated)",
+          "normal_operation_temperature_c": 1.028e3,
+          "event_time_s": null,
+          "end_time_s": 5.358528000000001e7,
+          "total_steps": 1241,
+          "step_sequence": [
+            {
+              "start_s": 0e0,
+              "end_s": 5.358528000000001e7,
+              "steps": 1241,
+              "step_s": 4.317911361804997e4
+            }
+          ],
+          "G_kernel_factor": [
+            {
+              "row_id": "S1-020",
+              "t_value": 0e0,
+              "t_unit": "d",
+              "t_s": 0e0,
+              "value": 1e0,
+              "unit": "1",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002"
+              ],
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "reason": "factor 1 is the Capsule 3 time-average fission-rate density derived from published burnup"
+            },
+            {
+              "row_id": "S1-021",
+              "t_value": 6.202e2,
+              "t_unit": "d",
+              "t_s": 5.358528000000001e7,
+              "value": 1e0,
+              "unit": "1",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-002"
+              ],
+              "basis": "registered source row",
+              "reason": "end of irradiation 620.2 EFPD"
+            }
+          ],
+          "T_C": [
+            {
+              "row_id": "S1-022",
+              "t_value": 0e0,
+              "t_unit": "d",
+              "t_s": 0e0,
+              "value": 1.028e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-059"
+              ],
+              "basis": "registered source row",
+              "reason": "Capsule 3 time-average volume-average temperature, calculated by the as-run thermal analysis, not measured"
+            },
+            {
+              "row_id": "S1-023",
+              "t_value": 6.202e2,
+              "t_unit": "d",
+              "t_s": 5.358528000000001e7,
+              "value": 1.028e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-059",
+                "IRR-002"
+              ],
+              "basis": "registered source row",
+              "reason": "held to the end of irradiation"
+            }
+          ],
+          "metadata": [
+            {
+              "row_id": "S1-001",
+              "key": "title",
+              "text": "Scenario 1: normal steady-state operation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-002",
+              "key": "physical_interpretation",
+              "text": "A fresh particle under constant generation and constant temperature at the reference conditions: the baseline concentration, inventory and release. Steady refers to the inputs; the solution does not reach steady state within the irradiation.",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-003",
+              "key": "label",
+              "text": "prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-004",
+              "key": "nuclides_meaningful",
+              "text": "Sr-90;Cs-137",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-005",
+              "key": "nuclides_not_meaningful",
+              "text": "Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-006",
+              "key": "initial_state",
+              "text": "fresh particle: C = 0 everywhere",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-007",
+              "key": "interpolation_rule",
+              "text": "linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-008",
+              "key": "diffusivity_phase",
+              "text": "irradiation: C15 rows through the selection function (Phase::Irradiation); evaluated outside 955 to 1197 degC through diffusivity_extrapolated and labelled",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-009",
+              "key": "rate_density_reference",
+              "text": "capsule:3",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002",
+                "IRR-059"
+              ]
+            }
+          ]
+        },
+        {
+          "variant": "exploration-1197C",
+          "rate_density_target": "compact:6-2-1",
+          "rate_density_per_m3_s": 6.6368518510019125e19,
+          "rate_density_label": "derived from published AGR-1 burnup (calculated)",
+          "normal_operation_temperature_c": 1.197e3,
+          "event_time_s": null,
+          "end_time_s": 5.358528000000001e7,
+          "total_steps": 1241,
+          "step_sequence": [
+            {
+              "start_s": 0e0,
+              "end_s": 5.358528000000001e7,
+              "steps": 1241,
+              "step_s": 4.317911361804997e4
+            }
+          ],
+          "G_kernel_factor": [
+            {
+              "row_id": "S1-020",
+              "t_value": 0e0,
+              "t_unit": "d",
+              "t_s": 0e0,
+              "value": 1e0,
+              "unit": "1",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002"
+              ],
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "reason": "factor 1 is the Capsule 3 time-average fission-rate density derived from published burnup"
+            },
+            {
+              "row_id": "S1-021",
+              "t_value": 6.202e2,
+              "t_unit": "d",
+              "t_s": 5.358528000000001e7,
+              "value": 1e0,
+              "unit": "1",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-002"
+              ],
+              "basis": "registered source row",
+              "reason": "end of irradiation 620.2 EFPD"
+            }
+          ],
+          "T_C": [
+            {
+              "row_id": "S1-030",
+              "t_value": 0e0,
+              "t_unit": "d",
+              "t_s": 0e0,
+              "value": 1.197e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-097"
+              ],
+              "basis": "registered source row",
+              "reason": "compact time-average peak temperature of compact 6-2-1, calculated"
+            },
+            {
+              "row_id": "S1-031",
+              "t_value": 6.202e2,
+              "t_unit": "d",
+              "t_s": 5.358528000000001e7,
+              "value": 1.197e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-097",
+                "IRR-002"
+              ],
+              "basis": "registered source row",
+              "reason": "held to the end of irradiation"
+            }
+          ],
+          "metadata": [
+            {
+              "row_id": "S1-001",
+              "key": "title",
+              "text": "Scenario 1: normal steady-state operation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-002",
+              "key": "physical_interpretation",
+              "text": "A fresh particle under constant generation and constant temperature at the reference conditions: the baseline concentration, inventory and release. Steady refers to the inputs; the solution does not reach steady state within the irradiation.",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-003",
+              "key": "label",
+              "text": "prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-004",
+              "key": "nuclides_meaningful",
+              "text": "Sr-90;Cs-137",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-005",
+              "key": "nuclides_not_meaningful",
+              "text": "Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-006",
+              "key": "initial_state",
+              "text": "fresh particle: C = 0 everywhere",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-007",
+              "key": "interpolation_rule",
+              "text": "linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-008",
+              "key": "diffusivity_phase",
+              "text": "irradiation: C15 rows through the selection function (Phase::Irradiation); evaluated outside 955 to 1197 degC through diffusivity_extrapolated and labelled",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-009",
+              "key": "rate_density_reference",
+              "text": "capsule:3",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002",
+                "IRR-059"
+              ]
+            },
+            {
+              "row_id": "S1-010",
+              "key": "rate_density_reference",
+              "text": "compact:6-2-1",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-097"
+              ]
+            },
+            {
+              "row_id": "S1-011",
+              "key": "label",
+              "text": "model exploration at the registered compact time-average peak temperature 1197 degC with the fission-rate density derived for the same compact; not a normal-operation reference and not experimental",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            }
+          ]
+        },
+        {
+          "variant": "cycles",
+          "rate_density_target": "capsule:3",
+          "rate_density_per_m3_s": 8.69978329835975e19,
+          "rate_density_label": "derived from published AGR-1 burnup (calculated)",
+          "normal_operation_temperature_c": 1.028e3,
+          "event_time_s": null,
+          "end_time_s": 5.358528000000001e7,
+          "total_steps": 1246,
+          "step_sequence": [
+            {
+              "start_s": 0e0,
+              "end_s": 4.02624e6,
+              "steps": 94,
+              "step_s": 4.283234042553192e4
+            },
+            {
+              "start_s": 4.02624e6,
+              "end_s": 8.48448e6,
+              "steps": 104,
+              "step_s": 4.2867692307692305e4
+            },
+            {
+              "start_s": 8.48448e6,
+              "end_s": 1.2899520000000002e7,
+              "steps": 103,
+              "step_s": 4.2864466019417494e4
+            },
+            {
+              "start_s": 1.2899520000000002e7,
+              "end_s": 1.691712e7,
+              "steps": 93,
+              "step_s": 4.319999999999998e4
+            },
+            {
+              "start_s": 1.691712e7,
+              "end_s": 2.00016e7,
+              "steps": 72,
+              "step_s": 4.284e4
+            },
+            {
+              "start_s": 2.00016e7,
+              "end_s": 2.2800959999999996e7,
+              "steps": 65,
+              "step_s": 4.3067076923076864e4
+            },
+            {
+              "start_s": 2.2800959999999996e7,
+              "end_s": 2.6948159999999996e7,
+              "steps": 96,
+              "step_s": 4.32e4
+            },
+            {
+              "start_s": 2.6948159999999996e7,
+              "end_s": 3.1440959999999996e7,
+              "steps": 104,
+              "step_s": 4.32e4
+            },
+            {
+              "start_s": 3.1440959999999996e7,
+              "end_s": 3.566592e7,
+              "steps": 98,
+              "step_s": 4.311183673469391e4
+            },
+            {
+              "start_s": 3.566592e7,
+              "end_s": 4.061664e7,
+              "steps": 115,
+              "step_s": 4.3049739130434784e4
+            },
+            {
+              "start_s": 4.061664e7,
+              "end_s": 4.439231999999999e7,
+              "steps": 88,
+              "step_s": 4.2905454545454464e4
+            },
+            {
+              "start_s": 4.439231999999999e7,
+              "end_s": 4.88592e7,
+              "steps": 104,
+              "step_s": 4.29507692307693e4
+            },
+            {
+              "start_s": 4.88592e7,
+              "end_s": 5.358528000000001e7,
+              "steps": 110,
+              "step_s": 4.2964363636363705e4
+            }
+          ],
+          "fission_rate_density": [
+            {
+              "row_id": "S1-040",
+              "t_value": 0e0,
+              "t_unit": "d",
+              "t_s": 0e0,
+              "value": 5.09e0,
+              "unit": "1e19 m^-3 s^-1",
+              "interpolation": "step",
+              "source_ids": [
+                "IRRB-0103",
+                "IRR-006"
+              ],
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "reason": "cycle 1 Capsule 3 average"
+            },
+            {
+              "row_id": "S1-041",
+              "t_value": 4.66e1,
+              "t_unit": "d",
+              "t_s": 4.02624e6,
+              "value": 6.73e0,
+              "unit": "1e19 m^-3 s^-1",
+              "interpolation": "step",
+              "source_ids": [
+                "IRRB-0259",
+                "IRR-007"
+              ],
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "reason": "cycle 2"
+            },
+            {
+              "row_id": "S1-042",
+              "t_value": 9.82e1,
+              "t_unit": "d",
+              "t_s": 8.48448e6,
+              "value": 8.04e0,
+              "unit": "1e19 m^-3 s^-1",
+              "interpolation": "step",
+              "source_ids": [
+                "IRRB-0415",
+                "IRR-008"
+              ],
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "reason": "cycle 3"
+            },
+            {
+              "row_id": "S1-043",
+              "t_value": 1.493e2,
+              "t_unit": "d",
+              "t_s": 1.2899520000000002e7,
+              "value": 9.09e0,
+              "unit": "1e19 m^-3 s^-1",
+              "interpolation": "step",
+              "source_ids": [
+                "IRRB-0571",
+                "IRR-009"
+              ],
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "reason": "cycle 4"
+            },
+            {
+              "row_id": "S1-044",
+              "t_value": 1.958e2,
+              "t_unit": "d",
+              "t_s": 1.691712e7,
+              "value": 9.16e0,
+              "unit": "1e19 m^-3 s^-1",
+              "interpolation": "step",
+              "source_ids": [
+                "IRRB-0727",
+                "IRR-010"
+              ],
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "reason": "cycle 5"
+            },
+            {
+              "row_id": "S1-045",
+              "t_value": 2.315e2,
+              "t_unit": "d",
+              "t_s": 2.00016e7,
+              "value": 1.188e1,
+              "unit": "1e19 m^-3 s^-1",
+              "interpolation": "step",
+              "source_ids": [
+                "IRRB-0883",
+                "IRR-011"
+              ],
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "reason": "cycle 6"
+            },
+            {
+              "row_id": "S1-046",
+              "t_value": 2.639e2,
+              "t_unit": "d",
+              "t_s": 2.2800959999999996e7,
+              "value": 1.11e1,
+              "unit": "1e19 m^-3 s^-1",
+              "interpolation": "step",
+              "source_ids": [
+                "IRRB-1039",
+                "IRR-012"
+              ],
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "reason": "cycle 7"
+            },
+            {
+              "row_id": "S1-047",
+              "t_value": 3.119e2,
+              "t_unit": "d",
+              "t_s": 2.6948159999999996e7,
+              "value": 1.08e1,
+              "unit": "1e19 m^-3 s^-1",
+              "interpolation": "step",
+              "source_ids": [
+                "IRRB-1195",
+                "IRR-013"
+              ],
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "reason": "cycle 8"
+            },
+            {
+              "row_id": "S1-048",
+              "t_value": 3.639e2,
+              "t_unit": "d",
+              "t_s": 3.1440959999999996e7,
+              "value": 1.048e1,
+              "unit": "1e19 m^-3 s^-1",
+              "interpolation": "step",
+              "source_ids": [
+                "IRRB-1351",
+                "IRR-014"
+              ],
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "reason": "cycle 9"
+            },
+            {
+              "row_id": "S1-049",
+              "t_value": 4.128e2,
+              "t_unit": "d",
+              "t_s": 3.566592e7,
+              "value": 8.74e0,
+              "unit": "1e19 m^-3 s^-1",
+              "interpolation": "step",
+              "source_ids": [
+                "IRRB-1507",
+                "IRR-015"
+              ],
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "reason": "cycle 10"
+            },
+            {
+              "row_id": "S1-050",
+              "t_value": 4.701e2,
+              "t_unit": "d",
+              "t_s": 4.061664e7,
+              "value": 8.61e0,
+              "unit": "1e19 m^-3 s^-1",
+              "interpolation": "step",
+              "source_ids": [
+                "IRRB-1663",
+                "IRR-016"
+              ],
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "reason": "cycle 11"
+            },
+            {
+              "row_id": "S1-051",
+              "t_value": 5.138e2,
+              "t_unit": "d",
+              "t_s": 4.439231999999999e7,
+              "value": 8.17e0,
+              "unit": "1e19 m^-3 s^-1",
+              "interpolation": "step",
+              "source_ids": [
+                "IRRB-1819",
+                "IRR-017"
+              ],
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "reason": "cycle 12"
+            },
+            {
+              "row_id": "S1-052",
+              "t_value": 5.655e2,
+              "t_unit": "d",
+              "t_s": 4.88592e7,
+              "value": 6.67e0,
+              "unit": "1e19 m^-3 s^-1",
+              "interpolation": "step",
+              "source_ids": [
+                "IRRB-1975",
+                "IRR-018"
+              ],
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "reason": "cycle 13; time base is effective full-power days, outages are not represented"
+            }
+          ],
+          "T_C": [
+            {
+              "row_id": "S1-022",
+              "t_value": 0e0,
+              "t_unit": "d",
+              "t_s": 0e0,
+              "value": 1.028e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-059"
+              ],
+              "basis": "registered source row",
+              "reason": "Capsule 3 time-average volume-average temperature, calculated by the as-run thermal analysis, not measured"
+            },
+            {
+              "row_id": "S1-023",
+              "t_value": 6.202e2,
+              "t_unit": "d",
+              "t_s": 5.358528000000001e7,
+              "value": 1.028e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-059",
+                "IRR-002"
+              ],
+              "basis": "registered source row",
+              "reason": "held to the end of irradiation"
+            }
+          ],
+          "metadata": [
+            {
+              "row_id": "S1-001",
+              "key": "title",
+              "text": "Scenario 1: normal steady-state operation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-002",
+              "key": "physical_interpretation",
+              "text": "A fresh particle under constant generation and constant temperature at the reference conditions: the baseline concentration, inventory and release. Steady refers to the inputs; the solution does not reach steady state within the irradiation.",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-003",
+              "key": "label",
+              "text": "prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-004",
+              "key": "nuclides_meaningful",
+              "text": "Sr-90;Cs-137",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-005",
+              "key": "nuclides_not_meaningful",
+              "text": "Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-006",
+              "key": "initial_state",
+              "text": "fresh particle: C = 0 everywhere",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-007",
+              "key": "interpolation_rule",
+              "text": "linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-008",
+              "key": "diffusivity_phase",
+              "text": "irradiation: C15 rows through the selection function (Phase::Irradiation); evaluated outside 955 to 1197 degC through diffusivity_extrapolated and labelled",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S1-009",
+              "key": "rate_density_reference",
+              "text": "capsule:3",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002",
+                "IRR-059"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "file": "scenarios/s2_shutdown_cooldown.csv",
+      "variants": [
+        {
+          "variant": "",
+          "rate_density_target": "capsule:3",
+          "rate_density_per_m3_s": 8.69978329835975e19,
+          "rate_density_label": "derived from published AGR-1 burnup (calculated)",
+          "normal_operation_temperature_c": 1.028e3,
+          "event_time_s": 5.358528000000001e7,
+          "end_time_s": 8.512128e7,
+          "total_steps": 1706,
+          "step_sequence": [
+            {
+              "start_s": 0e0,
+              "end_s": 5.358528000000001e7,
+              "steps": 1241,
+              "step_s": 4.317911361804997e4
+            },
+            {
+              "start_s": 5.358528000000001e7,
+              "end_s": 5.359126788000001e7,
+              "steps": 100,
+              "step_s": 5.987880000002682e1
+            },
+            {
+              "start_s": 5.359126788000001e7,
+              "end_s": 8.512128e7,
+              "steps": 365,
+              "step_s": 8.638359484931504e4
+            }
+          ],
+          "G_kernel_factor": [
+            {
+              "row_id": "S2-020",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 0e0,
+              "unit": "1",
+              "interpolation": "step",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "generation ceases at shutdown: the definition of the scenario"
+            },
+            {
+              "row_id": "S2-021",
+              "t_value": 8.76e3,
+              "t_unit": "h",
+              "t_s": 3.1536e7,
+              "value": 0e0,
+              "unit": "1",
+              "interpolation": "step",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "365 d of storage, long enough to show the decay of the inventory"
+            }
+          ],
+          "T_C": [
+            {
+              "row_id": "S2-022",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 1.028e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-059"
+              ],
+              "basis": "registered source row",
+              "reason": "Capsule 3 time-average volume-average temperature at shutdown"
+            },
+            {
+              "row_id": "S2-023",
+              "t_value": 1.6633e0,
+              "t_unit": "h",
+              "t_s": 5.98788e3,
+              "value": 3e1,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "TH-013"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "rate of -600 degC/h as the furnace cool-down of the AGR-1 safety test as modelled (TH-013), used only for its magnitude and not a reactor measurement; 30 degC as in TH-007 and TH-013"
+            },
+            {
+              "row_id": "S2-024",
+              "t_value": 8.76e3,
+              "t_unit": "h",
+              "t_s": 3.1536e7,
+              "value": 3e1,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "TH-013"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "held at 30 degC as above"
+            }
+          ],
+          "metadata": [
+            {
+              "row_id": "S2-001",
+              "key": "title",
+              "text": "Scenario 2: reactor shutdown and cooldown",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S2-002",
+              "key": "physical_interpretation",
+              "text": "Generation stops at shutdown. The inventory present keeps diffusing and decaying while the temperature falls along a prescribed cooldown.",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S2-003",
+              "key": "label",
+              "text": "prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S2-004",
+              "key": "nuclides_meaningful",
+              "text": "Sr-90;Cs-137",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S2-005",
+              "key": "nuclides_not_meaningful",
+              "text": "Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S2-006",
+              "key": "initial_state",
+              "text": "the state of Scenario 1 at the end of irradiation; run as one continuous history from the fresh particle",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S2-007",
+              "key": "interpolation_rule",
+              "text": "linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly; times of this file are measured from the shutdown",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S2-008",
+              "key": "diffusivity_phase",
+              "text": "irradiation: C15 rows; below 955 degC evaluated through diffusivity_extrapolated and labelled C15 evaluated outside its documented application (955 to 1197 degC)",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S2-009",
+              "key": "rate_density_reference",
+              "text": "capsule:3",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002",
+                "IRR-059"
+              ]
+            },
+            {
+              "row_id": "S2-011",
+              "key": "lead_in",
+              "text": "S1",
+              "t_value": 6.202e2,
+              "t_unit": "d",
+              "basis": "registered source row",
+              "source_ids": [
+                "IRR-002"
+              ]
+            },
+            {
+              "row_id": "S2-012",
+              "key": "reference_continuation",
+              "text": "the reference curve for had the reactor kept operating continues Scenario 1 at generation factor 1 and the normal-operation temperature beyond the registered 620.2 EFPD for the same time as this scenario; a reference, not a registered irradiation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "prescribed input (assumed)",
+              "source_ids": []
+            }
+          ]
+        },
+        {
+          "variant": "exploration-1197C",
+          "rate_density_target": "compact:6-2-1",
+          "rate_density_per_m3_s": 6.6368518510019125e19,
+          "rate_density_label": "derived from published AGR-1 burnup (calculated)",
+          "normal_operation_temperature_c": 1.197e3,
+          "event_time_s": 5.358528000000001e7,
+          "end_time_s": 8.512128e7,
+          "total_steps": 1723,
+          "step_sequence": [
+            {
+              "start_s": 0e0,
+              "end_s": 5.358528000000001e7,
+              "steps": 1241,
+              "step_s": 4.317911361804997e4
+            },
+            {
+              "start_s": 5.358528000000001e7,
+              "end_s": 5.359228200000001e7,
+              "steps": 117,
+              "step_s": 5.984615384615385e1
+            },
+            {
+              "start_s": 5.359228200000001e7,
+              "end_s": 8.512128e7,
+              "steps": 365,
+              "step_s": 8.638081643835614e4
+            }
+          ],
+          "G_kernel_factor": [
+            {
+              "row_id": "S2-020",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 0e0,
+              "unit": "1",
+              "interpolation": "step",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "generation ceases at shutdown: the definition of the scenario"
+            },
+            {
+              "row_id": "S2-021",
+              "t_value": 8.76e3,
+              "t_unit": "h",
+              "t_s": 3.1536e7,
+              "value": 0e0,
+              "unit": "1",
+              "interpolation": "step",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "365 d of storage, long enough to show the decay of the inventory"
+            }
+          ],
+          "T_C": [
+            {
+              "row_id": "S2-030",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 1.197e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-097"
+              ],
+              "basis": "registered source row",
+              "reason": "compact time-average peak temperature of compact 6-2-1"
+            },
+            {
+              "row_id": "S2-031",
+              "t_value": 1.945e0,
+              "t_unit": "h",
+              "t_s": 7.002e3,
+              "value": 3e1,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "TH-013"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "the same -600 degC/h rate from 1197 degC: 1167 / 600 = 1.945 h"
+            },
+            {
+              "row_id": "S2-032",
+              "t_value": 8.76e3,
+              "t_unit": "h",
+              "t_s": 3.1536e7,
+              "value": 3e1,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "TH-013"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "held at 30 degC"
+            }
+          ],
+          "metadata": [
+            {
+              "row_id": "S2-001",
+              "key": "title",
+              "text": "Scenario 2: reactor shutdown and cooldown",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S2-002",
+              "key": "physical_interpretation",
+              "text": "Generation stops at shutdown. The inventory present keeps diffusing and decaying while the temperature falls along a prescribed cooldown.",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S2-003",
+              "key": "label",
+              "text": "prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S2-004",
+              "key": "nuclides_meaningful",
+              "text": "Sr-90;Cs-137",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S2-005",
+              "key": "nuclides_not_meaningful",
+              "text": "Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S2-006",
+              "key": "initial_state",
+              "text": "the state of Scenario 1 at the end of irradiation; run as one continuous history from the fresh particle",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S2-007",
+              "key": "interpolation_rule",
+              "text": "linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly; times of this file are measured from the shutdown",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S2-008",
+              "key": "diffusivity_phase",
+              "text": "irradiation: C15 rows; below 955 degC evaluated through diffusivity_extrapolated and labelled C15 evaluated outside its documented application (955 to 1197 degC)",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S2-009",
+              "key": "rate_density_reference",
+              "text": "capsule:3",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002",
+                "IRR-059"
+              ]
+            },
+            {
+              "row_id": "S2-010",
+              "key": "rate_density_reference",
+              "text": "compact:6-2-1",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-097"
+              ]
+            },
+            {
+              "row_id": "S2-011",
+              "key": "lead_in",
+              "text": "S1",
+              "t_value": 6.202e2,
+              "t_unit": "d",
+              "basis": "registered source row",
+              "source_ids": [
+                "IRR-002"
+              ]
+            },
+            {
+              "row_id": "S2-012",
+              "key": "reference_continuation",
+              "text": "the reference curve for had the reactor kept operating continues Scenario 1 at generation factor 1 and the normal-operation temperature beyond the registered 620.2 EFPD for the same time as this scenario; a reference, not a registered irradiation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "prescribed input (assumed)",
+              "source_ids": []
+            },
+            {
+              "row_id": "S2-013",
+              "key": "label",
+              "text": "model exploration at the registered compact time-average peak temperature 1197 degC with the fission-rate density derived for the same compact; not experimental",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "file": "scenarios/s3_startup.csv",
+      "variants": [
+        {
+          "variant": "",
+          "rate_density_target": "capsule:3",
+          "rate_density_per_m3_s": 8.69978329835975e19,
+          "rate_density_label": "derived from published AGR-1 burnup (calculated)",
+          "normal_operation_temperature_c": 1.028e3,
+          "event_time_s": null,
+          "end_time_s": 5.358528e7,
+          "total_steps": 1384,
+          "step_sequence": [
+            {
+              "start_s": 0e0,
+              "end_s": 8.64e4,
+              "steps": 144,
+              "step_s": 6e2
+            },
+            {
+              "start_s": 8.64e4,
+              "end_s": 4.0262400000000005e6,
+              "steps": 92,
+              "step_s": 4.282434782608696e4
+            },
+            {
+              "start_s": 4.0262400000000005e6,
+              "end_s": 5.358528e7,
+              "steps": 1148,
+              "step_s": 4.316989547038328e4
+            }
+          ],
+          "G_kernel_factor": [
+            {
+              "row_id": "S3-020",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 0e0,
+              "unit": "1",
+              "interpolation": "linear",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "start from zero power"
+            },
+            {
+              "row_id": "S3-021",
+              "t_value": 2.4e1,
+              "t_unit": "h",
+              "t_s": 8.64e4,
+              "value": 1e0,
+              "unit": "1",
+              "interpolation": "linear",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "a 24 h linear power ascension: no registered ascension time exists in the AGR-1 records and 24 h resolves the transient on the time axis"
+            },
+            {
+              "row_id": "S3-022",
+              "t_value": 1.48848e4,
+              "t_unit": "h",
+              "t_s": 5.358528e7,
+              "value": 1e0,
+              "unit": "1",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-002"
+              ],
+              "basis": "registered source row",
+              "reason": "620.2 d (IRR-002) times 24 h/d"
+            }
+          ],
+          "T_C": [
+            {
+              "row_id": "S3-023",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 3e1,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "TH-007"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "cold start at 30 degC as TH-007"
+            },
+            {
+              "row_id": "S3-024",
+              "t_value": 2.4e1,
+              "t_unit": "h",
+              "t_s": 8.64e4,
+              "value": 1.028e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-059"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "value from IRR-059; the ramp duration is a prescribed input (assumed) equal to the power ramp (temperature taken to follow power)"
+            },
+            {
+              "row_id": "S3-025",
+              "t_value": 1.48848e4,
+              "t_unit": "h",
+              "t_s": 5.358528e7,
+              "value": 1.028e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-059",
+                "IRR-002"
+              ],
+              "basis": "registered source row",
+              "reason": "held to 620.2 d"
+            }
+          ],
+          "metadata": [
+            {
+              "row_id": "S3-001",
+              "key": "title",
+              "text": "Scenario 3: reactor startup",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S3-002",
+              "key": "physical_interpretation",
+              "text": "Generation rises from zero with a corresponding temperature rise; the rising temperature raises the diffusivities.",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S3-003",
+              "key": "label",
+              "text": "prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S3-004",
+              "key": "nuclides_meaningful",
+              "text": "Sr-90;Cs-137",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S3-005",
+              "key": "nuclides_not_meaningful",
+              "text": "Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S3-006",
+              "key": "initial_state",
+              "text": "fresh particle: C = 0 everywhere (startup of fresh fuel)",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S3-007",
+              "key": "interpolation_rule",
+              "text": "linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S3-008",
+              "key": "diffusivity_phase",
+              "text": "irradiation: C15 rows; below 955 degC evaluated through diffusivity_extrapolated and labelled C15 evaluated outside its documented application (955 to 1197 degC)",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S3-009",
+              "key": "rate_density_reference",
+              "text": "capsule:3",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002",
+                "IRR-059"
+              ]
+            },
+            {
+              "row_id": "S3-011",
+              "key": "event_time",
+              "text": "end of cycle 1 at 46.6 EFPD; the first 46.6 d are shown beside the full run",
+              "t_value": 1.1184e3,
+              "t_unit": "h",
+              "basis": "registered source row",
+              "source_ids": [
+                "IRR-006"
+              ]
+            },
+            {
+              "row_id": "S3-012",
+              "key": "reference_continuation",
+              "text": "the reference curve is Scenario 1 (a step start at full generation and temperature)",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002"
+              ]
+            }
+          ]
+        },
+        {
+          "variant": "exploration-1197C",
+          "rate_density_target": "compact:6-2-1",
+          "rate_density_per_m3_s": 6.6368518510019125e19,
+          "rate_density_label": "derived from published AGR-1 burnup (calculated)",
+          "normal_operation_temperature_c": 1.197e3,
+          "event_time_s": null,
+          "end_time_s": 5.358528e7,
+          "total_steps": 1384,
+          "step_sequence": [
+            {
+              "start_s": 0e0,
+              "end_s": 8.64e4,
+              "steps": 144,
+              "step_s": 6e2
+            },
+            {
+              "start_s": 8.64e4,
+              "end_s": 4.0262400000000005e6,
+              "steps": 92,
+              "step_s": 4.282434782608696e4
+            },
+            {
+              "start_s": 4.0262400000000005e6,
+              "end_s": 5.358528e7,
+              "steps": 1148,
+              "step_s": 4.316989547038328e4
+            }
+          ],
+          "G_kernel_factor": [
+            {
+              "row_id": "S3-020",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 0e0,
+              "unit": "1",
+              "interpolation": "linear",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "start from zero power"
+            },
+            {
+              "row_id": "S3-021",
+              "t_value": 2.4e1,
+              "t_unit": "h",
+              "t_s": 8.64e4,
+              "value": 1e0,
+              "unit": "1",
+              "interpolation": "linear",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "a 24 h linear power ascension: no registered ascension time exists in the AGR-1 records and 24 h resolves the transient on the time axis"
+            },
+            {
+              "row_id": "S3-022",
+              "t_value": 1.48848e4,
+              "t_unit": "h",
+              "t_s": 5.358528e7,
+              "value": 1e0,
+              "unit": "1",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-002"
+              ],
+              "basis": "registered source row",
+              "reason": "620.2 d (IRR-002) times 24 h/d"
+            }
+          ],
+          "T_C": [
+            {
+              "row_id": "S3-030",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 3e1,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "TH-007"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "cold start at 30 degC as TH-007"
+            },
+            {
+              "row_id": "S3-031",
+              "t_value": 2.4e1,
+              "t_unit": "h",
+              "t_s": 8.64e4,
+              "value": 1.197e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-097"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "value from IRR-097; the ramp duration is a prescribed input (assumed) equal to the power ramp"
+            },
+            {
+              "row_id": "S3-032",
+              "t_value": 1.48848e4,
+              "t_unit": "h",
+              "t_s": 5.358528e7,
+              "value": 1.197e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-097",
+                "IRR-002"
+              ],
+              "basis": "registered source row",
+              "reason": "held to 620.2 d"
+            }
+          ],
+          "metadata": [
+            {
+              "row_id": "S3-001",
+              "key": "title",
+              "text": "Scenario 3: reactor startup",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S3-002",
+              "key": "physical_interpretation",
+              "text": "Generation rises from zero with a corresponding temperature rise; the rising temperature raises the diffusivities.",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S3-003",
+              "key": "label",
+              "text": "prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S3-004",
+              "key": "nuclides_meaningful",
+              "text": "Sr-90;Cs-137",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S3-005",
+              "key": "nuclides_not_meaningful",
+              "text": "Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S3-006",
+              "key": "initial_state",
+              "text": "fresh particle: C = 0 everywhere (startup of fresh fuel)",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S3-007",
+              "key": "interpolation_rule",
+              "text": "linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S3-008",
+              "key": "diffusivity_phase",
+              "text": "irradiation: C15 rows; below 955 degC evaluated through diffusivity_extrapolated and labelled C15 evaluated outside its documented application (955 to 1197 degC)",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S3-009",
+              "key": "rate_density_reference",
+              "text": "capsule:3",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002",
+                "IRR-059"
+              ]
+            },
+            {
+              "row_id": "S3-010",
+              "key": "rate_density_reference",
+              "text": "compact:6-2-1",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-097"
+              ]
+            },
+            {
+              "row_id": "S3-011",
+              "key": "event_time",
+              "text": "end of cycle 1 at 46.6 EFPD; the first 46.6 d are shown beside the full run",
+              "t_value": 1.1184e3,
+              "t_unit": "h",
+              "basis": "registered source row",
+              "source_ids": [
+                "IRR-006"
+              ]
+            },
+            {
+              "row_id": "S3-012",
+              "key": "reference_continuation",
+              "text": "the reference curve is Scenario 1 (a step start at full generation and temperature)",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002"
+              ]
+            },
+            {
+              "row_id": "S3-013",
+              "key": "label",
+              "text": "model exploration at the registered compact time-average peak temperature 1197 degC with the fission-rate density derived for the same compact; not experimental",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "file": "scenarios/s4_control_rod_insertion.csv",
+      "variants": [
+        {
+          "variant": "",
+          "rate_density_target": "capsule:3",
+          "rate_density_per_m3_s": 8.69978329835975e19,
+          "rate_density_label": "derived from published AGR-1 burnup (calculated)",
+          "normal_operation_temperature_c": 1.028e3,
+          "event_time_s": 2.6792640000000004e7,
+          "end_time_s": 5.358528e7,
+          "total_steps": 1302,
+          "step_sequence": [
+            {
+              "start_s": 0e0,
+              "end_s": 2.6792640000000004e7,
+              "steps": 621,
+              "step_s": 4.314434782608696e4
+            },
+            {
+              "start_s": 2.6792640000000004e7,
+              "end_s": 2.6796240000000004e7,
+              "steps": 60,
+              "step_s": 6e1
+            },
+            {
+              "start_s": 2.6796240000000004e7,
+              "end_s": 5.358528e7,
+              "steps": 621,
+              "step_s": 4.313855072463767e4
+            }
+          ],
+          "G_kernel_factor": [
+            {
+              "row_id": "S4-020",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 1e0,
+              "unit": "1",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002"
+              ],
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "reason": "Scenario 1 value (the Capsule 3 time-average fission-rate density derived from published burnup)"
+            },
+            {
+              "row_id": "S4-021",
+              "t_value": 1e0,
+              "t_unit": "h",
+              "t_s": 3.6e3,
+              "value": 5e-1,
+              "unit": "1",
+              "interpolation": "linear",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "power halved within 1 h: a reduction large enough to be visible in the generated inventory"
+            },
+            {
+              "row_id": "S4-022",
+              "t_value": 7.4424e3,
+              "t_unit": "h",
+              "t_s": 2.679264e7,
+              "value": 5e-1,
+              "unit": "1",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-002"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "held to 620.2 d (IRR-002): 310.1 d times 24 h/d after the insertion; the factor 0.5 is assumed"
+            }
+          ],
+          "T_C": [
+            {
+              "row_id": "S4-023",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 1.028e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-059"
+              ],
+              "basis": "registered source row",
+              "reason": "Capsule 3 time-average volume-average temperature"
+            },
+            {
+              "row_id": "S4-024",
+              "t_value": 1e0,
+              "t_unit": "h",
+              "t_s": 3.6e3,
+              "value": 9e2,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "a drop of 128 degC that changes the diffusivity of Cs in SiC by a factor 0.283 and of Sr in the kernel by 7.3e-3 (C15-07, C15-09); no registered power-temperature relation exists"
+            },
+            {
+              "row_id": "S4-025",
+              "t_value": 7.4424e3,
+              "t_unit": "h",
+              "t_s": 2.679264e7,
+              "value": 9e2,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-002"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "held to 620.2 d (IRR-002); the temperature value is assumed as above"
+            }
+          ],
+          "metadata": [
+            {
+              "row_id": "S4-001",
+              "key": "title",
+              "text": "Scenario 4: control-rod insertion (prescribed power reduction)",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-002",
+              "key": "physical_interpretation",
+              "text": "The reactor power, and with it the fission rate in the kernel, is reduced along an assumed history and the temperature falls correspondingly. STRATO models only the consequence for the generation rate and the temperature, not the rod or the core.",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-003",
+              "key": "label",
+              "text": "prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-004",
+              "key": "nuclides_meaningful",
+              "text": "Sr-90;Cs-137",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-005",
+              "key": "nuclides_not_meaningful",
+              "text": "Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-006",
+              "key": "initial_state",
+              "text": "the state of Scenario 1 at the insertion time; run as one continuous history from the fresh particle",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-007",
+              "key": "interpolation_rule",
+              "text": "linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly; times of this file are measured from the insertion",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-008",
+              "key": "diffusivity_phase",
+              "text": "irradiation: C15 rows; at 900 degC evaluated through diffusivity_extrapolated and labelled C15 evaluated outside its documented application (955 to 1197 degC); the post-transition release depends on that extrapolation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-009",
+              "key": "rate_density_reference",
+              "text": "capsule:3",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002",
+                "IRR-059"
+              ]
+            },
+            {
+              "row_id": "S4-011",
+              "key": "lead_in",
+              "text": "S1: the middle of the irradiation so that before and after are equally long",
+              "t_value": 3.101e2,
+              "t_unit": "d",
+              "basis": "prescribed input (assumed)",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-012",
+              "key": "reference_continuation",
+              "text": "the reference curve is Scenario 1 continued to 620.2 d",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002"
+              ]
+            },
+            {
+              "row_id": "S4-014",
+              "key": "magnitude",
+              "text": "at 1028 and at 900 degC the release fractions are at most of the order of 1e-10 for Cs-137 and below the resolution of the grid for Sr-90 (science design Section 5.2); the post-transition release depends on the C15 extrapolation, so the visible result of this scenario is the inventory, not the release",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            }
+          ]
+        },
+        {
+          "variant": "exploration-1197C",
+          "rate_density_target": "compact:6-2-1",
+          "rate_density_per_m3_s": 6.6368518510019125e19,
+          "rate_density_label": "derived from published AGR-1 burnup (calculated)",
+          "normal_operation_temperature_c": 1.197e3,
+          "event_time_s": 2.6792640000000004e7,
+          "end_time_s": 5.358528e7,
+          "total_steps": 1302,
+          "step_sequence": [
+            {
+              "start_s": 0e0,
+              "end_s": 2.6792640000000004e7,
+              "steps": 621,
+              "step_s": 4.314434782608696e4
+            },
+            {
+              "start_s": 2.6792640000000004e7,
+              "end_s": 2.6796240000000004e7,
+              "steps": 60,
+              "step_s": 6e1
+            },
+            {
+              "start_s": 2.6796240000000004e7,
+              "end_s": 5.358528e7,
+              "steps": 621,
+              "step_s": 4.313855072463767e4
+            }
+          ],
+          "G_kernel_factor": [
+            {
+              "row_id": "S4-020",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 1e0,
+              "unit": "1",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002"
+              ],
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "reason": "Scenario 1 value (the Capsule 3 time-average fission-rate density derived from published burnup)"
+            },
+            {
+              "row_id": "S4-021",
+              "t_value": 1e0,
+              "t_unit": "h",
+              "t_s": 3.6e3,
+              "value": 5e-1,
+              "unit": "1",
+              "interpolation": "linear",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "power halved within 1 h: a reduction large enough to be visible in the generated inventory"
+            },
+            {
+              "row_id": "S4-022",
+              "t_value": 7.4424e3,
+              "t_unit": "h",
+              "t_s": 2.679264e7,
+              "value": 5e-1,
+              "unit": "1",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-002"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "held to 620.2 d (IRR-002): 310.1 d times 24 h/d after the insertion; the factor 0.5 is assumed"
+            }
+          ],
+          "T_C": [
+            {
+              "row_id": "S4-030",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 1.197e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-097"
+              ],
+              "basis": "registered source row",
+              "reason": "compact time-average peak temperature of compact 6-2-1"
+            },
+            {
+              "row_id": "S4-031",
+              "t_value": 1e0,
+              "t_unit": "h",
+              "t_s": 3.6e3,
+              "value": 1.069e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "the same drop of 128 degC as the base variant: 1197 - 128"
+            },
+            {
+              "row_id": "S4-032",
+              "t_value": 7.4424e3,
+              "t_unit": "h",
+              "t_s": 2.679264e7,
+              "value": 1.069e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-002"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "held to 620.2 d; the temperature value is assumed as above"
+            }
+          ],
+          "metadata": [
+            {
+              "row_id": "S4-001",
+              "key": "title",
+              "text": "Scenario 4: control-rod insertion (prescribed power reduction)",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-002",
+              "key": "physical_interpretation",
+              "text": "The reactor power, and with it the fission rate in the kernel, is reduced along an assumed history and the temperature falls correspondingly. STRATO models only the consequence for the generation rate and the temperature, not the rod or the core.",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-003",
+              "key": "label",
+              "text": "prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-004",
+              "key": "nuclides_meaningful",
+              "text": "Sr-90;Cs-137",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-005",
+              "key": "nuclides_not_meaningful",
+              "text": "Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-006",
+              "key": "initial_state",
+              "text": "the state of Scenario 1 at the insertion time; run as one continuous history from the fresh particle",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-007",
+              "key": "interpolation_rule",
+              "text": "linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly; times of this file are measured from the insertion",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-008",
+              "key": "diffusivity_phase",
+              "text": "irradiation: C15 rows; at 900 degC evaluated through diffusivity_extrapolated and labelled C15 evaluated outside its documented application (955 to 1197 degC); the post-transition release depends on that extrapolation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-009",
+              "key": "rate_density_reference",
+              "text": "capsule:3",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002",
+                "IRR-059"
+              ]
+            },
+            {
+              "row_id": "S4-010",
+              "key": "rate_density_reference",
+              "text": "compact:6-2-1",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-097"
+              ]
+            },
+            {
+              "row_id": "S4-011",
+              "key": "lead_in",
+              "text": "S1: the middle of the irradiation so that before and after are equally long",
+              "t_value": 3.101e2,
+              "t_unit": "d",
+              "basis": "prescribed input (assumed)",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-012",
+              "key": "reference_continuation",
+              "text": "the reference curve is Scenario 1 continued to 620.2 d",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002"
+              ]
+            },
+            {
+              "row_id": "S4-013",
+              "key": "label",
+              "text": "model exploration at the registered compact time-average peak temperature 1197 degC with the fission-rate density derived for the same compact; not experimental",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S4-014",
+              "key": "magnitude",
+              "text": "at 1028 and at 900 degC the release fractions are at most of the order of 1e-10 for Cs-137 and below the resolution of the grid for Sr-90 (science design Section 5.2); the post-transition release depends on the C15 extrapolation, so the visible result of this scenario is the inventory, not the release",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "file": "scenarios/s5_fuel_removal.csv",
+      "variants": [
+        {
+          "variant": "",
+          "rate_density_target": "capsule:3",
+          "rate_density_per_m3_s": 8.69978329835975e19,
+          "rate_density_label": "derived from published AGR-1 burnup (calculated)",
+          "normal_operation_temperature_c": 1.028e3,
+          "event_time_s": 5.358528000000001e7,
+          "end_time_s": 8.512128e7,
+          "total_steps": 1706,
+          "step_sequence": [
+            {
+              "start_s": 0e0,
+              "end_s": 5.358528000000001e7,
+              "steps": 1241,
+              "step_s": 4.317911361804997e4
+            },
+            {
+              "start_s": 5.358528000000001e7,
+              "end_s": 5.359126788000001e7,
+              "steps": 100,
+              "step_s": 5.987880000002682e1
+            },
+            {
+              "start_s": 5.359126788000001e7,
+              "end_s": 8.512128e7,
+              "steps": 365,
+              "step_s": 8.638359484931504e4
+            }
+          ],
+          "G_kernel_factor": [
+            {
+              "row_id": "S5-020",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 0e0,
+              "unit": "1",
+              "interpolation": "step",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "generation ceases at removal: the definition of the scenario"
+            },
+            {
+              "row_id": "S5-021",
+              "t_value": 8.76e3,
+              "t_unit": "h",
+              "t_s": 3.1536e7,
+              "value": 0e0,
+              "unit": "1",
+              "interpolation": "step",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "365 d of storage"
+            }
+          ],
+          "T_C": [
+            {
+              "row_id": "S5-022",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 1.028e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-059"
+              ],
+              "basis": "registered source row",
+              "reason": "Capsule 3 time-average volume-average temperature at removal"
+            },
+            {
+              "row_id": "S5-023",
+              "t_value": 1.6633e0,
+              "t_unit": "h",
+              "t_s": 5.98788e3,
+              "value": 3e1,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "TH-013"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "rate of -600 degC/h as the furnace cool-down of the AGR-1 safety test as modelled (TH-013), used only for its magnitude and not a reactor measurement"
+            },
+            {
+              "row_id": "S5-024",
+              "t_value": 8.76e3,
+              "t_unit": "h",
+              "t_s": 3.1536e7,
+              "value": 3e1,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "TH-013"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "held at 30 degC as above"
+            }
+          ],
+          "metadata": [
+            {
+              "row_id": "S5-001",
+              "key": "title",
+              "text": "Scenario 5: fuel removal (refuelling)",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-002",
+              "key": "physical_interpretation",
+              "text": "The particle leaves the reactor: generation stops permanently and the temperature drops to storage while diffusion and decay continue. STRATO does not simulate the mechanical process. As a labelled option the stored particle then follows the registered AGR-1 safety-test history.",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-003",
+              "key": "label",
+              "text": "prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation; refuelling itself (reinsertion, multi-pass irradiation, a changed neighbourhood) is not represented",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-004",
+              "key": "nuclides_meaningful",
+              "text": "Sr-90;Cs-137",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-005",
+              "key": "nuclides_not_meaningful",
+              "text": "Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-006",
+              "key": "initial_state",
+              "text": "the state of Scenario 1 at the end of irradiation; run as one continuous history from the fresh particle",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-007",
+              "key": "interpolation_rule",
+              "text": "linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly; times of this file are measured from the removal",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-008",
+              "key": "diffusivity_phase",
+              "text": "irradiation: C15 rows up to the end of storage; below 955 degC evaluated through diffusivity_extrapolated and labelled; in a heating variant the set switches to the heating-test rows C16 at the start of the heating history, when the temperature is at most 1250 degC",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-009",
+              "key": "rate_density_reference",
+              "text": "capsule:3",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002",
+                "IRR-059"
+              ]
+            },
+            {
+              "row_id": "S5-011",
+              "key": "lead_in",
+              "text": "S1",
+              "t_value": 6.202e2,
+              "t_unit": "d",
+              "basis": "registered source row",
+              "source_ids": [
+                "IRR-002"
+              ]
+            },
+            {
+              "row_id": "S5-012",
+              "key": "reference_continuation",
+              "text": "the reference curve continues Scenario 1 at generation factor 1 and the normal-operation temperature beyond the registered 620.2 EFPD for the same time as this scenario; a reference, not a registered irradiation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "prescribed input (assumed)",
+              "source_ids": []
+            }
+          ]
+        },
+        {
+          "variant": "exploration-1197C",
+          "rate_density_target": "compact:6-2-1",
+          "rate_density_per_m3_s": 6.6368518510019125e19,
+          "rate_density_label": "derived from published AGR-1 burnup (calculated)",
+          "normal_operation_temperature_c": 1.197e3,
+          "event_time_s": 5.358528000000001e7,
+          "end_time_s": 8.512128e7,
+          "total_steps": 1723,
+          "step_sequence": [
+            {
+              "start_s": 0e0,
+              "end_s": 5.358528000000001e7,
+              "steps": 1241,
+              "step_s": 4.317911361804997e4
+            },
+            {
+              "start_s": 5.358528000000001e7,
+              "end_s": 5.359228200000001e7,
+              "steps": 117,
+              "step_s": 5.984615384615385e1
+            },
+            {
+              "start_s": 5.359228200000001e7,
+              "end_s": 8.512128e7,
+              "steps": 365,
+              "step_s": 8.638081643835614e4
+            }
+          ],
+          "G_kernel_factor": [
+            {
+              "row_id": "S5-020",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 0e0,
+              "unit": "1",
+              "interpolation": "step",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "generation ceases at removal: the definition of the scenario"
+            },
+            {
+              "row_id": "S5-021",
+              "t_value": 8.76e3,
+              "t_unit": "h",
+              "t_s": 3.1536e7,
+              "value": 0e0,
+              "unit": "1",
+              "interpolation": "step",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "365 d of storage"
+            }
+          ],
+          "T_C": [
+            {
+              "row_id": "S5-030",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 1.197e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-097"
+              ],
+              "basis": "registered source row",
+              "reason": "compact time-average peak temperature of compact 6-2-1"
+            },
+            {
+              "row_id": "S5-031",
+              "t_value": 1.945e0,
+              "t_unit": "h",
+              "t_s": 7.002e3,
+              "value": 3e1,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "TH-013"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "the same -600 degC/h rate from 1197 degC: 1167 / 600 = 1.945 h"
+            },
+            {
+              "row_id": "S5-032",
+              "t_value": 8.76e3,
+              "t_unit": "h",
+              "t_s": 3.1536e7,
+              "value": 3e1,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "TH-013"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "held at 30 degC"
+            }
+          ],
+          "metadata": [
+            {
+              "row_id": "S5-001",
+              "key": "title",
+              "text": "Scenario 5: fuel removal (refuelling)",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-002",
+              "key": "physical_interpretation",
+              "text": "The particle leaves the reactor: generation stops permanently and the temperature drops to storage while diffusion and decay continue. STRATO does not simulate the mechanical process. As a labelled option the stored particle then follows the registered AGR-1 safety-test history.",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-003",
+              "key": "label",
+              "text": "prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation; refuelling itself (reinsertion, multi-pass irradiation, a changed neighbourhood) is not represented",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-004",
+              "key": "nuclides_meaningful",
+              "text": "Sr-90;Cs-137",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-005",
+              "key": "nuclides_not_meaningful",
+              "text": "Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-006",
+              "key": "initial_state",
+              "text": "the state of Scenario 1 at the end of irradiation; run as one continuous history from the fresh particle",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-007",
+              "key": "interpolation_rule",
+              "text": "linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly; times of this file are measured from the removal",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-008",
+              "key": "diffusivity_phase",
+              "text": "irradiation: C15 rows up to the end of storage; below 955 degC evaluated through diffusivity_extrapolated and labelled; in a heating variant the set switches to the heating-test rows C16 at the start of the heating history, when the temperature is at most 1250 degC",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-009",
+              "key": "rate_density_reference",
+              "text": "capsule:3",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002",
+                "IRR-059"
+              ]
+            },
+            {
+              "row_id": "S5-010",
+              "key": "rate_density_reference",
+              "text": "compact:6-2-1",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-097"
+              ]
+            },
+            {
+              "row_id": "S5-011",
+              "key": "lead_in",
+              "text": "S1",
+              "t_value": 6.202e2,
+              "t_unit": "d",
+              "basis": "registered source row",
+              "source_ids": [
+                "IRR-002"
+              ]
+            },
+            {
+              "row_id": "S5-012",
+              "key": "reference_continuation",
+              "text": "the reference curve continues Scenario 1 at generation factor 1 and the normal-operation temperature beyond the registered 620.2 EFPD for the same time as this scenario; a reference, not a registered irradiation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "prescribed input (assumed)",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-013",
+              "key": "label",
+              "text": "model exploration at the registered compact time-average peak temperature 1197 degC with the fission-rate density derived for the same compact; not experimental",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            }
+          ]
+        },
+        {
+          "variant": "heating-1600",
+          "rate_density_target": "capsule:3",
+          "rate_density_per_m3_s": 8.69978329835975e19,
+          "rate_density_label": "derived from published AGR-1 burnup (calculated)",
+          "normal_operation_temperature_c": 1.028e3,
+          "event_time_s": 5.358528000000001e7,
+          "end_time_s": 8.632289988000001e7,
+          "total_steps": 8383,
+          "step_sequence": [
+            {
+              "start_s": 0e0,
+              "end_s": 5.358528000000001e7,
+              "steps": 1241,
+              "step_s": 4.317911361804997e4
+            },
+            {
+              "start_s": 5.358528000000001e7,
+              "end_s": 5.359126788000001e7,
+              "steps": 100,
+              "step_s": 5.987880000002682e1
+            },
+            {
+              "start_s": 5.359126788000001e7,
+              "end_s": 8.512128e7,
+              "steps": 365,
+              "step_s": 8.638359484931504e4
+            },
+            {
+              "start_s": 8.512128e7,
+              "end_s": 8.513237988000001e7,
+              "steps": 62,
+              "step_s": 1.790303225808086e2
+            },
+            {
+              "start_s": 8.513237988000001e7,
+              "end_s": 8.513957988000001e7,
+              "steps": 40,
+              "step_s": 1.8e2
+            },
+            {
+              "start_s": 8.513957988000001e7,
+              "end_s": 8.516507976e7,
+              "steps": 142,
+              "step_s": 1.7957661971827628e2
+            },
+            {
+              "start_s": 8.516507976e7,
+              "end_s": 8.520827976e7,
+              "steps": 240,
+              "step_s": 1.8e2
+            },
+            {
+              "start_s": 8.520827976e7,
+              "end_s": 8.523347976e7,
+              "steps": 140,
+              "step_s": 1.8e2
+            },
+            {
+              "start_s": 8.523347976e7,
+              "end_s": 8.631347976e7,
+              "steps": 6000,
+              "step_s": 1.8e2
+            },
+            {
+              "start_s": 8.631347976e7,
+              "end_s": 8.632289988000001e7,
+              "steps": 53,
+              "step_s": 1.7773811320763713e2
+            }
+          ],
+          "G_kernel_factor": [
+            {
+              "row_id": "S5-020",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 0e0,
+              "unit": "1",
+              "interpolation": "step",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "generation ceases at removal: the definition of the scenario"
+            },
+            {
+              "row_id": "S5-021",
+              "t_value": 8.76e3,
+              "t_unit": "h",
+              "t_s": 3.1536e7,
+              "value": 0e0,
+              "unit": "1",
+              "interpolation": "step",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "365 d of storage"
+            }
+          ],
+          "T_C": [
+            {
+              "row_id": "S5-022",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 1.028e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-059"
+              ],
+              "basis": "registered source row",
+              "reason": "Capsule 3 time-average volume-average temperature at removal"
+            },
+            {
+              "row_id": "S5-023",
+              "t_value": 1.6633e0,
+              "t_unit": "h",
+              "t_s": 5.98788e3,
+              "value": 3e1,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "TH-013"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "rate of -600 degC/h as the furnace cool-down of the AGR-1 safety test as modelled (TH-013), used only for its magnitude and not a reactor measurement"
+            },
+            {
+              "row_id": "S5-024",
+              "t_value": 8.76e3,
+              "t_unit": "h",
+              "t_s": 3.1536e7,
+              "value": 3e1,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "TH-013"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "held at 30 degC as above"
+            }
+          ],
+          "metadata": [
+            {
+              "row_id": "S5-001",
+              "key": "title",
+              "text": "Scenario 5: fuel removal (refuelling)",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-002",
+              "key": "physical_interpretation",
+              "text": "The particle leaves the reactor: generation stops permanently and the temperature drops to storage while diffusion and decay continue. STRATO does not simulate the mechanical process. As a labelled option the stored particle then follows the registered AGR-1 safety-test history.",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-003",
+              "key": "label",
+              "text": "prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation; refuelling itself (reinsertion, multi-pass irradiation, a changed neighbourhood) is not represented",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-004",
+              "key": "nuclides_meaningful",
+              "text": "Sr-90;Cs-137",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-005",
+              "key": "nuclides_not_meaningful",
+              "text": "Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-006",
+              "key": "initial_state",
+              "text": "the state of Scenario 1 at the end of irradiation; run as one continuous history from the fresh particle",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-007",
+              "key": "interpolation_rule",
+              "text": "linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly; times of this file are measured from the removal",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-008",
+              "key": "diffusivity_phase",
+              "text": "irradiation: C15 rows up to the end of storage; below 955 degC evaluated through diffusivity_extrapolated and labelled; in a heating variant the set switches to the heating-test rows C16 at the start of the heating history, when the temperature is at most 1250 degC",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-009",
+              "key": "rate_density_reference",
+              "text": "capsule:3",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002",
+                "IRR-059"
+              ]
+            },
+            {
+              "row_id": "S5-011",
+              "key": "lead_in",
+              "text": "S1",
+              "t_value": 6.202e2,
+              "t_unit": "d",
+              "basis": "registered source row",
+              "source_ids": [
+                "IRR-002"
+              ]
+            },
+            {
+              "row_id": "S5-012",
+              "key": "reference_continuation",
+              "text": "the reference curve continues Scenario 1 at generation factor 1 and the normal-operation temperature beyond the registered 620.2 EFPD for the same time as this scenario; a reference, not a registered irradiation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "prescribed input (assumed)",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-014",
+              "key": "heating_history",
+              "text": "AGR1-ST-C16-1600",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "registered source row",
+              "source_ids": [
+                "TH-007",
+                "TH-008",
+                "TH-009",
+                "TH-010",
+                "TH-011",
+                "TH-012",
+                "TH-013"
+              ]
+            },
+            {
+              "row_id": "S5-017",
+              "key": "storage_before_heating",
+              "text": "the time between the end of irradiation and the AGR-1 tests is not registered; the storage of the base history is used",
+              "t_value": 8.76e3,
+              "t_unit": "h",
+              "basis": "prescribed input (assumed)",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-044",
+              "key": "heating_dt_max",
+              "text": "largest step in each registered heating-history segment",
+              "t_value": null,
+              "t_unit": "h",
+              "basis": "numerical setting (chosen; refinement-checked per Section 3.5)",
+              "source_ids": []
+            }
+          ]
+        },
+        {
+          "variant": "heating-1700",
+          "rate_density_target": "capsule:3",
+          "rate_density_per_m3_s": 8.69978329835975e19,
+          "rate_density_label": "derived from published AGR-1 burnup (calculated)",
+          "normal_operation_temperature_c": 1.028e3,
+          "event_time_s": 5.358528000000001e7,
+          "end_time_s": 8.633069964e7,
+          "total_steps": 8426,
+          "step_sequence": [
+            {
+              "start_s": 0e0,
+              "end_s": 5.358528000000001e7,
+              "steps": 1241,
+              "step_s": 4.317911361804997e4
+            },
+            {
+              "start_s": 5.358528000000001e7,
+              "end_s": 5.359126788000001e7,
+              "steps": 100,
+              "step_s": 5.987880000002682e1
+            },
+            {
+              "start_s": 5.359126788000001e7,
+              "end_s": 8.512128e7,
+              "steps": 365,
+              "step_s": 8.638359484931504e4
+            },
+            {
+              "start_s": 8.512128e7,
+              "end_s": 8.513237988000001e7,
+              "steps": 62,
+              "step_s": 1.790303225808086e2
+            },
+            {
+              "start_s": 8.513237988000001e7,
+              "end_s": 8.513957988000001e7,
+              "steps": 40,
+              "step_s": 1.8e2
+            },
+            {
+              "start_s": 8.513957988000001e7,
+              "end_s": 8.516507976e7,
+              "steps": 142,
+              "step_s": 1.7957661971827628e2
+            },
+            {
+              "start_s": 8.516507976e7,
+              "end_s": 8.520827976e7,
+              "steps": 240,
+              "step_s": 1.8e2
+            },
+            {
+              "start_s": 8.520827976e7,
+              "end_s": 8.524067976e7,
+              "steps": 180,
+              "step_s": 1.8e2
+            },
+            {
+              "start_s": 8.524067976e7,
+              "end_s": 8.632067976e7,
+              "steps": 6000,
+              "step_s": 1.8e2
+            },
+            {
+              "start_s": 8.632067976e7,
+              "end_s": 8.633069964e7,
+              "steps": 56,
+              "step_s": 1.7892642857134342e2
+            }
+          ],
+          "G_kernel_factor": [
+            {
+              "row_id": "S5-020",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 0e0,
+              "unit": "1",
+              "interpolation": "step",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "generation ceases at removal: the definition of the scenario"
+            },
+            {
+              "row_id": "S5-021",
+              "t_value": 8.76e3,
+              "t_unit": "h",
+              "t_s": 3.1536e7,
+              "value": 0e0,
+              "unit": "1",
+              "interpolation": "step",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "365 d of storage"
+            }
+          ],
+          "T_C": [
+            {
+              "row_id": "S5-022",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 1.028e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-059"
+              ],
+              "basis": "registered source row",
+              "reason": "Capsule 3 time-average volume-average temperature at removal"
+            },
+            {
+              "row_id": "S5-023",
+              "t_value": 1.6633e0,
+              "t_unit": "h",
+              "t_s": 5.98788e3,
+              "value": 3e1,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "TH-013"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "rate of -600 degC/h as the furnace cool-down of the AGR-1 safety test as modelled (TH-013), used only for its magnitude and not a reactor measurement"
+            },
+            {
+              "row_id": "S5-024",
+              "t_value": 8.76e3,
+              "t_unit": "h",
+              "t_s": 3.1536e7,
+              "value": 3e1,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "TH-013"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "held at 30 degC as above"
+            }
+          ],
+          "metadata": [
+            {
+              "row_id": "S5-001",
+              "key": "title",
+              "text": "Scenario 5: fuel removal (refuelling)",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-002",
+              "key": "physical_interpretation",
+              "text": "The particle leaves the reactor: generation stops permanently and the temperature drops to storage while diffusion and decay continue. STRATO does not simulate the mechanical process. As a labelled option the stored particle then follows the registered AGR-1 safety-test history.",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-003",
+              "key": "label",
+              "text": "prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation; refuelling itself (reinsertion, multi-pass irradiation, a changed neighbourhood) is not represented",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-004",
+              "key": "nuclides_meaningful",
+              "text": "Sr-90;Cs-137",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-005",
+              "key": "nuclides_not_meaningful",
+              "text": "Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-006",
+              "key": "initial_state",
+              "text": "the state of Scenario 1 at the end of irradiation; run as one continuous history from the fresh particle",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-007",
+              "key": "interpolation_rule",
+              "text": "linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly; times of this file are measured from the removal",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-008",
+              "key": "diffusivity_phase",
+              "text": "irradiation: C15 rows up to the end of storage; below 955 degC evaluated through diffusivity_extrapolated and labelled; in a heating variant the set switches to the heating-test rows C16 at the start of the heating history, when the temperature is at most 1250 degC",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-009",
+              "key": "rate_density_reference",
+              "text": "capsule:3",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002",
+                "IRR-059"
+              ]
+            },
+            {
+              "row_id": "S5-011",
+              "key": "lead_in",
+              "text": "S1",
+              "t_value": 6.202e2,
+              "t_unit": "d",
+              "basis": "registered source row",
+              "source_ids": [
+                "IRR-002"
+              ]
+            },
+            {
+              "row_id": "S5-012",
+              "key": "reference_continuation",
+              "text": "the reference curve continues Scenario 1 at generation factor 1 and the normal-operation temperature beyond the registered 620.2 EFPD for the same time as this scenario; a reference, not a registered irradiation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "prescribed input (assumed)",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-015",
+              "key": "heating_history",
+              "text": "AGR1-ST-C16-1700",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "registered source row",
+              "source_ids": [
+                "TH-014",
+                "TH-015",
+                "TH-016",
+                "TH-017",
+                "TH-018",
+                "TH-019",
+                "TH-020"
+              ]
+            },
+            {
+              "row_id": "S5-018",
+              "key": "storage_before_heating",
+              "text": "as for 1600 degC",
+              "t_value": 8.76e3,
+              "t_unit": "h",
+              "basis": "prescribed input (assumed)",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-045",
+              "key": "heating_dt_max",
+              "text": "largest step in each registered heating-history segment",
+              "t_value": null,
+              "t_unit": "h",
+              "basis": "numerical setting (chosen; refinement-checked per Section 3.5)",
+              "source_ids": []
+            }
+          ]
+        },
+        {
+          "variant": "heating-1800",
+          "rate_density_target": "capsule:3",
+          "rate_density_per_m3_s": 8.69978329835975e19,
+          "rate_density_label": "derived from published AGR-1 burnup (calculated)",
+          "normal_operation_temperature_c": 1.028e3,
+          "event_time_s": 5.358528000000001e7,
+          "end_time_s": 8.633849976e7,
+          "total_steps": 8469,
+          "step_sequence": [
+            {
+              "start_s": 0e0,
+              "end_s": 5.358528000000001e7,
+              "steps": 1241,
+              "step_s": 4.317911361804997e4
+            },
+            {
+              "start_s": 5.358528000000001e7,
+              "end_s": 5.359126788000001e7,
+              "steps": 100,
+              "step_s": 5.987880000002682e1
+            },
+            {
+              "start_s": 5.359126788000001e7,
+              "end_s": 8.512128e7,
+              "steps": 365,
+              "step_s": 8.638359484931504e4
+            },
+            {
+              "start_s": 8.512128e7,
+              "end_s": 8.513237988000001e7,
+              "steps": 62,
+              "step_s": 1.790303225808086e2
+            },
+            {
+              "start_s": 8.513237988000001e7,
+              "end_s": 8.513957988000001e7,
+              "steps": 40,
+              "step_s": 1.8e2
+            },
+            {
+              "start_s": 8.513957988000001e7,
+              "end_s": 8.516507976e7,
+              "steps": 142,
+              "step_s": 1.7957661971827628e2
+            },
+            {
+              "start_s": 8.516507976e7,
+              "end_s": 8.520827976e7,
+              "steps": 240,
+              "step_s": 1.8e2
+            },
+            {
+              "start_s": 8.520827976e7,
+              "end_s": 8.524787976e7,
+              "steps": 220,
+              "step_s": 1.8e2
+            },
+            {
+              "start_s": 8.524787976e7,
+              "end_s": 8.632787976e7,
+              "steps": 6000,
+              "step_s": 1.8e2
+            },
+            {
+              "start_s": 8.632787976e7,
+              "end_s": 8.633849976e7,
+              "steps": 59,
+              "step_s": 1.8e2
+            }
+          ],
+          "G_kernel_factor": [
+            {
+              "row_id": "S5-020",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 0e0,
+              "unit": "1",
+              "interpolation": "step",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "generation ceases at removal: the definition of the scenario"
+            },
+            {
+              "row_id": "S5-021",
+              "t_value": 8.76e3,
+              "t_unit": "h",
+              "t_s": 3.1536e7,
+              "value": 0e0,
+              "unit": "1",
+              "interpolation": "step",
+              "source_ids": [],
+              "basis": "prescribed input (assumed)",
+              "reason": "365 d of storage"
+            }
+          ],
+          "T_C": [
+            {
+              "row_id": "S5-022",
+              "t_value": 0e0,
+              "t_unit": "h",
+              "t_s": 0e0,
+              "value": 1.028e3,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "IRR-059"
+              ],
+              "basis": "registered source row",
+              "reason": "Capsule 3 time-average volume-average temperature at removal"
+            },
+            {
+              "row_id": "S5-023",
+              "t_value": 1.6633e0,
+              "t_unit": "h",
+              "t_s": 5.98788e3,
+              "value": 3e1,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "TH-013"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "rate of -600 degC/h as the furnace cool-down of the AGR-1 safety test as modelled (TH-013), used only for its magnitude and not a reactor measurement"
+            },
+            {
+              "row_id": "S5-024",
+              "t_value": 8.76e3,
+              "t_unit": "h",
+              "t_s": 3.1536e7,
+              "value": 3e1,
+              "unit": "degC",
+              "interpolation": "linear",
+              "source_ids": [
+                "TH-013"
+              ],
+              "basis": "prescribed input (assumed)",
+              "reason": "held at 30 degC as above"
+            }
+          ],
+          "metadata": [
+            {
+              "row_id": "S5-001",
+              "key": "title",
+              "text": "Scenario 5: fuel removal (refuelling)",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-002",
+              "key": "physical_interpretation",
+              "text": "The particle leaves the reactor: generation stops permanently and the temperature drops to storage while diffusion and decay continue. STRATO does not simulate the mechanical process. As a labelled option the stored particle then follows the registered AGR-1 safety-test history.",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-003",
+              "key": "label",
+              "text": "prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation; refuelling itself (reinsertion, multi-pass irradiation, a changed neighbourhood) is not represented",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-004",
+              "key": "nuclides_meaningful",
+              "text": "Sr-90;Cs-137",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-005",
+              "key": "nuclides_not_meaningful",
+              "text": "Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-006",
+              "key": "initial_state",
+              "text": "the state of Scenario 1 at the end of irradiation; run as one continuous history from the fresh particle",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-007",
+              "key": "interpolation_rule",
+              "text": "linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly; times of this file are measured from the removal",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-008",
+              "key": "diffusivity_phase",
+              "text": "irradiation: C15 rows up to the end of storage; below 955 degC evaluated through diffusivity_extrapolated and labelled; in a heating variant the set switches to the heating-test rows C16 at the start of the heating history, when the temperature is at most 1250 degC",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-009",
+              "key": "rate_density_reference",
+              "text": "capsule:3",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "derived from published AGR-1 burnup (calculated)",
+              "source_ids": [
+                "IRR-053",
+                "IRR-002",
+                "IRR-059"
+              ]
+            },
+            {
+              "row_id": "S5-011",
+              "key": "lead_in",
+              "text": "S1",
+              "t_value": 6.202e2,
+              "t_unit": "d",
+              "basis": "registered source row",
+              "source_ids": [
+                "IRR-002"
+              ]
+            },
+            {
+              "row_id": "S5-012",
+              "key": "reference_continuation",
+              "text": "the reference curve continues Scenario 1 at generation factor 1 and the normal-operation temperature beyond the registered 620.2 EFPD for the same time as this scenario; a reference, not a registered irradiation",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "prescribed input (assumed)",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-016",
+              "key": "heating_history",
+              "text": "AGR1-ST-C16-1800",
+              "t_value": null,
+              "t_unit": "",
+              "basis": "registered source row",
+              "source_ids": [
+                "TH-021",
+                "TH-022",
+                "TH-023",
+                "TH-024",
+                "TH-025",
+                "TH-026",
+                "TH-027"
+              ]
+            },
+            {
+              "row_id": "S5-019",
+              "key": "storage_before_heating",
+              "text": "as for 1600 degC",
+              "t_value": 8.76e3,
+              "t_unit": "h",
+              "basis": "prescribed input (assumed)",
+              "source_ids": []
+            },
+            {
+              "row_id": "S5-046",
+              "key": "heating_dt_max",
+              "text": "largest step in each registered heating-history segment",
+              "t_value": null,
+              "t_unit": "h",
+              "basis": "numerical setting (chosen; refinement-checked per Section 3.5)",
+              "source_ids": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

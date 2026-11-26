@@ -1,0 +1,188 @@
+{
+  "schema_version": "1",
+  "what": "numerical verification: convergence orders",
+  "provenance": {
+    "label": "numerical solution of the stated model; not experimental validation",
+    "solver": "STRATO BTCS five-layer spherical finite difference",
+    "solver_version": "1.0.1",
+    "pipeline": "strato-results 0.1.0",
+    "schema_version": "1",
+    "commit": "6e52ee0",
+    "solver_source_sha256": "acc5acc5b3fa6143504c93c62e99586ae33fb7308d9c20a2e0f1e935c32a010d",
+    "input_sha256": {
+      "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
+      "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
+      "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
+      "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
+      "temperature_histories.csv": "6ab3201672afd15f92ec9e529318377c829afaa5804288a3a694032145ab4af0",
+      "release_measurements.csv": "873352515ae4c64d57acce407100e40c1b11d8bbfde80beb948a98adb96ef2f2",
+      "agr1_irradiation_conditions.csv": "31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d",
+      "agr1_burnup_by_cycle.csv": "e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f",
+      "agr1_power_history_digitised.csv": "25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a",
+      "scenarios/s1_normal_operation.csv": "13dc0e4a301893a3aa47b669d6972dbd1dd50b72afb8817dcf6582890e47d77f",
+      "scenarios/s2_shutdown_cooldown.csv": "49bdaa0f434666efe9a6536ab407114d526aac81495a4e91bc7ddace9e3cce8f",
+      "scenarios/s3_startup.csv": "7f72d73cf0ac00aa1501c9e576fa2096f225f271c2f26ea535923fd35988bdac",
+      "scenarios/s4_control_rod_insertion.csv": "78a939b1ed4b940e56efb764c01a4b32e3ea3f2c5808fdd252e2073d142543b0",
+      "scenarios/s5_fuel_removal.csv": "1faace1e655c8b79999dc0ff85737ffe2bd7bde60da774f0b6b759081b77ea19"
+    }
+  },
+  "case": "synthetic homogeneous verification case against the exact series (numerical verification, not experimental data); the solver of every stage shares its spatial and temporal operators with this case",
+  "spatial": [
+    {
+      "level": 1,
+      "step": 4.375e-5,
+      "count": 16,
+      "release_fraction_solver": 4.0841675644559094e-1,
+      "release_fraction_analytical": 4.0565140255997045e-1,
+      "analytical_truncation_bound": 3.557962413313863e-17,
+      "absolute_error": 2.7653538856204918e-3,
+      "observed_order": null
+    },
+    {
+      "level": 2,
+      "step": 2.1875e-5,
+      "count": 31,
+      "release_fraction_solver": 4.0634596099559e-1,
+      "release_fraction_analytical": 4.0565140255997045e-1,
+      "analytical_truncation_bound": 3.557962413313863e-17,
+      "absolute_error": 6.945584356195522e-4,
+      "observed_order": 1.9932961322890759e0
+    },
+    {
+      "level": 4,
+      "step": 1.09375e-5,
+      "count": 61,
+      "release_fraction_solver": 4.058251859751901e-1,
+      "release_fraction_analytical": 4.0565140255997045e-1,
+      "analytical_truncation_bound": 3.557962413313863e-17,
+      "absolute_error": 1.7378341521961937e-4,
+      "observed_order": 1.9988056711584796e0
+    },
+    {
+      "level": 8,
+      "step": 5.46875e-6,
+      "count": 121,
+      "release_fraction_solver": 4.056948331068444e-1,
+      "release_fraction_analytical": 4.0565140255997045e-1,
+      "analytical_truncation_bound": 3.557962413313863e-17,
+      "absolute_error": 4.3430546873945985e-5,
+      "observed_order": 2.0005083827930608e0
+    },
+    {
+      "level": 16,
+      "step": 2.734375e-6,
+      "count": 241,
+      "release_fraction_solver": 4.0566223543646124e-1,
+      "release_fraction_analytical": 4.0565140255997045e-1,
+      "analytical_truncation_bound": 3.557962413313863e-17,
+      "absolute_error": 1.0832876490785015e-5,
+      "observed_order": 2.003293741636032e0
+    },
+    {
+      "level": 32,
+      "step": 1.3671875e-6,
+      "count": 481,
+      "release_fraction_solver": 4.056540854356061e-1,
+      "release_fraction_analytical": 4.0565140255997045e-1,
+      "analytical_truncation_bound": 3.557962413313863e-17,
+      "absolute_error": 2.682875635651172e-6,
+      "observed_order": 2.013564292248526e0
+    }
+  ],
+  "temporal": [
+    {
+      "level": 1,
+      "step": 1.44e4,
+      "count": 25,
+      "release_fraction_solver": 3.990801959007087e-1,
+      "release_fraction_analytical": 4.0565140255997045e-1,
+      "analytical_truncation_bound": 3.557962413313863e-17,
+      "absolute_error": 6.571206659261752e-3,
+      "observed_order": null
+    },
+    {
+      "level": 2,
+      "step": 7.2e3,
+      "count": 50,
+      "release_fraction_solver": 4.0226843417864844e-1,
+      "release_fraction_analytical": 4.0565140255997045e-1,
+      "analytical_truncation_bound": 3.557962413313863e-17,
+      "absolute_error": 3.3829683813220157e-3,
+      "observed_order": 9.578686213113489e-1
+    },
+    {
+      "level": 4,
+      "step": 3.6e3,
+      "count": 100,
+      "release_fraction_solver": 4.0393541049261183e-1,
+      "release_fraction_analytical": 4.0565140255997045e-1,
+      "analytical_truncation_bound": 3.557962413313863e-17,
+      "absolute_error": 1.7159920673586182e-3,
+      "observed_order": 9.79246809544815e-1
+    },
+    {
+      "level": 8,
+      "step": 1.8e3,
+      "count": 200,
+      "release_fraction_solver": 4.047881452285681e-1,
+      "release_fraction_analytical": 4.0565140255997045e-1,
+      "analytical_truncation_bound": 3.557962413313863e-17,
+      "absolute_error": 8.632573314023562e-4,
+      "observed_order": 9.911802969539327e-1
+    },
+    {
+      "level": 16,
+      "step": 9e2,
+      "count": 400,
+      "release_fraction_solver": 4.052194578911148e-1,
+      "release_fraction_analytical": 4.0565140255997045e-1,
+      "analytical_truncation_bound": 3.557962413313863e-17,
+      "absolute_error": 4.3194466885565497e-4,
+      "observed_order": 9.989441633131217e-1
+    },
+    {
+      "level": 32,
+      "step": 4.5e2,
+      "count": 800,
+      "release_fraction_solver": 4.0543636754294893e-1,
+      "release_fraction_analytical": 4.0565140255997045e-1,
+      "analytical_truncation_bound": 3.557962413313863e-17,
+      "absolute_error": 2.150350170215254e-4,
+      "observed_order": 1.0062749059896894e0
+    },
+    {
+      "level": 64,
+      "step": 2.25e2,
+      "count": 1600,
+      "release_fraction_solver": 4.055451378420835e-1,
+      "release_fraction_analytical": 4.0565140255997045e-1,
+      "analytical_truncation_bound": 3.557962413313863e-17,
+      "absolute_error": 1.0626471788693914e-4,
+      "observed_order": 1.016908940845399e0
+    },
+    {
+      "level": 128,
+      "step": 1.125e2,
+      "count": 3200,
+      "release_fraction_solver": 4.0559960212876695e-1,
+      "release_fraction_analytical": 4.0565140255997045e-1,
+      "analytical_truncation_bound": 3.557962413313863e-17,
+      "absolute_error": 5.180043120350808e-5,
+      "observed_order": 1.0366266588531536e0
+    },
+    {
+      "level": 256,
+      "step": 5.625e1,
+      "count": 6400,
+      "release_fraction_solver": 4.0562685409019805e-1,
+      "release_fraction_analytical": 4.0565140255997045e-1,
+      "analytical_truncation_bound": 3.557962413313863e-17,
+      "absolute_error": 2.454846977240077e-5,
+      "observed_order": 1.077331010399304e0
+    }
+  ],
+  "last_spatial_order": 2.013564292248526e0,
+  "last_temporal_order": 1.077331010399304e0,
+  "expected_orders": "second order in space and first order in time (Documents 1 and 2)",
+  "stages_2_to_5": "the orders of generation, decay and temperature-dependent diffusion are asserted by tests/btcs_physics.rs (observed orders 1 in time and 2 in space for the combined scheme) and are not recomputed here"
+}

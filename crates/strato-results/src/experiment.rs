@@ -240,7 +240,9 @@ pub fn bounds(
         }
         if is_matrix_corrected(nuc.id, &row.id) {
             // Decision 67: a window upper bound under BP1, never a point.
-            if let Plan::Point { spec, .. } = &rec.verdict.plan {
+            // The comparison program plans these rows as a point or as a provisional model value
+            // (before the register fixes the denominator); the window is the same.
+            if let Plan::Point { spec, .. } | Plan::Provisional { spec, .. } = &rec.verdict.plan {
                 cands.push(Cand {
                     row,
                     nuc,

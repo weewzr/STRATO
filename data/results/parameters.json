@@ -1,0 +1,1219 @@
+{
+  "schema_version": "1",
+  "what": "materials, coefficients and inputs with class and source row",
+  "provenance": {
+    "label": "numerical solution of the stated model; not experimental validation",
+    "solver": "STRATO BTCS five-layer spherical finite difference",
+    "solver_version": "1.0.1",
+    "pipeline": "strato-results 0.1.0",
+    "schema_version": "1",
+    "commit": "6e52ee0",
+    "solver_source_sha256": "acc5acc5b3fa6143504c93c62e99586ae33fb7308d9c20a2e0f1e935c32a010d",
+    "input_sha256": {
+      "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
+      "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
+      "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
+      "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
+      "temperature_histories.csv": "6ab3201672afd15f92ec9e529318377c829afaa5804288a3a694032145ab4af0",
+      "release_measurements.csv": "873352515ae4c64d57acce407100e40c1b11d8bbfde80beb948a98adb96ef2f2",
+      "agr1_irradiation_conditions.csv": "31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d",
+      "agr1_burnup_by_cycle.csv": "e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f",
+      "agr1_power_history_digitised.csv": "25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a",
+      "scenarios/s1_normal_operation.csv": "13dc0e4a301893a3aa47b669d6972dbd1dd50b72afb8817dcf6582890e47d77f",
+      "scenarios/s2_shutdown_cooldown.csv": "49bdaa0f434666efe9a6536ab407114d526aac81495a4e91bc7ddace9e3cce8f",
+      "scenarios/s3_startup.csv": "7f72d73cf0ac00aa1501c9e576fa2096f225f271c2f26ea535923fd35988bdac",
+      "scenarios/s4_control_rod_insertion.csv": "78a939b1ed4b940e56efb764c01a4b32e3ea3f2c5808fdd252e2073d142543b0",
+      "scenarios/s5_fuel_removal.csv": "1faace1e655c8b79999dc0ff85737ffe2bd7bde60da774f0b6b759081b77ea19"
+    }
+  },
+  "geometry": {
+    "design": "AGR1-B-M16",
+    "outer_radii_m": [1.75e-4,2.785e-4,3.179e-4,3.5319999999999997e-4,3.942e-4],
+    "register_rows": [
+      "G-01",
+      "G-02",
+      "G-03",
+      "G-04",
+      "G-05"
+    ],
+    "layers": [
+      "kernel",
+      "buffer",
+      "IPyC",
+      "SiC",
+      "OPyC"
+    ]
+  },
+  "diffusivity": [
+    {
+      "element": "Ag",
+      "heating_test_rows": [
+        {
+          "layer": "kernel",
+          "register_rows": [
+            "C16-01"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "heating test",
+          "source": "Collin et al. (2016)",
+          "source_location": "6.pdf Table 2; printed p. 381; idx 3",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "UO2 coefficient used for the UCO kernel; no UCO measurement exists",
+            "referred to a 250 um kernel radius and applied unscaled, as the published AGR-1 modelling does"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 1.6e3,
+              "diffusivity_m2_s": 1.678793071604177e-13,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.7e3,
+              "diffusivity_m2_s": 2.871980919431712e-13,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.8e3,
+              "diffusivity_m2_s": 4.665200063364456e-13,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "buffer",
+          "register_rows": [
+            "C16-22"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "heating test",
+          "source": "Collin et al. (2016)",
+          "source_location": "6.pdf Table 2 note; printed p. 381; idx 3",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "modelling convention: the buffer is taken as non-retentive"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 1.6e3,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.7e3,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.8e3,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "IPyC",
+          "register_rows": [
+            "C16-02"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "heating test",
+          "source": "Collin et al. (2016)",
+          "source_location": "6.pdf Table 2; printed p. 381; idx 3",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 1.6e3,
+              "diffusivity_m2_s": 2.691142804624656e-13,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.7e3,
+              "diffusivity_m2_s": 4.4419687680746096e-13,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.8e3,
+              "diffusivity_m2_s": 6.985834753648265e-13,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "SiC",
+          "register_rows": [
+            "C16-03"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "heating test",
+          "source": "Collin et al. (2016)",
+          "source_location": "6.pdf Table 2; printed p. 381; idx 3",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "the published correlation over-estimates the silver release of AGR-1 (factor about 1000 at 1600 to 1700 C and 100 at 1800 C, Collin 2016)"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 1.6e3,
+              "diffusivity_m2_s": 3.638806119652386e-15,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.7e3,
+              "diffusivity_m2_s": 7.324959578150807e-15,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.8e3,
+              "diffusivity_m2_s": 1.3782849770485904e-14,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "OPyC",
+          "register_rows": [
+            "C16-02"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "heating test",
+          "source": "Collin et al. (2016)",
+          "source_location": "6.pdf Table 2; printed p. 381; idx 3",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 1.6e3,
+              "diffusivity_m2_s": 2.691142804624656e-13,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.7e3,
+              "diffusivity_m2_s": 4.4419687680746096e-13,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.8e3,
+              "diffusivity_m2_s": 6.985834753648265e-13,
+              "range": "no range printed"
+            }
+          ]
+        }
+      ],
+      "irradiation_rows": [
+        {
+          "layer": "kernel",
+          "register_rows": [
+            "C15-01"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "irradiation",
+          "source": "Collin et al. (2015)",
+          "source_location": "INL/JOU-15-35343 accepted manuscript Table 2; manuscript PDF p. 23; R_g on p. 5; published J. Nucl. Mater. 466 (2015) 426-442, published page NOT VERIFIED",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "UO2 coefficient used for the UCO kernel; no UCO measurement exists",
+            "referred to a 250 um kernel radius and applied unscaled, as the published AGR-1 modelling does"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 9.55e2,
+              "diffusivity_m2_s": 6.435799868272975e-16,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.028e3,
+              "diffusivity_m2_s": 1.5933541181714683e-15,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.136e3,
+              "diffusivity_m2_s": 5.12826386770659e-15,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.197e3,
+              "diffusivity_m2_s": 9.199029237905348e-15,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "buffer",
+          "register_rows": [
+            "C15-13"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "irradiation",
+          "source": "Collin et al. (2015)",
+          "source_location": "INL/JOU-15-35343 accepted manuscript Table 2 note; manuscript PDF p. 23; published page NOT VERIFIED",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "modelling convention: the buffer is taken as non-retentive"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 9.55e2,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.028e3,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.136e3,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.197e3,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "IPyC",
+          "register_rows": [
+            "C15-02"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "irradiation",
+          "source": "Collin et al. (2015)",
+          "source_location": "INL/JOU-15-35343 accepted manuscript Table 2; manuscript PDF p. 23; R_g on p. 5; published J. Nucl. Mater. 466 (2015) 426-442, published page NOT VERIFIED",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 9.55e2,
+              "diffusivity_m2_s": 1.4949789658873144e-15,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.028e3,
+              "diffusivity_m2_s": 3.484155587001458e-15,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.136e3,
+              "diffusivity_m2_s": 1.037317550836502e-14,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.197e3,
+              "diffusivity_m2_s": 1.7896382484703248e-14,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "SiC",
+          "register_rows": [
+            "C15-03"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "irradiation",
+          "source": "Collin et al. (2015)",
+          "source_location": "INL/JOU-15-35343 accepted manuscript Table 2; manuscript PDF p. 23; R_g on p. 5; published J. Nucl. Mater. 466 (2015) 426-442, published page NOT VERIFIED",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "the published correlation over-estimates the silver release of AGR-1 (factor about 1000 at 1600 to 1700 C and 100 at 1800 C, Collin 2016)"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 9.55e2,
+              "diffusivity_m2_s": 2.584184275201593e-18,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.028e3,
+              "diffusivity_m2_s": 8.420526540124998e-18,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.136e3,
+              "diffusivity_m2_s": 3.8621850593992176e-17,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.197e3,
+              "diffusivity_m2_s": 8.269994321850343e-17,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "OPyC",
+          "register_rows": [
+            "C15-02"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "irradiation",
+          "source": "Collin et al. (2015)",
+          "source_location": "INL/JOU-15-35343 accepted manuscript Table 2; manuscript PDF p. 23; R_g on p. 5; published J. Nucl. Mater. 466 (2015) 426-442, published page NOT VERIFIED",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 9.55e2,
+              "diffusivity_m2_s": 1.4949789658873144e-15,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.028e3,
+              "diffusivity_m2_s": 3.484155587001458e-15,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.136e3,
+              "diffusivity_m2_s": 1.037317550836502e-14,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.197e3,
+              "diffusivity_m2_s": 1.7896382484703248e-14,
+              "range": "no range printed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "element": "Cs",
+      "heating_test_rows": [
+        {
+          "layer": "kernel",
+          "register_rows": [
+            "C16-05",
+            "C16-06"
+          ],
+          "terms": 2,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "heating test",
+          "source": "Collin et al. (2016)",
+          "source_location": "6.pdf Table 2; printed p. 381; idx 3",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "UO2 coefficient used for the UCO kernel; no UCO measurement exists",
+            "referred to a 250 um kernel radius and applied unscaled, as the published AGR-1 modelling does"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 1.6e3,
+              "diffusivity_m2_s": 1.2503921785549537e-13,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.7e3,
+              "diffusivity_m2_s": 3.0012259266696594e-13,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.8e3,
+              "diffusivity_m2_s": 6.975316764853693e-13,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "buffer",
+          "register_rows": [
+            "C16-22"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "heating test",
+          "source": "Collin et al. (2016)",
+          "source_location": "6.pdf Table 2 note; printed p. 381; idx 3",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "modelling convention: the buffer is taken as non-retentive"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 1.6e3,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.7e3,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.8e3,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "IPyC",
+          "register_rows": [
+            "C16-07"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "heating test",
+          "source": "Collin et al. (2016)",
+          "source_location": "6.pdf Table 2; printed p. 381; idx 3",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 1.6e3,
+              "diffusivity_m2_s": 4.062559476131478e-14,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.7e3,
+              "diffusivity_m2_s": 8.366401818753649e-14,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.8e3,
+              "diffusivity_m2_s": 1.6069812828229939e-13,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "SiC",
+          "register_rows": [
+            "C16-08",
+            "C16-09"
+          ],
+          "terms": 2,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "heating test",
+          "source": "Collin et al. (2016)",
+          "source_location": "6.pdf Table 2; printed p. 381; idx 3",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "fluence factor not applied; correlation form under source review"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 1.6e3,
+              "diffusivity_m2_s": 9.228940631020239e-17,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.7e3,
+              "diffusivity_m2_s": 4.2279466969137135e-16,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.8e3,
+              "diffusivity_m2_s": 1.832890105188039e-15,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "OPyC",
+          "register_rows": [
+            "C16-07"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "heating test",
+          "source": "Collin et al. (2016)",
+          "source_location": "6.pdf Table 2; printed p. 381; idx 3",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 1.6e3,
+              "diffusivity_m2_s": 4.062559476131478e-14,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.7e3,
+              "diffusivity_m2_s": 8.366401818753649e-14,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.8e3,
+              "diffusivity_m2_s": 1.6069812828229939e-13,
+              "range": "no range printed"
+            }
+          ]
+        }
+      ],
+      "irradiation_rows": [
+        {
+          "layer": "kernel",
+          "register_rows": [
+            "C15-05"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "irradiation",
+          "source": "Collin et al. (2015)",
+          "source_location": "INL/JOU-15-35343 accepted manuscript Table 2; manuscript PDF p. 23; R_g on p. 5; published J. Nucl. Mater. 466 (2015) 426-442, published page NOT VERIFIED",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "UO2 coefficient used for the UCO kernel; no UCO measurement exists",
+            "referred to a 250 um kernel radius and applied unscaled, as the published AGR-1 modelling does"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 9.55e2,
+              "diffusivity_m2_s": 7.23418841159106e-17,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.028e3,
+              "diffusivity_m2_s": 2.280808726847108e-16,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.136e3,
+              "diffusivity_m2_s": 1.0025877721293993e-15,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.197e3,
+              "diffusivity_m2_s": 2.101679441041964e-15,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "buffer",
+          "register_rows": [
+            "C15-13"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "irradiation",
+          "source": "Collin et al. (2015)",
+          "source_location": "INL/JOU-15-35343 accepted manuscript Table 2 note; manuscript PDF p. 23; published page NOT VERIFIED",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "modelling convention: the buffer is taken as non-retentive"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 9.55e2,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.028e3,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.136e3,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.197e3,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "IPyC",
+          "register_rows": [
+            "C15-06"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "irradiation",
+          "source": "Collin et al. (2015)",
+          "source_location": "INL/JOU-15-35343 accepted manuscript Table 2; manuscript PDF p. 23; R_g on p. 5; published J. Nucl. Mater. 466 (2015) 426-442, published page NOT VERIFIED",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 9.55e2,
+              "diffusivity_m2_s": 2.2785081338559662e-17,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.028e3,
+              "diffusivity_m2_s": 7.71559089354865e-17,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.136e3,
+              "diffusivity_m2_s": 3.7187760963505167e-16,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.197e3,
+              "diffusivity_m2_s": 8.162782637043663e-16,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "SiC",
+          "register_rows": [
+            "C15-07"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "irradiation",
+          "source": "Collin et al. (2015)",
+          "source_location": "INL/JOU-15-35343 accepted manuscript Table 2; manuscript PDF p. 23; R_g on p. 5; published J. Nucl. Mater. 466 (2015) 426-442, published page NOT VERIFIED",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "fluence factor not applied; correlation form under source review"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 9.55e2,
+              "diffusivity_m2_s": 2.6551913015356865e-19,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.028e3,
+              "diffusivity_m2_s": 5.276680503084744e-19,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.136e3,
+              "diffusivity_m2_s": 1.2792347113768985e-18,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.197e3,
+              "diffusivity_m2_s": 1.991597051880982e-18,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "OPyC",
+          "register_rows": [
+            "C15-06"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "irradiation",
+          "source": "Collin et al. (2015)",
+          "source_location": "INL/JOU-15-35343 accepted manuscript Table 2; manuscript PDF p. 23; R_g on p. 5; published J. Nucl. Mater. 466 (2015) 426-442, published page NOT VERIFIED",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 9.55e2,
+              "diffusivity_m2_s": 2.2785081338559662e-17,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.028e3,
+              "diffusivity_m2_s": 7.71559089354865e-17,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.136e3,
+              "diffusivity_m2_s": 3.7187760963505167e-16,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.197e3,
+              "diffusivity_m2_s": 8.162782637043663e-16,
+              "range": "no range printed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "element": "Sr",
+      "heating_test_rows": [
+        {
+          "layer": "kernel",
+          "register_rows": [
+            "C16-11"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "heating test",
+          "source": "Collin et al. (2016)",
+          "source_location": "6.pdf Table 2; printed p. 381; idx 3",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "UO2 coefficient used for the UCO kernel; no UCO measurement exists",
+            "referred to a 250 um kernel radius and applied unscaled, as the published AGR-1 modelling does"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 1.6e3,
+              "diffusivity_m2_s": 5.424840957675005e-17,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.7e3,
+              "diffusivity_m2_s": 2.654895832195246e-16,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.8e3,
+              "diffusivity_m2_s": 1.1147445148428686e-15,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "buffer",
+          "register_rows": [
+            "C16-22"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "heating test",
+          "source": "Collin et al. (2016)",
+          "source_location": "6.pdf Table 2 note; printed p. 381; idx 3",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "modelling convention: the buffer is taken as non-retentive"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 1.6e3,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.7e3,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.8e3,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "IPyC",
+          "register_rows": [
+            "C16-12"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "heating test",
+          "source": "Collin et al. (2016)",
+          "source_location": "6.pdf Table 2; printed p. 381; idx 3",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 1.6e3,
+              "diffusivity_m2_s": 7.384481275694461e-12,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.7e3,
+              "diffusivity_m2_s": 1.4019354362741946e-11,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.8e3,
+              "diffusivity_m2_s": 2.5019439673923394e-11,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "SiC",
+          "register_rows": [
+            "C16-13",
+            "C16-14"
+          ],
+          "terms": 2,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "heating test",
+          "source": "Collin et al. (2016)",
+          "source_location": "6.pdf Table 2; printed p. 381; idx 3",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 1.6e3,
+              "diffusivity_m2_s": 2.4628614803805493e-15,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.7e3,
+              "diffusivity_m2_s": 6.561098047528026e-15,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.8e3,
+              "diffusivity_m2_s": 2.9384767498501126e-14,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "OPyC",
+          "register_rows": [
+            "C16-12"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "heating test",
+          "source": "Collin et al. (2016)",
+          "source_location": "6.pdf Table 2; printed p. 381; idx 3",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 1.6e3,
+              "diffusivity_m2_s": 7.384481275694461e-12,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.7e3,
+              "diffusivity_m2_s": 1.4019354362741946e-11,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.8e3,
+              "diffusivity_m2_s": 2.5019439673923394e-11,
+              "range": "no range printed"
+            }
+          ]
+        }
+      ],
+      "irradiation_rows": [
+        {
+          "layer": "kernel",
+          "register_rows": [
+            "C15-09"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "irradiation",
+          "source": "Collin et al. (2015)",
+          "source_location": "INL/JOU-15-35343 accepted manuscript Table 2; manuscript PDF p. 23; R_g on p. 5; published J. Nucl. Mater. 466 (2015) 426-442, published page NOT VERIFIED",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "UO2 coefficient used for the UCO kernel; no UCO measurement exists",
+            "referred to a 250 um kernel radius and applied unscaled, as the published AGR-1 modelling does"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 9.55e2,
+              "diffusivity_m2_s": 3.8700520780311106e-24,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.028e3,
+              "diffusivity_m2_s": 5.651234125698351e-23,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.136e3,
+              "diffusivity_m2_s": 1.7930007014922e-21,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.197e3,
+              "diffusivity_m2_s": 1.009553406084782e-20,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "buffer",
+          "register_rows": [
+            "C15-13"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "irradiation",
+          "source": "Collin et al. (2015)",
+          "source_location": "INL/JOU-15-35343 accepted manuscript Table 2 note; manuscript PDF p. 23; published page NOT VERIFIED",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "modelling convention: the buffer is taken as non-retentive"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 9.55e2,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.028e3,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.136e3,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.197e3,
+              "diffusivity_m2_s": 1e-8,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "IPyC",
+          "register_rows": [
+            "C15-10"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "irradiation",
+          "source": "Collin et al. (2015)",
+          "source_location": "INL/JOU-15-35343 accepted manuscript Table 2; manuscript PDF p. 23; R_g on p. 5; published J. Nucl. Mater. 466 (2015) 426-442, published page NOT VERIFIED",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 9.55e2,
+              "diffusivity_m2_s": 9.622573663086855e-15,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.028e3,
+              "diffusivity_m2_s": 2.84025188347758e-14,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.136e3,
+              "diffusivity_m2_s": 1.146752797163028e-13,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.197e3,
+              "diffusivity_m2_s": 2.3038688963113953e-13,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "SiC",
+          "register_rows": [
+            "C15-11"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "irradiation",
+          "source": "Collin et al. (2015)",
+          "source_location": "INL/JOU-15-35343 accepted manuscript Table 2; manuscript PDF p. 23; R_g on p. 5; published J. Nucl. Mater. 466 (2015) 426-442, published page NOT VERIFIED",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 9.55e2,
+              "diffusivity_m2_s": 2.293525507832014e-18,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.028e3,
+              "diffusivity_m2_s": 7.073887448519701e-18,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.136e3,
+              "diffusivity_m2_s": 3.0226288351480243e-17,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.197e3,
+              "diffusivity_m2_s": 6.24707692575834e-17,
+              "range": "no range printed"
+            }
+          ]
+        },
+        {
+          "layer": "OPyC",
+          "register_rows": [
+            "C15-10"
+          ],
+          "terms": 1,
+          "coefficient_class": "published PARFUME correlation",
+          "phase_of_use": "irradiation",
+          "source": "Collin et al. (2015)",
+          "source_location": "INL/JOU-15-35343 accepted manuscript Table 2; manuscript PDF p. 23; R_g on p. 5; published J. Nucl. Mater. 466 (2015) 426-442, published page NOT VERIFIED",
+          "published_range_c": null,
+          "range_kind": null,
+          "labels": [
+            "one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)"
+          ],
+          "diffusivity_m2_s_at_c": [
+            {
+              "temperature_c": 9.55e2,
+              "diffusivity_m2_s": 9.622573663086855e-15,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.028e3,
+              "diffusivity_m2_s": 2.84025188347758e-14,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.136e3,
+              "diffusivity_m2_s": 1.146752797163028e-13,
+              "range": "no range printed"
+            },
+            {
+              "temperature_c": 1.197e3,
+              "diffusivity_m2_s": 2.3038688963113953e-13,
+              "range": "no range printed"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "generation": [
+    {
+      "fission_rate_density_target": "capsule:3",
+      "fission_rate_density_per_m3_s": 8.69978329835975e19,
+      "label": "derived from published AGR-1 burnup (calculated)",
+      "source_rows": [
+        "IRR-053",
+        "IRR-002",
+        "IRR-500",
+        "IRR-501",
+        "IRR-502",
+        "IRR-503",
+        "IRR-456",
+        "IRR-497"
+      ],
+      "nuclides": [
+        {
+          "nuclide": "Sr-90",
+          "decay_constant_per_s": 7.597709e-10,
+          "cumulative_yield_per_fission": 5.729e-2,
+          "reference_generation_mol_m3_s": 8.276302481561891e-6
+        },
+        {
+          "nuclide": "Cs-137",
+          "decay_constant_per_s": 7.302187e-10,
+          "cumulative_yield_per_fission": 6.2208e-2,
+          "reference_generation_mol_m3_s": 8.98677299307038e-6
+        }
+      ]
+    },
+    {
+      "fission_rate_density_target": "compact:6-2-1",
+      "fission_rate_density_per_m3_s": 6.6368518510019125e19,
+      "label": "derived from published AGR-1 burnup (calculated)",
+      "source_rows": [
+        "IRRB-0005",
+        "IRR-006",
+        "IRRB-0161",
+        "IRR-007",
+        "IRRB-0317",
+        "IRR-008",
+        "IRRB-0473",
+        "IRR-009",
+        "IRRB-0629",
+        "IRR-010",
+        "IRRB-0785",
+        "IRR-011",
+        "IRRB-0941",
+        "IRR-012",
+        "IRRB-1097",
+        "IRR-013",
+        "IRRB-1253",
+        "IRR-014",
+        "IRRB-1409",
+        "IRR-015",
+        "IRRB-1565",
+        "IRR-016",
+        "IRRB-1721",
+        "IRR-017",
+        "IRRB-1877",
+        "IRR-018"
+      ],
+      "nuclides": [
+        {
+          "nuclide": "Sr-90",
+          "decay_constant_per_s": 7.597709e-10,
+          "cumulative_yield_per_fission": 5.729e-2,
+          "reference_generation_mol_m3_s": 6.313788695697967e-6
+        },
+        {
+          "nuclide": "Cs-137",
+          "decay_constant_per_s": 7.302187e-10,
+          "cumulative_yield_per_fission": 6.2208e-2,
+          "reference_generation_mol_m3_s": 6.855789268318713e-6
+        }
+      ]
+    }
+  ],
+  "notes": "Every coefficient carries its register row, class and phase of use (owner ruling 16); the kernel rows are UO2 surrogates (no UCO measurement exists, decision 40); rows print no validity range; the fission-rate density is derived from published burnup and is calculated, never measured (decision 42); the Pu-239 share of fission is not represented."
+}

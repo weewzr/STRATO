@@ -1,0 +1,77 @@
+{
+  "schema_version": "1",
+  "what": "curve",
+  "provenance": {
+    "label": "numerical solution of the stated model; not experimental validation",
+    "solver": "STRATO BTCS five-layer spherical finite difference",
+    "solver_version": "1.0.1",
+    "pipeline": "strato-results 0.1.0",
+    "schema_version": "1",
+    "commit": "6e52ee0",
+    "solver_source_sha256": "acc5acc5b3fa6143504c93c62e99586ae33fb7308d9c20a2e0f1e935c32a010d",
+    "input_sha256": {
+      "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
+      "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
+      "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
+      "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
+      "temperature_histories.csv": "6ab3201672afd15f92ec9e529318377c829afaa5804288a3a694032145ab4af0",
+      "release_measurements.csv": "873352515ae4c64d57acce407100e40c1b11d8bbfde80beb948a98adb96ef2f2",
+      "agr1_irradiation_conditions.csv": "31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d",
+      "agr1_burnup_by_cycle.csv": "e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f",
+      "agr1_power_history_digitised.csv": "25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a",
+      "scenarios/s1_normal_operation.csv": "13dc0e4a301893a3aa47b669d6972dbd1dd50b72afb8817dcf6582890e47d77f",
+      "scenarios/s2_shutdown_cooldown.csv": "49bdaa0f434666efe9a6536ab407114d526aac81495a4e91bc7ddace9e3cce8f",
+      "scenarios/s3_startup.csv": "7f72d73cf0ac00aa1501c9e576fa2096f225f271c2f26ea535923fd35988bdac",
+      "scenarios/s4_control_rod_insertion.csv": "78a939b1ed4b940e56efb764c01a4b32e3ea3f2c5808fdd252e2073d142543b0",
+      "scenarios/s5_fuel_removal.csv": "1faace1e655c8b79999dc0ff85737ffe2bd7bde60da774f0b6b759081b77ea19"
+    }
+  },
+  "key": "s1.expl.sr90.400c",
+  "selection": {
+    "stage": 1,
+    "context": "expl",
+    "nuclide": "Sr-90",
+    "temperature_c": 4e2,
+    "phase_of_correlations": "heating test"
+  },
+  "labels": [
+    "model exploration: nothing is claimed about experiment",
+    "numerical solution of the stated model; not experimental validation",
+    "heating test correlations of the register as printed; the rows print no validity range"
+  ],
+  "axes": {
+    "x": {
+      "quantity": "Time at constant temperature",
+      "unit": "h"
+    },
+    "y": {
+      "quantity": "Fraction released",
+      "unit": "dimensionless"
+    },
+    "default_y_scale": "log"
+  },
+  "method_a": {
+    "label": "Method A: BTCS",
+    "time_h": [0e0,5e-2,5.4000000000000006e-2,5.832000000000001e-2,6.298560000000002e-2,6.802444800000003e-2,7.346640384000004e-2,7.934371614720005e-2,8.569121343897607e-2,9.254651051409415e-2,9.99502313552217e-2,1.0794624986363945e-1,1.1658194985273061e-1,1.2590850584094906e-1,1.35981186308225e-1,1.46859681212883e-1,1.5860845570991366e-1,1.7129713216670678e-1,1.8500090274004333e-1,1.998009749592468e-1,2.1578505295598657e-1,2.330478571924655e-1,2.5169168576786277e-1,2.718270206292918e-1,2.935731822796352e-1,3.1705903686200604e-1,3.4242375981096657e-1,3.698176605958439e-1,3.9940307344351145e-1,4.313553193189924e-1,4.658637448645118e-1,5.031328444536728e-1,5.433834720099666e-1,5.86854149770764e-1,6.338024817524252e-1,6.845066802926192e-1,7.392672147160287e-1,7.984085918933111e-1,8.62281279244776e-1,9.312637815843582e-1,1.0057648841111069e0,1.0862260748399954e0,1.1731241608271952e0,1.2669740936933709e0,1.3683320211888406e0,1.477798582883948e0,1.5960224695146639e0,1.7237042670758371e0,1.8616006084419041e0,2.0105286571172565e0,2.1713709496866374e0,2.3450806256615686e0,2.5326870757144944e0,2.735302041771654e0,2.9541262051133867e0,3.190456301522458e0,3.4456928056442546e0,3.721348230095795e0,4.019056088503459e0,4.3405805755837354e0,4.687827021630435e0,5.06285318336087e0,5.46788143802974e0,5.905311953072119e0,6.377736909317889e0,6.887955862063321e0,7.438992331028387e0,8.034111717510658e0,8.676840654911512e0,9.370987907304434e0,1.0120666939888789e1,1.0930320295079893e1,1.1804745918686285e1,1.2749125592181189e1,1.3769055639555685e1,1.4870580090720141e1,1.6060226497977755e1,1.7345044617815976e1,1.8732648187241256e1,2.023126004222056e1,2.1849760845598205e1,2.3597741713246062e1,2.5485561050305748e1,2.7524405934330208e1,2.9726358409076628e1,3.210446708180276e1,3.467282444834698e1,3.744665040421474e1,4.0442382436551924e1,4.367777303147608e1,4.7171994873994166e1,5.09457544639137e1,5.50214148210268e1,5.942312800670895e1,6.417697824724567e1,6.931113650702532e1,7.485602742758735e1,8.084450962179434e1,8.73120703915379e1,9.429703602286094e1,1.0184079890468982e2,1.0998806281706501e2,1.1878710784243022e2,1.2829007646982464e2,1.3855328258741062e2,1.496375451944035e2,1.6160854880995578e2,1.7453723271475226e2,1.8850021133193246e2,2.0358022823848708e2,2.1986664649756605e2,2.3745597821737135e2,2.5645245647476105e2,2.7696865299274197e2,2.991261452321613e2,3.2305623685073425e2,3.48900735798793e2,3.7681279466269643e2,4e2],
+    "release_fraction": [0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0],
+    "release_fraction_refined": [0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0,0e0],
+    "resolved": [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],
+    "grid": {
+      "intervals_per_layer": [160,20,20,160,20],
+      "dt_h": 5e-2
+    },
+    "diffusivity_m2_s": [2.991143166036312e-41,1e-8,1.189657130852705e-21,1.4863172758805797e-25,1.189657130852705e-21],
+    "start": "kernel-only start (decision 20); the temperature ramp is not modelled in stage 1"
+  },
+  "method_b": {
+    "available": false,
+    "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+    "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (first valid time 4.142e27 s, accuracy floor inf)"
+  },
+  "numerics": {
+    "resolution_rule": "numerical setting (chosen; refinement-checked per Section 3.5): resolved if the base and the refined run (twice the intervals, half the step) differ by at most 5 % of the refined value; a labelled convention, not a derived bound",
+    "worst_relative_balance_residual": 1.5233138911276739e-10,
+    "worst_relative_balance_bound": 1.5375592709496962e-8
+  },
+  "reference_normal_operation": null
+}
