@@ -641,7 +641,7 @@ mod tests {
             //    use K_i (the same operands), which is a relative change u of K_i (it defines
             //    K' = P/(-dt)); against the exact-form row with K' and the same V, the stored L
             //    and U carry one rounding each (u |L||x_{i-1}|, u |U||x_{i+1}|), and B =
-            //    fl(fl(1 - l) - u) has two roundings of positive terms plus the change of
+            //    fl(fl(1 - L) - U) has two roundings of positive terms plus the change of
             //    |L| + |U|: gamma_2 B + u (|L| + |U|)/(1 - u) <= 3u B + O(u^2) B, so 3u in all
             //    (no modified V is needed);
             //  - the shared dt K rounding against the K used in rhs here: u;
@@ -650,8 +650,9 @@ mod tests {
             // The counts add to (4 + 3 + 1 + 6) u = 14 u S. (An earlier version of this comment
             // counted 13 u S; it missed the shared dt K rounding.) With
             // S = (V/dt)(|c_i^new| + |c_i^old|) + k_i (|c_{i+1}| + |c_i|) + k_{i-1} (|c_i| + |c_{i-1}|),
-            // which bounds each partial scale. O(u^2) terms are below 1e-30 S and are absorbed by
-            // the factor (1 + 100 u) used on the bound.
+            // which bounds each partial scale. The O(u^2) terms are about 1.4e-30 S (the cross
+            // terms of 14 roundings, about 91 u^2, plus about 21 u^2 from kappa_t and 3u/(1 - 3u)),
+            // below the 1.7e-29 S (1400 u^2) that the factor (1 + 100 u) used on the bound allows.
             let scale = g.v[i] / 50.0 * (c_new[i].abs() + c_old[i].abs())
                 + k[i] * (c_new[i + 1].abs() + c_new[i].abs())
                 + k[i - 1] * (c_new[i].abs() + c_new[i - 1].abs());
