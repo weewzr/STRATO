@@ -175,6 +175,8 @@ pub struct SensitivityRow {
     pub sic_class: String,
     /// Phase of use of the SiC rows of the variant.
     pub sic_phase: String,
+    /// Class and phase of use of the coefficient of each region (kernel, buffer, IPyC, SiC, OPyC).
+    pub classes: [(String, String); 5],
     /// Temperature, degC.
     pub t_c: f64,
     /// The five coefficients, m2/s.
@@ -227,6 +229,7 @@ pub fn sensitivity(
                     variant_label: set.label.clone(),
                     sic_class: set.sic_class.clone(),
                     sic_phase: set.sic_phase.clone(),
+                    classes: set.classes.clone(),
                     t_c,
                     d_m2_s: ev.d_m2_s,
                     f_24: at(24.0)?,

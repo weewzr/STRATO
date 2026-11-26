@@ -13,7 +13,7 @@ use std::path::Path;
 use plotters::element::DashedPathElement;
 use plotters::prelude::*;
 use plotters::style::text_anchor::{HPos, Pos, VPos};
-use strato_data::release::{ReleaseValue, TestTemperature};
+use strato_data::release::{Measured, ReadingUncertainty, ReleaseValue, TestTemperature};
 use strato_data::table::Vocabulary;
 use strato_data::Register;
 
@@ -436,6 +436,32 @@ pub struct Placed {
     /// The model release over the window of the measurement, when the measurement covers a window
     /// that does not start at the beginning of the test (matrix-corrected values).
     pub model_window: Option<f64>,
+    /// True if the value was read from a published figure (class digitised), false if it is a
+    /// tabulated or printed value that is exact as printed.
+    pub digitised: bool,
+    /// The interval of the value that the reading uncertainty of the register allows (lowest and
+    /// highest value), for a digitised row whose record states a reading uncertainty on the value.
+    pub reading_interval: Option<(f64, f64)>,
+    /// The rule of the comparison status (why the row is or is not comparable).
+    pub rule: String,
+}
+
+/// The interval a stated reading uncertainty allows around a value.
+fn reading_interval(u: &strato_data::release::ReadingUncertainty, y: f64) -> Option<(f64, f64)> {
+    use strato_data::release::{ReadingUncertainty as U, ValueReading as V};
+    let U::Stated { value: Some(v), .. } = u else {
+        return None;
+    };
+    let (lo, hi) = match v {
+        V::RelativePercent(p) => (y * (1.0 - p.value / 100.0), y * (1.0 + p.value / 100.0)),
+        V::RelativePercentRange { hi, .. } => {
+            (y * (1.0 - hi.value / 100.0), y * (1.0 + hi.value / 100.0))
+        }
+        V::Absolute(p) => (y - p.value, y + p.value),
+        V::Factor(p) if p.value > 0.0 => (y / p.value, y * p.value),
+        V::Factor(_) => return None,
+    };
+    Some((lo, hi))
 }
 
 /// Rows that can be placed on the release-versus-time panels: a fraction (unit 1), a point,
@@ -493,6 +519,13 @@ pub fn placed_rows(reg: &Register, records: &[RowRecord]) -> Vec<Placed> {
                 .as_ref()
                 .filter(|m| m.spec.window_start_h > 0.0)
                 .map(|m| m.f_window),
+            digitised: matches!(r.row.value, ReleaseValue::Digitised(_))
+                || !matches!(
+                    r.row.reading_uncertainty,
+                    strato_data::release::ReadingUncertainty::NotDigitised
+                ),
+            reading_interval: reading_interval(&r.row.reading_uncertainty, y),
+            rule: r.verdict.category.to_string(),
         });
     }
     out
@@ -1488,5 +1521,480 @@ pub fn figure_h(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
         provenance_line(inp.prov)
     );
     footer(&root, y + 12, 215, &text)?;
+    finish(root)
+}
+
+/// A number to three significant figures in scientific notation, for the text of the figures.
+fn three(x: f64) -> String {
+    format!("{x:.3e}")
+}
+
+/// The element a register row measures, if it is one of the three the model has coefficients for.
+fn row_species(r: &RowRecord) -> Option<Species> {
+    match &r.row.measured {
+        Measured::Nuclide(n) => Species::of_element(&n.element),
+        Measured::Element(e) => Species::of_element(e),
+        Measured::NotApplicable => None,
+    }
+}
+
+/// The lines of text printed under a nuclide figure: what the register holds for the nuclide, why
+/// rows are or are not comparable, and every numerical deviation that is defined.
+pub fn deviation_lines(records: &[RowRecord], species: Species) -> Vec<String> {
+    let nuc = species.nuclide();
+    let rows: Vec<&RowRecord> = records
+        .iter()
+        .filter(|r| row_species(r) == Some(species))
+        .collect();
+    let digitised = rows
+        .iter()
+        .filter(|r| !matches!(r.row.reading_uncertainty, ReadingUncertainty::NotDigitised))
+        .count();
+    let mut out = vec![format!(
+        "Register rows of {nuc} (including rows labelled with the element only): {}; {} digitised from published figures (labelled digitised, with their reading uncertainty), {} tabulated or printed and exact as printed.",
+        rows.len(),
+        digitised,
+        rows.len() - digitised
+    )];
+    let counts: Vec<String> = Status::ALL
+        .iter()
+        .filter_map(|s| {
+            let n = rows.iter().filter(|r| r.status == *s).count();
+            (n > 0).then(|| format!("{} {n}", s.label()))
+        })
+        .collect();
+    out.push(format!(
+        "Comparison status of these rows: {}.",
+        counts.join("; ")
+    ));
+    let mut reasons: std::collections::BTreeMap<&str, usize> = std::collections::BTreeMap::new();
+    for r in rows
+        .iter()
+        .filter(|r| r.status == Status::NotDirectlyComparable)
+    {
+        *reasons.entry(r.verdict.category).or_insert(0) += 1;
+    }
+    if !reasons.is_empty() {
+        let text: Vec<String> = reasons
+            .iter()
+            .map(|(k, n)| {
+                let meaning = crate::status::CATEGORIES
+                    .iter()
+                    .find(|(c, _)| c == k)
+                    .map_or("", |(_, m)| *m);
+                format!("{n} x {k} ({meaning})")
+            })
+            .collect();
+        out.push(format!(
+            "NOT DIRECTLY COMPARABLE because the measured quantity is not the model quantity: {}.",
+            text.join("; ")
+        ));
+    }
+    let mut pairs: Vec<(f64, f64)> = Vec::new();
+    let mut any_scale = false;
+    for r in &rows {
+        let Some(m) = &r.model else { continue };
+        let at = format!(
+            "{} | {} \u{b0}C | {} h at temperature",
+            r.row.id, m.spec.t_c, m.spec.t_end_h
+        );
+        match &r.eval {
+            Eval::Point { value, dev } => {
+                pairs.push((m.f_window, *value));
+                out.push(format!(
+                    "{at} | measured {} | model {} | absolute deviation {} | relative deviation {} % | signed log10 ratio {}",
+                    three(*value),
+                    three(m.f_window),
+                    three(dev.absolute),
+                    dev.relative_percent
+                        .map_or("undefined".to_string(), three),
+                    dev.log10_ratio
+                        .map_or("undefined".to_string(), three),
+                ));
+            }
+            Eval::Provisional { value, log10_ratio } => {
+                any_scale = true;
+                out.push(format!(
+                    "{at} | measured {} (digitised) | model {} | signed log10 ratio {} for scale only: the denominator is not established (decision 22), so no absolute or relative deviation is formed",
+                    three(*value),
+                    three(m.f_window),
+                    log10_ratio.map_or("undefined".to_string(), three),
+                ));
+            }
+            _ => {}
+        }
+    }
+    match crate::metrics::point_aggregate(&pairs) {
+        Some(a) => out.push(format!(
+            "Over {} point comparisons: root-mean-square deviation {}, mean absolute deviation {}, log-space root-mean-square of log10 ratio {}.",
+            a.n,
+            three(a.rmse),
+            three(a.mae),
+            a.rmse_log10.map_or("undefined".to_string(), three)
+        )),
+        None => out.push(format!(
+            "No {nuc} row supports a point comparison, so the absolute deviation, the relative deviation in percent and the log-space root-mean-square deviation are not defined for {nuc}{}; no number is substituted.",
+            if any_scale {
+                " (the log10 ratios above are for scale only and enter no aggregate)"
+            } else {
+                ""
+            }
+        )),
+    }
+    out
+}
+
+/// Figures I and J: one nuclide, measurements with their reading uncertainty, the BTCS prediction,
+/// the analytical prediction where it is valid, and the numerical deviations beside the curves.
+fn nuclide_figure(
+    path: &Path,
+    inp: &Inputs<'_>,
+    species: Species,
+    heading: &str,
+) -> Result<(), String> {
+    let nuc = species.nuclide();
+    let placed: Vec<Placed> = placed_rows(inp.reg, inp.records)
+        .into_iter()
+        .filter(|p| p.species == species)
+        .collect();
+    let mut text_lines: Vec<String> = Vec::new();
+    for l in deviation_lines(inp.records, species) {
+        text_lines.extend(wrap(&l, 190));
+    }
+    let provenance = format!(
+        "Experimental values: {}. A bar on a digitised point is the reading uncertainty of the register (the error of reading the point off the published figure); it is not a measurement uncertainty, and the sources report none for these rows, so no other error bar is drawn. Compact values are not single-particle values; rows without a time at temperature or at a temperature outside 1600 to 1800 \u{b0}C are not drawn. {} {}",
+        sources_of(&placed),
+        format_args!("Analytical-series values are drawn only where the criterion holds: {}.", crate::studies::ANALYTIC_CRITERION),
+        provenance_line(inp.prov)
+    );
+    let foot_lines = wrap(&provenance, 215).len() as i32;
+    // 640 px of charts and titles, 5 legend rows of 26 px, the heading of the deviation lines, the
+    // lines themselves and the footer.
+    let height =
+        640 + 10 + 26 * 5 + 12 + 26 + 19 * text_lines.len() as i32 + 14 + 18 * foot_lines + 30;
+    let root = SVGBackend::new(path, (1560, height as u32)).into_drawing_area();
+    root.fill(&WHITE).map_err(pe)?;
+    title(
+        &root,
+        heading,
+        &format!(
+            "Measurements of {nuc}, BTCS prediction, analytical prediction where valid, and the deviations of the model from the measurements; hours counted from reaching the test temperature"
+        ),
+    )?;
+    let areas = root.margin(70, height - 640, 10, 10).split_evenly((1, 2));
+
+    // Left: release fraction versus time.
+    {
+        let mut chart = ChartBuilder::on(&areas[0])
+            .caption(
+                format!("Fraction of {nuc} released versus time at temperature"),
+                ts(19),
+            )
+            .margin(8)
+            .x_label_area_size(44)
+            .y_label_area_size(80)
+            .build_cartesian_2d(0.0f64..420.0f64, (1e-10f64..2.0f64).log_scale())
+            .map_err(pe)?;
+        chart
+            .configure_mesh()
+            .x_desc("Time at temperature (h)")
+            .y_desc(format!("Fraction of {nuc} released (dimensionless)"))
+            .x_labels(8)
+            .x_label_formatter(&|v| format!("{v:.0}"))
+            .y_label_formatter(&sci)
+            .light_line_style(RGBColor(235, 235, 235))
+            .label_style(ts(14))
+            .axis_desc_style(ts(16))
+            .draw()
+            .map_err(pe)?;
+        for (_, t_c, c) in inp.curves.iter().filter(|(s, _, _)| *s == species) {
+            line!(
+                chart,
+                curve_points(c),
+                temp_colour(*t_c),
+                temp_dash(*t_c),
+                3
+            );
+            if let Some(an) = inp.analytic.get(&(species, (*t_c * 10.0).round() as i64)) {
+                let pts: Vec<(f64, f64)> = an
+                    .iter()
+                    .filter_map(|(t, f)| f.filter(|f| *f > 1e-10).map(|f| (*t, f)))
+                    .collect();
+                mark!(
+                    chart,
+                    Glyph::Plus {
+                        c: temp_colour(*t_c)
+                    },
+                    pts
+                );
+            }
+        }
+        for p in &placed {
+            if let Some((lo, hi)) = p.reading_interval {
+                let lo = lo.max(1e-10);
+                if hi > lo {
+                    chart
+                        .draw_series(LineSeries::new(
+                            vec![(p.t_h, lo), (p.t_h, hi)],
+                            shape(temp_colour(p.t_c), false, 1),
+                        ))
+                        .map_err(pe)?;
+                }
+            }
+        }
+        for p in placed.iter().filter(|p| p.y > 1e-10) {
+            if p.digitised {
+                mark!(
+                    chart,
+                    Glyph::Dot {
+                        c: temp_colour(p.t_c)
+                    },
+                    vec![(p.t_h, p.y)]
+                );
+            } else {
+                mark!(
+                    chart,
+                    Glyph::Ring {
+                        c: temp_colour(p.t_c)
+                    },
+                    vec![(p.t_h, p.y)]
+                );
+            }
+        }
+        // A hollow diamond around a value marks a row whose denominator is not established
+        // (DATA INCOMPLETE): the row of the right panel.
+        for p in placed
+            .iter()
+            .filter(|p| p.status == Status::DataIncomplete && p.y > 1e-10)
+        {
+            mark!(chart, Glyph::Diamond { c: INK }, vec![(p.t_h, p.y)]);
+        }
+        let n_dig = placed.iter().filter(|p| p.digitised).count();
+        chart
+            .draw_series(std::iter::once(Text::new(
+                format!(
+                    "{} registered values drawn: {} digitised, {} tabulated or printed",
+                    placed.len(),
+                    n_dig,
+                    placed.len() - n_dig
+                ),
+                (416.0, 1.6e-10),
+                ts_pos(13, HPos::Right, VPos::Bottom),
+            )))
+            .map_err(pe)?;
+    }
+
+    // Right: the deviation of the model from the measurement, signed log10 ratio.
+    {
+        let pts: Vec<(f64, f64, bool)> = inp
+            .records
+            .iter()
+            .filter(|r| row_species(r) == Some(species))
+            .filter_map(|r| {
+                let m = r.model.as_ref()?;
+                match &r.eval {
+                    Eval::Point { dev, .. } => dev.log10_ratio.map(|l| (m.spec.t_end_h, l, true)),
+                    Eval::Provisional { log10_ratio, .. } => {
+                        log10_ratio.map(|l| (m.spec.t_end_h, l, false))
+                    }
+                    _ => None,
+                }
+            })
+            .collect();
+        let top = pts.iter().map(|p| p.1).fold(1.0f64, f64::max).ceil() + 0.5;
+        let bottom = pts.iter().map(|p| p.1).fold(-1.0f64, f64::min).floor() - 0.5;
+        let mut chart = ChartBuilder::on(&areas[1])
+            .caption(
+                format!("Deviation of the model from the measurement, {nuc}"),
+                ts(19),
+            )
+            .margin(8)
+            .x_label_area_size(44)
+            .y_label_area_size(80)
+            .build_cartesian_2d(0.0f64..420.0f64, bottom..top)
+            .map_err(pe)?;
+        chart
+            .configure_mesh()
+            .x_desc("Time at temperature (h)")
+            .y_desc("Signed log10 of (model fraction / measured fraction) (dimensionless)")
+            .x_labels(8)
+            .x_label_formatter(&|v| format!("{v:.0}"))
+            .light_line_style(RGBColor(235, 235, 235))
+            .label_style(ts(14))
+            .axis_desc_style(ts(16))
+            .draw()
+            .map_err(pe)?;
+        chart
+            .draw_series(LineSeries::new(
+                vec![(0.0, 0.0), (420.0, 0.0)],
+                shape(GREY, false, 1),
+            ))
+            .map_err(pe)?;
+        for (t, l, is_point) in &pts {
+            if *is_point {
+                mark!(chart, Glyph::Dot { c: INK }, vec![(*t, *l)]);
+            } else {
+                mark!(chart, Glyph::Diamond { c: INK }, vec![(*t, *l)]);
+            }
+        }
+        if pts.is_empty() {
+            chart
+                .draw_series(std::iter::once(Text::new(
+                    format!("NO DEVIATION IS DEFINED FOR {nuc}"),
+                    (210.0, (top + bottom) / 2.0 + 0.4),
+                    ts_pos(18, HPos::Center, VPos::Center),
+                )))
+                .map_err(pe)?;
+            chart
+                .draw_series(std::iter::once(Text::new(
+                    "no row has an established fraction of a comparable quantity (see the lines below)",
+                    (210.0, (top + bottom) / 2.0 - 0.4),
+                    ts_pos(14, HPos::Center, VPos::Center),
+                )))
+                .map_err(pe)?;
+        }
+    }
+
+    let mut items = temperature_legend();
+    items.push(entry(
+        "Plus: analytical prediction (independent series), only where valid",
+        Glyph::Plus { c: INK },
+    ));
+    items.push(entry(
+        "Filled circle with bar: digitised value and its reading uncertainty",
+        Glyph::Dot { c: INK },
+    ));
+    items.push(entry(
+        "Hollow circle: tabulated or printed value, exact as printed",
+        Glyph::Ring { c: INK },
+    ));
+    items.push(entry(
+        "Right panel, filled circle: a point comparison",
+        Glyph::Dot { c: INK },
+    ));
+    items.push(entry(
+        "Hollow diamond: row with no established denominator; its log10 ratio is in the right panel, for scale only",
+        Glyph::Diamond { c: INK },
+    ));
+    items.push(entry(
+        "Marker colour: test temperature, as the line of the same colour",
+        Glyph::Line {
+            c: GREY,
+            dash: None,
+        },
+    ));
+    let y = legend(&root, 40, 650, 760, 2, &items)?;
+    let mut ty = y + 12;
+    root.draw(&Text::new(
+        format!("Numerical deviations of the model from the measurements of {nuc}"),
+        (24, ty),
+        ts(17),
+    ))
+    .map_err(pe)?;
+    ty += 26;
+    for l in &text_lines {
+        root.draw(&Text::new(l.clone(), (24, ty), ts(14)))
+            .map_err(pe)?;
+        ty += 19;
+    }
+    footer(&root, ty + 14, 215, &provenance)?;
+    finish(root)
+}
+
+/// Figure I: silver, Ag-110m.
+pub fn figure_i(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
+    nuclide_figure(
+        path,
+        inp,
+        Species::Ag,
+        "I. Silver-110m (Ag-110m): measurements, BTCS prediction, analytical prediction and deviations",
+    )
+}
+
+/// Figure J: strontium, Sr-90.
+pub fn figure_j(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
+    nuclide_figure(
+        path,
+        inp,
+        Species::Sr,
+        "J. Strontium-90 (Sr-90): measurements, BTCS prediction, analytical prediction and deviations",
+    )
+}
+
+/// Figure K: caesium-137, for which AGR-1 and AGR-2 report no release (decision 43).
+pub fn figure_k(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
+    let rows: Vec<&RowRecord> = inp
+        .records
+        .iter()
+        .filter(|r| matches!(&r.row.measured, Measured::Nuclide(n) if n.name() == "Cs-137"))
+        .collect();
+    let agr1 = rows
+        .iter()
+        .filter(|r| r.row.program.as_str() == "AGR-1" || r.row.program.as_str() == "AGR-2")
+        .count();
+    let mut lines = vec![format!(
+        "AGR-1 and AGR-2 report no release of Cs-137 (decision 43): the register holds {agr1} Cs-137 rows of those programmes."
+    )];
+    let mut by: std::collections::BTreeMap<(String, String, &str), usize> =
+        std::collections::BTreeMap::new();
+    for r in &rows {
+        *by.entry((
+            r.row.program.as_str().to_string(),
+            r.row.source.clone(),
+            r.status.label(),
+        ))
+        .or_insert(0) += 1;
+    }
+    for ((program, source, status), n) in &by {
+        let why = if *status == Status::DataIncomplete.label() {
+            "; they are not a release measurement of the AGR-1 particles, their denominator is not established, and no deviation is formed from them"
+        } else {
+            ""
+        };
+        lines.push(format!(
+            "The register holds {n} Cs-137 rows of the programme {program} ({source}) with the status {status}{why}."
+        ));
+    }
+    lines.push(
+        "The model computes the element caesium without decay (decay is not in the solver yet), so it makes no Cs-137 prediction that could be set against a Cs-137 measurement.".to_string(),
+    );
+    let mut text_lines: Vec<String> = Vec::new();
+    for l in &lines {
+        text_lines.extend(wrap(l, 190));
+    }
+    let provenance = provenance_line(inp.prov);
+    let foot = wrap(&provenance, 215).len() as i32;
+    let height = 255 + 19 * text_lines.len() as i32 + 14 + 18 * foot + 30;
+    let root = SVGBackend::new(path, (1560, height as u32)).into_drawing_area();
+    root.fill(&WHITE).map_err(pe)?;
+    title(
+        &root,
+        "K. Caesium-137 (Cs-137): DATA UNAVAILABLE",
+        "No release measurement of Cs-137 exists for the AGR-1 particles in the sources of the register; no curve, no deviation and no metric is drawn",
+    )?;
+    root.draw(&Rectangle::new(
+        [(24, 80), (1536, 230)],
+        shape(GREY, false, 2),
+    ))
+    .map_err(pe)?;
+    root.draw(&Text::new(
+        "DATA UNAVAILABLE",
+        (780, 140),
+        ts_pos(48, HPos::Center, VPos::Center),
+    ))
+    .map_err(pe)?;
+    root.draw(&Text::new(
+        "Fraction of Cs-137 released versus time at temperature: no measurement, no comparison",
+        (780, 195),
+        ts_pos(18, HPos::Center, VPos::Center),
+    ))
+    .map_err(pe)?;
+    let mut ty = 255;
+    for l in &text_lines {
+        root.draw(&Text::new(l.clone(), (24, ty), ts(14)))
+            .map_err(pe)?;
+        ty += 19;
+    }
+    footer(&root, ty + 14, 215, &provenance)?;
     finish(root)
 }

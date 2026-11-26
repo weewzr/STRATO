@@ -149,6 +149,9 @@ pub struct DiffusivitySet {
     pub sic_phase: String,
     /// Statements the selection function attaches to the coefficients (decision 47), per layer.
     pub labels: Vec<String>,
+    /// Coefficient class (owner ruling 16) and phase of use of the rows of each region, as the
+    /// register states them: kernel, buffer, IPyC, SiC, OPyC.
+    pub classes: [(String, String); 5],
 }
 
 const LAYERS: [(&str, ParticleLayer); 5] = [
@@ -177,6 +180,32 @@ fn select_layer<'a>(
         .map_err(|e| e.to_string())
 }
 
+/// Proper unit typography for a label that the register or the selection function wrote in ASCII:
+/// the unit "um" becomes the micrometre symbol "µm" and "degC" the degree Celsius symbol "°C"
+/// (decision 30). Only whole words are changed.
+pub fn typography(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut word = String::new();
+    let flush = |word: &mut String, out: &mut String| {
+        match word.as_str() {
+            "um" => out.push_str("\u{b5}m"),
+            "degC" => out.push_str("\u{b0}C"),
+            other => out.push_str(other),
+        }
+        word.clear();
+    };
+    for ch in text.chars() {
+        if ch.is_alphanumeric() || ch == '_' {
+            word.push(ch);
+        } else {
+            flush(&mut word, &mut out);
+            out.push(ch);
+        }
+    }
+    flush(&mut word, &mut out);
+    out
+}
+
 /// The default set of an element, chosen by the selection function of `strato-data` (decisions 39,
 /// 40 and 47): the published heating-test correlation as printed, with the second term where the
 /// source prints one.
@@ -185,10 +214,19 @@ pub fn default_set(reg: &Register, species: Species) -> Result<DiffusivitySet, S
     let mut labels = Vec::new();
     let mut sic_class = String::new();
     let mut sic_phase = String::new();
+    let mut classes: [(String, String); 5] = Default::default();
     for (k, (name, layer)) in LAYERS.iter().enumerate() {
         let sel = select_layer(reg, species, *layer, Variant::Default)?;
         ids[k] = sel.row_ids().iter().map(|s| s.to_string()).collect();
-        labels.extend(sel.labels.iter().map(|l| format!("{name}: {l}")));
+        classes[k] = (
+            sel.class.as_str().to_string(),
+            sel.rows[0].phase_of_use.as_str().to_string(),
+        );
+        labels.extend(
+            sel.labels
+                .iter()
+                .map(|l| typography(&format!("{name}: {l}"))),
+        );
         if *layer == ParticleLayer::SiC {
             sic_class = sel.class.as_str().to_string();
             sic_phase = sel.rows[0].phase_of_use.as_str().to_string();
@@ -204,6 +242,7 @@ pub fn default_set(reg: &Register, species: Species) -> Result<DiffusivitySet, S
         sic_class,
         sic_phase,
         labels,
+        classes,
     })
 }
 
@@ -240,6 +279,7 @@ pub fn variant_sets(reg: &Register, species: Species) -> Result<Vec<DiffusivityS
     );
     v.sic_class = fitted.class.as_str().to_string();
     v.sic_phase = fitted.rows[0].phase_of_use.as_str().to_string();
+    v.classes[3] = (v.sic_class.clone(), v.sic_phase.clone());
     v.ids[3] = fitted.row_ids().iter().map(|s| s.to_string()).collect();
     out.push(v);
     // The single-particle fit of Schappel 2020 (set S20-T3), registered but not offered by the
@@ -258,6 +298,7 @@ pub fn variant_sets(reg: &Register, species: Species) -> Result<Vec<DiffusivityS
         );
         v.sic_class = row.coefficient_class.as_str().to_string();
         v.sic_phase = row.phase_of_use.as_str().to_string();
+        v.classes[3] = (v.sic_class.clone(), v.sic_phase.clone());
         v.ids[3] = vec![row.id.clone()];
         out.push(v);
     }
@@ -271,7 +312,7 @@ pub fn variant_sets(reg: &Register, species: Species) -> Result<Vec<DiffusivityS
         if let Some(row) = reg.arrhenius.get(id) {
             let mut v = base.clone();
             v.id = format!("{id}-SiC");
-            v.label = format!(
+            v.label = typography(&format!(
                 "SiC replaced by register row {id} ({}; printed range {}-{} °C)",
                 row.origin,
                 row.t_min_c
@@ -280,9 +321,10 @@ pub fn variant_sets(reg: &Register, species: Species) -> Result<Vec<DiffusivityS
                 row.t_max_c
                     .as_ref()
                     .map_or("none".into(), |p| p.text.clone()),
-            );
+            ));
             v.sic_class = row.coefficient_class.as_str().to_string();
             v.sic_phase = row.phase_of_use.as_str().to_string();
+            v.classes[3] = (v.sic_class.clone(), v.sic_phase.clone());
             v.ids[3] = vec![(*id).to_string()];
             out.push(v);
         }

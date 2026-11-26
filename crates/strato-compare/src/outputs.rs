@@ -641,8 +641,16 @@ pub fn sensitivity_csv(prov: &Prov, rows: &[SensitivityRow]) -> String {
         "Nuclide",
         "Coefficient variant",
         "Variant description",
-        "Class of the SiC coefficient",
-        "Phase of use of the SiC coefficient",
+        "Class of the kernel coefficient",
+        "Phase of use of the kernel coefficient",
+        "Class of the buffer coefficient",
+        "Phase of use of the buffer coefficient",
+        "Class of the inner pyrocarbon coefficient",
+        "Phase of use of the inner pyrocarbon coefficient",
+        "Class of the silicon carbide coefficient",
+        "Phase of use of the silicon carbide coefficient",
+        "Class of the outer pyrocarbon coefficient",
+        "Phase of use of the outer pyrocarbon coefficient",
         "Test temperature (°C)",
         "Kernel diffusion coefficient (m²/s)",
         "Buffer diffusion coefficient (m²/s)",
@@ -664,10 +672,12 @@ pub fn sensitivity_csv(prov: &Prov, rows: &[SensitivityRow]) -> String {
             r.species.nuclide().to_string(),
             r.variant_id.clone(),
             r.variant_label.clone(),
-            r.sic_class.clone(),
-            r.sic_phase.clone(),
-            format!("{}", r.t_c),
         ];
+        for (class, phase) in &r.classes {
+            c.push(class.clone());
+            c.push(phase.clone());
+        }
+        c.push(format!("{}", r.t_c));
         c.extend(r.d_m2_s.iter().map(|d| num(*d)));
         c.push(num(r.f_24));
         c.push(num(r.f_100));

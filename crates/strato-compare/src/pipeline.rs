@@ -115,19 +115,26 @@ pub fn generate(opts: &Options) -> Result<Outcome, String> {
             .zip(["kernel", "buffer", "IPyC", "SiC", "OPyC"])
             .map(|(ids, name)| format!("{name}: {}", ids.join("+")))
             .collect();
+        let classes: Vec<String> = d
+            .classes
+            .iter()
+            .zip(["kernel", "buffer", "IPyC", "SiC", "OPyC"])
+            .map(|((class, phase), name)| format!("{name}: {class}, phase {phase}"))
+            .collect();
         set_notes.push((
             format!("{} ({})", d.id, s.label()),
             format!(
-                "{} - {}: {}. Statements of the selection function: {}",
+                "{} - {}: {}. Class of each coefficient (owner ruling 16) and phase of use: {}. Statements of the selection function: {}",
                 s.label(),
                 d.label,
                 rows.join("; "),
+                classes.join("; "),
                 d.labels.join("; ")
             ),
         ));
     }
     let parameter_source = format!(
-        "geometry design {} (register rows {}); diffusion coefficients chosen by the strato-data selection function (decision 47) for the heating-test phase, that is the rows of register sets C16-T2 and C16-BUF as printed, evaluated at the test temperature, class published PARFUME correlation, phase heating test (the kernel rows are UO2 surrogates: no UCO measurement exists, decision 40); every coefficient row and its class are in the sensitivity file and in comparison.json",
+        "geometry design {} (register rows {}); diffusion coefficients chosen by the strato-data selection function (decision 47) for the heating-test phase, that is the rows of register sets C16-T2 and C16-BUF as printed, evaluated at the test temperature (the kernel rows are UO2 surrogates: no UCO measurement exists, decision 40); the class of each coefficient (owner ruling 16) and its phase of use are in the sensitivity file and in the coefficient_sets of comparison.json",
         crate::data::GEOMETRY_DESIGN,
         geometry.row_ids.join(" ")
     );
@@ -195,7 +202,7 @@ pub fn generate(opts: &Options) -> Result<Outcome, String> {
     let floor = spatial_floor(&geometry, tm_mesh, sp_steps)?;
     let (dh, end_h, big_r) = homogeneous_case_description(&geometry);
     let homogeneous_note = format!(
-        "all five regions share the diffusion coefficient {dh:.3e} m²/s, the outer radius is {:.1} µm, the kernel radius {:.1} µm, the end time {end_h} h, so the Fourier number D t / R^2, with R the outer radius, is 0.1 for the whole sphere; the reference is the exact series of a sphere with the same diffusivity everywhere.",
+        "all five regions share the diffusion coefficient {dh:.3e} m²/s, the outer radius is {:.1} µm, the kernel radius {:.1} µm, the end time {end_h} h, so the dimensionless Fourier number D t / R² of the whole sphere, with R the outer radius, is 0.1; the reference is the exact series of a sphere with the same diffusivity everywhere.",
         big_r * 1e6,
         geometry.outer_m[0] * 1e6
     );
@@ -283,6 +290,9 @@ pub fn generate(opts: &Options) -> Result<Outcome, String> {
     figures::figure_f(&f.join("figure_F_spatial_convergence.svg"), &inp)?;
     figures::figure_g(&f.join("figure_G_temporal_convergence.svg"), &inp)?;
     figures::figure_h(&f.join("figure_H_temperature_sensitivity.svg"), &inp)?;
+    figures::figure_i(&f.join("figure_I_silver_110m_comparison.svg"), &inp)?;
+    figures::figure_j(&f.join("figure_J_strontium_90_comparison.svg"), &inp)?;
+    figures::figure_k(&f.join("figure_K_caesium_137_data_unavailable.svg"), &inp)?;
 
     if let Some(path) = &opts.report_out {
         let text = report::render(&ReportInput {

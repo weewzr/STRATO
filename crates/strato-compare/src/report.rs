@@ -6,6 +6,7 @@
 use std::fmt::Write as _;
 
 use strato_data::release::TestTemperature;
+use strato_data::table::Vocabulary;
 use strato_data::Register;
 
 use crate::compare::{Dataset, Eval, RowRecord};
@@ -234,7 +235,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     }
     let _ = writeln!(
         s,
-        "\nAll rows of these sets are of class *published PARFUME correlation*, phase *heating test*. The kernel values are UO2 surrogates: no UCO kernel measurement exists (decision 40). The coefficient classes and the states of the rows (verified or under source review) are as the register records them at the merged data commit.\n"
+        "\nThe class (owner ruling 16) and the phase of use of the coefficients of every region are stated in each line above. The kernel values are UO2 surrogates: no UCO kernel measurement exists (decision 40). The coefficient classes and the states of the rows (verified or under source review) are as the register records them at the merged data commit.\n"
     );
     let _ = writeln!(
         s,
@@ -451,6 +452,9 @@ pub fn render(inp: &ReportInput<'_>) -> String {
         ("figure_F_spatial_convergence.svg", "F. Spatial convergence against the exact series of a homogeneous verification case (synthetic diffusion coefficient, not AGR-1 data)."),
         ("figure_G_temporal_convergence.svg", "G. Temporal convergence on a fixed fine mesh, same homogeneous verification case."),
         ("figure_H_temperature_sensitivity.svg", "H. Temperature sensitivity of the release after 300 h for each registered coefficient variant."),
+        ("figure_I_silver_110m_comparison.svg", "I. Silver-110m (Ag-110m): the registered measurements (filled circles with a bar: digitised values and their reading uncertainty; hollow circles: tabulated or printed values, exact as printed), the BTCS prediction (lines), the analytical prediction where it is valid (plus signs), and in the right panel the deviation of the model from the measurement where one is defined, with the numerical deviations in the lines under the figure."),
+        ("figure_J_strontium_90_comparison.svg", "J. Strontium-90 (Sr-90): the same layout as figure I."),
+        ("figure_K_caesium_137_data_unavailable.svg", "K. Caesium-137 (Cs-137): DATA UNAVAILABLE, no release measurement exists for the AGR-1 particles in the sources of the register."),
     ];
     for (file, cap) in figs {
         let _ = writeln!(s, "![{cap}](figures/{file})\n\n*{cap}*\n");
@@ -458,6 +462,22 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     let _ = writeln!(
         s,
         "The figures are static SVG files drawn in Rust with the `plotters` crate (pure Rust SVG backend; it is used by the verified solver package for its own figures and is not linked into the WebAssembly wrapper). Each figure names its experimental sources, the solver version and the commit.\n"
+    );
+    let _ = writeln!(s, "### Ag-110m, Sr-90 and Cs-137 (decision 24)\n");
+    let _ = writeln!(
+        s,
+        "Figures I and J show, for silver-110m and strontium-90, the registered measurements (digitised values labelled digitised with the reading uncertainty of the register, tabulated values exact), the BTCS prediction, the independent analytical prediction where it is valid, and the deviations. The numbers beside the curves are repeated here; they are the same text as under the figures.\n"
+    );
+    for species in [Species::Ag, Species::Sr] {
+        let _ = writeln!(s, "**{}**\n", species.nuclide());
+        for l in crate::figures::deviation_lines(inp.records, species) {
+            let _ = writeln!(s, "- {l}");
+        }
+        let _ = writeln!(s);
+    }
+    let _ = writeln!(
+        s,
+        "**Cs-137.** DATA UNAVAILABLE: AGR-1 and AGR-2 report no release of Cs-137 (decision 43). Figure K says so and lists the Cs-137 rows of the register, which belong to another programme, with their status; no deviation is formed from them.\n"
     );
 
     // ---- Numerical quality -----------------------------------------------------------------
@@ -641,6 +661,47 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     let ag_lo = format!("{:.0}", f300(Species::Ag, 1600.0) * 100.0);
     let ag_hi = format!("{:.0}", f300(Species::Ag, 1800.0) * 100.0);
     let sr_1600 = format!("{:.1}", f300(Species::Sr, 1600.0) * 100.0);
+    // Smallest and largest registered fraction of an element among the rows of one status rule.
+    let span = |prefix: &str, rule: &str| -> String {
+        let vals: Vec<f64> = rec
+            .iter()
+            .filter(|r| {
+                r.verdict.category == rule
+                    && r.row.unit.as_str() == "1"
+                    && measured_text(&r.row).starts_with(prefix)
+            })
+            .filter_map(|r| match &r.row.value {
+                strato_data::release::ReleaseValue::Point(p)
+                | strato_data::release::ReleaseValue::Digitised(p) => Some(p.value),
+                _ => None,
+            })
+            .filter(|v| *v > 0.0)
+            .collect();
+        if vals.is_empty() {
+            return "none registered".to_string();
+        }
+        let lo = vals.iter().copied().fold(f64::INFINITY, f64::min);
+        let hi = vals.iter().copied().fold(0.0, f64::max);
+        format!("{} to {}", sci(lo), sci(hi))
+    };
+    let ag_in_pile = span("Ag", "includes_in_pile_inventory");
+    let sr_in_pile = span("Sr", "includes_in_pile_inventory");
+    let ag_prov_span = {
+        let vals: Vec<f64> = rec
+            .iter()
+            .filter_map(|r| match &r.eval {
+                Eval::Provisional { value, .. } if measured_text(&r.row).starts_with("Ag") => {
+                    Some(*value)
+                }
+                _ => None,
+            })
+            .collect();
+        format!(
+            "{} to {}",
+            sci(vals.iter().copied().fold(f64::INFINITY, f64::min)),
+            sci(vals.iter().copied().fold(0.0, f64::max))
+        )
+    };
     let ag_prov: Vec<&RowRecord> = rec
         .iter()
         .filter(|r| {
@@ -664,12 +725,12 @@ pub fn render(inp: &ReportInput<'_>) -> String {
             .fold(f64::NEG_INFINITY, f64::max);
         let _ = writeln!(
             s,
-            "**Silver.** The model releases {ag_lo} to {ag_hi} percent of the silver within 300 h at 1600 to 1800 °C (figure A), whereas the matrix-corrected digitised values of the intact compacts are of order 1e-4 to 3e-3. The log10 ratios of model to measured value, given for scale only, range from {lo:.1} to {hi:.1}. These rows are DATA INCOMPLETE, so no deviation is formed, this is not a status of comparison, and the register does not give the inventory ratio that would convert a compact fraction into a particle fraction, so the size of the gap is not a finding. The compact totals that include the inventory released in the reactor (several percent to tens of percent) are NOT DIRECTLY COMPARABLE and are drawn as context only.\n"
+            "**Silver.** The model releases {ag_lo} to {ag_hi} percent of the silver within 300 h at 1600 to 1800 °C (figure A), whereas the matrix-corrected digitised values of the intact compacts are {ag_prov_span}. The log10 ratios of model to measured value, given for scale only, range from {lo:.1} to {hi:.1}. These rows are DATA INCOMPLETE, so no deviation is formed, this is not a status of comparison, and the register does not give the inventory ratio that would convert a compact fraction into a particle fraction, so the size of the gap is not a finding. The compact totals that include the inventory released in the reactor (registered values {ag_in_pile}) are NOT DIRECTLY COMPARABLE and are drawn as context only.\n"
         );
     }
     let _ = writeln!(
         s,
-        "**Strontium.** No Sr-90 row supports a comparison. The model value after 300 h at 1600 °C is {sr_1600} percent (figures A and H), while the registered compact values are 1e-5 to 1e-3; those values include strontium released in the reactor, so the gap cannot be read as a deviation of the diffusion model.\n"
+        "**Strontium.** No Sr-90 row supports a comparison. The model value after 300 h at 1600 °C is {sr_1600} percent (figures A and H), while the registered compact totals that include the in-pile inventory are {sr_in_pile}; those values include strontium released in the reactor, so the gap cannot be read as a deviation of the diffusion model.\n"
     );
     let _ = writeln!(
         s,

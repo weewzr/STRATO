@@ -320,6 +320,65 @@ fn generated_files_carry_provenance_and_no_private_paths() {
         assert!(t.contains("0123456789abcdef"), "{}", p.display());
         assert!(!t.contains(":\\"), "{}", p.display());
     }
+    // Decision 24: the nuclide figures exist, say what the markers are, and Cs-137 says so.
+    let fig = |n: &str| std::fs::read_to_string(opts.figures_out.join(n)).expect(n);
+    for n in [
+        "figure_I_silver_110m_comparison.svg",
+        "figure_J_strontium_90_comparison.svg",
+    ] {
+        let t = fig(n);
+        assert!(t.contains("digitised"), "{n}");
+        assert!(t.contains("reading uncertainty"), "{n}");
+        assert!(t.contains("Numerical deviations of the model"), "{n}");
+        assert!(t.contains("log-space root-mean-square"), "{n}");
+    }
+    assert!(fig("figure_K_caesium_137_data_unavailable.svg").contains("DATA UNAVAILABLE"));
+    assert!(report.contains("DATA UNAVAILABLE"));
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn unit_typography_changes_whole_words_only() {
+    use strato_compare::data::typography;
+    assert_eq!(
+        typography("a 250 um kernel radius at 1600 degC"),
+        "a 250 \u{b5}m kernel radius at 1600 \u{b0}C"
+    );
+    assert_eq!(
+        typography("column, umbrella, degCx"),
+        "column, umbrella, degCx"
+    );
+    assert_eq!(typography("(um)"), "(\u{b5}m)");
+}
+
+#[test]
+fn the_deviation_lines_of_a_nuclide_say_what_is_defined_and_what_is_not() {
+    let reg = register();
+    let dir = std::env::temp_dir().join(format!("strato-compare-lines-{}", std::process::id()));
+    let opts = Options {
+        repo: repo(),
+        data_out: dir.join("data"),
+        figures_out: dir.join("fig"),
+        report_out: None,
+        commit: "0123456789abcdef".to_string(),
+        quick: true,
+    };
+    let out = generate(&opts).expect("the comparison runs");
+    let _ = reg;
+    for sp in [Species::Ag, Species::Sr] {
+        let lines = strato_compare::figures::deviation_lines(&out.records, sp);
+        let all = lines.join("\n");
+        assert!(all.contains("digitised"), "{sp:?}");
+        let has_point = out
+            .records
+            .iter()
+            .any(|r| matches!(r.eval, Eval::Point { .. }));
+        if !has_point {
+            // No point comparison exists, so no aggregate may be printed.
+            assert!(all.contains("are not defined"), "{sp:?}\n{all}");
+            assert!(!all.contains("Over "), "{sp:?}");
+        }
+    }
     let _ = std::fs::remove_dir_all(&dir);
 }
 
