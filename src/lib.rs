@@ -15,6 +15,9 @@
 // Some helpers are used only by the verification example and tests.
 #![allow(dead_code)]
 
+/// Version of this package, for the provenance records of generated files.
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 pub mod analytical;
 pub mod config;
 pub mod numerical;

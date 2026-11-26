@@ -253,7 +253,11 @@ impl ScenarioDefinition {
             let n = ((l / dtm) * (1.0 - 1e-12)).ceil().max(1.0) as usize;
             let mut prev = a;
             for k in 1..=n {
-                let t = if k == n { c } else { a + l * (k as f64) / (n as f64) };
+                let t = if k == n {
+                    c
+                } else {
+                    a + l * (k as f64) / (n as f64)
+                };
                 out.push((prev, t));
                 prev = t;
             }
@@ -321,11 +325,7 @@ impl ScenarioDefinition {
     /// # Errors
     ///
     /// A value that is not finite.
-    pub fn normal_operation(
-        &self,
-        factor: f64,
-        temperature_c: f64,
-    ) -> Result<ScenarioDefinition> {
+    pub fn normal_operation(&self, factor: f64, temperature_c: f64) -> Result<ScenarioDefinition> {
         let mut def = self.clone();
         def.id = format!("{}-normal-operation", self.id);
         def.generation_factor = TimeFunction::constant(factor)?;
@@ -442,7 +442,9 @@ impl ScenarioRun {
     /// Row at the step boundary `t_s` (relative tolerance `1e-12` of the run length), if any.
     pub fn row_at(&self, t_s: f64) -> Option<&ScenarioRow> {
         let end = self.rows.last()?.t_s;
-        self.rows.iter().find(|r| (r.t_s - t_s).abs() <= 1e-12 * end)
+        self.rows
+            .iter()
+            .find(|r| (r.t_s - t_s).abs() <= 1e-12 * end)
     }
 }
 
@@ -795,9 +797,12 @@ mod tests {
             end_s: 10.0,
             dt_max_s: 4.0,
         }]);
-        d.generation_factor =
-            TimeFunction::table(vec![0.0, 3.0, 10.0], vec![0.0, 1.0, 1.0], Interpolation::Linear)
-                .unwrap();
+        d.generation_factor = TimeFunction::table(
+            vec![0.0, 3.0, 10.0],
+            vec![0.0, 1.0, 1.0],
+            Interpolation::Linear,
+        )
+        .unwrap();
         d.event_times_s = vec![7.0];
         let b = d.boundaries(&[]).unwrap();
         assert_eq!(b, vec![0.0, 3.0, 7.0, 10.0]);

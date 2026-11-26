@@ -1,0 +1,25 @@
+[package]
+name = "strato-results"
+version = "0.1.0"
+description = "The shared results pipeline of STRATO: one program that writes every number and figure data set used by the website, the report and the deck (curves, scenarios, experimental data, NRMSE records, bound statuses, verification figures) with provenance headers, and a check mode that fails when a committed output is stale. A tool, not part of the WebAssembly solver."
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+name = "strato_results"
+path = "src/lib.rs"
+
+[[bin]]
+name = "strato-results"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+# The verified solver with the scenario engine and the analytical module.
+strato = { path = "../.." }
+# Typed readers of the registers and of the scenario files.
+strato-data = { path = "../strato-data" }
+# The comparison program: rows, statuses, runs and the verification studies it already has.
+strato-compare = { path = "../strato-compare" }

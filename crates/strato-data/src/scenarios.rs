@@ -166,7 +166,12 @@ fn read_row(row: Row<'_>) -> Result<ScenarioRow> {
         "meta" => Record::Meta,
         "history" => Record::History,
         "step" => Record::Step,
-        other => return Err(row.err(Some("record"), format!("`{other}` is not meta, history or step"))),
+        other => {
+            return Err(row.err(
+                Some("record"),
+                format!("`{other}` is not meta, history or step"),
+            ))
+        }
     };
     Ok(ScenarioRow {
         line: row.line(),
@@ -449,10 +454,16 @@ pub fn run_checks(reg: &Register, sc: &Scenarios) -> Report {
                 .collect();
             n += 1;
             if times.windows(2).any(|w| w[1] <= w[0]) {
-                bad.push(format!("{} {variant}/{quantity}: times are not increasing", f.id));
+                bad.push(format!(
+                    "{} {variant}/{quantity}: times are not increasing",
+                    f.id
+                ));
             }
             if record == Record::History && times.first() != Some(&0.0) {
-                bad.push(format!("{} {variant}/{quantity}: a history must start at 0", f.id));
+                bad.push(format!(
+                    "{} {variant}/{quantity}: a history must start at 0",
+                    f.id
+                ));
             }
         }
     }
@@ -508,7 +519,10 @@ pub fn run_checks(reg: &Register, sc: &Scenarios) -> Report {
         for r in f.rows.iter().filter(|r| r.record == Record::Step) {
             n += 1;
             if r.basis != NUMERICAL {
-                bad.push(format!("{}: a step must be labelled as a numerical setting", r.row_id));
+                bad.push(format!(
+                    "{}: a step must be labelled as a numerical setting",
+                    r.row_id
+                ));
             }
         }
         for r in f.rows.iter().filter(|r| {
@@ -565,7 +579,10 @@ pub fn run_checks(reg: &Register, sc: &Scenarios) -> Report {
                         ));
                     }
                 }
-                _ => bad.push(format!("{} `{v}`: a history or the step plan is missing", f.id)),
+                _ => bad.push(format!(
+                    "{} `{v}`: a history or the step plan is missing",
+                    f.id
+                )),
             }
         }
     }
@@ -619,7 +636,10 @@ pub fn run_checks(reg: &Register, sc: &Scenarios) -> Report {
                 .get(Parent::U235, name)
                 .is_some_and(|y| y.fission_source_yield().is_err());
             if !refused {
-                bad.push(format!("{}: {name} is not refused a fission-yield source", f.id));
+                bad.push(format!(
+                    "{}: {name} is not refused a fission-yield source",
+                    f.id
+                ));
             }
         }
     }
@@ -650,13 +670,21 @@ pub fn run_checks(reg: &Register, sc: &Scenarios) -> Report {
             .iter()
             .filter_map(|r| r.value.as_ref().map(|v| v.value))
             .fold(f64::NEG_INFINITY, f64::max);
-        if !at_peak || highest != EXPLORATION_TEMPERATURE_C || peak != Some(EXPLORATION_TEMPERATURE_C)
+        if !at_peak
+            || highest != EXPLORATION_TEMPERATURE_C
+            || peak != Some(EXPLORATION_TEMPERATURE_C)
         {
-            bad.push(format!("{}: the exploration temperature is not IRR-097 = 1197", f.id));
+            bad.push(format!(
+                "{}: the exploration temperature is not IRR-097 = 1197",
+                f.id
+            ));
         }
         let rate = f.meta(EXPLORATION_VARIANT, "rate_density_reference");
         if rate.map(|r| r.text.as_str()) != Some("compact:6-2-1") {
-            bad.push(format!("{}: the exploration rate is not that of compact 6-2-1", f.id));
+            bad.push(format!(
+                "{}: the exploration rate is not that of compact 6-2-1",
+                f.id
+            ));
         }
     }
     verdict(
@@ -688,8 +716,7 @@ pub fn run_checks(reg: &Register, sc: &Scenarios) -> Report {
                     bad.push(format!("{}: {v} is not IRR-097", r.row_id));
                 }
             }
-            if r.source_ids.iter().any(|i| i == "IRR-002") && r.quantity != "fission_rate_density"
-            {
+            if r.source_ids.iter().any(|i| i == "IRR-002") && r.quantity != "fission_rate_density" {
                 // A time that ends the irradiation, 620.2 EFPD, measured from the start of the
                 // file's own clock: a tail that follows a lead-in starts at the lead-in time.
                 n += 1;
@@ -704,7 +731,10 @@ pub fn run_checks(reg: &Register, sc: &Scenarios) -> Report {
                 let s = r.t_seconds().unwrap_or(f64::NAN);
                 // A row at time 0 cites IRR-002 for its value or its label, not for its time.
                 if s > 0.0 && (s - (end - lead)).abs() > 1e-6 {
-                    bad.push(format!("{}: time {s} s is not the end of irradiation", r.row_id));
+                    bad.push(format!(
+                        "{}: time {s} s is not the end of irradiation",
+                        r.row_id
+                    ));
                 }
             }
         }
@@ -717,7 +747,10 @@ pub fn run_checks(reg: &Register, sc: &Scenarios) -> Report {
                 .and_then(|s| s.steps("").last().and_then(|x| x.t_seconds().ok()))
                 .unwrap_or(f64::NAN);
             if lead != "S1" || !(t > 0.0 && t <= s1_end * (1.0 + 1e-12)) {
-                bad.push(format!("{}: the lead-in must be S1 at a time inside its run", r.row_id));
+                bad.push(format!(
+                    "{}: the lead-in must be S1 at a time inside its run",
+                    r.row_id
+                ));
             }
         }
     }
@@ -748,8 +781,8 @@ pub fn run_checks(reg: &Register, sc: &Scenarios) -> Report {
                 for (row, cyc) in rows.iter().zip(&series.cycles) {
                     n += 1;
                     let printed = row.value.as_ref().map_or(f64::NAN, |v| v.value) * 1e19;
-                    let rel = (printed - cyc.fissions_per_m3_per_s).abs()
-                        / cyc.fissions_per_m3_per_s;
+                    let rel =
+                        (printed - cyc.fissions_per_m3_per_s).abs() / cyc.fissions_per_m3_per_s;
                     // The number is printed with three significant digits: half a unit of the
                     // last digit is at most 0.005 / 5.09 = 9.8e-4 of the smallest value.
                     if rel > 1.0e-3 {
@@ -760,13 +793,18 @@ pub fn run_checks(reg: &Register, sc: &Scenarios) -> Report {
                     }
                     let t = row.t_value.as_ref().map_or(f64::NAN, |t| t.value);
                     if (t - start).abs() > 0.05 {
-                        bad.push(format!("{}: cycle starts at {t} d, expected {start} d", row.row_id));
+                        bad.push(format!(
+                            "{}: cycle starts at {t} d, expected {start} d",
+                            row.row_id
+                        ));
                     }
                     start += cyc.efpd;
                 }
                 if let Some(end) = expect("IRR-002") {
                     if (start - end).abs() > 0.05 {
-                        bad.push(format!("the cycle lengths add to {start} d, not IRR-002 = {end} d"));
+                        bad.push(format!(
+                            "the cycle lengths add to {start} d, not IRR-002 = {end} d"
+                        ));
                     }
                 }
             }
@@ -796,7 +834,10 @@ pub fn run_checks(reg: &Register, sc: &Scenarios) -> Report {
                 .collect();
             let listed: Vec<&str> = r.source_ids.iter().map(String::as_str).collect();
             if rows_of.is_empty() || rows_of != listed {
-                bad.push(format!("{}: {hist} has rows {rows_of:?}, the file lists {listed:?}", r.row_id));
+                bad.push(format!(
+                    "{}: {hist} has rows {rows_of:?}, the file lists {listed:?}",
+                    r.row_id
+                ));
             }
         }
     }

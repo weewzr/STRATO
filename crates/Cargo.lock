@@ -290,6 +290,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "strato-results"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "strato",
+ "strato-compare",
+ "strato-data",
+]
+
+[[package]]
 name = "syn"
 version = "3.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"

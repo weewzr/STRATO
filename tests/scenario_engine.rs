@@ -54,7 +54,10 @@ fn shutdown() -> ScenarioDefinition {
             Interpolation::Step,
         )
         .unwrap(),
-        temperature_c: linear(&[0.0, 600.0, 900.0, 2000.0], &[1000.0, 1000.0, 300.0, 300.0]),
+        temperature_c: linear(
+            &[0.0, 600.0, 900.0, 2000.0],
+            &[1000.0, 1000.0, 300.0, 300.0],
+        ),
         plan: vec![
             StepSegment {
                 end_s: 600.0,
@@ -168,7 +171,10 @@ fn a_zero_change_scenario_equals_normal_operation_bit_for_bit() {
     let def = ScenarioDefinition {
         id: "test-zero-change".into(),
         generation_factor: linear(&[0.0, 700.0, 1500.0, 2000.0], &[1.0, 1.0, 1.0, 1.0]),
-        temperature_c: linear(&[0.0, 400.0, 900.0, 2000.0], &[1000.0, 1000.0, 1000.0, 1000.0]),
+        temperature_c: linear(
+            &[0.0, 400.0, 900.0, 2000.0],
+            &[1000.0, 1000.0, 1000.0, 1000.0],
+        ),
         plan: vec![
             StepSegment {
                 end_s: 900.0,
@@ -244,8 +250,11 @@ fn the_diffusivity_is_taken_at_the_middle_of_each_step() {
         }],
         event_times_s: vec![],
     };
-    let run = run_scenario(&def, &config(InitialState::KernelUniform { c_init: 1.0 }, vec![]))
-        .unwrap();
+    let run = run_scenario(
+        &def,
+        &config(InitialState::KernelUniform { c_init: 1.0 }, vec![]),
+    )
+    .unwrap();
     let steps = def.steps(&[]).unwrap();
     for (row, (a, b)) in run.rows.iter().skip(1).zip(&steps) {
         let mid_c = 500.0 + 0.6 * (0.5 * (a + b));
