@@ -124,27 +124,27 @@ Test temperature (°C)
 <line opacity="0.2" stroke="#000000" stroke-width="1" x1="98" y1="104" x2="515" y2="104"/>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="97,104 97,417 "/>
 <text x="88" y="365" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-5
+10⁻⁵
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,365 97,365 "/>
 <text x="88" y="313" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-4
+10⁻⁴
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,313 97,313 "/>
 <text x="88" y="261" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-3
+10⁻³
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,261 97,261 "/>
 <text x="88" y="209" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-2
+10⁻²
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,209 97,209 "/>
 <text x="88" y="157" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-1
+10⁻¹
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,157 97,157 "/>
 <text x="88" y="104" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e0
+10⁰
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,104 97,104 "/>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="98,418 515,418 "/>
@@ -468,39 +468,39 @@ Test temperature (°C)
 <line opacity="0.2" stroke="#000000" stroke-width="1" x1="612" y1="104" x2="1028" y2="104"/>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="611,104 611,417 "/>
 <text x="602" y="417" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-8
+10⁻⁸
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="606,417 611,417 "/>
 <text x="602" y="378" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-7
+10⁻⁷
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="606,378 611,378 "/>
 <text x="602" y="339" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-6
+10⁻⁶
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="606,339 611,339 "/>
 <text x="602" y="300" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-5
+10⁻⁵
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="606,300 611,300 "/>
 <text x="602" y="261" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-4
+10⁻⁴
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="606,261 611,261 "/>
 <text x="602" y="222" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-3
+10⁻³
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="606,222 611,222 "/>
 <text x="602" y="183" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-2
+10⁻²
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="606,183 611,183 "/>
 <text x="602" y="144" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-1
+10⁻¹
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="606,144 611,144 "/>
 <text x="602" y="104" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e0
+10⁰
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="606,104 611,104 "/>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="612,418 1028,418 "/>
@@ -839,27 +839,27 @@ Test temperature (°C)
 <line opacity="0.2" stroke="#000000" stroke-width="1" x1="1125" y1="104" x2="1541" y2="104"/>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="1124,104 1124,417 "/>
 <text x="1115" y="365" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-5
+10⁻⁵
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="1119,365 1124,365 "/>
 <text x="1115" y="313" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-4
+10⁻⁴
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="1119,313 1124,313 "/>
 <text x="1115" y="261" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-3
+10⁻³
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="1119,261 1124,261 "/>
 <text x="1115" y="209" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-2
+10⁻²
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="1119,209 1124,209 "/>
 <text x="1115" y="157" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-1
+10⁻¹
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="1119,157 1124,157 "/>
 <text x="1115" y="104" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e0
+10⁰
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="1119,104 1124,104 "/>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="1125,418 1541,418 "/>
@@ -1106,7 +1106,7 @@ than the published default are labelled alternatives, never defaults (decisions 
 S20-fitted-SiC) are fitted to AGR-1 heating-test data and disagree with the correction factors of Collin (2016) by 4 to 220 times (decision 40). Model: STRATO BTCS five-layer spherical finite difference, package
 </text>
 <text x="24" y="738" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-version 1.0.1, commit 3a0ba1c2894bbb17040e2e60c5fcb2ba10414c2f; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and
+version 1.0.1, commit c9978f0f64b04fe18f312c82c38592f36d05d2f8; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and
 </text>
 <text x="24" y="756" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 C16-BUF), evaluated at the test temperature; kernel-only start; constant temperature; decay and generation are not in the solver. This is a numerical comparison, not an experimental validation.

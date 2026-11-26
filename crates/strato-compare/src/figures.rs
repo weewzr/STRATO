@@ -64,8 +64,28 @@ fn temp_dash(t_c: f64) -> Option<(u32, u32)> {
     }
 }
 
+/// A tick label of a logarithmic axis: ten with a superscript exponent, for example 10⁻³.
 fn sci(v: &f64) -> String {
-    format!("1e{:.0}", v.log10())
+    let e = v.log10().round() as i32;
+    let sup: String = e
+        .to_string()
+        .chars()
+        .map(|c| match c {
+            '-' => '⁻',
+            '0' => '⁰',
+            '1' => '¹',
+            '2' => '²',
+            '3' => '³',
+            '4' => '⁴',
+            '5' => '⁵',
+            '6' => '⁶',
+            '7' => '⁷',
+            '8' => '⁸',
+            '9' => '⁹',
+            other => other,
+        })
+        .collect();
+    format!("10{sup}")
 }
 
 fn ts(size: u32) -> TextStyle<'static> {
@@ -564,31 +584,42 @@ pub fn glyph_of(p: &Placed) -> Glyph {
     }
 }
 
-fn status_legend() -> Vec<Entry> {
-    vec![
-        entry(
+/// The legend entries of the markers that are actually drawn: an entry exists only if at least one
+/// drawn measurement has the status it describes.
+fn status_legend(placed: &[Placed]) -> Vec<Entry> {
+    let has = |f: &dyn Fn(Status) -> bool| placed.iter().any(|p| drawable(p) && f(p.status));
+    let mut v = Vec::new();
+    if has(&|s| s == Status::WithinReportedUpperBound) {
+        v.push(entry(
             "Upper bound, model within it (WITHIN REPORTED UPPER BOUND)",
             Glyph::BoundDown {
                 c: INK,
                 filled: true,
             },
-        ),
-        entry(
+        ));
+    }
+    if has(&|s| s == Status::ExceedsReportedUpperBound) {
+        v.push(entry(
             "Upper bound exceeded by the model (EXCEEDS REPORTED UPPER BOUND)",
             Glyph::BoundDown {
                 c: VERMILION,
                 filled: false,
             },
-        ),
-        entry(
+        ));
+    }
+    if has(&|s| s == Status::DataIncomplete) {
+        v.push(entry(
             "Hollow diamond: DATA INCOMPLETE, shown for scale, not a comparison",
             Glyph::Diamond { c: INK },
-        ),
-        entry(
+        ));
+    }
+    if has(&|s| matches!(s, Status::NotDirectlyComparable | Status::NotAssessed)) {
+        v.push(entry(
             "Grey cross: NOT DIRECTLY COMPARABLE context (muted)",
             Glyph::Cross,
-        ),
-    ]
+        ));
+    }
+    v
 }
 
 fn temperature_legend() -> Vec<Entry> {
@@ -777,23 +808,28 @@ pub fn figure_a(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
             .iter()
             .filter(|p| p.species == *species && drawable(p))
             .count();
-        let comparable = placed
-            .iter()
-            .filter(|p| {
-                p.species == *species
-                    && drawable(p)
-                    && matches!(
-                        p.status,
-                        Status::WithinReportedUpperBound
-                            | Status::ExceedsReportedUpperBound
-                            | Status::ComparisonAvailable
-                    )
-            })
-            .count();
-        let note = if comparable == 0 {
-            format!("{n_here} registered values drawn; none supports a comparison (context only)")
-        } else {
-            format!("{n_here} registered values drawn; {comparable} support a comparison")
+        let count_of = |f: &dyn Fn(Status) -> bool| {
+            placed
+                .iter()
+                .filter(|p| p.species == *species && drawable(p) && f(p.status))
+                .count()
+        };
+        let n_bounds = count_of(&|s| {
+            matches!(
+                s,
+                Status::WithinReportedUpperBound | Status::ExceedsReportedUpperBound
+            )
+        });
+        let n_points = count_of(&|s| s == Status::ComparisonAvailable);
+        let note = match (n_bounds, n_points) {
+            (0, 0) => format!(
+                "{n_here} registered values drawn; none supports a comparison (context only)"
+            ),
+            (b, 0) => format!("{n_here} registered values drawn; {b} upper-bound comparisons"),
+            (0, p) => format!("{n_here} registered values drawn; {p} point comparisons"),
+            (b, p) => format!(
+                "{n_here} registered values drawn; {b} upper-bound comparisons, {p} point comparisons"
+            ),
         };
         chart
             .draw_series(std::iter::once(Text::new(
@@ -812,10 +848,10 @@ pub fn figure_a(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
         "Hollow square: model over the same 24 h-to-end window as a matrix-corrected value",
         Glyph::Square { c: INK },
     ));
-    items.extend(status_legend());
+    items.extend(status_legend(&placed));
     let y = legend(&root, 40, 520, 760, 2, &items)?;
     let mut text = format!(
-        "Experimental values: {}. Digitised values carry the reading uncertainty of the register; the sources report no measurement uncertainty for these rows, so no error bars are drawn. Compact values are not single-particle values. Rows with several times per compact are drawn at their own times; values without a time are drawn at the registered end of test. Matrix-corrected values are releases over a window that starts at 24 h and ends at the plotted time, so they are drawn beside the model's value over the same window, not against the cumulative curve. The model has no decay: every panel is the element, and the nuclides measured are listed in the panel. Analytical-series values are drawn only where the criterion holds: {} {} ",
+        "Experimental values: {}. Digitised values carry the reading uncertainty of the register; the sources report no per-value measurement uncertainty for these rows (the one general statement, a 5 percent systematic gamma-measurement error plus counting statistics for the Stempien 2023 values, is not a per-value uncertainty and changes no status), so no error bars are drawn. Compact values are not single-particle values. Rows with several times per compact are drawn at their own times; values without a time are drawn at the registered end of test. Matrix-corrected values are releases over a window that starts at 24 h and ends at the plotted time, so they are drawn beside the model's value over the same window, not against the cumulative curve. The model has no decay: every panel is the element, and the nuclides measured are listed in the panel. Analytical-series values are drawn only where the criterion holds: {}. {} ",
         sources_of(&placed),
         crate::studies::ANALYTIC_CRITERION,
         EARLY_TIME_NOTE
@@ -1750,7 +1786,7 @@ fn nuclide_figure(
             .chain(pts.iter().map(|p| (p.0.clone(), p.1))),
     );
     let provenance = format!(
-        "Experimental values: {}. Only the rows whose status supports a comparison are drawn in colour; rows that are NOT DIRECTLY COMPARABLE are muted grey context, because they measure another quantity than the model computes (failed particles, totals that include release in the reactor, another fuel, fuel spheres). A bar on a marker is the reading uncertainty of the register (the error of reading the point off the published figure); it is not a measurement uncertainty, and the sources report none for these rows, so no other error bar is drawn. Compact values are not single-particle values; rows at a temperature outside 1600 to 1800 \u{b0}C or whose value is not a fraction are not drawn. {beyond} Analytical-series values are drawn only where the criterion holds: {}. {} {}",
+        "Experimental values: {}. Only the rows whose status supports a comparison are drawn in colour; rows that are NOT DIRECTLY COMPARABLE are muted grey context, because they measure another quantity than the model computes (failed particles, totals that include release in the reactor, another fuel, fuel spheres). A bar on a marker is the reading uncertainty of the register (the error of reading the point off the published figure); it is not a measurement uncertainty, and the sources report no per-value measurement uncertainty for these rows (a general 5 percent systematic gamma-measurement error stated for the Stempien 2023 values is not a per-value uncertainty and changes no status), so no other error bar is drawn. Compact values are not single-particle values; rows at a temperature outside 1600 to 1800 \u{b0}C or whose value is not a fraction are not drawn. {beyond} Analytical-series values are drawn only where the criterion holds: {}. {} {}",
         sources_of(&placed),
         crate::studies::ANALYTIC_CRITERION,
         EARLY_TIME_NOTE,
@@ -1763,11 +1799,27 @@ fn nuclide_figure(
         640 + 10 + 26 * 6 + 12 + 26 + 19 * text_lines.len() as i32 + 14 + 18 * foot_lines + 30;
     let root = SVGBackend::new(path, (1560, height as u32)).into_drawing_area();
     root.fill(&WHITE).map_err(pe)?;
+    let (heading_tail, subtitle_tail) = if has_point {
+        (
+            "and deviations",
+            "and the deviations of the model from the measurements",
+        )
+    } else if pts.is_empty() {
+        (
+            "and why no deviation is defined",
+            "and the reason why no deviation of the model from the measurements is defined",
+        )
+    } else {
+        (
+            "and the ratios of the model to the measurements, for scale only",
+            "and the ratios of the model to the measurements, which are for scale only because no deviation is defined",
+        )
+    };
     title(
         &root,
-        heading,
+        &format!("{heading}: measurements, BTCS prediction, analytical prediction {heading_tail}"),
         &format!(
-            "Measurements of {nuc}, BTCS prediction, analytical prediction where valid, and the deviations of the model from the measurements; hours counted from reaching the test temperature"
+            "Measurements of {nuc}, BTCS prediction, analytical prediction where valid, {subtitle_tail}; hours counted from reaching the test temperature"
         ),
     )?;
     let areas = root.margin(70, height - 640, 10, 10).split_evenly((1, 2));
@@ -1896,6 +1948,8 @@ fn nuclide_figure(
         let bottom = pts.iter().map(|p| p.1).fold(-1.0f64, f64::min).floor() - 0.5;
         let title_right = if has_point {
             format!("Signed log10 ratio, model over measured value, {nuc}")
+        } else if pts.is_empty() {
+            format!("Deviation of the model from the measurements, {nuc}: not defined")
         } else {
             format!("Log10 ratio, model over measured value, for scale only, {nuc}")
         };
@@ -1962,11 +2016,16 @@ fn nuclide_figure(
         "Plus: analytical prediction (independent series), only where valid",
         Glyph::Plus { c: INK },
     ));
-    items.extend(status_legend());
-    items.push(entry(
-        "Hollow square: model over the same 24 h-to-end window as a matrix-corrected value",
-        Glyph::Square { c: INK },
-    ));
+    items.extend(status_legend(&placed));
+    if placed
+        .iter()
+        .any(|p| drawable(p) && p.model_window.is_some_and(|w| w > 1e-10))
+    {
+        items.push(entry(
+            "Hollow square: model over the same 24 h-to-end window as a matrix-corrected value",
+            Glyph::Square { c: INK },
+        ));
+    }
     items.push(entry(
         "Vertical bar: reading uncertainty of a digitised value; no bar: printed value, exact",
         Glyph::Line {
@@ -2007,22 +2066,12 @@ fn nuclide_figure(
 
 /// Figure I: silver, Ag-110m.
 pub fn figure_i(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
-    nuclide_figure(
-        path,
-        inp,
-        Species::Ag,
-        "I. Silver-110m (Ag-110m): measurements, BTCS prediction, analytical prediction and deviations",
-    )
+    nuclide_figure(path, inp, Species::Ag, "I. Silver-110m (Ag-110m)")
 }
 
 /// Figure J: strontium, Sr-90.
 pub fn figure_j(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
-    nuclide_figure(
-        path,
-        inp,
-        Species::Sr,
-        "J. Strontium-90 (Sr-90): measurements, BTCS prediction, analytical prediction and deviations",
-    )
+    nuclide_figure(path, inp, Species::Sr, "J. Strontium-90 (Sr-90)")
 }
 
 /// Figure K: caesium-137, for which AGR-1 and AGR-2 report no release (decision 43).

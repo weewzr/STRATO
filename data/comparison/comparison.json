@@ -3,7 +3,7 @@
   "provenance": {
     "solver": "STRATO BTCS five-layer spherical finite difference",
     "solver_package_version": "1.0.1",
-    "commit": "3a0ba1c2894bbb17040e2e60c5fcb2ba10414c2f",
+    "commit": "c9978f0f64b04fe18f312c82c38592f36d05d2f8",
     "label": "numerical solution of the stated model; not experimental validation",
     "release_measurements_sha256": "873352515ae4c64d57acce407100e40c1b11d8bbfde80beb948a98adb96ef2f2",
     "arrhenius_sha256": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
@@ -211,6 +211,10 @@
     {
       "code": "other_fuel_batch",
       "meaning": "AGR-2 fuel"
+    },
+    {
+      "code": "other_particle_design",
+      "meaning": "JAERI UO2 TRISO of another design than the registered geometry"
     },
     {
       "code": "failed_or_released_particles",
@@ -5692,7 +5696,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -5716,7 +5720,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -5740,7 +5744,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -5764,7 +5768,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -5788,7 +5792,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -5812,7 +5816,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -5836,7 +5840,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -5860,7 +5864,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -5884,7 +5888,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -5908,7 +5912,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -5932,7 +5936,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -5956,7 +5960,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -5980,7 +5984,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6004,7 +6008,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6028,7 +6032,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6052,7 +6056,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6076,7 +6080,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6100,7 +6104,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6124,7 +6128,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6148,7 +6152,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6172,7 +6176,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6196,7 +6200,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6220,7 +6224,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6244,7 +6248,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6268,7 +6272,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6292,7 +6296,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6316,7 +6320,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6340,7 +6344,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6364,7 +6368,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6388,7 +6392,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6412,7 +6416,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6436,7 +6440,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {
@@ -6460,7 +6464,7 @@
       "source_location": "2.pdf Table 4-9; printed p. 164; idx 170",
       "status": "DATA INCOMPLETE",
       "status_rule": "denominator_not_established",
-      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+      "status_reason": "the register does not establish what this fraction is a fraction of (decision 22); the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
       "evaluation_kind": "none"
     },
     {

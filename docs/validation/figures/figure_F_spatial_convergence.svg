@@ -62,19 +62,19 @@ Kernel mesh width (m)
 <line opacity="0.2" stroke="#000000" stroke-width="1" x1="104" y1="78" x2="1181" y2="78"/>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="103,78 103,413 "/>
 <text x="94" y="330" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-5
+10⁻⁵
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="98,330 103,330 "/>
 <text x="94" y="246" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-4
+10⁻⁴
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="98,246 103,246 "/>
 <text x="94" y="162" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-3
+10⁻³
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="98,162 103,162 "/>
 <text x="94" y="78" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-2
+10⁻²
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="98,78 103,78 "/>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="104,414 1181,414 "/>
@@ -209,7 +209,7 @@ the dimensionless Fourier number D t / R² of the whole sphere, with R the outer
 everywhere. It is a numerical verification case, not physical data. The orders printed are observed between neighbouring levels; they are reported, not required to meet a
 </text>
 <text x="24" y="608" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-target (decision 7). Solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit 3a0ba1c2894bbb17040e2e60c5fcb2ba10414c2f. The case is a
+target (decision 7). Solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit c9978f0f64b04fe18f312c82c38592f36d05d2f8. The case is a
 </text>
 <text x="24" y="626" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 numerical verification case on the registered AGR1-B-M16 radii with the same synthetic diffusion coefficient in all five regions, kernel-only start, absorbing outer

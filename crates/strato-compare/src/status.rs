@@ -312,7 +312,7 @@ pub fn classify(reg: &Register, row: &ReleaseRow) -> Verdict {
         );
         if row.program == Program::Jaeri {
             v.reason.push_str(
-                "; the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability)",
+                "; the heat-up ramp of the loose-particle tests is not stated and the end-of-irradiation profile is missing (see particle_applicability); the particle design (UO2 TRISO of another design) also differs from the registered AGR1-B-M16 geometry",
             );
         }
         if corrected && row.group == Group::Intact {
@@ -338,6 +338,16 @@ pub fn classify(reg: &Register, row: &ReleaseRow) -> Verdict {
             }
         }
         return v;
+    }
+
+    // 6b. JAERI loose particles are UO2 TRISO of another design: even with an established
+    // denominator they are not run against the registered AGR1-B-M16 geometry.
+    if row.program == Program::Jaeri {
+        return verdict(
+            Status::NotDirectlyComparable,
+            "other_particle_design",
+            "JAERI UO2 TRISO particles of another design; the registered geometry and coefficients are those of AGR-1, so the row is not run against them",
+        );
     }
 
     // 7. Intact compacts: what the model can be compared with.
@@ -471,6 +481,10 @@ pub const CATEGORIES: &[(&str, &str)] = &[
     ),
     ("fuel_sphere", "fuel sphere of a benchmark"),
     ("other_fuel_batch", "AGR-2 fuel"),
+    (
+        "other_particle_design",
+        "JAERI UO2 TRISO of another design than the registered geometry",
+    ),
     (
         "failed_or_released_particles",
         "failed SiC or releasing particle",
