@@ -4,16 +4,16 @@
 # generator: strato 1.0.1
 # converter: strato-webtools precomputed v2
 # strato_version: 1.0.1
-# commit: 433b814338138ef841052bc43ad0ff9888949580
+# commit: cd9081982c09d892ec136fdb4dae98783575eb2b
 # input_file: inputs/synthetic/synthetic_five_layer.toml
-# input_sha256: 257fe9933a4c1dee38a44545209bfafea7fc06945f389fad9aeb5f0d739afa93
+# input_file_sha256: 257fe9933a4c1dee38a44545209bfafea7fc06945f389fad9aeb5f0d739afa93
 # command: cargo run --locked --release --bin strato-btcs -- inputs/synthetic/synthetic_five_layer.toml --out results/web-btcs --snapshots <fractions of the end time> --commit <commit> --parameter-source <source> --parameter-class <class>
 # rustc: rustc 1.100.0 (0ef1bc386 2026-11-09)
-# created_utc: 2026-11-26T03:53:38Z
+# created_utc: 2026-11-26T05:14:38Z
 # STRATO BTCS five-layer spherical finite difference: radial concentration profiles
 # label: numerical solution of the stated model; not experimental validation
 # solver_package_version: 1.0.1
-# commit: 433b814
+# commit: cd90819
 # case: synthetic-five-layer-release
 # species: synthetic
 # input_file: synthetic_five_layer.toml
