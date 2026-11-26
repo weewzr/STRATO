@@ -22,7 +22,7 @@ Each case directory holds:
 
 All three cases are synthetic numerical benchmarks, not literature data. Agreement with the
 references is numerical verification of the stated model; it is not experimental validation. The
-finite-volume files in `tests/golden/v1.0/` are not used here.
+finite-volume files of version 1.0 are retired (see `docs/archive/finite-volume/README.md`) and are not used here.
 
 ## Regeneration record
 

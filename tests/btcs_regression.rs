@@ -5,11 +5,11 @@
 //! hand. Truth is established by `independent_check.csv` beside each case (agreement with the
 //! Sturm-Liouville series or the closed form of the homogeneous sphere, by an error estimate from the run's own
 //! refinements and a stated convention (not a derived bound); see `src/validation/regression.rs`), and by
-//! `tests/btcs_verification.rs`. The finite-volume golden files of `tests/golden/v1.0/` are not
+//! `tests/btcs_verification.rs`. The finite-volume files of version 1.0 are retired and are not
 //! used here.
 //!
 //! Comparison rule, fixed when the files were first written: `|a - b| <= 1e-12 max(scale, |a|,
-//! |b|)` per value (the rule of `tests/phase1_regression.rs`), with `scale` 1 for times and
+//! |b|)` per value (the rule of `tests/analytical_series_regression.rs`), with `scale` 1 for times and
 //! release fractions, the initial inventory for mol, the largest concentration of the file for
 //! concentrations, and the largest radius for radii. A mismatch means the code changed.
 

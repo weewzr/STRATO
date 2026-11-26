@@ -501,7 +501,7 @@ pub fn generate(cfg: &Config, case: &Case, input_file: &str, commit: &str) -> Re
     if let (Some((ta, fa)), Some(diff)) = (case.anchor, report.anchor_difference) {
         let _ = writeln!(
             check,
-            "# separate-language anchor: F({ta:e} s) = {fa:e} from the Python oracle pinned in tests/finite_volume_vs_analytical.rs; |series - anchor| = {diff:e}"
+            "# separate-language anchor: F({ta:e} s) = {fa:e} from the Python oracle pinned in tests/analytical_reference.rs; |series - anchor| = {diff:e}"
         );
     }
     let _ = writeln!(check, "# {}", crate::postprocessing::export::LABEL);

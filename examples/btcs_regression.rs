@@ -6,7 +6,8 @@
 //!
 //! For every case of `strato::validation::regression::CASES` it runs the independent check (the
 //! BTCS release fraction against the Sturm-Liouville series or the closed form of the homogeneous
-//! sphere) and prints one line per checkpoint. With `--write DIR` it also writes
+//! sphere) and prints one line per checkpoint and ends with `BTCS_REGRESSION_CHECK PASS` (exit code 0) when every checkpoint passes,
+//! otherwise it fails. With `--write DIR` it also writes
 //! `DIR/<case>/timeseries.csv`, `final_profile.csv` and `independent_check.csv`, but only if every
 //! checkpoint passes. `--root` is the repository root that holds the TOML inputs (default: the
 //! current directory). `--commit` is the commit of the source tree the values are produced at; it
@@ -43,11 +44,13 @@ fn main() -> Result<()> {
     if write.is_some() && commit.is_none() {
         bail!("--write needs --commit: the files record the commit they were produced at");
     }
+    let mut all_passed = true;
     for case in CASES.iter() {
         let path = Path::new(&root).join(case.input);
         let cfg = Config::load(&path).with_context(|| format!("loading {}", case.input))?;
         let report = independent_check(&cfg, case)?;
         println!("case={} reference={}", case.id, report.reference_text);
+        all_passed &= report.rows.iter().all(|r| r.passed());
         for r in &report.rows {
             println!(
                 "  t={:e} F_run={:e} F_ref={:e} |F_run-F_ref|={:e} orders (time, space)=({:.3}, {:.3}) |F_ref-F_limit|={:e} tolerance={:e} ratio={:.3e} passed={}",
@@ -73,5 +76,9 @@ fn main() -> Result<()> {
             println!("  written: {}", case.id);
         }
     }
+    if !all_passed {
+        bail!("BTCS_REGRESSION_CHECK FAIL: at least one checkpoint failed its stated convention");
+    }
+    println!("BTCS_REGRESSION_CHECK PASS");
     Ok(())
 }

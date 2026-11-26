@@ -1,5 +1,4 @@
-//! Comparison of the two solvers, refinement studies, figures and data export.
+//! Helpers for the analytical reference and the data export of the BTCS runs.
 
 pub mod comparison;
 pub mod export;
-pub mod plots;
