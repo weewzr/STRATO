@@ -70,6 +70,9 @@ export function startAddressSync(): () => void {
     if (hasSelectionKeys(query)) {
       const next = parseSelection(query);
       if (!sameSelection(next, useStrato.getState().selection)) useStrato.setState({ selection: next });
+      // Normalise the address to the selection actually held (an invalid value falls back to the default).
+      const want = exploreHash(useStrato.getState().selection);
+      if (window.location.hash !== want) window.history.replaceState(window.history.state, '', want);
     } else write();
   };
 

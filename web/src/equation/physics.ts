@@ -98,7 +98,7 @@ export const TERM_MEANINGS: readonly TermMeaning[] = [
     symbol: operatorTex(D_CONSTANT),
     name: 'Spherical diffusion',
     meaning:
-      'Net transport of the species by diffusion in spherical geometry: Fick\u2019s first law gives the flux, and the divergence of the flux in a thin shell changes the concentration. D is the diffusivity of the material, constant inside each of the five layers.',
+      'Net transport of the species by diffusion in spherical geometry: Fick\u2019s first law gives the flux, and the divergence of the flux in a thin shell changes the concentration. D is the diffusivity of the material, uniform in space inside each of the five layers (with temperature dependence it also depends on T).',
     unit: String.raw`D:\ \mathrm{m^2\ s^{-1}}`,
     mechanism: null,
   },
@@ -116,7 +116,7 @@ export const TERM_MEANINGS: readonly TermMeaning[] = [
     symbol: 'G',
     name: 'Fission-product generation',
     meaning:
-      'The rate at which the species is born by fission, per unit volume; in the particle it is a source in the kernel only. Its value is a user input in this build, not a measured quantity.',
+      'The rate at which the species is born by fission, per unit volume; in the particle it is a source in the kernel only. Until a cited fission-rate density is registered, its value will be a user input, not a measured quantity (Document 5).',
     unit: String.raw`\mathrm{mol\ m^{-3}\ s^{-1}}`,
     mechanism: 'generation',
   },

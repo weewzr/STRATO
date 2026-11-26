@@ -66,6 +66,11 @@ describe('the TeX of the governing equation', () => {
     expect(equationTex('combined').replace('D(r,T)', 'D')).toBe(`${BASE} +G -\\lambda C`);
   });
 
+  it('shows exactly the TeX of the structure: the shown pieces without the highlight marks equal the tex pieces', () => {
+    const strip = (s: string) => s.replace(/\\htmlClass\{[^}]*\}\{((?:[^{}]|\{[^{}]*\})*)\}/g, '$1');
+    for (const id of PHYSICS_IDS) for (const p of equationPieces(id)) expect(strip(p.shown), `${id}/${p.id}`).toBe(p.tex);
+  });
+
   it('typesets every variant, with and without the highlight marks, without a KaTeX error', () => {
     for (const id of PHYSICS_IDS) for (const p of equationPieces(id)) {
       expect(() => renderTex(String.raw`\displaystyle ${p.shown}`, false), `${id}/${p.id}`).not.toThrow();

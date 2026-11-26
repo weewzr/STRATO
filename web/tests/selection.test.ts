@@ -86,6 +86,15 @@ describe('selection in the address', () => {
     expect(useStrato.getState().selection).toEqual({ physics: 'combined', scenario: 'shutdown', expanded: ['numerical'] });
   });
 
+  it('rewrites an address with invalid values to the selection actually held', () => {
+    act(() => useStrato.setState({ selection: { ...DEFAULT_SELECTION, expanded: [] } }));
+    window.location.hash = '#/explore?physics=bogus&scenario=zzz';
+    stop = startAddressSync();
+    expect(useStrato.getState().selection.physics).toBe('baseline');
+    expect(window.location.hash).toBe(exploreHash(useStrato.getState().selection));
+    expect(window.location.hash).not.toContain('bogus');
+  });
+
   it('survives navigation between the sections', () => {
     window.location.hash = '#/explore?physics=decay';
     stop = startAddressSync();

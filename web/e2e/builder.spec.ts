@@ -88,6 +88,7 @@ test.describe('progressive equation builder at 1440 x 900', () => {
     await gotoNumerical(page);
     for (const s of STAGES) {
       await pickStage(page, s);
+      await expect(page.locator('[data-section="explore"] [data-status-for]').first()).toBeAttached();
       const chips = await page.locator('[data-section="explore"] [data-status-for]').evaluateAll((els) =>
         els.map((e) => ({ id: (e as HTMLElement).dataset.statusFor ?? '', status: (e as HTMLElement).dataset.status ?? '', text: e.textContent ?? '' })),
       );

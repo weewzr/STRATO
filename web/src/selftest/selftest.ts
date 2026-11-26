@@ -159,6 +159,7 @@ export async function runSelftest(): Promise<void> {
 
   // 4c. Every research status shown equals the generated catalogue (value comparison only).
   //     A chip of one catalogue row (data-status-row) is compared with that row.
+  await waitFor(() => document.querySelector('[data-status-for]') !== null);
   const chips = Array.from(document.querySelectorAll<HTMLElement>('[data-status-for]'));
   const wrong = chips.filter((c) => {
     const row = c.dataset.statusRow ? CATALOGUE.mechanisms.find((m) => `${m.mechanism_id}|${m.species}|${m.material_domain}` === c.dataset.statusRow) : undefined;

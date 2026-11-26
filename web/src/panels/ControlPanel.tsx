@@ -2,6 +2,8 @@ import { Fragment, useId, useMemo, useState, type ReactNode } from 'react';
 import { CASES, type RegionConfig } from '../data/case';
 import { layerColour } from '../design/layers';
 import { clamp, sciText } from '../format';
+import { unsupportedMessage } from '../equation/capability';
+import { useSelectionSupport } from '../equation/useCapability';
 import { METHOD_1 } from '../methods';
 import { configDifferences, useStrato } from '../state/store';
 import { Sci } from './Badge';
@@ -82,6 +84,7 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
   const baseline = useStrato((s) => s.baselineConfig);
   const caseId = useStrato((s) => s.caseId);
   const solverState = useStrato((s) => s.solver.state);
+  const support = useSelectionSupport();
   const validation = useStrato((s) => s.validation);
   const requestRun = useStrato((s) => s.requestRun);
   const { loadCase, setTimeField, setKernelConcentration, setTemperature, resetToBaseline, setCurrentAsBaseline } = useStrato.getState();
@@ -212,10 +215,14 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
         <button
           type="button"
           className="btn btn--primary"
-          aria-disabled={solverState !== 'ready'}
-          aria-describedby={ids.run}
+          aria-disabled={solverState !== 'ready' || !support.supported}
+          aria-describedby={support.supported ? ids.run : `${ids.run}-unsupported`}
           data-testid="run"
           onClick={() => {
+            if (!support.supported) {
+              setAnnounce('Run is not available for this selection. ' + unsupportedMessage(support));
+              return;
+            }
             if (solverState !== 'ready') {
               setAnnounce(solverState === 'failed' ? 'Run is not available: the solver could not be loaded.' : 'The solver is still loading.');
               return;
@@ -250,10 +257,16 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
           Set current as baseline
         </button>
       </div>
-      <p id={ids.run} className="field__hint">
-        {METHOD_1}, the verified STRATO solver compiled to WebAssembly, runs in your browser. A change of input reruns it after a short
-        pause; Run starts a run at once. The solver itself checks every input.
-      </p>
+      {support.supported ? (
+        <p id={ids.run} className="field__hint">
+          {METHOD_1}, the verified STRATO solver compiled to WebAssembly, runs in your browser. A change of input reruns it after a short
+          pause; Run starts a run at once. The solver itself checks every input.
+        </p>
+      ) : (
+        <p id={`${ids.run}-unsupported`} className="field__hint" data-testid="run-unsupported">
+          Run is off for this selection. {unsupportedMessage(support)}
+        </p>
+      )}
       <p className="visually-hidden" role="status" aria-live="polite" data-testid="announce">
         {announce}
       </p>
