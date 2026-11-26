@@ -300,6 +300,13 @@ pub fn classify(reg: &Register, row: &ReleaseRow) -> Verdict {
                 "fuel-sphere value with matrix from a benchmark, approximate text value; not a single-particle quantity",
             );
         }
+        Program::Frg => {
+            return verdict(
+                Status::NotDirectlyComparable,
+                "fuel_sphere_curve",
+                "point of a release-versus-time curve of a fuel sphere with matrix (IAEA-TECDOC-978 Fig. 4-7), digitised from a scan; the sphere total is not a single-particle quantity and the denominator is not stated; the curve is plotted and its assessment (curve_assessment.csv) gives the caption",
+            );
+        }
         Program::Agr2 => {
             return verdict(
                 Status::NotDirectlyComparable,
@@ -594,6 +601,10 @@ pub const CATEGORIES: &[(&str, &str)] = &[
     ("no_test_duration", "no test duration"),
     ("inequality_reported_bound", "reported upper bound"),
     ("inequality_total_as_bound", "total read as an upper bound"),
+    (
+        "fuel_sphere_curve",
+        "point of a release-versus-time curve of a fuel sphere (plotted as a curve)",
+    ),
     (
         "registered_curve_compact_total",
         "point of a registered compact-total curve (plotted as a curve)",
