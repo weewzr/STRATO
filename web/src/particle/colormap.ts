@@ -97,12 +97,12 @@ export function legendTicks(scale: ColourScale): { position: number; label: stri
   if (scale === 'linear')
     return [
       { position: 0, label: '0' },
-      { position: 0.5, label: 'half of the largest' },
-      { position: 1, label: 'the largest' },
+      { position: 0.5, label: '0.5' },
+      { position: 1, label: '1' },
     ];
   const ticks: { position: number; label: string }[] = [];
   const sup = (n: number) => String(n).replace(/\d/g, (k) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[Number(k)] ?? k);
-  for (let d = LOG_DECADES; d > 0; d -= 3) ticks.push({ position: 1 - d / LOG_DECADES, label: `10⁻${sup(d)} of the largest` });
-  ticks.push({ position: 1, label: 'the largest' });
+  for (let d = LOG_DECADES; d > 0; d -= 3) ticks.push({ position: 1 - d / LOG_DECADES, label: `10⁻${sup(d)}` });
+  ticks.push({ position: 1, label: '1' });
   return ticks;
 }
