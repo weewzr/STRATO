@@ -58,6 +58,28 @@ const DESIGN_BOUND_RANGES: [(&str, u32, u32); 18] = [
     ("ag110m", 462, 471),
 ];
 
+/// The matrix-corrected rows of intact compacts (decision 67): fractions of the as-run calculated
+/// compact inventory over a window from about 24 h at temperature to the end of the 300 h plateau.
+/// They are window upper bounds under premise BP1 and never point comparisons: the source calls
+/// the correction an attempt that cannot separate particle release from matrix release.
+const MATRIX_CORRECTED_RANGES: [(&str, u32, u32); 2] = [("cs134", 10, 14), ("ag110m", 33, 37)];
+
+/// Length of the plateau that ends the window of a matrix-corrected row, hours.
+const PLATEAU_H: f64 = 300.0;
+/// The start of the window of a matrix-corrected row ("about 24 h" in the source), hours.
+const WINDOW_START_H: f64 = 24.0;
+
+/// The note that goes with BP1 for the matrix-corrected rows (decision 67).
+pub const BP1_SOURCE_NOTE: &str = "For the matrix-corrected rows BP1 is the source's own assumption, not an established fact: the authors call the correction an attempt that cannot separate particle release from matrix release. The window runs from about 24 h at temperature to the end of the 300 h plateau, or to the end of the test if shorter.";
+
+/// True if the row is a matrix-corrected row of an intact compact (decision 67).
+pub fn is_matrix_corrected(nuc_id: &str, id: &str) -> bool {
+    let Some(n) = id_number(id) else { return false };
+    MATRIX_CORRECTED_RANGES
+        .iter()
+        .any(|(nu, a, b)| *nu == nuc_id && (*a..=*b).contains(&n))
+}
+
 fn id_number(id: &str) -> Option<u32> {
     id.strip_prefix("E-")?.parse().ok()
 }
@@ -216,6 +238,24 @@ pub fn bounds(
         if !super::curves::exp_temperatures(nuc.id).contains(&t_c) {
             continue;
         }
+        if is_matrix_corrected(nuc.id, &row.id) {
+            // Decision 67: a window upper bound under BP1, never a point.
+            if let Plan::Point { spec, .. } = &rec.verdict.plan {
+                cands.push(Cand {
+                    row,
+                    nuc,
+                    t_c,
+                    t_h: spec.t_end_h.min(PLATEAU_H),
+                    t_start_h: if spec.window_start_h > 0.0 {
+                        spec.window_start_h
+                    } else {
+                        WINDOW_START_H
+                    },
+                    kind: "window_bound",
+                });
+            }
+            continue;
+        }
         let from_compare = match &rec.verdict.plan {
             Plan::Inequality { spec, .. } if matches!(rec.eval, Eval::Bound { .. }) => {
                 Some((spec.t_end_h, spec.window_start_h))
@@ -295,10 +335,11 @@ pub fn bounds(
     // Method B at every time of a cell, in one call per cell.
     let mut b_times: BTreeMap<(&'static str, i64), Vec<f64>> = BTreeMap::new();
     for c in &cands {
-        b_times
-            .entry((c.nuc.id, c.t_c as i64))
-            .or_default()
-            .push(c.t_h * 3600.0);
+        b_times.entry((c.nuc.id, c.t_c as i64)).or_default().extend(
+            [c.t_h * 3600.0, c.t_start_h * 3600.0]
+                .into_iter()
+                .filter(|t| *t > 0.0),
+        );
     }
     for w in &wins {
         let e = b_times.entry((w.nuc.id, w.t_c as i64)).or_default();
@@ -361,8 +402,13 @@ pub fn bounds(
         let resolved =
             matches!((model, refined), (Some(m), Some(r)) if r > 0.0 && (m - r).abs() <= 0.05 * r);
         let ut = u_t.unwrap_or(0.0);
+        let start_value = if c.t_start_h > 0.0 {
+            fa(c.t_start_h).unwrap_or(0.0)
+        } else {
+            0.0
+        };
         let pm = match (fa(c.t_h - ut), fa(c.t_h + ut)) {
-            (Some(a), Some(b)) => Some((a, b)),
+            (Some(a), Some(b)) => Some((a - start_value, b - start_value)),
             _ => None,
         };
         let (status, reason) = match (model, resolved) {
@@ -397,7 +443,13 @@ pub fn bounds(
             model_a: model,
             model_a_refined: refined,
             model_a_pm_t: pm,
-            model_b: b_at(c.nuc.id, c.t_c, c.t_h),
+            model_b: if c.t_start_h > 0.0 {
+                b_at(c.nuc.id, c.t_c, c.t_h)
+                    .zip(b_at(c.nuc.id, c.t_c, c.t_start_h))
+                    .map(|(e, s)| e - s)
+            } else {
+                b_at(c.nuc.id, c.t_c, c.t_h)
+            },
             status,
             reason,
             robust,
@@ -584,7 +636,14 @@ pub fn bound_json(b: &BoundRec) -> J {
         ("denominator", J::s(b.denominator.clone())),
         ("reading_uncertainty", J::s(b.reading.clone())),
         ("systematic_uncertainty", J::s(SYSTEMATIC_AGR1)),
-        ("premises", J::Arr(vec![J::s(BP1), J::s(BP2), J::s(A1)])),
+        (
+            "premises",
+            J::Arr(if b.kind == "window_bound" && b.ends.is_none() {
+                vec![J::s(BP1), J::s(BP1_SOURCE_NOTE), J::s(BP2), J::s(A1)]
+            } else {
+                vec![J::s(BP1), J::s(BP2), J::s(A1)]
+            }),
+        ),
     ])
 }
 
@@ -800,6 +859,7 @@ pub fn candidates(
         if matches!(row.value, ReleaseValue::UpperBound(_))
             || matches!(rec.eval, Eval::Bound { .. })
             || is_design_bound(nuc.id, &row.id)
+            || is_matrix_corrected(nuc.id, &row.id)
         {
             out.push(excluded("upper_bound"));
             continue;
@@ -1084,5 +1144,22 @@ mod tests {
         assert!(is_design_bound("ag110m", "E-186"));
         assert!(!is_design_bound("ag110m", "E-033"));
         assert!(!is_design_bound("cs134", "E-171"));
+    }
+
+    #[test]
+    fn the_matrix_corrected_rows_are_window_bounds_and_never_points() {
+        // Decision 67: E-010..E-014 (Cs-134) and E-033..E-037 (Ag-110m).
+        for id in ["E-010", "E-014"] {
+            assert!(is_matrix_corrected("cs134", id));
+            assert!(!is_matrix_corrected("ag110m", id));
+        }
+        for id in ["E-033", "E-037"] {
+            assert!(is_matrix_corrected("ag110m", id));
+            assert!(!is_matrix_corrected("cs134", id));
+        }
+        for id in ["E-009", "E-015", "E-032", "E-038", "E-187"] {
+            assert!(!is_matrix_corrected("cs134", id) && !is_matrix_corrected("ag110m", id));
+        }
+        assert!(BP1_SOURCE_NOTE.contains("not an established fact"));
     }
 }

@@ -278,7 +278,7 @@ impl ScenarioDefinition {
     ///
     /// A lead-in that ends before `t_e`, or histories that cannot be joined.
     pub fn with_lead_in(&self, lead: &ScenarioDefinition, t_e: f64) -> Result<ScenarioDefinition> {
-        if !(t_e > 0.0) || lead.end_s() < t_e * (1.0 - 1e-12) {
+        if t_e.is_nan() || t_e <= 0.0 || lead.end_s() < t_e * (1.0 - 1e-12) {
             bail!("the lead-in must reach the join time");
         }
         let mut plan: Vec<StepSegment> = Vec::new();
@@ -759,7 +759,7 @@ fn min_max(c: &[f64]) -> (f64, f64) {
 pub fn post_event_fraction(run: &ScenarioRun, t_e_s: f64, t_s: f64) -> Option<f64> {
     let e = run.row_at(t_e_s)?;
     let r = run.row_at(t_s)?;
-    if r.t_s < e.t_s || !(e.inventory_mol > 0.0) {
+    if r.t_s < e.t_s || e.inventory_mol.is_nan() || e.inventory_mol <= 0.0 {
         return None;
     }
     Some((r.released_mol - e.released_mol) / e.inventory_mol)
