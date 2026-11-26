@@ -51,9 +51,12 @@ test.describe('rendered documents', () => {
     });
   }
 
-  test('the About page leads to the document list, which links every document', async ({ page, problems }) => {
+  // The document links moved from the About page to Scientific Documentation ("Derivations"); About links there.
+  test('Scientific Documentation leads to the document list, which links every document', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'about');
+    await page.getByRole('link', { name: 'Scientific Documentation', exact: true }).first().click();
+    await expect(page.locator('[data-section="documentation"] h1')).toBeVisible();
     // Leave only after the first page view has finished loading, so no request is cut off.
     await page.waitForLoadState('networkidle');
     await page.getByRole('link', { name: 'all documents rendered on this site' }).click();

@@ -339,8 +339,12 @@ test.describe('verification panel', () => {
     expect(identical(diff[0]!.x, COMPARISON.data.t_s)).toBe(true);
     for (const id of ['verify-bc-release', 'verify-bc-difference', 'verify-check', 'verify-balance']) {
       await expect(page.getByTestId(id).locator('.figure__head .badge')).toHaveText('PRECOMPUTED');
-      await expect(page.getByTestId(id).locator('figcaption')).toContainText('commit');
-      await expect(page.getByTestId(id).locator('figcaption')).toContainText('solver version');
+      await expect(page.getByTestId(id).locator('figcaption')).toContainText('Figure');
+      await expect(page.getByTestId(id).getByRole('link', { name: 'Data file' })).toHaveAttribute('href', /\/data\/btcs_[a-z_]+\.json$/);
+    }
+    // The provenance of the precomputed files moved to Scientific Documentation (commit, solver version, command).
+    for (const file of ['btcs_vs_analytical.json', 'btcs_independent_check.json', 'btcs_run.json']) {
+      await expect(page.getByTestId(`prov-${file}`)).toHaveCount(0);
     }
     await drawn(page, 'verify-check-plot');
     await drawn(page, 'verify-balance-plot');
@@ -356,6 +360,21 @@ test.describe('verification panel', () => {
       return { table: t.scrollWidth, box: box.clientWidth };
     });
     expect(fit.table).toBeLessThanOrEqual(fit.box);
-    await expect(page.getByTestId('solver-status')).toContainText('VERIFIED');
+    await expect(page.getByTestId('verify-status')).toContainText('VERIFIED');
+    await expect(page.getByTestId('verify-status')).toContainText('Method A: BTCS');
+  });
+
+  test('the provenance, scope and numbers behind the verification figures are in Scientific Documentation', async ({ page, problems }) => {
+    void problems;
+    await page.goto('./#/documentation/verify-files');
+    for (const file of ['btcs_vs_analytical.json', 'btcs_independent_check.json', 'btcs_run.json']) {
+      const row = page.getByTestId(`prov-${file}`);
+      await expect(row).toContainText('2.0.0');
+      await expect(row.locator('code').first()).toBeVisible();
+    }
+    await expect(page.getByTestId('documentation-accuracy-floor')).toContainText('accuracy floor');
+    await expect(page.getByTestId('documentation-balance')).toContainText('Largest relative residual');
+    await expect(page.getByTestId('documentation-scope')).toContainText('constant diffusivity');
+    await expect(page.getByTestId('documentation-checks').locator('tbody tr')).toHaveCount(7);
   });
 });

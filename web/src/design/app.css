@@ -1290,6 +1290,10 @@ select.field__input {
   flex: 1 1 14rem;
   min-width: 0;
 }
+/* The links of a Verify figure (data file, method) sit in one row. */
+.plotfig .figure__kind.figure__kind--fit {
+  flex: 0 0 auto;
+}
 .plotfig--empty {
   border-style: dashed;
 }
@@ -1321,6 +1325,20 @@ select.field__input {
   height: 1rem;
   margin: 0;
   accent-color: var(--accent);
+}
+/* Switches above a figure: the whole label is the 44 px target, and the box is larger than the default. */
+.switch-row .plot-option {
+  min-width: var(--touch-min);
+}
+.switch-row .plot-option input {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+/* The "Data file" link of a precomputed figure is a target of its own. */
+.figure__head a.figure__kind {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
 }
 .plot {
   position: relative;
@@ -2383,6 +2401,12 @@ select.field__input {
   color: var(--text-muted);
   max-width: var(--measure);
 }
+/* In a table that scrolls sideways the caption stays in view at the left edge, at most the width of the screen. */
+.table-box .table__caption {
+  position: sticky;
+  left: 0;
+  width: min(var(--measure), calc(100vw - 2rem));
+}
 .table__caption strong {
   color: var(--text);
 }
@@ -2456,7 +2480,36 @@ select.field__input {
 .status__item {
   white-space: nowrap;
 }
+/* About page: the result labels in one list, the project links in one row. */
+.about__labels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  max-width: var(--measure);
+  gap: var(--space-2) var(--space-5);
+  margin: var(--space-4) 0;
+  padding: 0;
+  list-style: none;
+}
+.about__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-5);
+  margin: 0 0 var(--space-3);
+}
+.about__links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+.about__fine {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
 .status__link {
+  /* A 44 px target without making the footer taller: padding balanced by negative margin. */
+  display: inline-block;
+  padding: 0.75rem 0.5rem;
+  margin: -0.75rem -0.5rem;
   color: var(--accent);
 }
 .status--compact {

@@ -10,6 +10,9 @@ export const SECTIONS = [
   { id: 'research', label: 'Research' },
   { id: 'data', label: 'Data' },
   { id: 'about', label: 'About' },
+  // Always the last entry: the one page for assumptions, limitations, derivations, verification
+  // methodology, experimental interpretation and technical implementation (minimal-text rules).
+  { id: 'documentation', label: 'Scientific Documentation' },
 ] as const;
 
 export type SectionId = (typeof SECTIONS)[number]['id'];
@@ -36,6 +39,31 @@ export function researchPathFromHash(hash: string): { page: string; anchor: stri
 
 export function hrefResearch(page = '', anchor = ''): string {
   return `#/research${page ? `/${encodeURIComponent(page)}` : ''}${anchor ? `/${encodeURIComponent(anchor)}` : ''}`;
+}
+
+/**
+ * Anchor inside Scientific Documentation: `#/documentation/<anchor>`. The anchor is the id of a section
+ * (for example "assumptions") or of an entry of one (src/documentation/); other pages link to it with
+ * hrefDocumentation.
+ */
+export function documentationAnchorFromHash(hash: string): string {
+  const parts = hash.replace(/^#\/?/, '').split('?')[0]?.split('/') ?? [];
+  return parts[0] === 'documentation' ? decodeURIComponent(parts[1] ?? '') : '';
+}
+
+export function hrefDocumentation(anchor = ''): string {
+  return `#/documentation${anchor ? `/${encodeURIComponent(anchor)}` : ''}`;
+}
+
+/** Current Scientific Documentation anchor from location.hash; updates on hashchange. */
+export function useDocumentationAnchor(): string {
+  const [anchor, setAnchor] = useState(() => documentationAnchorFromHash(window.location.hash));
+  useEffect(() => {
+    const on = () => setAnchor(documentationAnchorFromHash(window.location.hash));
+    window.addEventListener('hashchange', on);
+    return () => window.removeEventListener('hashchange', on);
+  }, []);
+  return anchor;
 }
 
 /** Current Research page from location.hash; updates on hashchange. */

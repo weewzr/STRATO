@@ -1,11 +1,14 @@
-import { BUILD, REPO_URL } from '../build';
+import { BUILD } from '../build';
 import { useSelectionSupport } from '../equation/useCapability';
+import { hrefDocumentation } from '../route';
 import { useStrato } from '../state/store';
 import { Badge } from './Badge';
 
 /**
- * Footer status line: label of the current main result, solver state and time, model version and
- * commit. On phones it keeps one line: the result and the build commit.
+ * Footer status line: label of the current main result, solver state and time, the solver version, and a
+ * link to the build details. The build hash, the commit link and the other build facts live in Scientific
+ * Documentation (section "Technical implementation and build"). On phones it keeps one line: the result
+ * and the link.
  */
 export function StatusLine({ compact = false }: { compact?: boolean }) {
   const run = useStrato((s) => s.run);
@@ -43,15 +46,13 @@ export function StatusLine({ compact = false }: { compact?: boolean }) {
       )}
       {compact ? null : (
         <span className="status__item" data-testid="status-version">
-          {solver.build ? `Solver version ${solver.build.btcs.solver.version}` : `STRATO v${BUILD.strato_version}`}
+          {solver.build ? `v${solver.build.btcs.solver.version}` : `v${BUILD.strato_version}`}
         </span>
       )}
-      <span className="status__item" data-testid="status-commit">
-        build{' '}
-        <a href={`${REPO_URL}/commit/${BUILD.commit}`} className="status__link">
-          {BUILD.commit}
+      <span className="status__item" data-testid="status-build">
+        <a href={hrefDocumentation('build')} className="status__link">
+          Build details
         </a>
-        {BUILD.dirty ? (compact ? ' (uncommitted)' : ' (uncommitted changes)') : ''}
       </span>
     </footer>
   );

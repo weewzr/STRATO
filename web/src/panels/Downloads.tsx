@@ -1,6 +1,5 @@
 import { useState, type ReactNode } from 'react';
 import { findCase, type CaseConfig } from '../data/case';
-import { METHOD_1 } from '../methods';
 import { hrefFor } from '../route';
 import { solverClient } from '../solver/session';
 import type { CompareOk, ExportFormat, RunOk } from '../solver/types';
@@ -48,7 +47,6 @@ interface FileSpec {
 interface Item {
   id: string;
   title: string;
-  text: ReactNode;
   run: RunOk | null;
   files: FileSpec[];
   missing: ReactNode;
@@ -61,7 +59,7 @@ function DownloadItem({ item, onError }: { item: Item; onError: (message: string
       <p className="downloads__title">
         {item.title} {item.run ? <Badge label={item.run.label} /> : null}
       </p>
-      <p className="downloads__text">{item.run ? item.text : item.missing}</p>
+      {item.run ? null : <p className="downloads__text">{item.missing}</p>}
       {item.run ? (
         <div className="downloads__actions">
           {item.files.map((f) => (
@@ -86,7 +84,7 @@ function DownloadItem({ item, onError }: { item: Item; onError: (message: string
       ) : null}
       {item.run && item.stale ? (
         <p className="downloads__text" data-testid={`dl-${item.id}-stale`}>
-          These are the results of the last finished run; the inputs have changed since, so the files can be written again when the new run has finished.
+          Results of the last finished run; the inputs have changed since.
         </p>
       ) : null}
     </li>
@@ -136,7 +134,6 @@ export function LiveDownloads() {
       title: 'Current run',
       run,
       stale: run !== null && info?.inputKey !== inputKey(config),
-      text: `The run shown on Explore, written by the solver in Rust: the time series (inventory, release, mass-balance residual with its derived bound), the concentration at every node at every output time, and the JSON of the whole run, each file with the provenance header of ${METHOD_1}.`,
       missing: (
         <>
           No run yet. The solver runs the inputs on <a href={hrefFor('explore')}>Explore</a> as soon as it has loaded.
@@ -149,7 +146,6 @@ export function LiveDownloads() {
       title: 'Baseline run',
       run: reply?.baseline ?? null,
       stale: compareStale,
-      text: 'The baseline run of the last comparison, written by the solver in the same three files.',
       missing: (
         <>
           Appears when a comparison has run: open <a href={hrefFor('compare')}>Compare</a>.
@@ -162,7 +158,6 @@ export function LiveDownloads() {
       title: 'Comparison',
       run: reply?.modified ?? null,
       stale: compareStale,
-      text: 'Both release fractions and their difference, the release fraction of the current inputs minus that of the baseline, at the output times both runs share, written by the solver in Rust as a CSV with the provenance header.',
       missing: (
         <>
           Appears when a comparison has run: open <a href={hrefFor('compare')}>Compare</a>.

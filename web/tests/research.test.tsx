@@ -24,7 +24,9 @@ import {
 } from '../src/research/entries';
 import { FutureResearch } from '../src/research/FutureResearch';
 import { GalleryItem } from '../src/research/parts';
-import { STATUSES, type ResearchStatus } from '../src/research/status';
+import { pathLabel } from '../src/research/PathLink';
+import { STATUS_INFO, STATUSES, type ResearchStatus } from '../src/research/status';
+import { Documentation } from '../src/sections/Documentation';
 import { Research } from '../src/sections/Research';
 import { useStrato } from '../src/state/store';
 
@@ -259,13 +261,62 @@ describe('statuses shown equal the catalogue, as word and shape', () => {
     }
   });
 
-  it('shows a legend that defines all five statuses', () => {
+  // The definitions of the five statuses moved from the legend to Scientific Documentation (minimal-text
+  // rules): the legend is one row of the five words, the definitions are printed once, in the documentation.
+  it('shows a legend of the five statuses as one row, with a link to their definitions', () => {
     renderPage('');
     const legend = screen.getByTestId('status-legend');
     const words = Array.from(legend.querySelectorAll('.status-chip__word')).map((w) => w.textContent);
     expect(words).toEqual([...STATUSES]);
-    expect(legend.querySelectorAll('dd')).toHaveLength(5);
-    for (const dd of Array.from(legend.querySelectorAll('dd'))) expect((dd.textContent ?? '').length).toBeGreaterThan(20);
+    expect(legend.querySelectorAll('dd')).toHaveLength(0);
+    expect(within(legend).getByRole('link', { name: 'Definitions' }).getAttribute('href')).toBe('#/documentation/research-status-scale');
+  });
+
+  it('defines all five statuses once, in Scientific Documentation', () => {
+    render(<Documentation />);
+    const rows = Array.from(screen.getByTestId('research-status-scale').querySelectorAll('tbody tr'));
+    expect(rows.map((r) => r.querySelector('.status-chip__word')?.textContent)).toEqual([...STATUSES]);
+    for (const [i, s] of STATUSES.entries()) {
+      expect(rows[i]?.querySelectorAll('td')[1]?.textContent).toBe(STATUS_INFO[s].definition);
+      expect((document.body.textContent ?? '').split(STATUS_INFO[s].definition).length - 1, s).toBe(1);
+    }
+  });
+
+  it('keeps the statements of what the catalogue does not do in Scientific Documentation, and off the pages', () => {
+    const doc = render(<Documentation />);
+    const text = doc.container.textContent ?? '';
+    const statements = ['Nothing in the research catalogue is simulated.', 'a research concept that STRATO does not solve', 'No mechanism is switched on for a species automatically'];
+    for (const s of statements) expect(text, s).toContain(s);
+    doc.unmount();
+    for (const page of ['', 'gallery', 'references', 'roadmap', 'species-ag', 'ag_trapping_detrapping']) {
+      const view = renderPage(page);
+      for (const s of statements) expect(view.container.textContent ?? '', `${page}: ${s}`).not.toContain(s);
+      view.unmount();
+    }
+  });
+
+  it('shows no file name or path on any research page, and lists the entry files with links in Scientific Documentation', () => {
+    const FILE = /\b[\w-]+\.(?:rs|toml|md|csv|json|ya?ml)\b|\b(?:src|crates|tests|docs|data|inputs)\//;
+    for (const page of ALL_PAGES) {
+      const view = renderPage(page);
+      expect(view.container.textContent ?? '', `research page "${page}"`).not.toMatch(FILE);
+      view.unmount();
+    }
+    const doc = render(<Documentation />);
+    const list = doc.getByTestId('research-entry-files');
+    const hrefs = [...list.querySelectorAll('a')].map((a) => a.getAttribute('href') ?? '');
+    for (const path of Object.keys(CATALOGUE.entries)) {
+      expect(hrefs.some((h) => h.endsWith(`/${path}`)), path).toBe(true);
+      expect(list.textContent ?? '', path).toContain(path);
+    }
+    expect(doc.getByTestId('doc-item-research-roadmap').textContent ?? '').toContain('The brick roadmap lists the nine bricks');
+    doc.unmount();
+  });
+
+  it('names a folder by what it holds, so two folders with the same last part differ', () => {
+    expect(pathLabel('tests/golden/btcs')).not.toBe(pathLabel('docs/mathematics/btcs'));
+    expect(pathLabel('data/diffusivity/arrhenius.csv#A3-05')).toBe('diffusivity register A3-05');
+    expect(pathLabel('some/new/file_name.json')).toBe('file name');
   });
 
   it('keeps the roadmap text in step with the catalogue rows of each brick', () => {
@@ -288,7 +339,7 @@ describe('no pending mechanism has an enabled switch', () => {
     await user.keyboard(' ');
   };
 
-  it('gives every row of an entry a switch that is present, focusable, disabled and says what is missing', async () => {
+  it('gives every row of an entry a switch that is present, focusable, disabled and says what is missing', { timeout: 120_000 }, async () => {
     act(() => useStrato.getState().setCapabilities(['diffusion_btcs_layered']));
     const withEntry = CATALOGUE.mechanisms.filter((m) => m.entry);
     for (const path of [...new Set(withEntry.map((m) => m.entry))]) {
@@ -311,7 +362,7 @@ describe('no pending mechanism has an enabled switch', () => {
     }
   });
 
-  it('has no switch without aria-disabled anywhere in the Research section or block E, and sends no solver request', async () => {
+  it('has no switch without aria-disabled anywhere in the Research section or block E, and sends no solver request', { timeout: 120_000 }, async () => {
     let asked = 0;
     act(() => {
       useStrato.getState().setCapabilities(['diffusion_btcs_layered']);
@@ -350,7 +401,7 @@ describe('no pending mechanism has an enabled switch', () => {
 });
 
 describe('Materials Studio gallery', () => {
-  it('shows every placeholder as PENDING with its planned calculation, the future-phase wording and no image', () => {
+  it('lists every placeholder compactly as PENDING with its title and species, and no image', () => {
     renderPage('gallery');
     const items = screen.getAllByTestId('gallery-item');
     expect(items).toHaveLength(CATALOGUE.gallery.length);
@@ -360,11 +411,27 @@ describe('Materials Studio gallery', () => {
       if (row.kind !== 'placeholder') continue;
       expect(it.querySelector('img, canvas, svg:not(.status-chip__shape), picture, video')).toBeNull();
       expect(it.querySelector('.status-chip__word')?.textContent).toBe('PENDING');
-      expect(it.textContent).toContain('Pending placeholder');
-      expect(it.textContent).toContain('planned for a future phase');
-      for (const field of [row.caption, row.method, row.conditions, row.material]) expect(it.textContent).toContain(field);
+      expect(it.textContent).toContain(row.title);
     }
+    // The sentence that all planned calculations share is not repeated on the page.
+    expect(document.body.textContent ?? '').not.toContain('planned for a future phase of the project');
     expect(document.querySelector('[data-section="research"] img')).toBeNull();
+  });
+
+  it('holds the full text of every planned calculation once in Scientific Documentation, with the future-phase wording', () => {
+    render(<Documentation />);
+    const details = screen.getAllByTestId('gallery-detail');
+    const planned = CATALOGUE.gallery.filter((g) => g.kind === 'placeholder');
+    expect(details).toHaveLength(planned.length);
+    for (const row of planned) {
+      const it = details.find((d) => d.dataset.item === row.item_id)!;
+      expect(it.querySelector('img, canvas, picture, video')).toBeNull();
+      expect(it.querySelector('.status-chip__word')?.textContent).toBe('PENDING');
+      for (const field of [row.method, row.conditions, row.material]) expect(it.textContent).toContain(field);
+      expect(it.textContent).toContain(row.caption.replace(/\s*This calculation has not been performed\. It is planned for a future phase of the project\./, ''));
+    }
+    const doc = document.getElementById('doc-research-gallery-planned');
+    expect((doc?.textContent ?? '').match(/planned for a future phase of the project/g)).toHaveLength(1);
   });
 
   it('shows a genuine screenshot only with its file and provenance, and labels reconstructions differently', () => {

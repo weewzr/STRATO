@@ -1,5 +1,4 @@
 import { useEffect, type ReactNode } from 'react';
-import { repoFile } from '../build';
 import { Blocks, headingDomId, Spans } from '../research/Blocks';
 import { useCatalogue, type Catalogue, type EntryInfo } from '../research/catalogue';
 import {
@@ -24,9 +23,9 @@ import {
   rowKey,
 } from '../research/entries';
 import { Counts } from '../research/FutureResearch';
-import { GalleryItem, ReferenceList, RowChip, RowList, RowRecords, RowTable, StatusLegend } from '../research/parts';
+import { GalleryItem, GalleryPlanned, ReferenceList, RowChip, RowList, RowRecords, RowTable, StatusLegend } from '../research/parts';
 import { isImplementedStatus } from '../research/status';
-import { hrefFor, hrefResearch, useResearchPath } from '../route';
+import { hrefDocumentation, hrefFor, hrefResearch, useResearchPath } from '../route';
 import { SectionHeading, TableBox, useHeadingFocus } from './common';
 
 /**
@@ -34,8 +33,8 @@ import { SectionHeading, TableBox, useHeadingFocus } from './common';
  * catalogue, read only from the generated catalogue JSON. Pages: the overview (statuses, what is
  * implemented and what is research, three regimes, nine species, bricks), one page per entry file
  * (species, regime, mechanism), the Materials Studio gallery, the brick roadmap and the reference
- * list. Nothing in this section is simulated, and every live-simulation switch in it is disabled
- * until the Rust solver implements and verifies its mechanism.
+ * list. Every live-simulation switch in it is disabled until the Rust solver implements and
+ * verifies its mechanism; the statements of limits live in Scientific Documentation.
  */
 export function Research() {
   const { page, anchor } = useResearchPath();
@@ -87,27 +86,13 @@ function PageTitle({ children }: { children: ReactNode }) {
   );
 }
 
-/** Where a page's text comes from: the entry file at the build commit and the catalogue tables. */
-function SourceLine({ cat, path }: { cat: Catalogue; path: string }) {
-  return (
-    <p className="source-line">
-      Text: <a href={repoFile(path)}>{path}</a>; statuses and rows: <a href={repoFile('data/research/mechanisms.csv')}>data/research/mechanisms.csv</a>.
-      Catalogue file written by {cat.generator} from commit <code>{cat.commit.slice(0, 7)}</code>.
-    </p>
-  );
-}
-
 function Overview({ cat }: { cat: Catalogue }) {
   const implemented = cat.mechanisms.filter((m) => isImplementedStatus(m.status));
   const builderResearch = cat.mechanisms.filter((m) => !isImplementedStatus(m.status) && m.regime.includes('baseline'));
   const summary = roadmapSummary(cat);
   return (
     <>
-      <SectionHeading lede="Mechanisms of fission-product transport in a TRISO particle, organised as research: what STRATO solves, what has been derived but not implemented, and what is only proposed, with its evidence and what is missing. Nothing in this section is simulated.">
-        Research catalogue
-      </SectionHeading>
-
-      <StatusLegend row />
+      <SectionHeading>Research catalogue</SectionHeading>
 
       <div className="overview">
         <div className="overview__main">
@@ -118,9 +103,6 @@ function Overview({ cat }: { cat: Catalogue }) {
                 Implemented in the solver
               </h3>
               <RowList rows={implemented} label="Mechanisms implemented in the solver" />
-              <p className="split__note">
-                Solved live on <a href={hrefFor('explore')}>Explore</a> by the Rust solver; its tests are under <a href={hrefFor('verify')}>Verify</a>.
-              </p>
             </section>
             <section className="split__side split__side--research" aria-labelledby="ov-builder" data-testid="overview-builder-research">
               <h3 id="ov-builder" className="split__title">
@@ -203,11 +185,12 @@ function Overview({ cat }: { cat: Catalogue }) {
               </tbody>
             </table>
           </TableBox>
-          <p className="section-doc-text">
-            The <a href={hrefResearch('roadmap')}>brick roadmap</a> says what each brick needs before its status may advance. The{' '}
-            <a href={hrefResearch('gallery')}>Materials Studio gallery</a> lists the planned atomistic calculations, and the{' '}
-            <a href={hrefResearch('references')}>reference list</a> holds every source the catalogue cites.
-          </p>
+          <StatusLegend />
+          <nav className="research__links" aria-label="Further catalogue pages">
+            <a href={hrefResearch('roadmap')}>Brick roadmap</a>
+            <a href={hrefResearch('gallery')}>Materials Studio gallery</a>
+            <a href={hrefResearch('references')}>References</a>
+          </nav>
         </div>
       </div>
     </>
@@ -229,7 +212,6 @@ function EntryPage({ cat, path, entry }: { cat: Catalogue; path: string; entry: 
     <div className={`entry entry--${kind}`} data-testid="entry-page" data-entry={path} data-entry-kind={kind}>
       <Crumbs items={[{ label: kindLabel }, { label: entry.title }]} />
       <PageTitle>{entry.title}</PageTitle>
-      <p className="entry__notice">Research entry: nothing on this page is a STRATO result, and every equation on it is a research concept that STRATO does not solve.</p>
       <div className="entry__layout">
         <aside className="entry__record" aria-label="Catalogue record">
           {species ? (
@@ -261,10 +243,6 @@ function EntryPage({ cat, path, entry }: { cat: Catalogue; path: string; entry: 
                   <dd>{species.regimes.join(', ')}</dd>
                 </div>
               </dl>
-              <p className="facts__note">
-                Half-lives and decay constants are those of <code>data/nuclear/decay.csv</code>; a nuclide outside that register is marked, not
-                filled in.
-              </p>
             </section>
           ) : null}
           <section className="facts" aria-labelledby="record-rows" data-testid="entry-rows">
@@ -288,10 +266,6 @@ function EntryPage({ cat, path, entry }: { cat: Catalogue; path: string; entry: 
                     </li>
                   ))}
                 </ul>
-                <p className="facts__note">
-                  No mechanism is switched on for a species automatically: a species is simulated only when a row of its own is implemented and
-                  verified.
-                </p>
               </>
             ) : null}
           </section>
@@ -302,7 +276,6 @@ function EntryPage({ cat, path, entry }: { cat: Catalogue; path: string; entry: 
             References cited on this page
           </h2>
           <ReferenceList ids={refs} catalogue={cat} label="References cited on this page" />
-          <SourceLine cat={cat} path={path} />
         </div>
       </div>
     </div>
@@ -324,9 +297,9 @@ function GalleryPage({ cat }: { cat: Catalogue }) {
     <div className="gallery-page" data-testid="gallery-page">
       <Crumbs items={[{ label: 'Materials Studio gallery' }]} />
       <PageTitle>{entry?.title ?? 'Materials Studio gallery'}</PageTitle>
-      <div className="prose">
-        <Blocks blocks={intro} catalogue={cat} />
-      </div>
+      <p className="gallery-page__status" data-testid="gallery-status">
+        Planned calculations only: no image exists yet. <a href={hrefDocumentation('research-gallery')}>Rules</a>
+      </p>
       <ul className="gallery-kinds" aria-label="Kinds of gallery item">
         {groups.map((g) => (
           <li key={g.kind} className={`gallery-kinds__item gallery-kinds__item--${g.kind}`} data-kind-count={g.items.length}>
@@ -340,20 +313,20 @@ function GalleryPage({ cat }: { cat: Catalogue }) {
         .map((g) => (
           <section key={g.kind} className={`gallery-group gallery-group--${g.kind}`} aria-labelledby={`gallery-${g.kind}`} data-testid={`gallery-group-${g.kind}`}>
             <h2 id={`gallery-${g.kind}`}>{GALLERY_TITLES[g.kind]}</h2>
-            <div className="gallery-grid">
-              {g.items.map((it) => (
-                <GalleryItem key={it.item_id} item={it} catalogue={cat} />
-              ))}
-            </div>
+            {g.kind === 'placeholder' ? (
+              <GalleryPlanned items={g.items} />
+            ) : (
+              <div className="gallery-grid">
+                {g.items.map((it) => (
+                  <GalleryItem key={it.item_id} item={it} catalogue={cat} />
+                ))}
+              </div>
+            )}
           </section>
         ))}
       <div className="prose">
         <h2 className="entry-h entry-h--2">References for the planned subjects</h2>
         <ReferenceList ids={refs} catalogue={cat} label="References for the planned subjects" />
-        <p className="source-line">
-          Items: <a href={repoFile('data/research/gallery.csv')}>data/research/gallery.csv</a>; text:{' '}
-          <a href={repoFile(GALLERY_ENTRY)}>{GALLERY_ENTRY}</a>.
-        </p>
       </div>
     </div>
   );
@@ -361,7 +334,8 @@ function GalleryPage({ cat }: { cat: Catalogue }) {
 
 function RoadmapPage({ cat }: { cat: Catalogue }) {
   const entry = cat.entries[ROADMAP_ENTRY];
-  const body = bodyBlocks(entry);
+  // The introduction of the document (before its first heading) is in Scientific Documentation, once.
+  const body = bodyBlocks(entry).slice(introBlocks(entry).length);
   const summary = roadmapSummary(cat);
   return (
     <div className="roadmap-page" data-testid="roadmap-page">
@@ -381,12 +355,6 @@ function RoadmapPage({ cat }: { cat: Catalogue }) {
                 </p>
                 <div className="brick__body">
                   <p className="brick__adds">{s ? <Spans spans={s.adds} catalogue={cat} /> : null}</p>
-                  {s ? (
-                    <p className="brick__by">
-                      <span className="record__lead">Delivered by: </span>
-                      <Spans spans={s.deliveredBy} catalogue={cat} />
-                    </p>
-                  ) : null}
                   <ul className="brick__rows">
                     {rows.map((r) => (
                       <li key={rowKey(r)}>
@@ -406,7 +374,6 @@ function RoadmapPage({ cat }: { cat: Catalogue }) {
       </section>
       <div className="prose">
         <Blocks blocks={body} catalogue={cat} />
-        <SourceLine cat={cat} path={ROADMAP_ENTRY} />
       </div>
     </div>
   );
@@ -418,10 +385,6 @@ function ReferencesPage({ cat }: { cat: Catalogue }) {
       <Crumbs items={[{ label: 'References' }]} />
       <PageTitle>References of the research catalogue</PageTitle>
       <div className="prose">
-        <p>
-          Every source the catalogue cites, from <a href={repoFile('data/research/references.csv')}>data/research/references.csv</a>, with the date
-          on which its link was opened. A link that has not been opened says so.
-        </p>
         <ReferenceList ids={cat.references.map((r) => r.reference_id)} catalogue={cat} label="All references of the research catalogue" />
       </div>
     </div>

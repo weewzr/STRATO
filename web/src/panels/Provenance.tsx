@@ -4,6 +4,7 @@ import type { CaseEntry, CaseConfig } from '../data/case';
 import { plain } from '../format';
 import { useCatalogue } from '../research/catalogue';
 import { linkCheckedDate } from '../research/entries';
+import { hrefDocumentation } from '../route';
 import { useStrato } from '../state/store';
 import { TableBox } from '../sections/common';
 
@@ -86,6 +87,14 @@ export function filterRows(rows: ParameterRow[], query: string): ParameterRow[] 
 
 const show = (v: number | string) => (typeof v === 'number' ? plain(v) : v);
 
+/** The class of a value as one short word (the full class stays in the row, so the search finds it). */
+export function shortClass(status: string): string {
+  if (status.startsWith('synthetic')) return 'synthetic';
+  if (status.startsWith('numerical setting')) return 'setting';
+  if (status.startsWith('recorded only')) return 'recorded only';
+  return status;
+}
+
 export function ParameterProvenance({ entry }: { entry: CaseEntry }) {
   const config = useStrato((s) => s.config);
   const [query, setQuery] = useState('');
@@ -112,14 +121,11 @@ export function ParameterProvenance({ entry }: { entry: CaseEntry }) {
       <TableBox label="Parameters in use and their provenance">
         <table className="table" data-testid="input-table">
           <caption className="table__caption">
-            <strong>Table 1.</strong> {entry.title}: every input of the run, the value in the case file and the value now set in the controls,
-            with its source row and its class. The case file is <code>{p.input_file}</code> (SHA-256 <code className="hash">{p.input_sha256.slice(0, 12)}</code>,
-            last changed in commit <code>{p.input_commit.slice(0, 7)}</code>). None of these values comes from the parameter register, so no row
-            has a register id; the synthetic values were chosen for verification and are not measured TRISO properties.
+            <strong>Table 1.</strong> {entry.title}: case-file and current value of every input.{' '}
+            <a href={hrefDocumentation('data-case-file')}>Provenance</a>
           </caption>
           <thead>
             <tr>
-              <th scope="col">Group</th>
               <th scope="col">Parameter</th>
               <th scope="col" className="num-col">
                 Case file
@@ -128,9 +134,7 @@ export function ParameterProvenance({ entry }: { entry: CaseEntry }) {
                 Current
               </th>
               <th scope="col">Unit</th>
-              <th scope="col">Source row</th>
               <th scope="col">Class</th>
-              <th scope="col">Key in the case file</th>
             </tr>
           </thead>
           <tbody>
@@ -138,7 +142,6 @@ export function ParameterProvenance({ entry }: { entry: CaseEntry }) {
               const differs = !Object.is(r.file, r.current);
               return (
                 <tr key={r.key} className={differs ? 'is-changed' : undefined} data-key={r.key}>
-                  <td>{r.group}</td>
                   <th scope="row">{r.parameter}</th>
                   <td className="num-col num">{show(r.file)}</td>
                   <td className="num-col num">
@@ -146,19 +149,13 @@ export function ParameterProvenance({ entry }: { entry: CaseEntry }) {
                     {differs ? <span className="changed-mark"> changed</span> : null}
                   </td>
                   <td>{r.unit}</td>
-                  <td>
-                    <code>{r.source}</code>
-                  </td>
-                  <td>{r.status}</td>
-                  <td>
-                    <code>{r.key}</code>
-                  </td>
+                  <td>{shortClass(r.status)}</td>
                 </tr>
               );
             })}
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={8} className="muted">
+                <td colSpan={5}className="muted">
                   No parameter matches the search.
                 </td>
               </tr>
@@ -170,30 +167,20 @@ export function ParameterProvenance({ entry }: { entry: CaseEntry }) {
   );
 }
 
-/** The reference list: the key references of the README, and every reference of the research catalogue. */
+/**
+ * One reference list: the key references of the README that the research catalogue does not hold (Gelbard 2003
+ * and IAEA 1997 are catalogue entries, with their links, and are shown once there), then every reference of
+ * the research catalogue.
+ */
 export function References() {
   const cat = useCatalogue();
   return (
     <>
-      <p>Key references of the STRATO model, as listed in the repository README.</p>
-      <ul className="refs" data-testid="readme-refs">
-        <li>
-          Gelbard, F. (2003). <em>Analytical modeling of fission product releases by diffusion from multicoated fuel particles</em>{' '}
-          (SAND2002-3966). Sandia National Laboratories.
-        </li>
-        <li>
-          International Atomic Energy Agency. (1997). <em>Fuel performance and fission product behaviour in gas cooled reactors</em>{' '}
-          (IAEA-TECDOC-978). IAEA.
-        </li>
-        <li>
+      <ul className="refs" data-testid="catalogue-refs">
+        <li data-testid="readme-ref">
           Hales, J. D., Jiang, W., Toptan, A., &amp; Gamble, K. A. (2021). Modeling fission product diffusion in TRISO fuel particles with
           BISON. <em>Journal of Nuclear Materials, 548</em>, 152840. <a href="https://doi.org/10.1016/j.jnucmat.2021.152840">doi:10.1016/j.jnucmat.2021.152840</a>
         </li>
-      </ul>
-      <p>
-        References of the research catalogue (<code>data/research/references.csv</code>), each with the date its link was last opened:
-      </p>
-      <ul className="refs" data-testid="catalogue-refs">
         {cat.references.map((r) => (
           <li key={r.reference_id} data-ref={r.reference_id}>
             {r.citation}{' '}
@@ -207,8 +194,7 @@ export function References() {
         ))}
       </ul>
       <p>
-        Literature parameters for Phase 2, each with its register status (verified, digitised or not verified) and source, are in the{' '}
-        <a href={repoFile('data/reference/STRATO_Parameter_Register.md')}>parameter register</a>. The solver does not read them yet.
+        <a href={repoFile('data/reference/STRATO_Parameter_Register.md')}>Parameter register</a>
       </p>
     </>
   );

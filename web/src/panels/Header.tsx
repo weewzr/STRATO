@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import '../design/nav.css';
 import { REPO_URL } from '../build';
 import { hrefFor, SECTIONS, type SectionId } from '../route';
 import type { Theme } from '../theme';

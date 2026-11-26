@@ -1,0 +1,31 @@
+/* Navigation at tablet and small laptop widths: eight entries (the last is Scientific Documentation) do not
+   fit beside the title and the theme and repository links, so the links take a second row. Phones use the
+   menu of app.css, wide screens keep one row. */
+@media (min-width: 768px) and (max-width: 1279.98px) {
+  .header {
+    align-items: flex-start;
+  }
+  .header__brand {
+    min-height: var(--header-height);
+    align-items: center;
+  }
+  .nav {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0;
+  }
+  .nav__tools {
+    order: -1;
+    flex: 1 1 100%;
+    justify-content: flex-end;
+    min-height: var(--header-height);
+    margin-left: 0;
+  }
+  .nav__list {
+    flex: 1 1 100%;
+    margin-top: calc(var(--space-2) * -1);
+  }
+  .nav__list .nav__link {
+    padding: 0 6px;
+  }
+}

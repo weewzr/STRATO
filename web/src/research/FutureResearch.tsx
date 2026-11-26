@@ -58,9 +58,6 @@ export function FutureResearch() {
               </li>
             ))}
           </ul>
-          <p className="split__note">
-            Solved live above by the Rust solver; see <a href={hrefFor('verify')}>Verify</a> for its tests.
-          </p>
         </section>
         <section className="split__side split__side--research" aria-labelledby="future-research-only" data-testid="future-pending">
           <h3 id="future-research-only" className="split__title">
@@ -69,7 +66,6 @@ export function FutureResearch() {
           <p className="split__summary">
             <span className="split__count">{research.length}</span> catalogue rows <Counts rows={research} />
           </p>
-          <p className="split__note">Nothing here is simulated. Each row's live-simulation switch is shown disabled until the solver implements and verifies it.</p>
         </section>
       </div>
 
@@ -139,7 +135,7 @@ export function FutureResearch() {
         </div>
       ) : null}
 
-      <StatusLegend title="What the research statuses mean" />
+      <StatusLegend />
 
       <p className="future__links">
         Full catalogue in <a href={hrefFor('research')}>Research</a>: <a href={hrefResearch('roadmap')}>brick roadmap</a>,{' '}

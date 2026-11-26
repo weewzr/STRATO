@@ -1,40 +1,40 @@
 import { useId } from 'react';
 import { isRowAvailable } from '../equation/availability';
-import { hrefFor } from '../route';
+import { hrefDocumentation, hrefFor } from '../route';
 import { useStrato } from '../state/store';
 import { TableBox } from '../sections/common';
 import { Cite } from './Blocks';
 import { referenceRow, type Catalogue, type GalleryRow, type MechanismRow } from './catalogue';
 import { entryHref, gallerySpecies, linkCheckedDate, rowKey } from './entries';
-import { STATUS_INFO, STATUSES, isImplementedStatus } from './status';
+import { NoteText } from './PathLink';
+import { STATUSES, isImplementedStatus } from './status';
 import { StatusChip } from './StatusChip';
 
 // Building blocks of the research catalogue interface (web phase 5.5). Every value shown comes
 // from the generated catalogue; these components only arrange it.
 
-/** The five statuses with their definitions (prompt/DESIGN_SPECIFICATION.md Section 7.1). */
-export function StatusLegend({ id, title = 'Research status of a mechanism', row = false }: { id?: string; title?: string; row?: boolean }) {
+/**
+ * The five statuses in one row, each a word and a shape (the definition is the hover title of the chip). The
+ * definitions are printed once, in Scientific Documentation, which the link leads to.
+ */
+export function StatusLegend({ id, title = 'Research status' }: { id?: string; title?: string }) {
   const own = useId();
   const head = id ?? own;
   return (
-    <section className={`status-legend${row ? ' status-legend--row' : ''}`} aria-labelledby={head} data-testid="status-legend">
+    <section className="status-legend" aria-labelledby={head} data-testid="status-legend">
       <p className="status-legend__title" id={head}>
         {title}
       </p>
-      <dl className="status-legend__list">
+      <ul className="status-legend__list" aria-label="The five research statuses">
         {STATUSES.map((s) => (
-          <div className="status-legend__item" key={s}>
-            <dt>
-              <StatusChip status={s} legend />
-            </dt>
-            <dd>{STATUS_INFO[s].definition}</dd>
-          </div>
+          <li key={s}>
+            <StatusChip status={s} legend />
+          </li>
         ))}
-      </dl>
-      <p className="status-legend__note">
-        Shown as a word and a shape, never by colour alone. A research status describes a mechanism; the labels on numbers and figures
-        (for example COMPUTED v2.0 or PRECOMPUTED) describe a result.
-      </p>
+      </ul>
+      <a className="status-legend__more" href={hrefDocumentation('research-status-scale')}>
+        Definitions
+      </a>
     </section>
   );
 }
@@ -61,9 +61,9 @@ export function CatalogueSwitch({ row, compact = false }: { row: MechanismRow; c
       </p>
     );
   }
-  const reason = isImplementedStatus(row.status)
-    ? 'the solver does not report this mechanism as verified and available'
-    : 'STRATO does not solve this mechanism';
+  // A research-only mechanism needs no reason beside its status word: the statement that STRATO does not
+  // solve it is made once, in Scientific Documentation.
+  const reason = isImplementedStatus(row.status) ? 'the solver does not report this mechanism as verified and available' : '';
   return (
     <div className={`cat-switch${compact ? ' cat-switch--compact' : ''}`}>
       <button
@@ -79,7 +79,8 @@ export function CatalogueSwitch({ row, compact = false }: { row: MechanismRow; c
         <span className="mech__swatch mech__swatch--dotted" aria-hidden="true" />
         <span className="mech__name">Live simulation{row.species !== 'all' ? `, ${row.species}` : ''}</span>
         <span className="mech__term">
-          Not available: status {row.status}; {reason}
+          Not available: status {row.status}
+          {reason ? `; ${reason}` : ''}
         </span>
         <span className="mech__state">Off</span>
       </button>
@@ -87,7 +88,7 @@ export function CatalogueSwitch({ row, compact = false }: { row: MechanismRow; c
         {row.missing_work ? (
           <>
             <span className="cat-switch__lead">Missing: </span>
-            {row.missing_work}
+            <NoteText text={row.missing_work} />
           </>
         ) : (
           <>No missing work is recorded in the catalogue row.</>
@@ -113,7 +114,11 @@ export function Parameters({ items }: { items: readonly string[] }) {
             {state ? (
               <span className="params__state">
                 {state === 'registered' ? 'registered' : 'missing'}
-                {detail ? `: ${detail}` : ''}
+                {detail ? (
+                  <>
+                    : <NoteText text={detail} />
+                  </>
+                ) : null}
               </span>
             ) : null}
           </li>
@@ -160,7 +165,7 @@ export function RowRecords({ rows, catalogue, showEntryLink = false }: { rows: r
           </dl>
           <p className="record__basis">
             <span className="record__lead">Basis of the status: </span>
-            {r.status_basis}
+            <NoteText text={r.status_basis} />
           </p>
           <div className="record__params">
             <p className="record__lead">Required parameters</p>
@@ -207,7 +212,11 @@ export function ReferenceList({ ids, catalogue, label = 'References' }: { ids: r
             <span className={`ref-list__checked${checked ? '' : ' ref-list__checked--no'}`} data-link-checked={checked ? 'date' : 'no'}>
               {checked ? `Link opened on ${checked}.` : `Link: ${r.link_checked}.`}
             </span>
-            {r.notes ? <span className="ref-list__notes">{r.notes}</span> : null}
+            {r.notes ? (
+              <span className="ref-list__notes">
+                <NoteText text={r.notes} />
+              </span>
+            ) : null}
           </li>
         );
       })}
@@ -307,6 +316,80 @@ export function GalleryItem({ item, catalogue }: { item: GalleryRow; catalogue: 
           ))}
         </p>
       ) : null}
+    </article>
+  );
+}
+
+/** The sentence every planned calculation ends with; it is stated once, in Scientific Documentation. */
+const NOT_PERFORMED = /\s*This calculation has not been performed\. It is planned for a future phase of the project\./;
+
+/** A planned calculation's text without the sentence that all planned calculations share. */
+export function withoutNotPerformed(text: string): string {
+  return text.replace(NOT_PERFORMED, '');
+}
+
+/** The planned calculations as a compact list: title, status and species. Their full text is in Scientific Documentation. */
+export function GalleryPlanned({ items }: { items: readonly GalleryRow[] }) {
+  return (
+    <ul className="gallery-planned" aria-label="Planned calculations" data-testid="gallery-planned">
+      {items.map((it) => {
+        const species = gallerySpecies(it.species);
+        return (
+          <li key={it.item_id} className="gallery-planned__item" data-testid="gallery-item" data-kind={it.kind} data-item={it.item_id}>
+            <StatusChip status={it.status} compact />
+            <span className="gallery-planned__title">{it.title}</span>
+            <span className="gallery-planned__meta">{species.length > 0 ? species.join(', ') : 'no species'}</span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/** One planned calculation in full, once (Scientific Documentation): the texts of its gallery row, nothing shortened. */
+export function GalleryPlannedDetail({ item, catalogue }: { item: GalleryRow; catalogue: Catalogue }) {
+  const species = gallerySpecies(item.species);
+  return (
+    <article className="gallery-detail" data-testid="gallery-detail" data-item={item.item_id}>
+      <h4 className="gallery-detail__title">
+        {item.title} <StatusChip status={item.status} compact />
+      </h4>
+      <p>{withoutNotPerformed(item.caption)}</p>
+      <p>
+        <span className="record__lead">In plain words: </span>
+        {withoutNotPerformed(item.alt_text)}
+      </p>
+      <ul className="prose-list">
+        <li>Material: {item.material}</li>
+        <li>Species: {species.length > 0 ? species.join(', ') : 'none'}</li>
+        <li>Planned method: {item.method}</li>
+        <li>Planned conditions: {item.conditions}</li>
+        {item.mechanism_ids.length > 0 ? (
+          <li>
+            Catalogue entries:{' '}
+            {item.mechanism_ids.map((id, i) => {
+              const row = catalogue.mechanisms.find((m) => m.mechanism_id === id);
+              return (
+                <span key={id}>
+                  {i > 0 ? '; ' : ''}
+                  {row?.entry ? <a href={entryHref(row.entry)}>{row.name}</a> : id}
+                </span>
+              );
+            })}
+          </li>
+        ) : null}
+        {item.reference_ids.length > 0 ? (
+          <li>
+            Sources for the planned subject:{' '}
+            {item.reference_ids.map((id, i) => (
+              <span key={id}>
+                {i > 0 ? ' ' : null}
+                <Cite id={id} catalogue={catalogue} />
+              </span>
+            ))}
+          </li>
+        ) : null}
+      </ul>
     </article>
   );
 }

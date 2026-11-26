@@ -84,10 +84,10 @@ for (const vp of [
       await expect(page.getByTestId('overview-builder-research')).toBeVisible();
       await expect(page.getByTestId('overview-species').locator('[data-species]')).toHaveCount(9);
       await expect(page.locator('[data-testid^="overview-regime-"]')).toHaveCount(3);
-      await expect(page.getByTestId('status-legend').locator('dd')).toHaveCount(5);
+      await expect(page.getByTestId('status-legend').locator('.status-chip')).toHaveCount(5);
       expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
       await gotoSection(page, 'explore');
-      await expect(page.getByTestId('future-research')).toHaveCount(0);
+     await expect(page.getByTestId('future-research')).toHaveCount(0);
       expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
     });
   });
