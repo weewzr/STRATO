@@ -50,9 +50,25 @@ pub const MASK_RELATIVE_TOLERANCE: f64 = 0.05;
 /// belongs to the series. The floor itself is to be re-estimated.
 pub const FLOOR_FACTOR_FROM_CHECK_V: f64 = 4.0;
 
+/// Whether the accuracy floor of the series has been re-estimated for (B2) to (B5) (science
+/// design Section 4.2, item 3). Check (v) failed: the observed error of the shooting weights
+/// reaches 3.34 times `accuracy_floor()` in one geometry, and the science design then says
+/// that the extension is not drawn until the floor is re-estimated. No re-estimate over
+/// several geometries and mode counts exists yet, so this stays `false` and
+/// [`KernelRun::drawn`] returns [`Withheld::FloorNotReestimated`] for every quantity of a run
+/// with decay or a non-zero source. The mask logic itself (items 1 to 3) stays implemented
+/// and tested (`KernelRun::mask`).
+pub const EXTENSION_FLOOR_REESTIMATED: bool = false;
+
+/// Number of layers of the particle (kernel, buffer, IPyC, SiC, OPyC), hence the number of
+/// entries of [`Decay::PerLayer`].
+pub const LAYER_COUNT: usize = 5;
+
 /// Reasons an extension refuses its input. A refusal never produces a number.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExtensionError {
+    /// [`Decay::PerLayer`] must hold exactly one decay constant per layer ([`LAYER_COUNT`]).
+    WrongLayerCount(usize),
     /// The named argument is NaN or infinite.
     NotFinite(&'static str),
     /// The named argument must not be negative.
@@ -74,6 +90,10 @@ pub enum ExtensionError {
 impl fmt::Display for ExtensionError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::WrongLayerCount(n) => write!(
+                f,
+                "{n} decay constants given; exactly one per layer ({LAYER_COUNT}) is required"
+            ),
             Self::NotFinite(n) => write!(f, "{n} must be finite"),
             Self::Negative(n) => write!(f, "{n} must not be negative"),
             Self::NotPositive(n) => write!(f, "{n} must be strictly positive"),
@@ -129,8 +149,9 @@ pub enum Decay {
     None,
     /// The same decay constant in every layer.
     Uniform(f64),
-    /// One decay constant per layer. Accepted only when all are exactly equal; otherwise the
-    /// extension refuses with [`ExtensionError::UnequalDecayConstants`].
+    /// Exactly one decay constant per layer ([`LAYER_COUNT`] entries). Accepted only when all
+    /// are exactly equal; otherwise the extension refuses with
+    /// [`ExtensionError::UnequalDecayConstants`] (or [`ExtensionError::WrongLayerCount`]).
     PerLayer(Vec<f64>),
 }
 
@@ -145,6 +166,9 @@ impl Decay {
                 let first = *v
                     .first()
                     .ok_or(ExtensionError::NotFinite("decay constants (empty)"))?;
+                if v.len() != LAYER_COUNT {
+                    return Err(ExtensionError::WrongLayerCount(v.len()));
+                }
                 non_negative("decay constant", first)?;
                 for &l in v {
                     non_negative("decay constant", l)?;
@@ -339,6 +363,10 @@ pub enum Withheld {
     },
     /// The quantity is not defined here (for example `F` with `M^0 = 0`).
     Undefined(&'static str),
+    /// The run has decay or a source, and the accuracy floor has not been re-estimated for
+    /// (B2) to (B5) ([`EXTENSION_FLOOR_REESTIMATED`]): check (v) of the science design failed,
+    /// and its fallback rule withholds the extension until the floor is re-estimated.
+    FloorNotReestimated,
 }
 
 /// A value that is either drawn or withheld with its reason.
@@ -572,9 +600,10 @@ impl<'a> KernelRun<'a> {
         }
     }
 
-    /// The state at time `t` (s) with all modes of the series. This is the raw evaluation of
-    /// (42) to (49) without the drawing mask: use [`KernelRun::drawn`] for anything that is
-    /// displayed.
+    /// The state at time `t` (s) with all modes of the series. UNMASKED, NOT FOR DISPLAY: this
+    /// is the raw evaluation of (42) to (49). Before `min_valid_time()` it holds the convention
+    /// `R^ = 1`, and near it the values with a source or decay can be wrong by up to 100 %.
+    /// Use [`KernelRun::drawn`] for anything that is displayed.
     pub fn state(&self, t: f64) -> Result<ModalState, ExtensionError> {
         self.state_cap(t, None)
     }
@@ -598,7 +627,8 @@ impl<'a> KernelRun<'a> {
             .zip(weight)
             .map(|(al, w)| w * (-al * t_v).exp())
             .sum();
-        let delta = (1.0 - remaining_at_tv).max(0.0) + s.accuracy_floor();
+        let delta =
+            (1.0 - remaining_at_tv).max(0.0) + FLOOR_FACTOR_FROM_CHECK_V * s.accuracy_floor();
 
         let m0 = self.m0;
         let v = self.v_k;
@@ -641,6 +671,9 @@ impl<'a> KernelRun<'a> {
                 .map(|(l, w)| w * (-l * t).exp())
                 .sum();
             released_out = m0 * (1.0 - remaining);
+            // The same remaining fraction in the inventory, so that the balance closes also
+            // for `t < t_v`, where `R^` of the evaluation is replaced by 1.
+            inventory = m0 * remaining;
             decayed = 0.0;
         }
         Ok(ModalState {
@@ -663,6 +696,7 @@ impl<'a> KernelRun<'a> {
     }
 
     /// The value of `q` at `t` with all modes, or `None` where the quantity is not defined.
+    /// UNMASKED, NOT FOR DISPLAY (see [`KernelRun::state`]); display only [`KernelRun::drawn`].
     pub fn value(&self, q: Quantity, t: f64) -> Result<Option<f64>, ExtensionError> {
         self.value_cap(q, t, None)
     }
@@ -707,8 +741,21 @@ impl<'a> KernelRun<'a> {
 
     /// The value of `q` at `t`, or the reason it is not drawn: the drawing mask of science
     /// design Section 4.2 (items 1 to 3), applied a posteriori. No value is returned where
-    /// the series is not trustworthy.
+    /// the series is not trustworthy. For a run with decay or a non-zero source nothing is
+    /// drawn while [`EXTENSION_FLOOR_REESTIMATED`] is `false` (the fallback rule of check
+    /// (v)): the answer is then [`Withheld::FloorNotReestimated`].
     pub fn drawn(&self, q: Quantity, t: f64) -> Result<Drawn, ExtensionError> {
+        non_negative("time", t)?;
+        if !self.no_source_no_decay() && !EXTENSION_FLOOR_REESTIMATED {
+            return Ok(Drawn::Withheld(Withheld::FloorNotReestimated));
+        }
+        self.mask(q, t)
+    }
+
+    /// Items 1 to 3 of the drawing mask, without the floor re-estimation gate of
+    /// [`KernelRun::drawn`]. Kept separate so that the mask logic stays tested for the
+    /// extensions while they are withheld.
+    pub(crate) fn mask(&self, q: Quantity, t: f64) -> Result<Drawn, ExtensionError> {
         let s = self.series;
         non_negative("time", t)?;
         let valid_from = s.min_valid_time();
@@ -773,8 +820,8 @@ impl ModalRelease {
     /// extension of the science design Section 4.2. `m0` (mol) initial kernel inventory,
     /// `v_k` (m^3) kernel volume, `source` the piecewise-constant rate (mol m^-3 s^-1),
     /// `decay` the decay constant (s^-1) which must be the same in every layer, `t` (s).
-    /// Refuses with an error where a condition does not hold. Raw evaluation: the drawing
-    /// mask is [`KernelRun::drawn`].
+    /// Refuses with an error where a condition does not hold. UNMASKED, NOT FOR DISPLAY: the
+    /// drawing mask is [`KernelRun::drawn`].
     pub fn with_source_decay(
         &self,
         m0: f64,
@@ -787,7 +834,8 @@ impl ModalRelease {
     }
 
     /// Decay extension, formula (B2): no source, kernel-step start, the same decay constant
-    /// in every layer, constant diffusivities (those of the series).
+    /// in every layer, constant diffusivities (those of the series). UNMASKED, NOT FOR
+    /// DISPLAY (see [`KernelRun::state`]).
     pub fn with_decay(&self, m0: f64, decay: &Decay, t: f64) -> Result<ModalState, ExtensionError> {
         // v_k is irrelevant without a source; 1 m^3 keeps the units consistent.
         KernelRun::new(self, m0, 1.0, PiecewiseSource::none(), decay)?.state(t)
@@ -1115,6 +1163,76 @@ mod tests {
     }
 
     #[test]
+    fn generated_release_fraction_matches_an_independent_m_rel_over_the_input() {
+        // F_gen = M_rel / (M^0 + M_gen) with M_rel from the Duhamel superposition of the
+        // independent closed form (decay-free, lambda = 0), for M^0 = 0 and for M^0 > 0.
+        let d = 1.0e-10;
+        let s = five_equal_series(d, 45.0 / 20.0);
+        let sphere = HomogeneousSphere::core(RADII[4], R1, d, 1.0).unwrap();
+        let (g, stop) = (2.0e-3, 300.0);
+        for m0 in [0.0, 0.7 * VK] {
+            let source = PiecewiseSource::constant(g, stop).unwrap();
+            let run = KernelRun::new(&s, m0, VK, source, &Decay::None).unwrap();
+            for t in [200.0, 400.0, 900.0] {
+                let st = run.state(t).unwrap();
+                let rel_ref = m0 * f0(&sphere, t)
+                    + VK * g * simpson(0.0, t.min(stop), 60, |tau| f0(&sphere, t - tau));
+                let total = m0 + VK * g * t.min(stop);
+                let fgen = run
+                    .value(Quantity::ReleaseFractionGenerated, t)
+                    .unwrap()
+                    .unwrap();
+                let expected = rel_ref / total;
+                assert!(
+                    (fgen - expected).abs() <= st.release_error_bound / total + 1e-8,
+                    "m0 {m0} t {t}: {fgen} vs {expected}"
+                );
+                assert!(
+                    rel(fgen, expected) < 1e-6,
+                    "m0 {m0} t {t}: {fgen} vs {expected}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn flux_matches_a_finite_difference_inside_and_after_the_second_of_two_pieces() {
+        // Two pieces, so that the flux of the finished first piece (its F^ at both limits) is
+        // part of the value: Phi = d M_rel / dt by a central difference of the raw M_rel.
+        let s = ModalRelease::new(&layers(D_FIVE), 45.0 / 5.0e3, 20_000).unwrap();
+        let src = PiecewiseSource::new(vec![0.0, 2.0e5, 6.0e5], vec![3.0e-6, 8.0e-6]).unwrap();
+        let run = KernelRun::new(&s, 2.0e-9, VK, src, &Decay::Uniform(5.0e-7)).unwrap();
+        let h = 20.0;
+        for t in [3.0e5, 5.0e5, 8.0e5, 1.5e6] {
+            let phi = run.state(t).unwrap().flux;
+            let fd = (run.state(t + h).unwrap().released - run.state(t - h).unwrap().released)
+                / (2.0 * h);
+            assert!(rel(phi, fd) < 1e-6, "t {t}: {phi} vs {fd}");
+        }
+    }
+
+    #[test]
+    fn inventory_and_release_are_one_evaluation_below_the_relaxation_time_without_source() {
+        // For t < t_v without source and decay the inventory and the release are both built
+        // from the existing series, so the balance closes.
+        let s = ModalRelease::new(&layers(D_FIVE), 45.0 / 5.0e3, 20_000).unwrap();
+        let run = KernelRun::new(&s, 2.0, VK, PiecewiseSource::none(), &Decay::None).unwrap();
+        for t in [
+            0.0,
+            0.2 * s.min_valid_time(),
+            0.9 * s.min_valid_time(),
+            1.0e5,
+        ] {
+            let st = run.state(t).unwrap();
+            assert!(st.balance_residual().abs() <= 1e-15 * 2.0, "t {t}: {st:?}");
+            assert!(
+                (st.inventory - 2.0 * (1.0 - s.release_fraction(t))).abs() <= 1e-14,
+                "t {t}: {st:?}"
+            );
+        }
+    }
+
+    #[test]
     fn balance_identity_of_the_evaluation() {
         let s = ModalRelease::new(&layers(D_FIVE), 45.0 / 5.0e3, 20_000).unwrap();
         let run = KernelRun::new(
@@ -1386,7 +1504,7 @@ mod tests {
     /// uniform `h`, `9 k` intervals so that the kernel surface is node `4 k`. Returns the
     /// inventory `4 pi h sum_i r_i u_i` at `t_end` (mol) for an initial concentration 1 mol/m^3
     /// in the kernel. It is NOT the production BTCS solver (finite volume, five layers): it is
-    /// an independent scalar scheme used as a surrogate for verifier check (iv).
+    /// an independent scalar scheme, an additional check besides verifier check (iv).
     fn scalar_btcs_inventory(
         k: usize,
         steps: usize,
@@ -1435,10 +1553,10 @@ mod tests {
 
     #[test]
     fn check_iv_surrogate_scalar_btcs_converges_to_the_extension() {
-        // Surrogate for verifier check (iv): the production BTCS with the D5 rows is not on this
-        // branch (it is on feat/btcs-physics, not yet verified), so an independent scalar
-        // backward-Euler / centred-difference scheme is run in its place. Self-convergence
-        // orders (2 in space, 1 in time), then the extrapolated limit against B3/B5.
+        // An additional independent check, besides verifier check (iv) proper (the production
+        // BTCS with the D5 rows, `tests/analytical_extensions_btcs.rs`): a scalar
+        // backward-Euler / centred-difference scheme. Self-convergence orders (2 in space,
+        // 1 in time), then the extrapolated limit against B3/B5.
         let (d, lambda, g, t_end) = (1.0e-10, 2.0e-3, 1.0e-3, 3000.0);
         let m = |k, steps| scalar_btcs_inventory(k, steps, t_end, d, lambda, g);
         let space = (m(8, 4000) - m(16, 4000)) / (m(16, 4000) - m(32, 4000));
@@ -1501,26 +1619,32 @@ mod tests {
             &Decay::Uniform(1.0e-3),
         )
         .unwrap();
+        // `drawn` withholds this run altogether (decay, floor not re-estimated); the mask
+        // logic of items 1 to 3 is tested through `mask`.
+        assert_eq!(
+            run.drawn(Quantity::ReleaseFraction, 500.0).unwrap(),
+            Drawn::Withheld(Withheld::FloorNotReestimated)
+        );
         // item 1
         assert_eq!(
-            run.drawn(Quantity::ReleaseFraction, 0.5 * s.min_valid_time())
+            run.mask(Quantity::ReleaseFraction, 0.5 * s.min_valid_time())
                 .unwrap(),
             Drawn::Withheld(Withheld::BeforeMinValidTime)
         );
         // a value far below the floor or sensitive to the cover is not drawn
         let early = run
-            .drawn(Quantity::ReleaseFraction, s.min_valid_time())
+            .mask(Quantity::ReleaseFraction, s.min_valid_time())
             .unwrap();
         assert!(early.value().is_none(), "{early:?}");
-        // a late value is drawn and equals the raw value
-        let late = run.drawn(Quantity::ReleaseFraction, 500.0).unwrap();
+        // a late value passes the mask and equals the raw value
+        let late = run.mask(Quantity::ReleaseFraction, 500.0).unwrap();
         let raw = run
             .value(Quantity::ReleaseFraction, 500.0)
             .unwrap()
             .unwrap();
         assert_eq!(late, Drawn::Value(raw));
         assert!(run
-            .drawn(Quantity::InventoryFraction, 500.0)
+            .mask(Quantity::InventoryFraction, 500.0)
             .unwrap()
             .value()
             .is_some());
@@ -1589,10 +1713,14 @@ mod tests {
         let src = PiecewiseSource::constant(1.0e-3, 1.0e7).unwrap();
         let run = KernelRun::new(&s, 0.0, VK, src, &Decay::None).unwrap();
         assert_eq!(
-            run.drawn(Quantity::Beta, 0.5 * s.min_valid_time()).unwrap(),
+            run.drawn(Quantity::Beta, 1.0e5).unwrap(),
+            Drawn::Withheld(Withheld::FloorNotReestimated)
+        );
+        assert_eq!(
+            run.mask(Quantity::Beta, 0.5 * s.min_valid_time()).unwrap(),
             Drawn::Withheld(Withheld::BeforeMinValidTime)
         );
-        let late = run.drawn(Quantity::Beta, 1.0e5).unwrap().value().unwrap();
+        let late = run.mask(Quantity::Beta, 1.0e5).unwrap().value().unwrap();
         assert!((late - 1.0).abs() < 1e-9, "{late}");
         // beta is absent where G(t) = 0 (after the last breakpoint)
         assert_eq!(run.value(Quantity::Beta, 2.0e7).unwrap(), None);
@@ -1671,6 +1799,16 @@ mod tests {
         assert!(PiecewiseSource::new(vec![1.0, 2.0], vec![1.0]).is_err());
         assert!(PiecewiseSource::new(vec![0.0, 2.0, 1.0], vec![1.0, 1.0]).is_err());
         assert!(PiecewiseSource::new(vec![0.0, 1.0], vec![1.0, 1.0]).is_err());
+        // equal breakpoints (s_1 = s_0) are refused: the breakpoints are strictly increasing
+        assert!(PiecewiseSource::new(vec![0.0, 0.0], vec![1.0]).is_err());
+        assert!(PiecewiseSource::new(vec![0.0, 5.0, 5.0], vec![1.0, 2.0]).is_err());
+        // exactly one decay constant per layer
+        for n in [1usize, 4, 6] {
+            assert_eq!(
+                s.with_decay(1.0, &Decay::PerLayer(vec![1e-9; n]), 1e5),
+                Err(ExtensionError::WrongLayerCount(n))
+            );
+        }
         assert!(PiecewiseSource::new(vec![0.0, 1.0], vec![-1.0]).is_err());
         assert!(PiecewiseSource::new(vec![0.0, f64::NAN], vec![1.0]).is_err());
         assert!(PiecewiseSource::new(vec![0.0, 1.0], vec![f64::INFINITY]).is_err());

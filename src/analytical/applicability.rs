@@ -71,6 +71,9 @@ impl TemperatureHistory {
                 if points.iter().any(|p| !p.0.is_finite() || !ok(p.1)) {
                     return Err("temperature series must be finite and above absolute zero");
                 }
+                if points.windows(2).any(|w| w[1].0 <= w[0].0) {
+                    return Err("the times of the temperature series must be strictly increasing");
+                }
                 Ok(points.iter().all(|p| p.1 == first.1))
             }
         }
@@ -163,8 +166,8 @@ impl Applicability {
 /// The decision table of science design Section 4.3.
 ///
 /// Order of the checks: invalid input; a temperature that varies in time; a stage that does
-/// not contain a supplied mechanism (stages 1 and 4 have neither source nor decay, stage 2
-/// no decay); the source; the decay constants. A source whose rates are all zero counts as no
+/// not contain a supplied mechanism (stage 1 has neither source nor decay, stage 2 no decay;
+/// stage 4 keeps every term of stage 3, so it refuses neither); the source; the decay constants. A source whose rates are all zero counts as no
 /// source, a decay constant of zero as no decay.
 pub fn applicability(
     stage: Stage,
@@ -197,7 +200,7 @@ pub fn applicability(
         SourceHistory::KernelTimeVarying | SourceHistory::NotKernelUniform => true,
     };
     match stage {
-        Stage::Baseline | Stage::TemperatureDependentDiffusivity => {
+        Stage::Baseline => {
             if has_source {
                 return NotApplicable(Reason::MechanismNotInStage("a source"));
             }
@@ -210,7 +213,10 @@ pub fn applicability(
                 return NotApplicable(Reason::MechanismNotInStage("decay"));
             }
         }
-        Stage::Decay | Stage::Combined => {}
+        // Stage 4 keeps every term of stage 3 (science design Section 6): `G = 0` and
+        // `lambda = 0` are default inputs, not a different equation. At a constant
+        // temperature its mathematics is that of stages 3 and 5.
+        Stage::Decay | Stage::TemperatureDependentDiffusivity | Stage::Combined => {}
     }
     match source {
         SourceHistory::KernelTimeVarying => {
@@ -381,15 +387,58 @@ mod tests {
             applicability(Stage::Baseline, &SourceHistory::None, &lam, &T0),
             No(Reason::MechanismNotInStage("decay"))
         );
+        // stage 4 keeps every term of stage 3 (science design Section 6): at constant T a
+        // source and decay are answered from the inputs, never refused as "not in the stage"
+        let s4 = Stage::TemperatureDependentDiffusivity;
         assert_eq!(
-            applicability(
-                Stage::TemperatureDependentDiffusivity,
-                &constant_source(),
-                &Decay::None,
-                &T0
-            ),
-            No(Reason::MechanismNotInStage("a source"))
+            applicability(s4, &constant_source(), &Decay::None, &T0),
+            Ext(Extension::Source)
         );
+        assert_eq!(
+            applicability(s4, &SourceHistory::None, &lam, &T0),
+            Ext(Extension::Decay)
+        );
+        assert_eq!(
+            applicability(s4, &constant_source(), &lam, &T0),
+            Ext(Extension::SourceWithDecay)
+        );
+        assert_eq!(
+            applicability(s4, &constant_source(), &lam, &ramp()),
+            No(Reason::TemperatureVaries)
+        );
+        // input checks: times strictly increasing, one decay constant per layer
+        assert!(matches!(
+            applicability(
+                Stage::Baseline,
+                &SourceHistory::None,
+                &Decay::None,
+                &TemperatureHistory::Series(vec![(0.0, 900.0), (5.0, 900.0), (5.0, 900.0)])
+            ),
+            No(Reason::InvalidInput(_))
+        ));
+        assert!(matches!(
+            applicability(
+                Stage::Baseline,
+                &SourceHistory::None,
+                &Decay::None,
+                &TemperatureHistory::Series(vec![(10.0, 900.0), (0.0, 900.0)])
+            ),
+            No(Reason::InvalidInput(_))
+        ));
+        for n in [1usize, 4, 6] {
+            assert!(
+                matches!(
+                    applicability(
+                        Stage::Decay,
+                        &SourceHistory::None,
+                        &Decay::PerLayer(vec![1e-9; n]),
+                        &T0
+                    ),
+                    No(Reason::InvalidInput(_))
+                ),
+                "{n} decay constants"
+            );
+        }
         assert_eq!(
             applicability(Stage::Generation, &constant_source(), &lam, &T0),
             No(Reason::MechanismNotInStage("decay"))
