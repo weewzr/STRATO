@@ -6,7 +6,8 @@ test.describe('Scientific Documentation', () => {
   test('is the last entry of the navigation and lists its sections', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
-    const links = page.getByRole('navigation', { name: 'Sections' }).getByRole('link');
+    // The last link of the list of sections (the repository link of the tools area follows the list).
+    const links = page.getByRole('navigation', { name: 'Sections' }).getByRole('list').getByRole('link');
     await expect(links.last()).toHaveText('Scientific Documentation');
     await links.last().click();
     await expect(page.locator('[data-section="documentation"] h1')).toHaveText('Scientific Documentation');
