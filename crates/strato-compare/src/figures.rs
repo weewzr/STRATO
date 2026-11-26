@@ -534,7 +534,21 @@ pub fn placed_rows(reg: &Register, records: &[RowRecord]) -> Vec<Placed> {
     out
 }
 
-fn glyph_of(p: &Placed) -> Glyph {
+/// Drawing order of a marker: 0 for context that is not comparable (muted grey), 1 for rows whose
+/// denominator is not established (hollow diamonds), 2 for upper bounds and point comparisons,
+/// which are drawn on top.
+pub fn marker_pass(p: &Placed) -> u8 {
+    match p.status {
+        Status::NotDirectlyComparable | Status::NotAssessed => 0,
+        Status::DataIncomplete => 1,
+        _ => 2,
+    }
+}
+
+/// The marker of a measurement. The status of the row decides it, never the way the value was
+/// obtained: an upper bound is always a bound glyph (or a muted cross when it is context), never a
+/// dot or a ring that would read as an exact value.
+pub fn glyph_of(p: &Placed) -> Glyph {
     let c = temp_colour(p.t_c);
     match p.status {
         Status::WithinReportedUpperBound => Glyph::BoundDown { c, filled: true },
@@ -620,6 +634,37 @@ pub struct Inputs<'a> {
     pub radii_um: [f64; 5],
 }
 
+/// The caveat on the early part of the BTCS curves, printed in the footers of the figures A, I and J.
+const EARLY_TIME_NOTE: &str = "The early part of every BTCS curve is not converged in time: where the release is still rising steeply from zero, the base run and the run with half the step differ by a large factor, and the report states for each curve the time after which they agree within 10 percent (a reading aid, not a tolerance).";
+
+/// Upper end of the time axis of the figures A, I and J, hours at temperature.
+pub const T_AXIS_H: f64 = 420.0;
+
+/// True if a measurement lies inside the axes of the release-versus-time panels. A value beyond
+/// the time axis is never moved onto its edge: it is not drawn and the footer lists it.
+pub fn drawable(p: &Placed) -> bool {
+    p.y > 1e-10 && p.t_h > 0.0 && p.t_h <= T_AXIS_H
+}
+
+/// The sentence of a footer that lists the measurements that are not drawn because their time lies
+/// beyond the time axis (empty if there is none).
+fn beyond_axis_note(rows: impl Iterator<Item = (String, f64)>) -> String {
+    let mut items: Vec<String> = rows
+        .filter(|(_, t)| *t > T_AXIS_H)
+        .map(|(id, t)| format!("{id} ({t} h)"))
+        .collect();
+    items.sort();
+    items.dedup();
+    if items.is_empty() {
+        String::new()
+    } else {
+        format!(
+            "Not drawn because the time at temperature lies beyond the {T_AXIS_H:.0} h axis (the value is never moved onto the edge): {}.",
+            items.join(", ")
+        )
+    }
+}
+
 fn curve_points(c: &Curve) -> Vec<(f64, f64)> {
     c.t_h
         .iter()
@@ -638,7 +683,7 @@ fn sources_of(placed: &[Placed]) -> String {
 
 /// Figure A: release fraction versus time.
 pub fn figure_a(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
-    let root = SVGBackend::new(path, (1560, 880)).into_drawing_area();
+    let root = SVGBackend::new(path, (1560, 960)).into_drawing_area();
     root.fill(&WHITE).map_err(pe)?;
     title(
         &root,
@@ -646,7 +691,7 @@ pub fn figure_a(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
         "BTCS model of one intact TRISO particle against the register's measurements; log scale; hours counted from reaching the test temperature",
     )?;
     let placed = placed_rows(inp.reg, inp.records);
-    let panels = root.margin(70, 380, 10, 10);
+    let panels = root.margin(70, 460, 10, 10);
     let areas = panels.split_evenly((1, 3));
     for (k, species) in Species::ALL.iter().enumerate() {
         let mut chart = ChartBuilder::on(&areas[k])
@@ -654,7 +699,7 @@ pub fn figure_a(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
             .margin(8)
             .x_label_area_size(44)
             .y_label_area_size(76)
-            .build_cartesian_2d(0.0f64..420.0f64, (1e-10f64..2.0f64).log_scale())
+            .build_cartesian_2d(0.0f64..T_AXIS_H, (1e-10f64..2.0f64).log_scale())
             .map_err(pe)?;
         chart
             .configure_mesh()
@@ -694,18 +739,16 @@ pub fn figure_a(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
         // Measurements: context first, then data incomplete, then bounds on top.
         for pass in 0..3 {
             for p in placed.iter().filter(|p| p.species == *species) {
-                let want = match p.status {
-                    Status::NotDirectlyComparable | Status::NotAssessed => 0,
-                    Status::DataIncomplete => 1,
-                    _ => 2,
-                };
-                if want == pass && p.y > 1e-10 {
+                if marker_pass(p) == pass && drawable(p) {
                     mark!(chart, glyph_of(p), vec![(p.t_h, p.y)]);
                 }
             }
         }
         // The model's own value over the window of a matrix-corrected measurement, beside it.
-        for p in placed.iter().filter(|p| p.species == *species) {
+        for p in placed
+            .iter()
+            .filter(|p| p.species == *species && drawable(p))
+        {
             if let Some(w) = p.model_window.filter(|w| *w > 1e-10) {
                 mark!(
                     chart,
@@ -730,11 +773,15 @@ pub fn figure_a(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
                 ts_pos(13, HPos::Left, VPos::Top),
             )))
             .map_err(pe)?;
-        let n_here = placed.iter().filter(|p| p.species == *species).count();
+        let n_here = placed
+            .iter()
+            .filter(|p| p.species == *species && drawable(p))
+            .count();
         let comparable = placed
             .iter()
             .filter(|p| {
                 p.species == *species
+                    && drawable(p)
                     && matches!(
                         p.status,
                         Status::WithinReportedUpperBound
@@ -768,10 +815,21 @@ pub fn figure_a(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
     items.extend(status_legend());
     let y = legend(&root, 40, 520, 760, 2, &items)?;
     let mut text = format!(
-        "Experimental values: {}. Digitised values carry the reading uncertainty of the register; the sources report no measurement uncertainty for these rows, so no error bars are drawn. Compact values are not single-particle values. Rows with several times per compact are drawn at their own times; values without a time are drawn at the registered end of test. Matrix-corrected values are releases over a window that starts at 24 h and ends at the plotted time, so they are drawn beside the model's value over the same window, not against the cumulative curve. The model has no decay: every panel is the element, and the nuclides measured are listed in the panel. Analytical-series values are drawn only where the criterion holds: {} ",
+        "Experimental values: {}. Digitised values carry the reading uncertainty of the register; the sources report no measurement uncertainty for these rows, so no error bars are drawn. Compact values are not single-particle values. Rows with several times per compact are drawn at their own times; values without a time are drawn at the registered end of test. Matrix-corrected values are releases over a window that starts at 24 h and ends at the plotted time, so they are drawn beside the model's value over the same window, not against the cumulative curve. The model has no decay: every panel is the element, and the nuclides measured are listed in the panel. Analytical-series values are drawn only where the criterion holds: {} {} ",
         sources_of(&placed),
-        crate::studies::ANALYTIC_CRITERION
+        crate::studies::ANALYTIC_CRITERION,
+        EARLY_TIME_NOTE
     );
+    let beyond = beyond_axis_note(
+        placed
+            .iter()
+            .filter(|p| p.y > 1e-10)
+            .map(|p| (p.id.clone(), p.t_h)),
+    );
+    if !beyond.is_empty() {
+        text.push_str(&beyond);
+        text.push(' ');
+    }
     text.push_str(&provenance_line(inp.prov));
     footer(&root, y + 14, 215, &text)?;
     finish(root)
@@ -1664,17 +1722,45 @@ fn nuclide_figure(
     for l in deviation_lines(inp.records, species) {
         text_lines.extend(wrap(&l, 190));
     }
+    // The points of the right panel: the log10 ratio of the model to the measured value at the
+    // end of the window, for every row that has a model value and a value to set against it.
+    let pts: Vec<(String, f64, f64, bool)> = inp
+        .records
+        .iter()
+        .filter(|r| row_species(r) == Some(species))
+        .filter_map(|r| {
+            let m = r.model.as_ref()?;
+            match &r.eval {
+                Eval::Point { dev, .. } => dev
+                    .log10_ratio
+                    .map(|l| (r.row.id.clone(), m.spec.t_end_h, l, true)),
+                Eval::Provisional { log10_ratio, .. } => {
+                    log10_ratio.map(|l| (r.row.id.clone(), m.spec.t_end_h, l, false))
+                }
+                _ => None,
+            }
+        })
+        .collect();
+    let has_point = pts.iter().any(|p| p.3);
+    let beyond = beyond_axis_note(
+        placed
+            .iter()
+            .filter(|p| p.y > 1e-10)
+            .map(|p| (p.id.clone(), p.t_h))
+            .chain(pts.iter().map(|p| (p.0.clone(), p.1))),
+    );
     let provenance = format!(
-        "Experimental values: {}. A bar on a digitised point is the reading uncertainty of the register (the error of reading the point off the published figure); it is not a measurement uncertainty, and the sources report none for these rows, so no other error bar is drawn. Compact values are not single-particle values; rows without a time at temperature or at a temperature outside 1600 to 1800 \u{b0}C are not drawn. {} {}",
+        "Experimental values: {}. Only the rows whose status supports a comparison are drawn in colour; rows that are NOT DIRECTLY COMPARABLE are muted grey context, because they measure another quantity than the model computes (failed particles, totals that include release in the reactor, another fuel, fuel spheres). A bar on a marker is the reading uncertainty of the register (the error of reading the point off the published figure); it is not a measurement uncertainty, and the sources report none for these rows, so no other error bar is drawn. Compact values are not single-particle values; rows at a temperature outside 1600 to 1800 \u{b0}C or whose value is not a fraction are not drawn. {beyond} Analytical-series values are drawn only where the criterion holds: {}. {} {}",
         sources_of(&placed),
-        format_args!("Analytical-series values are drawn only where the criterion holds: {}.", crate::studies::ANALYTIC_CRITERION),
+        crate::studies::ANALYTIC_CRITERION,
+        EARLY_TIME_NOTE,
         provenance_line(inp.prov)
     );
     let foot_lines = wrap(&provenance, 215).len() as i32;
-    // 640 px of charts and titles, 5 legend rows of 26 px, the heading of the deviation lines, the
+    // 640 px of charts and titles, 6 legend rows of 26 px, the heading of the deviation lines, the
     // lines themselves and the footer.
     let height =
-        640 + 10 + 26 * 5 + 12 + 26 + 19 * text_lines.len() as i32 + 14 + 18 * foot_lines + 30;
+        640 + 10 + 26 * 6 + 12 + 26 + 19 * text_lines.len() as i32 + 14 + 18 * foot_lines + 30;
     let root = SVGBackend::new(path, (1560, height as u32)).into_drawing_area();
     root.fill(&WHITE).map_err(pe)?;
     title(
@@ -1732,89 +1818,93 @@ fn nuclide_figure(
                 );
             }
         }
-        for p in &placed {
-            if let Some((lo, hi)) = p.reading_interval {
-                let lo = lo.max(1e-10);
-                if hi > lo {
-                    chart
-                        .draw_series(LineSeries::new(
-                            vec![(p.t_h, lo), (p.t_h, hi)],
-                            shape(temp_colour(p.t_c), false, 1),
-                        ))
-                        .map_err(pe)?;
+        // Reading bars first (a secondary attribute of a digitised value), then the markers: the
+        // status decides the marker, never the way the value was obtained. Context first, then
+        // the rows that are not comparable data, then the bounds and point comparisons on top.
+        for pass in 0..3 {
+            for p in placed.iter().filter(|p| drawable(p)) {
+                if marker_pass(p) != pass {
+                    continue;
                 }
+                if let Some((lo, hi)) = p.reading_interval {
+                    let lo = lo.max(1e-10);
+                    if hi > lo {
+                        let c = if pass == 0 {
+                            RGBColor(170, 170, 170)
+                        } else {
+                            temp_colour(p.t_c)
+                        };
+                        chart
+                            .draw_series(LineSeries::new(
+                                vec![(p.t_h, lo), (p.t_h, hi)],
+                                shape(c, false, 1),
+                            ))
+                            .map_err(pe)?;
+                    }
+                }
+                mark!(chart, glyph_of(p), vec![(p.t_h, p.y)]);
             }
         }
-        for p in placed.iter().filter(|p| p.y > 1e-10) {
-            if p.digitised {
+        // The model's own value over the window of a matrix-corrected measurement, beside it: that
+        // measurement is a release over a window, not cumulative from t = 0.
+        for p in placed.iter().filter(|p| drawable(p)) {
+            if let Some(w) = p.model_window.filter(|w| *w > 1e-10) {
                 mark!(
                     chart,
-                    Glyph::Dot {
+                    Glyph::Square {
                         c: temp_colour(p.t_c)
                     },
-                    vec![(p.t_h, p.y)]
-                );
-            } else {
-                mark!(
-                    chart,
-                    Glyph::Ring {
-                        c: temp_colour(p.t_c)
-                    },
-                    vec![(p.t_h, p.y)]
+                    vec![(p.t_h, w)]
                 );
             }
         }
-        // A hollow diamond around a value marks a row whose denominator is not established
-        // (DATA INCOMPLETE): the row of the right panel.
-        for p in placed
-            .iter()
-            .filter(|p| p.status == Status::DataIncomplete && p.y > 1e-10)
-        {
-            mark!(chart, Glyph::Diamond { c: INK }, vec![(p.t_h, p.y)]);
+        let drawn: Vec<&Placed> = placed.iter().filter(|p| drawable(p)).collect();
+        let count = |f: &dyn Fn(&Placed) -> bool| drawn.iter().filter(|p| f(**p)).count();
+        let n_ctx = count(&|p| marker_pass(p) == 0);
+        let n_inc = count(&|p| p.status == Status::DataIncomplete);
+        let n_bound = count(&|p| p.is_bound && marker_pass(p) == 2);
+        let n_point = count(&|p| marker_pass(p) == 2 && !p.is_bound);
+        let n_dig = drawn.iter().filter(|p| p.digitised).count();
+        let line1 = format!(
+            "{} registered values drawn: {n_ctx} NOT DIRECTLY COMPARABLE (grey context), {n_inc} DATA INCOMPLETE",
+            drawn.len()
+        );
+        let line2 = format!(
+            "{n_bound} upper bounds, {n_point} point comparisons; {n_dig} of the drawn values digitised, {} tabulated or printed",
+            drawn.len() - n_dig
+        );
+        for (txt, y) in [(line1, 5e-10), (line2, 1.6e-10)] {
+            chart
+                .draw_series(std::iter::once(Text::new(
+                    txt,
+                    (T_AXIS_H - 4.0, y),
+                    ts_pos(13, HPos::Right, VPos::Bottom),
+                )))
+                .map_err(pe)?;
         }
-        let n_dig = placed.iter().filter(|p| p.digitised).count();
-        chart
-            .draw_series(std::iter::once(Text::new(
-                format!(
-                    "{} registered values drawn: {} digitised, {} tabulated or printed",
-                    placed.len(),
-                    n_dig,
-                    placed.len() - n_dig
-                ),
-                (416.0, 1.6e-10),
-                ts_pos(13, HPos::Right, VPos::Bottom),
-            )))
-            .map_err(pe)?;
     }
 
-    // Right: the deviation of the model from the measurement, signed log10 ratio.
+    // Right: the signed log10 ratio of the model to the measured value. Only a point comparison
+    // is a deviation; the rows without an established denominator are shown for scale only.
     {
-        let pts: Vec<(f64, f64, bool)> = inp
-            .records
+        let pts: Vec<(f64, f64, bool)> = pts
             .iter()
-            .filter(|r| row_species(r) == Some(species))
-            .filter_map(|r| {
-                let m = r.model.as_ref()?;
-                match &r.eval {
-                    Eval::Point { dev, .. } => dev.log10_ratio.map(|l| (m.spec.t_end_h, l, true)),
-                    Eval::Provisional { log10_ratio, .. } => {
-                        log10_ratio.map(|l| (m.spec.t_end_h, l, false))
-                    }
-                    _ => None,
-                }
-            })
+            .filter(|p| p.1 > 0.0 && p.1 <= T_AXIS_H)
+            .map(|p| (p.1, p.2, p.3))
             .collect();
         let top = pts.iter().map(|p| p.1).fold(1.0f64, f64::max).ceil() + 0.5;
         let bottom = pts.iter().map(|p| p.1).fold(-1.0f64, f64::min).floor() - 0.5;
+        let title_right = if has_point {
+            format!("Signed log10 ratio, model over measured value, {nuc}")
+        } else {
+            format!("Log10 ratio, model over measured value, for scale only, {nuc}")
+        };
         let mut chart = ChartBuilder::on(&areas[1])
-            .caption(
-                format!("Deviation of the model from the measurement, {nuc}"),
-                ts(19),
-            )
+            .caption(title_right, ts(19))
             .margin(8)
             .x_label_area_size(44)
             .y_label_area_size(80)
-            .build_cartesian_2d(0.0f64..420.0f64, bottom..top)
+            .build_cartesian_2d(0.0f64..T_AXIS_H, bottom..top)
             .map_err(pe)?;
         chart
             .configure_mesh()
@@ -1829,10 +1919,19 @@ fn nuclide_figure(
             .map_err(pe)?;
         chart
             .draw_series(LineSeries::new(
-                vec![(0.0, 0.0), (420.0, 0.0)],
+                vec![(0.0, 0.0), (T_AXIS_H, 0.0)],
                 shape(GREY, false, 1),
             ))
             .map_err(pe)?;
+        if !pts.is_empty() && !has_point {
+            chart
+                .draw_series(std::iter::once(Text::new(
+                    "no deviation is defined for these rows: the denominator of the fraction is not established",
+                    (T_AXIS_H / 2.0, top - 0.1),
+                    ts_pos(13, HPos::Center, VPos::Top),
+                )))
+                .map_err(pe)?;
+        }
         for (t, l, is_point) in &pts {
             if *is_point {
                 mark!(chart, Glyph::Dot { c: INK }, vec![(*t, *l)]);
@@ -1863,22 +1962,24 @@ fn nuclide_figure(
         "Plus: analytical prediction (independent series), only where valid",
         Glyph::Plus { c: INK },
     ));
+    items.extend(status_legend());
     items.push(entry(
-        "Filled circle with bar: digitised value and its reading uncertainty",
-        Glyph::Dot { c: INK },
+        "Hollow square: model over the same 24 h-to-end window as a matrix-corrected value",
+        Glyph::Square { c: INK },
     ));
     items.push(entry(
-        "Hollow circle: tabulated or printed value, exact as printed",
-        Glyph::Ring { c: INK },
+        "Vertical bar: reading uncertainty of a digitised value; no bar: printed value, exact",
+        Glyph::Line {
+            c: GREY,
+            dash: None,
+        },
     ));
-    items.push(entry(
-        "Right panel, filled circle: a point comparison",
-        Glyph::Dot { c: INK },
-    ));
-    items.push(entry(
-        "Hollow diamond: row with no established denominator; its log10 ratio is in the right panel, for scale only",
-        Glyph::Diamond { c: INK },
-    ));
+    if has_point {
+        items.push(entry(
+            "Right panel, filled circle: a point comparison",
+            Glyph::Dot { c: INK },
+        ));
+    }
     items.push(entry(
         "Marker colour: test temperature, as the line of the same colour",
         Glyph::Line {
@@ -1958,9 +2059,14 @@ pub fn figure_k(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
             "The register holds {n} Cs-137 rows of the programme {program} ({source}) with the status {status}{why}."
         ));
     }
-    lines.push(
-        "The model computes the element caesium without decay (decay is not in the solver yet), so it makes no Cs-137 prediction that could be set against a Cs-137 measurement.".to_string(),
-    );
+    let n_point = rows
+        .iter()
+        .filter(|r| matches!(r.eval, Eval::Point { .. }))
+        .count();
+    lines.push(format!(
+        "The model computes the element caesium without decay (decay is not in the solver yet): it gives the release of the element, not of a nuclide. Figure A draws the registered Cs-137 rows of the other programme against the caesium curve with the marker of their status; of the {} Cs-137 rows, {n_point} support a point comparison.",
+        rows.len()
+    ));
     let mut text_lines: Vec<String> = Vec::new();
     for l in &lines {
         text_lines.extend(wrap(l, 190));

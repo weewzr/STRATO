@@ -118,6 +118,44 @@ fn reading_factor(u: &strato_data::release::ReadingUncertainty) -> Option<f64> {
     }
 }
 
+/// The upper-bound rows grouped by the result they report: the same compact or group of compacts,
+/// the same test temperature, the same element and the same time at temperature. Several rows of
+/// one group are one result printed in more than one place in the sources.
+fn bound_groups(rec: &[RowRecord]) -> Vec<Vec<&RowRecord>> {
+    let mut keys: Vec<String> = Vec::new();
+    let mut groups: Vec<Vec<&RowRecord>> = Vec::new();
+    for r in rec {
+        let (Eval::Bound { .. }, Some(m)) = (&r.eval, &r.model) else {
+            continue;
+        };
+        let text = measured_text(&r.row);
+        let element = text.split('-').next().unwrap_or("");
+        let key = format!(
+            "{}|{}|{}|{}",
+            r.row.compact_or_sample, m.spec.t_c, element, m.spec.t_end_h
+        );
+        match keys.iter().position(|k| *k == key) {
+            Some(i) => groups[i].push(r),
+            None => {
+                keys.push(key);
+                groups.push(vec![r]);
+            }
+        }
+    }
+    groups
+}
+
+/// The time of the curve vertex that a register note states ("the value is the vertex of the curve
+/// at t = 303.0 h on the figure axis"), if it states one.
+fn vertex_time_h(notes: &str) -> Option<f64> {
+    let rest = notes.split("vertex of the curve at t = ").nth(1)?;
+    let number: String = rest
+        .chars()
+        .take_while(|c| c.is_ascii_digit() || *c == '.')
+        .collect();
+    number.parse().ok()
+}
+
 /// Render the report.
 #[allow(clippy::too_many_lines)]
 pub fn render(inp: &ReportInput<'_>) -> String {
@@ -177,6 +215,17 @@ pub fn render(inp: &ReportInput<'_>) -> String {
         .iter()
         .filter(|r| matches!(r.eval, Eval::Point { .. }))
         .count();
+    let groups = bound_groups(rec);
+    let repeated: Vec<String> = groups
+        .iter()
+        .filter(|g| g.len() > 1)
+        .map(|g| {
+            g.iter()
+                .map(|r| r.row.id.clone())
+                .collect::<Vec<_>>()
+                .join(" = ")
+        })
+        .collect();
     let _ = writeln!(s);
     if ratios.is_empty() {
         let _ = writeln!(s, "No row supports an upper-bound comparison.\n");
@@ -190,6 +239,17 @@ pub fn render(inp: &ReportInput<'_>) -> String {
             sci(rmin),
             sci(rmax)
         );
+        let _ = writeln!(
+            s,
+            "- **These rows are not independent observations.** The {} rows report {} distinct results (one result is one compact or one group of compacts, at one test temperature and one time at temperature). Where several rows give the same result, they are the same compact result printed in more than one place in the sources, for example in a figure of one paper and in a table of another, or restated as a bound in the text; they are listed as equal here: {}. A count of rows is therefore not a count of independent measurements, and the number of rows that the model exceeds is not the number of independent results that it exceeds.",
+            ratios.len(),
+            groups.len(),
+            if repeated.is_empty() {
+                "none".to_string()
+            } else {
+                repeated.join("; ")
+            }
+        );
     }
     let _ = writeln!(
         s,
@@ -197,7 +257,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     );
     let _ = writeln!(
         s,
-        "- **Sr-90.** No row of Sr-90 supports a comparison: the intact-compact values are totals that include inventory released in the reactor, and the other rows are failed-particle quantities. The Sr-90 panels of the figures show these rows as muted context only."
+        "- **Sr-90.** No row of Sr-90 supports a comparison: the intact-compact values are totals that include inventory released in the reactor, and the other rows are failed-particle quantities. The Sr-90 panel of figure A and figure J show the Sr-90 fractions inside their time axis as muted grey crosses (context), never as a comparison; rows whose time lies beyond the axis are not drawn and are listed in the footer of the figure."
     );
     let _ = writeln!(
         s,
@@ -327,7 +387,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     );
     let _ = writeln!(
         s,
-        "| Row | Nuclide | Compact or sample | T (°C) | Time at T (h) | Bound read as | Bound | Model | Model / bound | Status | Numerical difference of the model |\n|---|---|---|---:|---:|---|---:|---:|---:|---|---:|"
+        "| Row | Nuclide | Compact or sample | T (°C) | Time at T (h) | Bound read as | Bound | Model | Model / bound | Status | Numerical difference of the model | Same result also in rows |\n|---|---|---|---:|---:|---|---:|---:|---:|---|---:|---|"
     );
     for r in rec {
         if let (
@@ -339,9 +399,19 @@ pub fn render(inp: &ReportInput<'_>) -> String {
             Some(m),
         ) = (&r.eval, &r.model)
         {
+            let same: Vec<String> = groups
+                .iter()
+                .find(|g| g.iter().any(|x| x.row.id == r.row.id))
+                .map(|g| {
+                    g.iter()
+                        .filter(|x| x.row.id != r.row.id)
+                        .map(|x| x.row.id.clone())
+                        .collect()
+                })
+                .unwrap_or_default();
             let _ = writeln!(
                 s,
-                "| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |",
+                "| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |",
                 r.row.id,
                 measured_text(&r.row),
                 r.row.compact_or_sample,
@@ -352,7 +422,12 @@ pub fn render(inp: &ReportInput<'_>) -> String {
                 sci(m.f_window),
                 sci(margin.ratio),
                 r.status.label(),
-                sci(m.numerical_difference)
+                sci(m.numerical_difference),
+                if same.is_empty() {
+                    "-".to_string()
+                } else {
+                    same.join(", ")
+                }
             );
         }
     }
@@ -444,7 +519,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     // ---- Figures -----------------------------------------------------------------------------
     let _ = writeln!(s, "## Figures\n");
     let figs = [
-        ("figure_A_release_vs_time.svg", "A. Fraction released versus time at temperature, for the three elements at 1600, 1700 and 1800 °C (the model has no decay, so each panel is the element; the nuclides measured are listed in the panel). Lines: BTCS. Plus signs: the independent analytical series of the five-layer problem (the eigenfunction expansion of the repository), only at the times where it meets its validity criterion (truncation valid, and the value above the series' own estimated accuracy; negative or unresolved values are not drawn). Hollow squares: the model's own value over the 24 h-to-end window of a matrix-corrected measurement, drawn beside it because that measurement is a window release, not cumulative from t = 0. Markers: registered measurements, by what they can support (downward triangle: upper bound, hollow when exceeded by the model; hollow diamond: DATA INCOMPLETE; grey cross: NOT DIRECTLY COMPARABLE context). Log scale; no error bars, because no source reports a measurement uncertainty for the plotted rows."),
+        ("figure_A_release_vs_time.svg", "A. Fraction released versus time at temperature, for the three elements at 1600, 1700 and 1800 °C (the model has no decay, so each panel is the element; the nuclides measured are listed in the panel). Lines: BTCS. Plus signs: the independent analytical series of the five-layer problem (the eigenfunction expansion of the repository), only at the times where it meets its validity criterion (truncation valid, and the value above the series' own estimated accuracy; negative or unresolved values are not drawn). Hollow squares: the model's own value over the 24 h-to-end window of a matrix-corrected measurement, drawn beside it because that measurement is a window release, not cumulative from t = 0. Markers: registered measurements, by what they can support (downward triangle: upper bound, hollow when exceeded by the model; hollow diamond: DATA INCOMPLETE; grey cross: NOT DIRECTLY COMPARABLE context). Log scale; no error bars, because no source reports a measurement uncertainty for the plotted rows. Measurements whose time lies beyond the 420 h axis are not drawn and are listed in the footer. The early part of every curve is not converged in time (see the section on accuracy)."),
         ("figure_B_absolute_deviation.svg", "B. Absolute deviation versus time of the point comparisons (none exist, so the panel is empty and says so; DATA INCOMPLETE rows have no deviation) and, beside it, the model over each upper bound (an inequality, not a deviation)."),
         ("figure_C_relative_deviation.svg", "C. Relative percentage deviation versus time of the point comparisons (none exist), with the policy for undefined values stated on the figure, and the model over each upper bound."),
         ("figure_D_radial_profiles.svg", "D. Radial concentration profiles through the five layers at selected times, 1600 °C."),
@@ -452,8 +527,8 @@ pub fn render(inp: &ReportInput<'_>) -> String {
         ("figure_F_spatial_convergence.svg", "F. Spatial convergence against the exact series of a homogeneous verification case (synthetic diffusion coefficient, not AGR-1 data)."),
         ("figure_G_temporal_convergence.svg", "G. Temporal convergence on a fixed fine mesh, same homogeneous verification case."),
         ("figure_H_temperature_sensitivity.svg", "H. Temperature sensitivity of the release after 300 h for each registered coefficient variant."),
-        ("figure_I_silver_110m_comparison.svg", "I. Silver-110m (Ag-110m): the registered measurements (filled circles with a bar: digitised values and their reading uncertainty; hollow circles: tabulated or printed values, exact as printed), the BTCS prediction (lines), the analytical prediction where it is valid (plus signs), and in the right panel the deviation of the model from the measurement where one is defined, with the numerical deviations in the lines under the figure."),
-        ("figure_J_strontium_90_comparison.svg", "J. Strontium-90 (Sr-90): the same layout as figure I."),
+        ("figure_I_silver_110m_comparison.svg", "I. Silver-110m (Ag-110m): the registered measurements, marked by what each can support, as in figure A (grey cross: NOT DIRECTLY COMPARABLE context, muted; hollow diamond: DATA INCOMPLETE; downward triangle: upper bound, hollow when exceeded by the model), where a vertical bar on a marker is the reading uncertainty of a digitised value and a marker without a bar is a printed value, exact as printed; the BTCS prediction (lines); the analytical prediction where it is valid (plus signs); hollow squares, the model's value over the window of a matrix-corrected measurement; and, in the right panel, the log10 ratio of the model to the measured value, for scale only where no deviation is defined, with the numerical deviations in the lines under the figure. Measurements whose time lies beyond the time axis are not drawn and are listed in the footer."),
+        ("figure_J_strontium_90_comparison.svg", "J. Strontium-90 (Sr-90): the same layout and markers as figure I."),
         ("figure_K_caesium_137_data_unavailable.svg", "K. Caesium-137 (Cs-137): DATA UNAVAILABLE, no release measurement exists for the AGR-1 particles in the sources of the register."),
     ];
     for (file, cap) in figs {
@@ -544,6 +619,38 @@ pub fn render(inp: &ReportInput<'_>) -> String {
             cell(300.0)
         );
     }
+    let _ = writeln!(
+        s,
+        "\n**The early part of every curve is not converged in time.** Where the release is still rising steeply from zero, the base run (step {} h) and the run with half the step differ by large factors, and the BTCS values there on the log axes of figures A, I and J are dominated by time-step error, not by the diffusion model. The table gives, for every curve, the largest relative difference between the two runs over the drawn points (release above 1e-10) and the last time at which a drawn point differs by more than 10 percent (a reading aid, not a tolerance); after that time every drawn point agrees within 10 percent.\n",
+        st.dt_h
+    );
+    let _ = writeln!(
+        s,
+        "| Nuclide | T (°C) | Largest relative difference of the drawn points (percent) | Last time with a difference above 10 percent (h) |\n|---|---:|---:|---:|"
+    );
+    for (sp, t, c) in inp.curves {
+        let diffs = c.drawn_time_differences();
+        let largest = diffs.iter().map(|d| d.1).fold(0.0_f64, f64::max) * 100.0;
+        let settle = c
+            .settle_time_h(0.1)
+            .map_or("none".to_string(), |h| format!("{h:.2}"));
+        let _ = writeln!(
+            s,
+            "| {} | {:.0} | {} | {} |",
+            sp.nuclide(),
+            t,
+            sci(largest),
+            settle
+        );
+    }
+    let earliest = rec
+        .iter()
+        .filter_map(|r| r.model.as_ref().map(|m| m.spec.t_end_h))
+        .fold(f64::INFINITY, f64::min);
+    let _ = writeln!(
+        s,
+        "\nThe model values of the rows of this report are read at {earliest} h at temperature or later, and the numerical difference of each of them is given beside it in the tables.\n"
+    );
     let mut worst = 0.0_f64;
     for r in rec {
         if let Some(m) = &r.model {
@@ -618,8 +725,9 @@ pub fn render(inp: &ReportInput<'_>) -> String {
         .count();
     let _ = writeln!(
         s,
-        "**Caesium.** The model exceeds {cs_exceeded} of {} caesium upper bounds, by factors of {} to {} (model over bound). With the published coefficients, evaluated at the test temperature and with no correction, the model predicts far more caesium release than these bounds allow. This is the deviation of the stated model from the data; it is not reduced by anything done here. Possible contributions, none of which this report has tested or established: the published correlations were reported by their source to need multiplicative corrections to match the AGR-1 heating tests (register Table 18, rows CF-6 and CF-3: the factors on the diffusion coefficient of caesium in silicon carbide are 5e-3 to 6e-2 at 1600 °C, and of silver in silicon carbide 2e-4 to 4e-3 at 1600 °C for the matrix-corrected values; they are compact-specific, fitted to the data, and are not applied here), the kernel coefficients are UO2 surrogates, the start is kernel-only, the compact values are not single-particle values, and the heating ramps are not modelled.\n",
+        "**Caesium.** The model exceeds {cs_exceeded} of {} caesium upper-bound rows, which are {} distinct results (see the summary), by factors of {} to {} (model over bound). With the published coefficients, evaluated at the test temperature and with no correction, the model predicts far more caesium release than these bounds allow. This is the deviation of the stated model from the data; it is not reduced by anything done here. Possible contributions, none of which this report has tested or established: the published correlations were reported by their source to need multiplicative corrections to match the AGR-1 heating tests (register Table 18, rows CF-6 and CF-3: the factors on the diffusion coefficient of caesium in silicon carbide are 5e-3 to 6e-2 at 1600 °C, and of silver in silicon carbide 2e-4 to 4e-3 at 1600 °C for the matrix-corrected values; they are compact-specific, fitted to the data, and are not applied here), the kernel coefficients are UO2 surrogates, the start is kernel-only, the compact values are not single-particle values, and the heating ramps are not modelled.\n",
         ratios.len(),
+        groups.len(),
         sci(rmin),
         sci(rmax)
     );
@@ -649,6 +757,57 @@ pub fn render(inp: &ReportInput<'_>) -> String {
                     })
                     .fold(f64::INFINITY, f64::min)
             )
+        );
+    }
+    // Rows read at the registered end of the test although their register note gives the time of
+    // the curve vertex that was read off the published figure.
+    let mut vertex: Vec<(String, f64, f64)> = Vec::new();
+    let mut vertex_status_changes = 0;
+    for r in rec {
+        let (Some(m), Some(v)) = (&r.model, vertex_time_h(&r.row.notes)) else {
+            continue;
+        };
+        if r.row.time_h.is_some()
+            || m.spec.window_start_h > 0.0
+            || (v - m.spec.t_end_h).abs() < 0.05
+        {
+            continue;
+        }
+        let Some(curve) = inp
+            .curves
+            .iter()
+            .find(|(sp, t, _)| *sp == m.spec.species && (*t - m.spec.t_c).abs() < 1.0)
+            .map(|x| x.2)
+        else {
+            continue;
+        };
+        let (Some(at_vertex), Some(at_end)) = (curve.at(v), curve.at(m.spec.t_end_h)) else {
+            continue;
+        };
+        if at_end <= 0.0 {
+            continue;
+        }
+        if let Eval::Bound { limit, .. } = &r.eval {
+            if (m.f_window > *limit) != (at_vertex > *limit) {
+                vertex_status_changes += 1;
+            }
+        }
+        vertex.push((r.row.id.clone(), v, (at_vertex / at_end - 1.0) * 100.0));
+    }
+    if !vertex.is_empty() {
+        let lo = vertex.iter().map(|v| v.2).fold(f64::INFINITY, f64::min);
+        let hi = vertex.iter().map(|v| v.2).fold(f64::NEG_INFINITY, f64::max);
+        let list: Vec<String> = vertex
+            .iter()
+            .map(|(id, v, _)| format!("{id} ({v:.1} h)"))
+            .collect();
+        let _ = writeln!(
+            s,
+            "**Time at which a digitised value is compared.** For rows without a time of their own, the model is read at the registered end of the test (the origin is stated in every row). For {} the register notes that the digitised value is the vertex of the published curve at a slightly different time on the figure axis ({}). The comparison keeps the registered end of the test; reading the model at the vertex time instead would change the model value by {:+.1} to {:+.1} percent, and {vertex_status_changes} of these statuses would change.\n",
+            compress_ids(&vertex.iter().map(|v| v.0.clone()).collect::<Vec<_>>()),
+            list.join(", "),
+            lo,
+            hi
         );
     }
     let f300 = |sp: Species, t: f64| -> f64 {

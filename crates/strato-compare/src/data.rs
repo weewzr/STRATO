@@ -182,14 +182,21 @@ fn select_layer<'a>(
 
 /// Proper unit typography for a label that the register or the selection function wrote in ASCII:
 /// the unit "um" becomes the micrometre symbol "µm" and "degC" the degree Celsius symbol "°C"
-/// (decision 30). Only whole words are changed.
+/// (decision 30). A lone "C" that follows a number and a space is a temperature unit and becomes
+/// the degree Celsius symbol too, and "^2" becomes the superscript two. Only whole words are
+/// changed.
 pub fn typography(text: &str) -> String {
     let mut out = String::with_capacity(text.len());
     let mut word = String::new();
     let flush = |word: &mut String, out: &mut String| {
+        let after_number_and_space = {
+            let mut back = out.chars().rev();
+            back.next() == Some(' ') && back.next().is_some_and(|c| c.is_ascii_digit())
+        };
         match word.as_str() {
             "um" => out.push_str("\u{b5}m"),
             "degC" => out.push_str("\u{b0}C"),
+            "C" if after_number_and_space => out.push_str("\u{b0}C"),
             other => out.push_str(other),
         }
         word.clear();
@@ -203,7 +210,7 @@ pub fn typography(text: &str) -> String {
         }
     }
     flush(&mut word, &mut out);
-    out
+    out.replace("^2", "\u{b2}")
 }
 
 /// The default set of an element, chosen by the selection function of `strato-data` (decisions 39,
@@ -263,10 +270,10 @@ pub fn variant_sets(reg: &Register, species: Species) -> Result<Vec<DiffusivityS
         .ok_or("the kernel-scaled selection carries no scale")?;
     let mut scaled = base.clone();
     scaled.id = "kernel-radius-scaled".to_string();
-    scaled.label = format!(
+    scaled.label = typography(&format!(
         "kernel coefficient scaled by (kernel radius {} µm / reference radius {} µm)^2 = {:.3} (decision 41; sensitivity case, not a published coefficient)",
         scale.agr1_radius_um, scale.reference_radius_um, scale.factor
-    );
+    ));
     scaled.kernel_scale = scale.factor;
     out.push(scaled);
     // The AGR-1 fitted SiC row of Schappel 2020, offered by the selection function.

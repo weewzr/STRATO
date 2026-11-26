@@ -103,6 +103,34 @@ impl Curve {
     pub fn end_h(&self) -> f64 {
         *self.t_h.last().unwrap_or(&0.0)
     }
+
+    /// The relative difference between the base run and the refined run (half the step, twice the
+    /// intervals) at every drawn point of the curve, that is every point at a positive time with a
+    /// release above 1e-10 (the points of the figures), as `(time in hours, |base - refined| /
+    /// refined)`.
+    pub fn drawn_time_differences(&self) -> Vec<(f64, f64)> {
+        self.t_h
+            .iter()
+            .zip(&self.f)
+            .filter(|(t, f)| **t > 0.0 && **f > 1.0e-10)
+            .filter_map(|(t, f)| {
+                let r = self.at_refined(*t)?;
+                (r > 0.0).then(|| (*t, (f - r).abs() / r))
+            })
+            .collect()
+    }
+
+    /// The last time at which a drawn point of the base run differs from the refined run by more
+    /// than the relative amount `level` (`None` if no drawn point does). After this time every
+    /// drawn point agrees with the refined run within `level`. It is a reading aid for the early,
+    /// not yet converged part of the curve, not a tolerance of the comparison.
+    pub fn settle_time_h(&self, level: f64) -> Option<f64> {
+        self.drawn_time_differences()
+            .into_iter()
+            .filter(|(_, d)| *d > level)
+            .map(|(t, _)| t)
+            .next_back()
+    }
 }
 
 /// Build the solver configuration of a run.

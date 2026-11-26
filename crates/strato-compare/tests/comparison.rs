@@ -356,6 +356,83 @@ fn unit_typography_changes_whole_words_only() {
 }
 
 #[test]
+fn unit_typography_covers_the_celsius_letter_and_the_square() {
+    use strato_compare::data::typography;
+    assert_eq!(
+        typography("factor about 1000 at 1600 to 1700 C and 100 at 1800 C"),
+        "factor about 1000 at 1600 to 1700 \u{b0}C and 100 at 1800 \u{b0}C"
+    );
+    // A letter C that does not follow a number is not a unit.
+    assert_eq!(
+        typography("Table C and set C16-T2"),
+        "Table C and set C16-T2"
+    );
+    assert_eq!(
+        typography("(174.85 um / 250 um)^2 = 0.489"),
+        "(174.85 \u{b5}m / 250 \u{b5}m)\u{b2} = 0.489"
+    );
+}
+
+#[test]
+fn bounds_and_context_are_never_drawn_as_exact_values_and_nothing_is_drawn_off_the_axis() {
+    use strato_compare::figures::{drawable, glyph_of, marker_pass, placed_rows, Glyph, T_AXIS_H};
+    let reg = register();
+    let dir = std::env::temp_dir().join(format!("strato-compare-glyphs-{}", std::process::id()));
+    let opts = Options {
+        repo: repo(),
+        data_out: dir.join("data"),
+        figures_out: dir.join("fig"),
+        report_out: None,
+        commit: "0123456789abcdef".to_string(),
+        quick: true,
+    };
+    let out = generate(&opts).expect("the comparison runs");
+    let placed = placed_rows(&reg, &out.records);
+    assert!(placed.iter().any(|p| p.is_bound));
+    assert!(placed
+        .iter()
+        .any(|p| p.status == Status::NotDirectlyComparable));
+    for p in &placed {
+        let g = glyph_of(p);
+        if p.is_bound {
+            assert!(
+                matches!(g, Glyph::BoundDown { .. } | Glyph::Cross),
+                "{} is an upper bound but is drawn as {g:?}",
+                p.id
+            );
+        }
+        if p.status == Status::NotDirectlyComparable || p.status == Status::NotAssessed {
+            assert!(matches!(g, Glyph::Cross), "{}: {g:?}", p.id);
+            assert_eq!(marker_pass(p), 0);
+        }
+        if drawable(p) {
+            assert!(p.t_h > 0.0 && p.t_h <= T_AXIS_H, "{} at {} h", p.id, p.t_h);
+        }
+    }
+    // E-151 (CRP-6 fuel sphere, Sr, 1600 C, "<1e-5" at 500 h) is an upper bound beyond the axis:
+    // it is not drawn, and in particular not moved onto the edge.
+    let e151 = placed.iter().find(|p| p.id == "E-151").expect("E-151");
+    assert!(e151.is_bound && e151.t_h > T_AXIS_H && !drawable(e151));
+    // In the figures of the nuclides no marker is a hollow or filled circle: the legends of
+    // figures I and J name no circle, so a circle would be an unexplained exact value.
+    for f in [
+        "figure_I_silver_110m_comparison.svg",
+        "figure_J_strontium_90_comparison.svg",
+    ] {
+        let svg = std::fs::read_to_string(dir.join("fig").join(f)).expect("the figure exists");
+        for piece in svg.split("<circle").skip(1) {
+            let tag = piece.split("/>").next().unwrap_or("");
+            assert!(!tag.contains("fill=\"none\""), "{f}: a hollow circle {tag}");
+        }
+        if f.contains("strontium") {
+            // The footer lists the row that is not drawn.
+            assert!(svg.contains("E-151"), "{f}");
+        }
+    }
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
 fn the_deviation_lines_of_a_nuclide_say_what_is_defined_and_what_is_not() {
     let reg = register();
     let dir = std::env::temp_dir().join(format!("strato-compare-lines-{}", std::process::id()));
