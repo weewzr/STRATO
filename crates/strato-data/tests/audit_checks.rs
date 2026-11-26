@@ -160,6 +160,7 @@ const ALL_IDS: &[&str] = &[
     "DI.release.group-label",
     "DI.release.withdrawn-ids",
     "DI.release.denominator",
+    "DI.release.window-label",
     "DI.irr.completeness",
     "DI.irr.monotone",
     "DI.irr.rev3-difference",
@@ -902,6 +903,11 @@ fn di_release_withdrawn_ids() {
 #[test]
 fn di_release_denominator() {
     passes("DI.release.denominator");
+}
+
+#[test]
+fn di_release_window_label() {
+    passes("DI.release.window-label");
 }
 
 #[test]
