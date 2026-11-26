@@ -126,7 +126,7 @@ export const SCENARIO_NAME: Record<ScenarioId, string> = {
   shutdown: 'shutdown and cooldown',
   startup: 'startup',
   'control-rod': 'control-rod insertion',
-  refuelling: 'refuelling',
+  refuelling: 'fuel-removal',
 };
 
 /** Whether the build can run the selection; never substitutes another model (the page shows nothing instead). */

@@ -122,6 +122,15 @@ describe('what a scenario changes in the equation', () => {
     expect([...symbols].sort()).toEqual(['D(r,T(t))', 'G', 'G(r,t)', String.raw`\lambda`, 'T', 'T(t)'].sort());
   });
 
+  it('describes the diffusivity at the middle of the step (F36), never as a step average', () => {
+    const numerics = SCENARIO_IDS.flatMap((s) => SCENARIOS[s].numerics).join(' ');
+    expect(numerics).not.toMatch(/step-averaged diffusivit/i);
+    expect(SCENARIOS.shutdown.numerics.join(' ')).toMatch(/temperature of the middle of the step \(F36\)/);
+    expect(SCENARIOS.shutdown.numerics.join(' ')).toMatch(/reassembled again when the time step changes/);
+    expect(SCENARIOS.shutdown.explanation.join(' ')).not.toMatch(/reduced or ends/);
+    expect(SCENARIO_NAME.refuelling).toBe('fuel-removal');
+  });
+
   it('shows the changed symbols on the page when a scenario is selected', async () => {
     const user = userEvent.setup();
     render(

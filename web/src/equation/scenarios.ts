@@ -16,6 +16,9 @@ export const SCENARIO_LABEL: Record<ScenarioId, string> = {
   refuelling: 'Refuelling',
 };
 
+/** The heading of the explanation of the selected scenario: the button label, and for refuelling what it is (fuel removal). */
+export const SCENARIO_HEADING: Record<ScenarioId, string> = { ...SCENARIO_LABEL, refuelling: 'Refuelling (fuel removal)' };
+
 /** What every scenario is, in a few words (shown with the selected scenario). */
 export const SCENARIO_KIND = 'Prescribed-input simulation, not a validated reactor prediction.';
 
@@ -26,7 +29,7 @@ export const SCENARIO_KIND = 'Prescribed-input simulation, not a validated react
  * combined model; choosing another physics clears the scenario.
  */
 export const SCENARIO_RULE =
-  'Rule: every scenario needs generation, decay and temperature-dependent diffusion, so choosing one selects the combined model, and choosing another physics clears the scenario.';
+  'Rule: every scenario shown here (a history from a fresh particle) needs generation, decay and temperature-dependent diffusion, so choosing one selects the combined model, and choosing another physics clears the scenario.';
 
 /** Every scenario requires the combined model; no scenario at all requires nothing. */
 export const requiresCombined = (scenario: ScenarioId | null): boolean => scenario !== null;
@@ -101,20 +104,20 @@ export const SCENARIOS: Record<ScenarioId, ScenarioInfo> = {
       { ...T_TIMED, id: 'T', symbol: 'T', name: 'Particle temperature, constant in time', meaning: 'The particle temperature, held at one prescribed value.' },
     ],
     numerics: [
-      'With constant inputs the time step and the diffusivities do not change, so the matrix is assembled and factorised once; only the right-hand side changes from step to step, because it holds the concentration of the previous step.',
+      'With constant inputs and one uniform time step, the diffusivities and the step do not change, so the matrix is assembled and factorised once; only the right-hand side changes from step to step, because it holds the concentration of the previous step.',
       'A stationary field would need the concentration to repeat from step to step; constant inputs do not impose that, and the run does not assume it.',
     ],
   },
   shutdown: {
     explanation: [
-      'Starting from the state at the end of normal operation, generation is reduced or ends at shutdown, and the temperature follows a prescribed cooldown.',
+      'Starting from the state at the end of normal operation, generation ends at shutdown, and the temperature follows a prescribed cooldown.',
       'Radioactive decay continues after shutdown, so the inventory keeps falling, while diffusion slows as the particle cools.',
       'G becomes G(r,t), falling from its operating value, and D(r,T) becomes D(r,T(t)); the equation gains no term.',
     ],
     params: [G_TIMED, T_TIMED, D_TIMED, LAMBDA],
     numerics: [
       'From the shutdown time the step-averaged generation is zero, so the right-hand side of each step is the concentration of the previous step; the decay contribution stays on the diagonal of the matrix.',
-      'The step-averaged diffusivity changes with every cooldown step, so the matrix is reassembled at each of those steps and held once the temperature is held.',
+      'The diffusivity evaluated at the temperature of the middle of the step (F36) changes with every cooldown step, so the matrix is reassembled at each of those steps, held once the temperature is held, and reassembled again when the time step changes.',
     ],
   },
   startup: {
@@ -125,7 +128,7 @@ export const SCENARIOS: Record<ScenarioId, ScenarioInfo> = {
     ],
     params: [G_TIMED, T_TIMED, D_TIMED, LAMBDA],
     numerics: [
-      'While the power rises, the step average of the generation changes the right-hand side at every step, and the step-averaged diffusivity changes the matrix at every step.',
+      'While the power rises, the step average of the generation changes the right-hand side at every step, and the diffusivity evaluated at the temperature of the middle of the step changes the matrix at every step.',
       'Both stay constant once the prescribed rise has ended.',
     ],
   },
@@ -142,7 +145,7 @@ export const SCENARIOS: Record<ScenarioId, ScenarioInfo> = {
       LAMBDA,
     ],
     numerics: [
-      'The prescribed change enters only through the step-averaged generation on the right-hand side and the step-averaged diffusivity in the matrix; no new term is assembled.',
+      'The prescribed change enters only through the step-averaged generation on the right-hand side and the diffusivity evaluated at the temperature of the middle of the step in the matrix; no new term is assembled.',
       'Both change during the transition and are held afterwards.',
     ],
   },
@@ -175,6 +178,6 @@ export const SCENARIO_RESET = 'No operating scenario selected, because the physi
 
 /** Shown in block B while no scenario is selected. */
 export const NO_SCENARIO_TEXT =
-  'No operating scenario is selected: the physics chosen above runs with constant inputs, and the simulation is labelled by that physics, not by a scenario. Choose a scenario to see its prescribed histories.';
+  'No operating scenario is selected: the physics chosen above is taken with constant inputs, and the simulation block says whether this build runs it; it is labelled by that physics, not by a scenario. Choose a scenario to see its prescribed histories.';
 
 export { SCENARIO_IDS };

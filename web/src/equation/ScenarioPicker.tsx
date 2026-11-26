@@ -1,7 +1,7 @@
 import { useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useStrato } from '../state/store';
 import { SCENARIO_IDS, mechanismsOf, scenarioStatus, type ScenarioId } from './capability';
-import { NO_SCENARIO_TEXT, paramsFor, SCENARIO_KIND, SCENARIO_LABEL, SCENARIO_RESET, SCENARIO_RULE, SCENARIOS, scenarioChange } from './scenarios';
+import { NO_SCENARIO_TEXT, paramsFor, SCENARIO_KIND, SCENARIO_LABEL, SCENARIO_RESET, SCENARIO_HEADING, SCENARIO_RULE, SCENARIOS, scenarioChange } from './scenarios';
 import { StatusTag } from './StatusTag';
 import { Tex } from './Tex';
 import { useBuildCapability } from './useCapability';
@@ -112,7 +112,7 @@ export function ScenarioPicker() {
         ) : (
           <>
             <h3 className="scenario__title">
-              {SCENARIO_LABEL[scenario]} <span className="scenario__kind">{SCENARIO_KIND}</span>
+              {SCENARIO_HEADING[scenario]} <span className="scenario__kind">{SCENARIO_KIND}</span>
             </h3>
             <p className="scenario__text">{info.explanation.join(' ')}</p>
           </>
