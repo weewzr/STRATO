@@ -11,7 +11,7 @@ export const DOC_SECTIONS = [
   { id: 'verification', title: 'Verification methodology' },
   { id: 'interpretation', title: 'Experimental interpretation' },
   { id: 'implementation', title: 'Technical implementation and build' },
-  { id: 'provenance', title: 'Data provenance' },
+  { id: 'provenance', title: 'Data provenance and research catalogue' },
 ] as const;
 
 export type DocSectionId = (typeof DOC_SECTIONS)[number]['id'];

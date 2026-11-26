@@ -32,7 +32,7 @@ describe('Scientific Documentation page', () => {
       'Verification methodology',
       'Experimental interpretation',
       'Technical implementation and build',
-      'Data provenance',
+      'Data provenance and research catalogue',
     ]);
     render(<Documentation />);
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);

@@ -99,11 +99,11 @@ Plot of $c(r)$ at the playback time, with layer boundaries as vertical bands lab
 
 ### 4.4 Release fraction and time evolution
 
-$F(t)$ from Code B (finite volume) and Code C (series) on the same axes, with the series' validity start and accuracy floor marked, and a playback cursor. A readout states $F$ at the playback time with its label.
+$F(t)$ from Method A: BTCS (blue) and Method B: Sturm–Liouville (red) on the same axes, with the series' validity start and accuracy floor marked, and a playback cursor. A readout states $F$ at the playback time with its label.
 
 ### 4.5 Inventory balance and numerical diagnostics
 
-The balance of the active stage (Section 3.2) as a small table or bar with its residual; the diagnostics the wrapper returns: cell count, step count, time step actually used ($\Delta t = t_\mathrm{end}/\lceil t_\mathrm{end}/\Delta t_\mathrm{in}\rceil$), maximum balance residual, Code B against Code C difference, solver time. Every value carries its result label.
+The balance of the active stage (Section 3.2) as a small table or bar with its residual; the diagnostics the wrapper returns: cell count, step count, time step actually used ($\Delta t = t_\mathrm{end}/\lceil t_\mathrm{end}/\Delta t_\mathrm{in}\rceil$), maximum balance residual, Method A against Method B difference, solver time. Every value carries its result label.
 
 ## 5 Block C: interactive controls
 

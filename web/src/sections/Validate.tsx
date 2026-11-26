@@ -25,7 +25,7 @@ function ValidationLayer() {
       </button>
       <span id="validation-layer-why" className="muted" data-testid="validation-status">
         No comparison is shown yet: model predictions need generation, decay and temperature-dependent diffusion.{' '}
-        <a href={hrefDocumentation('validate-status')}>Why</a>
+        <a href={hrefDocumentation('validate-limits')}>Why</a>
       </span>
     </div>
   );

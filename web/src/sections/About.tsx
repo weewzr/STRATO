@@ -22,10 +22,12 @@ export function About() {
       <p>
         STRATO (Spherical TRISO Analysis and Transport Operations) models fission-product diffusion through the five layers of a TRISO coated
         fuel particle: kernel, buffer, inner pyrolytic carbon (IPyC), silicon carbide (SiC) and outer pyrolytic carbon (OPyC). Two methods
-        solve it and check each other: {METHOD_1} (finite differences) and {METHOD_2} (eigenfunction series). Written by weewzr and released
-        as open source.
+        solve it and check each other: {METHOD_1} (finite differences) and {METHOD_2} (eigenfunction series).
       </p>
-      <p>In each layer the concentration obeys spherical diffusion with a constant diffusivity D of that layer:</p>
+      <p>
+        In each layer the concentration obeys spherical diffusion with a constant diffusivity <i>D</i>
+        <sub>i</sub> of that layer:
+      </p>
       <p className="eq-plain" role="math" aria-label="partial c over partial t equals one over r squared times partial over partial r of r squared D i partial c over partial r">
         ∂<i>c</i>/∂<i>t</i> = (1/<i>r</i>
         <sup>2</sup>) ∂/∂<i>r</i> (<i>r</i>

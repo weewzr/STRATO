@@ -24,6 +24,7 @@ import {
 } from '../src/research/entries';
 import { FutureResearch } from '../src/research/FutureResearch';
 import { GalleryItem } from '../src/research/parts';
+import { pathLabel } from '../src/research/PathLink';
 import { STATUS_INFO, STATUSES, type ResearchStatus } from '../src/research/status';
 import { Documentation } from '../src/sections/Documentation';
 import { Research } from '../src/sections/Research';
@@ -284,7 +285,7 @@ describe('statuses shown equal the catalogue, as word and shape', () => {
   it('keeps the statements of what the catalogue does not do in Scientific Documentation, and off the pages', () => {
     const doc = render(<Documentation />);
     const text = doc.container.textContent ?? '';
-    const statements = ['Nothing in this section is simulated.', 'a research concept that STRATO does not solve', 'No mechanism is switched on for a species automatically'];
+    const statements = ['Nothing in the research catalogue is simulated.', 'a research concept that STRATO does not solve', 'No mechanism is switched on for a species automatically'];
     for (const s of statements) expect(text, s).toContain(s);
     doc.unmount();
     for (const page of ['', 'gallery', 'references', 'roadmap', 'species-ag', 'ag_trapping_detrapping']) {
@@ -292,6 +293,30 @@ describe('statuses shown equal the catalogue, as word and shape', () => {
       for (const s of statements) expect(view.container.textContent ?? '', `${page}: ${s}`).not.toContain(s);
       view.unmount();
     }
+  });
+
+  it('shows no file name or path on any research page, and lists the entry files with links in Scientific Documentation', () => {
+    const FILE = /\b[\w-]+\.(?:rs|toml|md|csv|json|ya?ml)\b|\b(?:src|crates|tests|docs|data|inputs)\//;
+    for (const page of ALL_PAGES) {
+      const view = renderPage(page);
+      expect(view.container.textContent ?? '', `research page "${page}"`).not.toMatch(FILE);
+      view.unmount();
+    }
+    const doc = render(<Documentation />);
+    const list = doc.getByTestId('research-entry-files');
+    const hrefs = [...list.querySelectorAll('a')].map((a) => a.getAttribute('href') ?? '');
+    for (const path of Object.keys(CATALOGUE.entries)) {
+      expect(hrefs.some((h) => h.endsWith(`/${path}`)), path).toBe(true);
+      expect(list.textContent ?? '', path).toContain(path);
+    }
+    expect(doc.getByTestId('doc-item-research-roadmap').textContent ?? '').toContain('The brick roadmap lists the nine bricks');
+    doc.unmount();
+  });
+
+  it('names a folder by what it holds, so two folders with the same last part differ', () => {
+    expect(pathLabel('tests/golden/btcs')).not.toBe(pathLabel('docs/mathematics/btcs'));
+    expect(pathLabel('data/diffusivity/arrhenius.csv#A3-05')).toBe('diffusivity register A3-05');
+    expect(pathLabel('some/new/file_name.json')).toBe('file name');
   });
 
   it('keeps the roadmap text in step with the catalogue rows of each brick', () => {

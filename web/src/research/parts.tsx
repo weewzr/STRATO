@@ -88,7 +88,7 @@ export function CatalogueSwitch({ row, compact = false }: { row: MechanismRow; c
         {row.missing_work ? (
           <>
             <span className="cat-switch__lead">Missing: </span>
-            {row.missing_work}
+            <NoteText text={row.missing_work} />
           </>
         ) : (
           <>No missing work is recorded in the catalogue row.</>
@@ -114,7 +114,11 @@ export function Parameters({ items }: { items: readonly string[] }) {
             {state ? (
               <span className="params__state">
                 {state === 'registered' ? 'registered' : 'missing'}
-                {detail ? `: ${detail}` : ''}
+                {detail ? (
+                  <>
+                    : <NoteText text={detail} />
+                  </>
+                ) : null}
               </span>
             ) : null}
           </li>
@@ -161,7 +165,7 @@ export function RowRecords({ rows, catalogue, showEntryLink = false }: { rows: r
           </dl>
           <p className="record__basis">
             <span className="record__lead">Basis of the status: </span>
-            {r.status_basis}
+            <NoteText text={r.status_basis} />
           </p>
           <div className="record__params">
             <p className="record__lead">Required parameters</p>

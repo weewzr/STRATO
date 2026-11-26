@@ -51,12 +51,12 @@ describe('build hash and path guards', () => {
     expect(failuresOf([page({ text: 'solver version 2.0.0. Next sentence.' })], 'build-hash')).toEqual([]);
   });
 
-  it('lets the research pages name a data file by its bare file name, and nothing with a directory', () => {
+  it('allows no file name or path on any page, the research pages included', () => {
     const research = (text: string) => page({ id: 'research-roadmap', page: 'research', text });
-    expect(failuresOf([research('half-lives from decay.csv and mechanisms.csv')], 'path')).toEqual([]);
-    expect(failuresOf([research('see data/nuclear/decay.csv')], 'path')).toHaveLength(1);
-    expect(failuresOf([research('run cargo test')], 'path')).toHaveLength(1);
-    expect(failuresOf([page({ text: 'half-lives from decay.csv' })], 'path')).toHaveLength(1);
+    for (const t of ['half-lives from decay.csv', 'see data/nuclear/decay.csv', 'registered: data/diffusivity/arrhenius.csv#A3-05', 'tests in btcs_verification.rs', 'inputs in synthetic_five_layer.toml', 'derivations in STRATO_Phase2_Derivations.md', 'run cargo test']) {
+      expect(failuresOf([research(t)], 'path'), t).toHaveLength(1);
+    }
+    expect(failuresOf([research('half-lives from the decay constants register; diffusivity register A3-05')], 'path')).toEqual([]);
   });
 
   it('limits the longest paragraph or list item of a page, wherever it stands', () => {

@@ -31,13 +31,6 @@ export const DOCUMENTATION_PAGE = 'documentation';
 /** No single paragraph or list item of a page (outside Scientific Documentation) is longer than this many words. */
 export const BLOCK_MAX_WORDS = 100;
 
-/**
- * Pages made of repository documents (the research catalogue) may name a data file or a test by its bare file
- * name with the extension (decay.csv): that is the concise dataset identifier of rule 9, the link address holds
- * the path. A path with a directory, a build command or a tool name still fails there.
- */
-export const BARE_FILE_NAMES_ALLOWED = ['research'];
-
 export const RULES = ['build-hash', 'path', 'caption', 'prose', 'block', 'disclaimer'];
 
 export const RULE_MESSAGES = {
@@ -77,7 +70,7 @@ export const DISCLAIMERS = [
   { id: 'not-measured-triso', pattern: /not measured TRISO properties/gi },
   { id: 'not-experimental-validation', pattern: /not experimental validation|verification is not validation/gi },
   { id: 'labelled-previews', pattern: /labelled previews?/gi },
-  { id: 'nothing-simulated', pattern: /nothing in this section is simulated/gi },
+  { id: 'nothing-simulated', pattern: /nothing in (?:this section|the research catalogue) is simulated/gi },
 ];
 
 /**
@@ -126,11 +119,7 @@ export function evaluateSnapshots(snapshots, exceptions = TEMPORARY_EXCEPTIONS) 
     const technical = s.page === DOCUMENTATION_PAGE;
     if (!technical) {
       for (const m of matches(s.text, HASH_PATTERN)) add(s.page, 'build-hash', `${s.id}: "${m}"`);
-      const bareOk = BARE_FILE_NAMES_ALLOWED.includes(s.page);
-      for (const m of matches(s.text, PATH_PATTERN)) {
-        if (bareOk && /^[\w-]+\.[a-z]+$/i.test(m)) continue;
-        add(s.page, 'path', `${s.id}: "${m}"`);
-      }
+      for (const m of matches(s.text, PATH_PATTERN)) add(s.page, 'path', `${s.id}: "${m}"`);
       const limit = PROSE_MAX_WORDS_BY_PAGE[s.page] ?? PROSE_MAX_WORDS;
       if ((s.longestBlockWords ?? 0) > BLOCK_MAX_WORDS) add(s.page, 'block', `${s.id}: a block of ${s.longestBlockWords} words ("${short(s.longestBlockText ?? '')}"; limit ${BLOCK_MAX_WORDS})`);
       if (s.proseWords > limit) add(s.page, 'prose', `${s.id}: ${s.proseWords} words of prose before the first control, equation, graph or table (limit ${limit})`);

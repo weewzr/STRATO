@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react';
 import { repoFile } from '../build';
 import { Blocks } from '../research/Blocks';
-import { useCatalogue } from '../research/catalogue';
+import { useCatalogue, type Block } from '../research/catalogue';
 import { GALLERY_ENTRY, introBlocks, ROADMAP_ENTRY } from '../research/entries';
+import { PathLink, PathStyle } from '../research/PathLink';
 import { STATUS_INFO, STATUSES } from '../research/status';
 import { GalleryPlannedDetail } from '../research/parts';
 import { StatusChip } from '../research/StatusChip';
@@ -48,12 +50,19 @@ function StatusScale() {
   );
 }
 
+/** Scientific Documentation is the page where file names and paths belong: the research links are named by their path here. */
+function Files({ children }: { children: ReactNode }) {
+  return <PathStyle.Provider value="files">{children}</PathStyle.Provider>;
+}
+
 function GalleryRules() {
   const cat = useCatalogue();
   return (
-    <div className="prose" data-testid="research-gallery-rules">
-      <Blocks blocks={introBlocks(cat.entries[GALLERY_ENTRY])} catalogue={cat} />
-    </div>
+    <Files>
+      <div className="prose" data-testid="research-gallery-rules">
+        <Blocks blocks={introBlocks(cat.entries[GALLERY_ENTRY])} catalogue={cat} />
+      </div>
+    </Files>
   );
 }
 
@@ -61,6 +70,7 @@ function GalleryPlannedCalculations() {
   const cat = useCatalogue();
   const items = cat.gallery.filter((g) => g.kind === 'placeholder');
   return (
+    <Files>
     <div className="prose" data-testid="research-gallery-planned">
       <p>
         This calculation has not been performed. It is planned for a future phase of the project. (This applies to each of the {items.length}{' '}
@@ -70,25 +80,52 @@ function GalleryPlannedCalculations() {
         <GalleryPlannedDetail key={it.item_id} item={it} catalogue={cat} />
       ))}
     </div>
+    </Files>
   );
+}
+
+/**
+ * The roadmap introduction is the text of the roadmap page; here it stands on another page, so the words
+ * that point at "this page" and "below" name the roadmap instead. Nothing else changes.
+ */
+function onRoadmap(blocks: Block[]): Block[] {
+  return JSON.parse(JSON.stringify(blocks), (key: string, value: unknown) =>
+    key === 'v' && typeof value === 'string'
+      ? value.replace(/This page lists/g, 'The brick roadmap lists').replace(/on this page/g, 'on the roadmap').replace(/The brick status below/g, 'The brick status on the roadmap')
+      : value,
+  ) as Block[];
 }
 
 function RoadmapIntro() {
   const cat = useCatalogue();
   return (
-    <div className="prose" data-testid="research-roadmap-intro">
-      <Blocks blocks={introBlocks(cat.entries[ROADMAP_ENTRY])} catalogue={cat} />
-    </div>
+    <Files>
+      <div className="prose" data-testid="research-roadmap-intro">
+        <Blocks blocks={onRoadmap(introBlocks(cat.entries[ROADMAP_ENTRY]))} catalogue={cat} />
+      </div>
+    </Files>
   );
 }
 
 function CatalogueSources() {
   const cat = useCatalogue();
+  const files = Object.keys(cat.entries).sort();
   return (
     <>
       <ul className="prose-list">
         <li>
-          Entry texts: <a href={repoFile('docs/research').replace('/blob/', '/tree/')}>docs/research/</a>.
+          Entry texts: <a href={repoFile('docs/research').replace('/blob/', '/tree/')}>docs/research/</a>, one file per entry:{' '}
+          <span data-testid="research-entry-files">
+            <Files>
+              {files.map((f, i) => (
+                <span key={f}>
+                  {i > 0 ? ', ' : ''}
+                  <PathLink path={f} />
+                </span>
+              ))}
+            </Files>
+          </span>
+          .
         </li>
         <li>
           Statuses and rows: <a href={repoFile('data/research/mechanisms.csv')}>data/research/mechanisms.csv</a>.
@@ -121,7 +158,7 @@ export const research: DocContribution = {
             Mechanisms of fission-product transport in a TRISO particle, organised as research: what STRATO solves, what has been derived but
             not implemented, and what is only proposed, with its evidence and what is missing.
           </p>
-          <p>Nothing in this section is simulated.</p>
+          <p>Nothing in the research catalogue is simulated.</p>
           <p>Each row&apos;s live-simulation switch is shown disabled until the solver implements and verifies it.</p>
           <p>
             On the research entry pages: nothing on this page is a STRATO result, and every equation on it is a research concept that STRATO
@@ -135,12 +172,13 @@ export const research: DocContribution = {
         </>
       ),
     },
+  ],
+  // The definitions and the texts of the research catalogue are part of its provenance, not model limitations.
+  provenance: [
+    { id: 'research-status-scale', title: 'Research status scale', body: <StatusScale /> },
     { id: 'research-roadmap', title: 'Brick roadmap: introduction', body: <RoadmapIntro /> },
     { id: 'research-gallery', title: 'Materials Studio gallery: rules for the planned calculations', body: <GalleryRules /> },
     { id: 'research-gallery-planned', title: 'Materials Studio gallery: the planned calculations', body: <GalleryPlannedCalculations /> },
-  ],
-  interpretation: [{ id: 'research-status-scale', title: 'Research status scale', body: <StatusScale /> }],
-  provenance: [
     { id: 'research-sources', title: 'Sources of the research catalogue', body: <CatalogueSources /> },
     {
       id: 'research-species-records',

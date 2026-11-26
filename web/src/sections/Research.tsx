@@ -94,8 +94,6 @@ function Overview({ cat }: { cat: Catalogue }) {
     <>
       <SectionHeading>Research catalogue</SectionHeading>
 
-      <StatusLegend />
-
       <div className="overview">
         <div className="overview__main">
           <h2 id="implemented">Implemented, and research only</h2>
@@ -187,6 +185,7 @@ function Overview({ cat }: { cat: Catalogue }) {
               </tbody>
             </table>
           </TableBox>
+          <StatusLegend />
           <nav className="research__links" aria-label="Further catalogue pages">
             <a href={hrefResearch('roadmap')}>Brick roadmap</a>
             <a href={hrefResearch('gallery')}>Materials Studio gallery</a>

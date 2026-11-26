@@ -1265,6 +1265,10 @@ select.field__input {
   flex: 1 1 14rem;
   min-width: 0;
 }
+/* The links of a Verify figure (data file, method) sit in one row. */
+.plotfig .figure__kind.figure__kind--fit {
+  flex: 0 0 auto;
+}
 .plotfig--empty {
   border-style: dashed;
 }

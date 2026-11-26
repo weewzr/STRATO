@@ -53,14 +53,16 @@ function Fig({
     <figure className="figure plotfig" data-testid={testId}>
       <div className="figure__head">
         <Badge label="PRECOMPUTED" />
-        <a className="figure__kind" href={precomputedUrl(file)}>
+        <a className="figure__kind figure__kind--fit" href={precomputedUrl(file)}>
           Data file
+        </a>
+        <a className="figure__kind figure__kind--fit" href={hrefDocumentation(anchor)}>
+          Method
         </a>
       </div>
       {children}
       <figcaption className="figure__caption">
-        <strong>Figure {number}.</strong> {caption}{' '}
-        <a className="nowrap" href={hrefDocumentation(anchor)}>Method and limits</a>
+        <strong>Figure {number}.</strong> {caption}
       </figcaption>
     </figure>
   );
@@ -183,9 +185,8 @@ export function ObservedOrdersTable() {
     <TableBox label="Independent check of the release fraction">
       <table className="table check-table" data-testid="observed-orders">
         <caption className="table__caption">
-          <strong>Table 1.</strong> Independent check: release fraction against a reference without BTCS code, and observed orders of accuracy
-          (expected about 1 in time, about 2 in space) <Badge label="PRECOMPUTED" />.{' '}
-          <a className="nowrap" href={hrefDocumentation('verify-check')}>Method and limits</a>
+          <Badge label="PRECOMPUTED" /> <strong>Table 1.</strong> Independent check: release fraction against a reference without BTCS
+          code, and observed orders of accuracy (expected about 1 in time, about 2 in space).
         </caption>
         <thead>
           <tr>

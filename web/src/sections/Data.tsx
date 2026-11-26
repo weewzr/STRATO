@@ -32,6 +32,9 @@ export function Data() {
 
       <ParameterProvenance entry={entry} />
 
+      <h2>References</h2>
+      <References />
+
       <h2>Downloads</h2>
       <LiveDownloads />
       <ul className="downloads">
@@ -62,9 +65,6 @@ export function Data() {
       <p className="muted">
         <a href={hrefDocumentation('data-files')}>File contents and provenance</a>
       </p>
-
-      <h2>References</h2>
-      <References />
     </article>
   );
 }

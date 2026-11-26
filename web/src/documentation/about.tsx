@@ -165,6 +165,7 @@ export const about: DocContribution = {
       ),
     },
   ],
-  interpretation: [{ id: 'about-labels', title: 'Result labels', body: <ResultLabels /> }],
+  // The definitions of the result labels belong with the provenance of results, not with the experimental interpretation.
+  provenance: [{ id: 'about-labels', title: 'Result labels', body: <ResultLabels /> }],
   implementation: [{ id: 'about-build-contents', title: 'Contents of this build', body: <BuildContentsTable /> }],
 };

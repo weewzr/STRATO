@@ -37,7 +37,7 @@ export const validate: DocContribution = {
             which asks whether the code solves its equations correctly. The agreement of the two solution methods on the synthetic case is
             verification and appears under <a href={hrefFor('verify')}>Verify</a>.
           </p>
-          <h4>What this section will show</h4>
+          <h4>What the Validate page will show</h4>
           <ul className="prose-list">
             <li>
               Measured release from the{' '}

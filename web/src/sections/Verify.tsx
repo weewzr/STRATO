@@ -33,7 +33,7 @@ function VerifyStatus() {
   return (
     <p className="solver-status solver-status--compact" data-testid="verify-status" data-state="ready">
       <strong>{METHOD_1}</strong> <Badge label={label} /> {status ? <StatusChip status={status} mechanism={BTCS_CAPABILITY} compact /> : 'unknown'}{' '}
-      <a href={hrefDocumentation('verify-definition')}>Scope and method</a>
+      <a href={hrefDocumentation('verify-scope')}>Scope and method</a>
     </p>
   );
 }

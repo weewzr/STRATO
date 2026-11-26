@@ -76,6 +76,12 @@
   margin-bottom: 0.5rem;
 }
 
+/* A file path in an entry may be longer than a phone is wide: it wraps instead of scrolling the page. */
+.doc__item a,
+.doc__item code {
+  overflow-wrap: anywhere;
+}
+
 .doc__empty {
   color: var(--text-muted);
   font-family: var(--font-ui);
