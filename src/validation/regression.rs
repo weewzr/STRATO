@@ -56,7 +56,7 @@
 //! Document 1 proves or observes: `|p_t - 1| < 1/2` in time and `|p_h - 2| < 1/2` in space, so a
 //! solver whose spatial error is only first order (for example a wrong diffusivity on one
 //! interval of a coating) fails. No rounding allowance is added to the `1/2`: the observed orders
-//! lie at least 0.06 inside it. (b) The limit estimate above. (c) The convention below.
+//! deviate from the integer by at most 0.07. (b) The limit estimate above. (c) The convention below.
 //!
 //! Measured and recorded in every check file: the observed orders (0.93 to 1.02 in time, 2.000 in
 //! space), the uncertainties `u`, and `|F_ref - F_lim|`. On the three cases `|F_ref - F_lim|` is
