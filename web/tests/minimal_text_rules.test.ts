@@ -110,7 +110,7 @@ describe('temporary exceptions', () => {
   });
 
   it('names every page still to be cleaned, and the documentation page is never among them', () => {
-    expect(Object.keys(TEMPORARY_EXCEPTIONS).sort()).toEqual(['about', 'compare', 'data', 'explore', 'research', 'shell', 'validate', 'verify']);
+    expect(Object.keys(TEMPORARY_EXCEPTIONS).sort()).toEqual(['about', 'data', 'explore', 'research', 'shell', 'verify']);
     expect(TEMPORARY_EXCEPTIONS[DOCUMENTATION_PAGE]).toBeUndefined();
   });
 });

@@ -1,15 +1,14 @@
 import { useEffect, useMemo } from 'react';
 import { BUILD } from '../build';
-import { findCase } from '../data/case';
 import { plain } from '../format';
 import { METHOD_1 } from '../methods';
 import { Badge, Sci } from '../panels/Badge';
 import { compareFigure } from '../plots/figures';
 import { Plot } from '../plots/Plot';
 import { usePlotTheme } from '../plots/theme';
-import { hrefFor } from '../route';
+import { hrefDocumentation, hrefFor } from '../route';
 import { comparisonKey, configDifferences, useStrato } from '../state/store';
-import { Note, SectionHeading, TableBox } from './common';
+import { SectionHeading, TableBox } from './common';
 
 // The Compare section (web phase 5; prompt/DESIGN_SPECIFICATION.md Section 8.1): the baseline and the
 // current release curves from compare, and the optional difference curve that compare computes
@@ -23,12 +22,10 @@ function ComparisonFigure() {
   const showBaseline = useStrato((s) => s.view.showComparison);
   const showDifference = useStrato((s) => s.view.showDifference);
   const setView = useStrato((s) => s.setView);
-  const caseId = useStrato((s) => s.caseId);
   const theme = usePlotTheme();
   const reply = comparison.reply;
   const stale = reply !== null && (comparison.status === 'running' || comparison.key !== comparisonKey(baseline, config));
   const figure = useMemo(() => (reply ? compareFigure(reply, { showBaseline, showDifference }, theme) : null), [reply, showBaseline, showDifference, theme]);
-  const caseFile = findCase(caseId)?.provenance.input_file ?? '';
 
   return (
     <figure className={`figure plotfig${stale ? ' is-stale' : ''}`} data-testid="compare-figure" data-state={reply ? 'ok' : comparison.status}>
@@ -84,7 +81,7 @@ function ComparisonFigure() {
           <span data-testid="compare-final-current" data-value={String(reply.modified.diagnostics.final_release_fraction)}>
             {reply.modified.diagnostics.final_release_fraction.toPrecision(6)}
           </span>
-          ; difference at the end of the simulation{' '}
+          , difference{' '}
           {(() => {
             const d = reply.difference.release_fraction[reply.difference.release_fraction.length - 1];
             return d === undefined ? '–' : (
@@ -92,23 +89,12 @@ function ComparisonFigure() {
                 <Sci value={d} digits={4} />
               </span>
             );
-          })()}{' '}
-          (from compare). Solver wall time in this browser (ms): {comparison.elapsedMs !== null ? comparison.elapsedMs.toFixed(1) : '–'}, not a result.
+          })()}
         </p>
       ) : null}
       <figcaption className="figure__caption">
-        <strong>Figure 1.</strong> Fraction of the initial inventory released, for the baseline (grey line) and the current inputs (blue line), both
-        run by {METHOD_1}; until generation, decay and temperature dependence are solved, a comparison shows the effect of changed inputs, not of new physics.
-        The green difference curve is the series that <code>compare</code> returns: the current minus the baseline release fraction,
-        computed in Rust at each output time both runs share. Runs with different output times are not compared, because the difference is
-        never interpolated. The parameters that differ are listed above.
-        {reply ? (
-          <span className="figure__source">
-            Source: {METHOD_1}, solver version {reply.solver.version}, Rust solver in WebAssembly, build <code>{reply.engine.commit}</code>, both runs
-            starting from <code>{caseFile}</code> (synthetic verification case, not physical data). Page build <code>{BUILD.commit}</code>.
-            The CSV of the comparison, written by the solver in Rust with its provenance header, is under <a href={hrefFor('data')}>Data</a>.
-          </span>
-        ) : null}
+        <strong>Figure 1.</strong> Fraction of the initial inventory released: baseline (grey) and current inputs (blue), with their difference
+        (green, right axis) when switched on. <a href={hrefDocumentation('compare-difference-curve')}>Method and limits</a>
       </figcaption>
     </figure>
   );
@@ -130,55 +116,49 @@ export function Compare() {
 
   return (
     <article className="section" data-section="compare">
-      <SectionHeading lede="Compare the current inputs with a baseline. Both runs use the verified solver of Method A: BTCS, so the comparison shows the effect of the inputs, not of new physics.">
-        Compare with the baseline
-      </SectionHeading>
+      <SectionHeading>Compare with the baseline</SectionHeading>
 
-      <h2>Inputs that differ from the baseline</h2>
+      <ComparisonFigure />
+
+      {/* MOUNT POINT: the experimental-comparison graph component (web/src/graph, Workstream A) is placed here by the integration task. Leave empty until then. */}
+      <div data-mount="experimental-comparison-graph" data-testid="experimental-comparison-mount" />
+
       {diffs.length === 0 ? (
         <p data-testid="no-diffs">
-          The current inputs equal the baseline, so the two curves coincide and the difference returned by the solver is zero. Change a value
-          in the controls on <a href={hrefFor('explore')}>Explore</a>, or use <em>Set current as baseline</em> there to keep the present values
-          as the reference.
+          The current inputs equal the baseline. Change them on <a href={hrefFor('explore')}>Explore</a>.
         </p>
       ) : (
-        <TableBox label="Inputs that differ from the baseline">
-          <table className="table" data-testid="diff-table">
-            <caption className="visually-hidden">Inputs that differ from the baseline</caption>
-            <thead>
-              <tr>
-                <th scope="col">Input</th>
-                <th scope="col" className="num-col">
-                  Baseline
-                </th>
-                <th scope="col" className="num-col">
-                  Current
-                </th>
-                <th scope="col">Unit</th>
-              </tr>
-            </thead>
-            <tbody>
-              {diffs.map((d) => (
-                <tr key={d.path}>
-                  <th scope="row">{d.label}</th>
-                  <td className="num-col num">{typeof d.baseline === 'number' ? plain(d.baseline) : d.baseline}</td>
-                  <td className="num-col num">{typeof d.current === 'number' ? plain(d.current) : d.current}</td>
-                  <td>{d.unit}</td>
+        <>
+          <h2>Inputs that differ from the baseline</h2>
+          <TableBox label="Inputs that differ from the baseline">
+            <table className="table" data-testid="diff-table">
+              <caption className="visually-hidden">Inputs that differ from the baseline</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Input</th>
+                  <th scope="col" className="num-col">
+                    Baseline
+                  </th>
+                  <th scope="col" className="num-col">
+                    Current
+                  </th>
+                  <th scope="col">Unit</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </TableBox>
+              </thead>
+              <tbody>
+                {diffs.map((d) => (
+                  <tr key={d.path}>
+                    <th scope="row">{d.label}</th>
+                    <td className="num-col num">{typeof d.baseline === 'number' ? plain(d.baseline) : d.baseline}</td>
+                    <td className="num-col num">{typeof d.current === 'number' ? plain(d.current) : d.current}</td>
+                    <td>{d.unit}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </TableBox>
+        </>
       )}
-
-      <h2>Release curves</h2>
-      <ComparisonFigure />
-      <Note>
-        <p>
-          The comparison and the validation layers are independent: the switches above change only this figure, and the measurements and
-          predictions of the <a href={hrefFor('validate')}>Validate</a> section are not drawn here.
-        </p>
-      </Note>
     </article>
   );
 }

@@ -78,8 +78,6 @@ export const DISCLAIMERS = [
 export const TEMPORARY_EXCEPTIONS = {
   shell: ['build-hash'],
   explore: ['build-hash', 'path', 'caption', 'prose', 'disclaimer'],
-  compare: ['build-hash', 'path', 'caption', 'prose', 'disclaimer'],
-  validate: ['path', 'prose', 'disclaimer'],
   verify: ['build-hash', 'path', 'caption', 'disclaimer'],
   research: ['path', 'prose'],
   data: ['build-hash', 'path', 'caption', 'disclaimer'],
