@@ -107,6 +107,75 @@ fn the_pipeline_writes_a_checked_and_clean_file_set() {
         assert!(cols[7].is_empty(), "an NRMSE value in {line}");
     }
 
+    // The C15 documented-application label (science design 5.1): the cooldown, the startup ramp
+    // and the 900 degC part carry it, in the file and (Scenario 4) in the panel title; normal
+    // operation at 1028 degC and at 1197 degC does not.
+    let label = "C15 evaluated outside its documented application (955 to 1197 \u{b0}C)";
+    let curve = |part: &str| -> &String {
+        let k = files
+            .keys()
+            .find(|k| k.starts_with("curves/") && k.contains(part))
+            .unwrap_or_else(|| panic!("no curve file with {part}"));
+        &files[k]
+    };
+    let labelled = |part: &str| -> usize { curve(part).matches(label).count() };
+    for part in [
+        "s5.shutdown-cooldown.sr90.1028c",
+        "s5.startup.sr90.1028c",
+        "s5.control-rod-insertion.sr90.1028c",
+    ] {
+        // The panel title, the label list and the field of the per-segment status.
+        assert_eq!(labelled(part), 3, "{part}: the C15 label");
+        assert!(!curve(part).contains("\"steps_outside\": 0,"), "{part}");
+    }
+    for part in [
+        "s5.steady-state.sr90.1028c",
+        "s5.steady-state.exploration.sr90.1197c",
+    ] {
+        // Only the field that holds the text for the case that steps lie outside.
+        assert_eq!(
+            labelled(part),
+            1,
+            "{part}: a C15 label without a step outside"
+        );
+        assert!(curve(part).contains("\"steps_outside\": 0,"), "{part}");
+    }
+    let s4 = curve("s5.control-rod-insertion.sr90.1028c");
+    let title = s4
+        .lines()
+        .find(|l| l.contains("\"panel_title\""))
+        .expect("panel title");
+    assert!(title.contains(label), "{title}");
+    // The kernel-only comparison of the Scenario 5 heating cells.
+    let heating = curve("s5.refuelling.heating1600.sr90.1028c");
+    assert!(heating.contains("\"kernel_only_comparison\""));
+    assert!(heating.contains("F_post_kernel_only"));
+    assert!(curve("s5.shutdown-cooldown.sr90.1028c").contains("\"kernel_only_comparison\": null"));
+    // The window-start sensitivity of the matrix-corrected rows.
+    let bounds = &files["bounds.json"];
+    assert!(bounds.contains("\"window_start_sensitivity\""));
+    assert!(bounds.contains("\"window_start_h\": 2e1"));
+    assert!(bounds.contains("\"window_start_h\": 2.8e1"));
+    assert!(bounds.contains("\"label\": \"prescribed input (assumed)\""));
+    // One grid for the family: the Scenario 2 state at shutdown is the Scenario 1 end state.
+    // (The per-nuclide interval counts are the same in every base-family file.)
+    let n_of = |text: &str| -> String {
+        text.lines()
+            .skip_while(|l| !l.contains("\"intervals_per_layer\""))
+            .take(1)
+            .collect::<Vec<_>>()
+            .join("")
+            .replace(' ', "")
+    };
+    assert_eq!(
+        n_of(curve("s5.steady-state.sr90.1028c")),
+        n_of(curve("s5.shutdown-cooldown.sr90.1028c"))
+    );
+    assert_eq!(
+        n_of(curve("s5.steady-state.sr90.1028c")),
+        n_of(curve("s5.refuelling.heating1600.sr90.1028c"))
+    );
+
     // The manifest lists every other file.
     let manifest = &files["manifest.json"];
     for name in files.keys().filter(|k| *k != "manifest.json") {

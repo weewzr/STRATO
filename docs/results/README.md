@@ -23,13 +23,16 @@ cargo run --release --locked --manifest-path crates/Cargo.toml -p strato-results
   committing the outputs moves the commit.
 - Every file starts with a provenance header: solver label, solver version, pipeline version,
   schema version, commit, `solver_source_sha256` (hash of `src/**/*.rs`, so that a change to the
-  solver makes the outputs stale) and the SHA-256 of every input file (the registers under
-  `data/experimental`, `data/irradiation`, `data/reference`, and the five scenario files).
+  solver makes the outputs stale) and the SHA-256 of every input file: the registers
+  `geometry.csv`, `arrhenius.csv`, `decay.csv`, `fission_yields.csv`, `temperature_histories.csv`
+  and `release_measurements.csv`, the three irradiation files (`agr1_irradiation_conditions.csv`,
+  `agr1_burnup_by_cycle.csv`, `agr1_power_history_digitised.csv`) and the five scenario files.
+  Nothing under `data/reference` is read.
 - The numbers are produced by floating-point arithmetic; a different compiler, target or maths
   library can change the last digits, and then `--check` reports the files as stale on that machine.
   Regenerate on the machine that checks.
-- A full run takes about 3 minutes in a release build on the development machine and writes about
-  7 MB in 123 files. The numerical crates are optimised in the development profile of the tools
+- A full run takes about 2.5 minutes (136 s measured) in a release build on the development
+  machine and writes about 7.5 MB in 123 files. The numerical crates are optimised in the development profile of the tools
   workspace, so that the tests run in about a minute.
 
 ## Layout (web specification part 4, with the differences noted)
@@ -49,6 +52,45 @@ cargo run --release --locked --manifest-path crates/Cargo.toml -p strato-results
 | `verification/agreement.json` | Solver-to-solver agreement of Method A and Method B at the stage 1 cells. |
 | `verification/conservation.json` | Balance residuals against their derived bounds (Document 5, F46), for every curve. |
 | `manifest.json` | Every file with the hash of its content (commit lines excluded) and its size. |
+
+## Differences from science design 7.3 and web specification part 4
+
+| Item | Specification | Here |
+|---|---|---|
+| `deviations.json` | listed | replaced by `nrmse.json` and `bounds.json` (decision 64) |
+| Keys of scenario curves | `s<N>.<scenario>.<nuclide>.<T>c` | a variant segment is added (`.exploration`, `.cycles`, `.heating1600/1700/1800`) |
+| Extra files | not listed | `bounds.json`, `labels.json`, `manifest.json`, `csv/*` |
+| Refined series | refined `F` and `Phi` in scenario curve files | not written; the scenario curve files carry the resolution flag of every point, the largest base-to-refined difference of the inventory, and the base series; the refined runs are not stored |
+| Step sequence | listed in the curve file | in `scenarios.json` (per scenario and variant), not in the curve files; the curve files carry the step count, the number of distinct step lengths and of matrix assemblies |
+| Assumption codes | listed per curve | the labels and the basis of every input number are in `scenarios.json`; the curve files carry the label texts |
+| C15 range status | per segment | `numerics.c15_documented_application` in every scenario curve file: per plan segment the steps below, inside and above 955 to 1197 degC (bounds read from IRR-361 and IRR-097) and the steps with the C16 set; `panel_title` and `labels` carry the label when any step is outside |
+
+## The grid of the scenarios
+
+One number of kernel intervals is chosen per nuclide and per family of variants from the longest
+run of the family (the exploration variant at 1197 degC is one family; the base scenarios, the
+cycle variant and the heating variants are the other), so that every scenario, every lead-in and
+every normal-operation reference of a family run on the same grid. The Scenario 2 and Scenario 5
+runs therefore reproduce the Scenario 1 state at the end of irradiation exactly. The references of
+Scenario 3 and Scenario 4 differ from Scenario 1 only by their step boundaries (Scenario 4 splits
+the run at 310.1 d; Scenario 3 has its 24 h ramp segment). The steps of a segment are equal to the
+bit, and the matrix is assembled once per segment.
+
+## Scenario 5 with a heating history: kernel-only comparison
+
+Each heating cell (`heating1600`, `heating1700`, `heating1800`) carries `kernel_only_comparison`:
+`F_post` of the heating run beside the run of the same registered history from a kernel-only start
+(`C = C_init` in the kernel, no generation, C16 throughout), both as the amount released since the
+start of the history over the inventory present at that start, with the ratio and resolution flags,
+and the values at the end of the last hold at the highest temperature and at the end of the
+history. The premise BP2 refers to this field and states no number.
+
+## The window-start sensitivity
+
+Every matrix-corrected window row (decision 67) in `bounds.json` and `experiment/*.json` carries
+`window_start_sensitivity`: the model increase and its ratio to the bound for window starts of 20 h
+and 28 h, labelled prescribed input (assumed), because the source gives no exact start ("about
+24 h"); the value used for the status is that at 24 h.
 
 ## Units and conventions
 

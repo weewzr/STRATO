@@ -18,7 +18,7 @@ use crate::curves::{
 };
 use crate::experiment::{
     bound_json, bounds, candidates, record_json, records, row_nuclide, row_temperature, BoundRec,
-    NrmseRecord, SetMeta,
+    ModelSource, NrmseRecord, SetMeta,
 };
 use crate::labels::labels_json;
 use crate::methodb::{applicability, Needs};
@@ -170,9 +170,13 @@ pub fn generate(opts: &Options) -> Result<Files, String> {
                 None,
             ));
             stage1_curves.push(s1);
+            let mut ramp_curve = None;
             for stage in [3u8, 4u8] {
                 let (json, ec) =
                     engine_cell(&prov, &reg, nuc, t_c, stage, &geometry, opts.quick, &extra)?;
+                if stage == 4 {
+                    ramp_curve = Some(ec.clone());
+                }
                 files.insert(format!("curves/{}.json", ec.key), json);
                 for r in &ec.csv_rows {
                     curves_csv.row(r.clone());
@@ -242,7 +246,15 @@ pub fn generate(opts: &Options) -> Result<Files, String> {
             }
 
             // NRMSE records: stage 1 (isothermal, Methods A and B) and stage 4 (ramp, Method A).
-            let cands = candidates(&reg, &comparison, &mut runner, nuc, t_c)?;
+            let cands = candidates(
+                &comparison,
+                &mut runner,
+                nuc,
+                t_c,
+                ModelSource::Isothermal { radii: &geometry },
+            )?;
+            let ramp = ramp_curve.as_ref().ok_or("no stage 4 curve")?;
+            let cands4 = candidates(&comparison, &mut runner, nuc, t_c, ModelSource::Ramp(ramp))?;
             let m1 = SetMeta {
                 set_id: format!("nrmse.s1.exp.{}.{}c", nuc.id, fmt_c(t_c)),
                 nuclide: nuc.name.to_string(),
@@ -264,7 +276,7 @@ pub fn generate(opts: &Options) -> Result<Files, String> {
                 temperature_varies: true,
                 kernel_step_start: true,
             });
-            for r in records(&m4, &cands, &na) {
+            for r in records(&m4, &cands4, &na) {
                 nrmse_records.push(r);
             }
         }

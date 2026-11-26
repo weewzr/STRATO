@@ -8,7 +8,7 @@ S3-006,meta,,initial_state,,,,,,,,"fresh particle: C = 0 everywhere (startup of 
 S3-007,meta,,interpolation_rule,,,,,,,,"linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly"
 S3-008,meta,,diffusivity_phase,,,,,,,,"irradiation: C15 rows; below 955 degC evaluated through diffusivity_extrapolated and labelled C15 evaluated outside its documented application (955 to 1197 degC)"
 S3-009,meta,,rate_density_reference,,,,,,"IRR-053;IRR-002;IRR-059",derived from published AGR-1 burnup (calculated),"capsule:3"
-S3-010,meta,exploration-1197C,rate_density_reference,,,,,,"IRR-097",derived from published AGR-1 burnup (calculated),"compact:6-2-1"
+S3-010,meta,exploration-1197C,rate_density_reference,,,,,,"IRR-097;IRRB-0005;IRR-006;IRRB-0161;IRR-007;IRRB-0317;IRR-008;IRRB-0473;IRR-009;IRRB-0629;IRR-010;IRRB-0785;IRR-011;IRRB-0941;IRR-012;IRRB-1097;IRR-013;IRRB-1253;IRR-014;IRRB-1409;IRR-015;IRRB-1565;IRR-016;IRRB-1721;IRR-017;IRRB-1877;IRR-018",derived from published AGR-1 burnup (calculated),"compact:6-2-1"
 S3-011,meta,,event_time,1118.4,h,,,,"IRR-006",registered source row,"end of cycle 1 at 46.6 EFPD; the first 46.6 d are shown beside the full run"
 S3-012,meta,,reference_continuation,,,,,,"IRR-053;IRR-002",derived from published AGR-1 burnup (calculated),"the reference curve is Scenario 1 (a step start at full generation and temperature)"
 S3-013,meta,exploration-1197C,label,,,,,,,,"model exploration at the registered compact time-average peak temperature 1197 degC with the fission-rate density derived for the same compact; not experimental"

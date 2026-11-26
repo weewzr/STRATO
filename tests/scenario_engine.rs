@@ -121,6 +121,26 @@ fn generation_ceases_at_shutdown_while_decay_and_diffusion_continue() {
 }
 
 #[test]
+fn a_uniform_segment_assembles_and_factors_the_matrix_once() {
+    // The steps of one segment are equal by construction; the differences of the stored times
+    // are not bit-equal, so the engine must use the nominal length of the segment.
+    let def = ScenarioDefinition {
+        id: "test-uniform".into(),
+        generation_factor: TimeFunction::constant(1.0).unwrap(),
+        temperature_c: TimeFunction::constant(1000.0).unwrap(),
+        plan: vec![StepSegment {
+            end_s: 1.0e5,
+            dt_max_s: 77.0,
+        }],
+        event_times_s: vec![],
+    };
+    let run = run_scenario(&def, &config(InitialState::Fresh, vec![])).unwrap();
+    assert_eq!(run.steps, (1.0e5_f64 / 77.0).ceil() as usize);
+    assert_eq!(run.distinct_steps, 1);
+    assert_eq!(run.assemblies, 1);
+}
+
+#[test]
 fn the_balance_closes_at_every_step_within_the_documented_bound() {
     let def = shutdown();
     let cfg = config(InitialState::Fresh, vec![]);

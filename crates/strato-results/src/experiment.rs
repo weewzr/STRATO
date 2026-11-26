@@ -19,7 +19,7 @@ use strato_data::release::{
 use strato_data::table::Vocabulary;
 use strato_data::Register;
 
-use crate::curves::{lin, Nuc, NUCS};
+use crate::curves::{lin, EngineCurve, Nuc, NUCS};
 use crate::methodb::{method_b, MethodB, Needs, NotAvailable};
 use crate::nrmse::{self, EmptyReason, Point, FSCALE_DEFINITION_ID};
 
@@ -29,7 +29,7 @@ type BSeries = Vec<(f64, Option<f64>)>;
 /// The bound premise BP1 (science design Section 1.4), verbatim.
 pub const BP1: &str = "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).";
 /// The bound premise BP2 (science design Section 1.4), verbatim.
-pub const BP2: &str = "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.";
+pub const BP2: &str = "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.";
 /// The assumption A1 (single ideal particle against compact-level data).
 pub const A1: &str = "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound.";
 /// The systematic uncertainty the source states for the AGR-1 gamma counting (not combined into any number).
@@ -198,7 +198,25 @@ pub struct BoundRec {
     pub duplicate_of: Option<String>,
     /// Row ids of a window bound's two ends.
     pub ends: Option<(String, String)>,
+    /// The window-start sensitivity of a matrix-corrected window row (science design 3.3 item 3).
+    pub sensitivity: Vec<StartSensitivity>,
 }
+
+/// The model increase of a matrix-corrected window for another start of the window.
+#[derive(Debug, Clone)]
+pub struct StartSensitivity {
+    /// The assumed start of the window, hours at temperature.
+    pub start_h: f64,
+    /// Method A increase `F(t_end) - F(start)`.
+    pub model_a: Option<f64>,
+    /// The same from the refined run.
+    pub model_a_refined: Option<f64>,
+    /// Method B increase where it applies.
+    pub model_b: Option<f64>,
+}
+
+/// The starts of the window tried as a sensitivity (science design Section 3.3 item 3), hours.
+pub const SENSITIVITY_STARTS_H: [f64; 2] = [20.0, 28.0];
 
 fn status_of(model: f64, bound: f64) -> &'static str {
     if model > bound {
@@ -342,6 +360,12 @@ pub fn bounds(
                 .into_iter()
                 .filter(|t| *t > 0.0),
         );
+        if c.kind == "window_bound" {
+            b_times
+                .entry((c.nuc.id, c.t_c as i64))
+                .or_default()
+                .extend(SENSITIVITY_STARTS_H.iter().map(|h| h * 3600.0));
+        }
     }
     for w in &wins {
         let e = b_times.entry((w.nuc.id, w.t_c as i64)).or_default();
@@ -431,6 +455,24 @@ pub fn bounds(
             }
             _ => None,
         };
+        let sensitivity: Vec<StartSensitivity> = if c.kind == "window_bound" {
+            SENSITIVITY_STARTS_H
+                .iter()
+                .map(|&s| StartSensitivity {
+                    start_h: s,
+                    model_a: fa(c.t_h).zip(fa(s)).map(|(e, b)| e - b),
+                    model_a_refined: curve
+                        .at_refined(c.t_h)
+                        .zip(curve.at_refined(s))
+                        .map(|(e, b)| e - b),
+                    model_b: b_at(c.nuc.id, c.t_c, c.t_h)
+                        .zip(b_at(c.nuc.id, c.t_c, s))
+                        .map(|(e, b)| e - b),
+                })
+                .collect()
+        } else {
+            Vec::new()
+        };
         out.push(BoundRec {
             id: row.id.clone(),
             kind: c.kind,
@@ -463,6 +505,7 @@ pub fn bounds(
             drawn: true,
             duplicate_of: None,
             ends: None,
+            sensitivity,
         });
     }
     for w in &wins {
@@ -544,6 +587,7 @@ pub fn bounds(
             drawn: false,
             duplicate_of: None,
             ends: Some((w.a.id.clone(), w.b.id.clone())),
+            sensitivity: Vec::new(),
         });
     }
     // A digitised total and a printed value of the same compact, nuclide and time are the same
@@ -631,6 +675,43 @@ pub fn bound_json(b: &BoundRec) -> J {
             match &b.ends {
                 Some((a, c)) => J::Arr(vec![J::s(a.clone()), J::s(c.clone())]),
                 None => J::Null,
+            },
+        ),
+        (
+            "window_start_sensitivity",
+            if b.sensitivity.is_empty() {
+                J::Null
+            } else {
+                J::obj(vec![
+                    ("label", J::s("prescribed input (assumed)")),
+                    (
+                        "reason",
+                        J::s("the source gives no exact start of the window (\"about 24 h\"); the registered value used above is 24 h"),
+                    ),
+                    (
+                        "starts",
+                        J::Arr(
+                            b.sensitivity
+                                .iter()
+                                .map(|s| {
+                                    let resolved = matches!(
+                                        (s.model_a, s.model_a_refined),
+                                        (Some(m), Some(r)) if r > 0.0 && (m - r).abs() <= 0.05 * r
+                                    );
+                                    J::obj(vec![
+                                        ("window_start_h", J::Num(s.start_h)),
+                                        ("model_A", J::opt(s.model_a)),
+                                        ("model_A_refined", J::opt(s.model_a_refined)),
+                                        ("model_A_resolved", J::Bool(resolved)),
+                                        ("ratio_A", J::opt(s.model_a.map(|m| m / b.bound))),
+                                        ("model_B", J::opt(s.model_b)),
+                                        ("ratio_B", J::opt(s.model_b.map(|m| m / b.bound))),
+                                    ])
+                                })
+                                .collect(),
+                        ),
+                    ),
+                ])
             },
         ),
         ("source", J::s(b.source.clone())),
@@ -833,15 +914,27 @@ pub fn records(
     [a, b]
 }
 
+/// Where the model values of the candidates come from.
+pub enum ModelSource<'a> {
+    /// The isothermal kernel-only run of stage 1 (Method A from the runner, Method B at the same
+    /// times where it applies).
+    Isothermal {
+        /// The particle radii.
+        radii: &'a Radii,
+    },
+    /// The run of the registered ramp history (stage 4): values at `t_mod = t_ramp_end + t_hold`.
+    Ramp(&'a EngineCurve),
+}
+
 /// The `Candidate`s of a cell from the comparison records: every register row of the nuclide at
 /// the temperature, each either compatible or excluded with its reason code
 /// (`metric-nrmse.md` Section 4).
 pub fn candidates(
-    reg: &Register,
     records: &[RowRecord],
     runner: &mut Runner<'_>,
     nuc: &Nuc,
     t_c: f64,
+    source: ModelSource<'_>,
 ) -> Result<Vec<Candidate>, String> {
     let mut out = Vec::new();
     for rec in records {
@@ -886,41 +979,120 @@ pub fn candidates(
             out.push(excluded("time_origin_not_established"));
             continue;
         }
-        let curve = runner.get(nuc.species, t_c, spec.t_end_h)?.clone();
-        let at = |t: f64| curve.at(t);
-        let (Some(f_end), Some(r_end)) = (at(spec.t_end_h), curve.at_refined(spec.t_end_h)) else {
-            out.push(excluded("beyond_model_end_time"));
-            continue;
-        };
-        let (f_start, r_start) = if spec.window_start_h > 0.0 {
-            (
-                at(spec.window_start_h).unwrap_or(0.0),
-                curve.at_refined(spec.window_start_h).unwrap_or(0.0),
-            )
-        } else {
-            (0.0, 0.0)
-        };
-        let f_a = f_end - f_start;
-        let r = r_end - r_start;
         let (u_value, u_time) = reading(row, value);
         let dt = 0.05;
-        let slope = match (at(spec.t_end_h + dt), at((spec.t_end_h - dt).max(0.0))) {
-            (Some(p), Some(m)) => (p - m) / (2.0 * dt),
-            _ => 0.0,
+        let t_end = spec.t_end_h;
+        let t_start = spec.window_start_h.max(0.0);
+        // Model values at the aligned time: the isothermal run at the hold time (stage 1), or the
+        // ramp run at t_mod = t_ramp_end + t_hold (stage 4, the sample times of the ramp curve are
+        // hold times from the end of the last ramp).
+        let (f_a, resolved_a, slope_a, f_b, slope_b) = match &source {
+            ModelSource::Isothermal { radii } => {
+                let curve = runner.get(nuc.species, t_c, t_end)?.clone();
+                let at = |t: f64| curve.at(t);
+                let (Some(f_end), Some(r_end)) = (at(t_end), curve.at_refined(t_end)) else {
+                    out.push(excluded("beyond_model_end_time"));
+                    continue;
+                };
+                let (f_start, r_start) = if t_start > 0.0 {
+                    (
+                        at(t_start).unwrap_or(0.0),
+                        curve.at_refined(t_start).unwrap_or(0.0),
+                    )
+                } else {
+                    (0.0, 0.0)
+                };
+                let f_a = f_end - f_start;
+                let r = r_end - r_start;
+                let slope_a = match (at(t_end + dt), at((t_end - dt).max(0.0))) {
+                    (Some(p), Some(m)) => (p - m) / (2.0 * dt),
+                    _ => 0.0,
+                };
+                // Method B at the same times, where it applies and the drawing mask accepts it.
+                let needs = Needs {
+                    generation: false,
+                    decay: false,
+                    temperature_varies: false,
+                    kernel_step_start: true,
+                };
+                let mut ts = vec![
+                    t_end * 3600.0,
+                    (t_end + dt) * 3600.0,
+                    ((t_end - dt).max(0.0)) * 3600.0,
+                ];
+                if t_start > 0.0 {
+                    ts.push(t_start * 3600.0);
+                }
+                ts.sort_by(|a, b| a.partial_cmp(b).expect("finite"));
+                ts.dedup();
+                let (f_b, slope_b) = match method_b(needs, &radii.outer_m, &curve.d_m2_s, &ts) {
+                    MethodB::Available(a) => {
+                        let get = |h: f64| {
+                            a.times_s
+                                .iter()
+                                .position(|t| (t - h * 3600.0).abs() < 1e-6)
+                                .and_then(|k| a.values[k])
+                        };
+                        let start = if t_start > 0.0 {
+                            get(t_start)
+                        } else {
+                            Some(0.0)
+                        };
+                        let f_b = get(t_end).zip(start).map(|(e, s)| e - s);
+                        let slope_b = match (get((t_end + dt).max(0.0)), get((t_end - dt).max(0.0)))
+                        {
+                            (Some(p), Some(m)) => (p - m) / (2.0 * dt),
+                            _ => 0.0,
+                        };
+                        (f_b, slope_b)
+                    }
+                    MethodB::NotAvailable(_) => (None, 0.0),
+                };
+                (
+                    f_a,
+                    r > 0.0 && (f_a - r).abs() <= 0.05 * r,
+                    slope_a,
+                    f_b,
+                    slope_b,
+                )
+            }
+            ModelSource::Ramp(ec) => {
+                let at = |h: f64| lin(&ec.t_h, &ec.f_a, h);
+                let flag = |h: f64| {
+                    ec.t_h
+                        .iter()
+                        .position(|t| (t - h).abs() < 1e-9)
+                        .map(|k| ec.resolved[k])
+                };
+                let Some(f_end) = at(t_end) else {
+                    out.push(excluded("beyond_model_end_time"));
+                    continue;
+                };
+                let f_start = if t_start > 0.0 {
+                    at(t_start).unwrap_or(0.0)
+                } else {
+                    0.0
+                };
+                let resolved = flag(t_end).unwrap_or(false)
+                    && (t_start <= 0.0 || flag(t_start).unwrap_or(false));
+                let slope_a = match (at(t_end + dt), at((t_end - dt).max(0.0))) {
+                    (Some(p), Some(m)) => (p - m) / (2.0 * dt),
+                    _ => 0.0,
+                };
+                (f_end - f_start, resolved, slope_a, None, 0.0)
+            }
         };
-        let _ = lin(&curve.t_h, &curve.f, 0.0);
-        let _ = reg;
         out.push(Candidate::Compatible {
             id: id.clone(),
             test_id: row.compact_or_sample.clone(),
             f_exp: value,
             f_a,
-            resolved_a: r > 0.0 && (f_a - r).abs() <= 0.05 * r,
-            f_b: None,
+            resolved_a,
+            f_b,
             u_value,
             u_time_h: u_time,
-            slope_a_per_h: slope,
-            slope_b_per_h: 0.0,
+            slope_a_per_h: slope_a,
+            slope_b_per_h: slope_b,
         });
     }
     // Rows of the same nuclide that the comparison program leaves out entirely (statuses with no

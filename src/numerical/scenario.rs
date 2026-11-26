@@ -82,7 +82,9 @@ pub type DiffusivityAt = ([f64; 5], [RangeCode; 5]);
 pub enum Diffusion<'a> {
     /// Constant in time.
     Constant([f64; 5]),
-    /// A function of the time in s and the temperature in degrees Celsius, both at the middle of\n    /// each step (the time lets the caller switch the correlation set between phases of a\n    /// scenario; the engine itself chooses nothing).
+    /// A function of the time in s and the temperature in degrees Celsius, both at the middle of
+    /// each step (the time lets the caller switch the correlation set between phases of a
+    /// scenario; the engine itself chooses nothing).
     OfTemperature(&'a dyn Fn(f64, f64) -> Result<DiffusivityAt>),
 }
 
@@ -94,6 +96,17 @@ pub struct StepSegment {
     /// Largest step in s inside the segment (a numerical setting, refinement-checked by the
     /// caller).
     pub dt_max_s: f64,
+}
+
+/// One step of the plan: its times and its nominal length (equal to the bit within a segment).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct PlannedStep {
+    /// Start of the step in s.
+    pub t_a: f64,
+    /// End of the step in s.
+    pub t_b: f64,
+    /// Nominal length `L / n` of the segment in s.
+    pub dt: f64,
 }
 
 /// A scenario: two histories and a step plan. All times are in s from the start of the run.
@@ -244,6 +257,22 @@ impl ScenarioDefinition {
     ///
     /// As [`ScenarioDefinition::boundaries`].
     pub fn steps(&self, extra_s: &[f64]) -> Result<Vec<(f64, f64)>> {
+        Ok(self
+            .planned_steps(extra_s)?
+            .into_iter()
+            .map(|s| (s.t_a, s.t_b))
+            .collect())
+    }
+
+    /// The step sequence with the nominal length of every step: all steps of one segment carry
+    /// the same `dt = L / n` (the same bits), although the differences `t_b - t_a` of the stored
+    /// times differ in the last bits. The solver uses the nominal length, so the matrix of a
+    /// segment is assembled and factored once (Section 5.2 of the science design).
+    ///
+    /// # Errors
+    ///
+    /// As [`ScenarioDefinition::boundaries`].
+    pub fn planned_steps(&self, extra_s: &[f64]) -> Result<Vec<PlannedStep>> {
         let b = self.boundaries(extra_s)?;
         let mut out = Vec::new();
         for w in b.windows(2) {
@@ -251,6 +280,7 @@ impl ScenarioDefinition {
             let l = c - a;
             let dtm = self.dt_max_at(0.5 * (a + c));
             let n = ((l / dtm) * (1.0 - 1e-12)).ceil().max(1.0) as usize;
+            let dt = l / (n as f64);
             let mut prev = a;
             for k in 1..=n {
                 let t = if k == n {
@@ -258,7 +288,11 @@ impl ScenarioDefinition {
                 } else {
                     a + l * (k as f64) / (n as f64)
                 };
-                out.push((prev, t));
+                out.push(PlannedStep {
+                    t_a: prev,
+                    t_b: t,
+                    dt,
+                });
                 prev = t;
             }
         }
@@ -474,7 +508,7 @@ pub fn run_scenario(def: &ScenarioDefinition, cfg: &ScenarioConfig<'_>) -> Resul
     }
     let mut extra = cfg.extra_boundaries_s.clone();
     extra.extend(cfg.profile_times_s.iter().copied());
-    let steps = def.steps(&extra)?;
+    let steps = def.planned_steps(&extra)?;
     let eta_last = 4.0 * (3.0 * n as f64 + steps.len() as f64 + 10.0) * BalanceBound::U;
     if eta_last > 1.0 {
         bail!("the run has too many steps for the rounding bound (eta > 1)");
@@ -598,9 +632,10 @@ pub fn run_scenario(def: &ScenarioDefinition, cfg: &ScenarioConfig<'_>) -> Resul
     }
     let mut next_profile = profiles.len();
 
-    for (step_index, &(t_a, t_b)) in steps.iter().enumerate() {
+    for (step_index, planned) in steps.iter().enumerate() {
         let step = step_index + 1;
-        let dt = t_b - t_a;
+        let (t_a, t_b) = (planned.t_a, planned.t_b);
+        let dt = planned.dt;
         let kappa = lambda * dt;
         // (F36): the diffusivities of the step, from the temperature at its middle.
         let t_mid_c = t_of(0.5 * (t_a + t_b));

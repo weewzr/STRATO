@@ -42,6 +42,16 @@ equation.
   scenario is meaningful: Sr-90 and Cs-137 have a registered cumulative yield and decay constant;
   Ag-110m, Cs-134 and Eu-154 get no direct fission-yield source term (decision 15).
 
+* The `rate_density_reference` rows of the exploration variant list, besides IRR-097 (the
+  temperature), the rows of the burnup series of compact 6-2-1 (`IRRB-` and cycle-end `IRR-` rows)
+  from which the fission-rate density is derived; the base rows list the rows of the Capsule 3
+  derivation that the data layer resolves.
+* The `cycles` variant runs on the three-digit rates printed in its rows (units of 1e19
+  m^-3 s^-1). The check `SC.cycles` confirms that they equal the series derived from the burnup
+  register to those digits; the run does not use the unrounded derived values.
+* Magnitudes of results (release fractions, inventories) are not stated in these files. They are
+  results of the runs and are written, with a resolution flag, to the result files.
+
 ## Checks
 
 `strato-data check` (tools workspace) runs the checks `SC.*`: row ids, units, monotone times,
