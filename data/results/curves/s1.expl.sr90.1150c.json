@@ -7,15 +7,15 @@
     "solver_version": "1.0.1",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "19eb8b949a51ef748da8ae8bc558748896261637",
-    "solver_source_sha256": "f09fb0c09a8ed01f7456935584322ea65f555c999ac4247d707794aec349b89a",
+    "commit": "83a93fa04c7191d5543828e1eb0fca2b46523702",
+    "solver_source_sha256": "02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
       "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
       "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
       "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
       "temperature_histories.csv": "6ab3201672afd15f92ec9e529318377c829afaa5804288a3a694032145ab4af0",
-      "release_measurements.csv": "873352515ae4c64d57acce407100e40c1b11d8bbfde80beb948a98adb96ef2f2",
+      "release_measurements.csv": "b25e390f831a491f68398644efff1cfbc8c8b901cf95a167baaa314bc5bcbc4d",
       "agr1_irradiation_conditions.csv": "31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d",
       "agr1_burnup_by_cycle.csv": "e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f",
       "agr1_power_history_digitised.csv": "25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a",
@@ -66,7 +66,7 @@
   "method_b": {
     "available": false,
     "reason_code": "NOT_DRAWN_AT_ANY_TIME",
-    "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (first valid time 4.604e7 s, accuracy floor 8.6e-6)"
+    "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (BEFORE_MIN_VALID_TIME x 119; first valid time 4.604e7 s, accuracy floor 8.6e-6)"
   },
   "numerics": {
     "resolution_rule": "numerical setting (chosen; refinement-checked per Section 3.5): resolved if the base and the refined run (twice the intervals, half the step) differ by at most 5 % of the refined value; a labelled convention, not a derived bound",

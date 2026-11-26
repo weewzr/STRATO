@@ -33,8 +33,8 @@ cargo run --release --locked --manifest-path crates/Cargo.toml -p strato-results
 - The numbers are produced by floating-point arithmetic; a different compiler, target or maths
   library can change the last digits, and then `--check` reports the files as stale on that machine.
   Regenerate on the machine that checks.
-- A full run takes about 2.5 minutes (136 s measured) in a release build on the development
-  machine and writes about 7.5 MB in 123 files. The numerical crates are optimised in the development profile of the tools
+- A full run takes about 2.5 minutes (159 s measured) in a release build on the development
+  machine and writes about 7.8 MB (7 774 161 bytes) in 123 files. The numerical crates are optimised in the development profile of the tools
   workspace, so that the tests run in about a minute.
 
 ## Layout (web specification part 4, with the differences noted)
