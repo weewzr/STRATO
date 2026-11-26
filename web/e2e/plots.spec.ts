@@ -348,6 +348,14 @@ test.describe('verification panel', () => {
     for (const [i, o] of CHECK.data.space_order.entries()) await expect(page.getByTestId(`orders-spatial-${i}`)).toHaveAttribute('data-value', String(o));
     await expect(page.getByTestId('observed-orders')).toContainText('Observed order in time (dimensionless)');
     await expect(page.getByTestId('observed-orders')).toContainText('Observed order in space (dimensionless)');
+    await expect(page.getByTestId('observed-orders')).toContainText('Release fraction by Method A: BTCS (dimensionless)');
+    await expect(page.getByTestId('observed-orders')).not.toContainText('BTCSagainst');
+    // Every column must be visible without sideways scrolling (the table sits in a box that scrolls).
+    const fit = await page.getByTestId('observed-orders').evaluate((t) => {
+      const box = t.closest('.table-box') as HTMLElement;
+      return { table: t.scrollWidth, box: box.clientWidth };
+    });
+    expect(fit.table).toBeLessThanOrEqual(fit.box);
     await expect(page.getByTestId('solver-status')).toContainText('VERIFIED');
   });
 });

@@ -1121,6 +1121,11 @@ select.field__input {
   white-space: normal;
   vertical-align: bottom;
 }
+/* Same for the independent-check table on Verify: the full names wrap so that every column is visible. */
+.table.check-table thead th {
+  white-space: normal;
+  vertical-align: bottom;
+}
 .layer-table .table__caption {
   padding-bottom: var(--space-1);
   font-size: var(--fs-small);

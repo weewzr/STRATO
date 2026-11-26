@@ -164,9 +164,9 @@ export function ConvergencePanel() {
   return (
     <>
       <TableBox label="Independent check of the release fraction">
-        <table className="table" data-testid="observed-orders">
+        <table className="table check-table" data-testid="observed-orders">
           <caption className="table__caption">
-            <strong>Table 1.</strong> The independent check of the regression suite for the verified case: the release fraction computed by {METHOD_1}
+            <strong>Table 1.</strong> The independent check of the regression suite for the verified case: the release fraction computed by {METHOD_1}{' '}
             against a reference that contains no BTCS code, and the orders of accuracy observed from refined runs. Expected: about 1 in time and
             about 2 in space (<Badge label="PRECOMPUTED" />, copied from <code>tests/golden/btcs/s5_n40_dt200/independent_check.csv</code>). The
             file calls itself a regression reference, not truth.
@@ -175,7 +175,7 @@ export function ConvergencePanel() {
             <tr>
               {columns.map((c) => (
                 <th key={c.key} scope="col" className="num-col">
-                  {h[c.key]}
+                  {c.key === 'f_btcs' ? `Release fraction by ${METHOD_1} (dimensionless)` : h[c.key]}
                 </th>
               ))}
               <th scope="col">{h.passed}</th>
