@@ -1,5 +1,5 @@
-// Coordinator decisions 29, 30, 31 and 52: the page offers exactly two methods, "Method 1: Finite
-// Difference BTCS" and "Method 2: Analytical Solution"; the retired finite-volume method is not named
+// Coordinator decisions 29, 30, 31, 52 and 53: the page offers exactly two methods, "Method A: BTCS"
+// and "Method B: Sturm–Liouville"; the retired finite-volume method is not named
 // as a method anywhere; the labels read COMPUTED v2.0 and "BTCS finite differences"; every control,
 // table header and axis names its quantity in full with its unit. The whole page is rendered, every
 // section, with a run and the precomputed files, and its text is searched.
@@ -74,11 +74,12 @@ describe('the page offers exactly two methods', () => {
         await new Promise((r) => setTimeout(r, 30));
       });
       const text = pageText();
-      for (const m of text.matchAll(/Method \d+: [A-Z][A-Za-z]*(?: [A-Z][A-Za-z]*)*/g)) seen.add(m[0]);
+      expect(text, sec.id).not.toMatch(/Method \d/);
+      for (const m of text.matchAll(/Method [A-Z0-9]+: [A-Z][A-Za-z–]*/g)) seen.add(m[0]);
       unmount();
     }
     expect([...seen].sort()).toEqual([...METHODS].sort());
-    expect(METHODS).toEqual(['Method 1: Finite Difference BTCS', 'Method 2: Analytical Solution']);
+    expect(METHODS).toEqual(['Method A: BTCS', 'Method B: Sturm–Liouville']);
   });
 
   it('shows both methods on Explore, beside the run, and none of the retired wording', async () => {

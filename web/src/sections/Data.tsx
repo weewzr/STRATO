@@ -20,8 +20,8 @@ const PRECOMPUTED: { file: string; title: string; text: string }[] = [
   },
   {
     file: 'btcs_vs_analytical.csv',
-    title: 'Method 1 against Method 2 (CSV)',
-    text: 'the release fractions of Method 1: Finite Difference BTCS and Method 2: Analytical Solution and their absolute difference at every output time.',
+    title: 'Method A against Method B (CSV)',
+    text: 'the release fractions of Method A: BTCS and Method B: Sturm–Liouville and their absolute difference at every output time.',
   },
   {
     file: 'btcs_independent_check.csv',

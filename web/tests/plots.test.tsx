@@ -33,7 +33,7 @@ import { Validate } from '../src/sections/Validate';
 import { cloneConfig, DEFAULT_CASE } from '../src/data/case';
 import * as session from '../src/solver/session';
 import type { CompareOk, RunOk } from '../src/solver/types';
-import { initialState, inputKey, useStrato } from '../src/state/store';
+import { comparisonKey, initialState, inputKey, useStrato } from '../src/state/store';
 
 const data = (f: string) => JSON.parse(readFileSync(join(process.cwd(), 'public', 'data', f), 'utf8')) as unknown;
 const text = (f: string) => readFileSync(join(process.cwd(), 'public', 'data', f), 'utf8');
@@ -121,7 +121,7 @@ describe('radial profile figure', () => {
 describe('release figure', () => {
   const both = { log: false, showMethod1: true, showMethod2: true };
 
-  it('plots Method 1 and Method 2 as returned, with a cursor at the playback row', () => {
+  it('plots Method A and Method B as returned, with a cursor at the playback row', () => {
     const row = 42;
     const fig = releaseFigure(RUN, row, both, THEME);
     const b = fig.data.find((t) => t.meta?.id === 'release-b');
@@ -135,7 +135,35 @@ describe('release figure', () => {
     expect(c?.y).toBe(RUN.analytical?.release_fraction);
     expect(cursor?.x).toEqual([RUN.times_s[row]]);
     expect(cursor?.y).toEqual([RUN.release_fraction[row]]);
-    expect(b?.line?.dash ?? 'solid').not.toBe(c?.line?.dash);
+    // Decision 53: both methods are solid lines of equal width, Method A blue and Method B red.
+    expect(b?.line).toEqual({ color: '#2563eb', width: 2 });
+    expect(c?.line).toEqual({ color: '#dc2626', width: 2 });
+  });
+
+  it('draws no dashed or dotted line in any figure, and writes every hover line as name (unit) = value (decisions 30, 52, 53)', () => {
+    const figs = [
+      profileFigure(RUN, 5, { log: true, showStart: true }, THEME),
+      releaseFigure(RUN, 5, { ...both, log: true }, THEME),
+      compareFigure(fakeCompare(), { showBaseline: true, showDifference: true }, THEME),
+      methodReleaseFigure(COMPARISON, THEME),
+      methodDifferenceFigure(COMPARISON, COMPARISON.data.analytical.accuracy_floor, THEME),
+      checkFigure(CHECK, THEME),
+      residualFigure(NATIVE_RUN, THEME),
+    ];
+    for (const f of figs) {
+      for (const t of f.data) {
+        expect(t.line?.dash ?? 'solid', String(t.name)).toBe('solid');
+        // Every line of a hover text names its quantity, then its unit in brackets, then the value.
+        const lines = String(t.hovertemplate ?? '')
+          .replace(/<extra>.*<\/extra>/, '')
+          .split('<br>');
+        for (const l of lines) expect(l, `${String(t.name)}: ${l}`).toMatch(/^[A-Z][A-Za-z -]+ \((?:s|m|mol|mol\/m³|dimensionless)\) = %\{[xy]:[^}]+\}$/);
+      }
+      for (const s of (f.layout.shapes ?? []) as { line?: { dash?: string } }[]) expect(s.line?.dash ?? 'solid').toBe('solid');
+      for (const a of (f.layout.annotations ?? []) as { text?: string }[]) {
+        if (/accuracy floor/.test(a.text ?? '')) expect(a.text).toContain('(dimensionless)');
+      }
+    }
   });
 
   it('draws only the methods that are switched on', () => {
@@ -154,7 +182,7 @@ describe('release figure', () => {
     expect(title(profileFigure(RUN, 3, { log: true, showStart: false }, THEME).layout.yaxis)).toBe('Concentration (mol/m³)');
   });
 
-  it('marks the validity start of Method 2, and its accuracy floor on the log axis', () => {
+  it('marks the validity start of Method B, and its accuracy floor on the log axis', () => {
     const a = RUN.analytical!;
     const lin = releaseFigure(RUN, 3, both, THEME);
     const shapes = lin.layout.shapes as { type: string; x1?: number; y0?: number }[];
@@ -388,6 +416,40 @@ describe('downloads panel', () => {
     act(() => useStrato.getState().setComparison({ status: 'ok', reply: fakeCompare(), key: 'x' }));
     expect(screen.getByTestId('dl-comparison').dataset.available).toBe('true');
     expect(screen.getByTestId('dl-baseline').dataset.available).toBe('true');
+  });
+
+  it('writes the comparison as a CSV through the wrapper export, with the baseline configuration', async () => {
+    const requests: { format: string; baseline: unknown }[] = [];
+    vi.spyOn(session, 'solverClient').mockReturnValue({
+      exportRun: (_config: unknown, format: string, _provenance: unknown, baseline?: unknown) => {
+        requests.push({ format, baseline });
+        return Promise.resolve({ body: { status: 'ok', text: '# label: x\n', media_type: 'text/csv' }, elapsedMs: 1, requestId: 1 });
+      },
+    } as unknown as ReturnType<typeof session.solverClient>);
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:x');
+    vi.spyOn(URL, 'revokeObjectURL').mockReturnValue(undefined);
+    withRun();
+    const s = useStrato.getState();
+    act(() => s.setComparison({ status: 'ok', reply: fakeCompare(), key: comparisonKey(s.baselineConfig, s.config) }));
+    render(<LiveDownloads />);
+    // The page offers no file that JavaScript wrote: the comparison has one button, the CSV.
+    expect(screen.queryByTestId('dl-comparison-comparison-reply-json')).toBeNull();
+    fireEvent.click(screen.getByTestId('dl-comparison-comparison-csv'));
+    await waitFor(() => expect(requests).toHaveLength(1));
+    expect(requests[0]?.format).toBe('comparison_csv');
+    expect(requests[0]?.baseline).toBe(useStrato.getState().baselineConfig);
+  });
+
+  it('writes no file of the inputs of a later edit while the shown results are stale', () => {
+    withRun();
+    render(<LiveDownloads />);
+    const button = screen.getByTestId('dl-run-time-series-csv') as HTMLButtonElement;
+    expect(button.disabled).toBe(false);
+    const changed = cloneConfig(DEFAULT_CASE.config);
+    changed.regions[3]!.diffusivity_m2_s *= 2;
+    act(() => useStrato.setState({ config: changed }));
+    expect((screen.getByTestId('dl-run-time-series-csv') as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByTestId('dl-run-stale').textContent).toContain('the inputs have changed since');
   });
 });
 

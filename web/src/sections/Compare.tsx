@@ -54,7 +54,7 @@ function ComparisonFigure() {
           figure={figure}
           testId="compare-plot"
           height={320}
-          label={`Release fraction against time for the baseline${showBaseline ? ' (dashed)' : ' (hidden)'} and the current inputs (solid)${showDifference ? ', with the difference current minus baseline on the right axis (dotted), as compare returned it' : ''}.`}
+          label={`Release fraction against time for the baseline${showBaseline ? ' (grey line)' : ' (hidden)'} and the current inputs (blue line)${showDifference ? ', with the difference current minus baseline on the right axis (green line), as compare returned it' : ''}.`}
           exportInfo={{
             name: `strato-comparison-${reply.engine.commit}`,
             source: `STRATO ${METHOD_1}, solver version ${reply.solver.version}, Rust solver in WebAssembly (build ${reply.engine.commit}), compare; ${reply.label}; synthetic five-layer verification case, not physical data; page build ${BUILD.commit}.`,
@@ -97,16 +97,16 @@ function ComparisonFigure() {
         </p>
       ) : null}
       <figcaption className="figure__caption">
-        <strong>Figure 1.</strong> Fraction of the initial inventory released, for the baseline (dashed) and the current inputs (solid), both
+        <strong>Figure 1.</strong> Fraction of the initial inventory released, for the baseline (grey line) and the current inputs (blue line), both
         run by {METHOD_1}; until generation, decay and temperature dependence are solved, a comparison shows the effect of changed inputs, not of new physics.
-        The dotted difference curve is the series that <code>compare</code> returns: the current minus the baseline release fraction,
+        The green difference curve is the series that <code>compare</code> returns: the current minus the baseline release fraction,
         computed in Rust at each output time both runs share. Runs with different output times are not compared, because the difference is
         never interpolated. The parameters that differ are listed above.
         {reply ? (
           <span className="figure__source">
             Source: {METHOD_1}, solver version {reply.solver.version}, Rust solver in WebAssembly, build <code>{reply.engine.commit}</code>, both runs
             starting from <code>{caseFile}</code> (synthetic verification case, not physical data). Page build <code>{BUILD.commit}</code>.
-            The CSV and JSON of the comparison are under <a href={hrefFor('data')}>Data</a>.
+            The CSV of the comparison, written by the solver in Rust with its provenance header, is under <a href={hrefFor('data')}>Data</a>.
           </span>
         ) : null}
       </figcaption>
@@ -130,7 +130,7 @@ export function Compare() {
 
   return (
     <article className="section" data-section="compare">
-      <SectionHeading lede="Compare the current inputs with a baseline. Both runs use the verified solver of Method 1: Finite Difference BTCS, so the comparison shows the effect of the inputs, not of new physics.">
+      <SectionHeading lede="Compare the current inputs with a baseline. Both runs use the verified solver of Method A: BTCS, so the comparison shows the effect of the inputs, not of new physics.">
         Compare with the baseline
       </SectionHeading>
 

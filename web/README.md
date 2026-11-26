@@ -2,7 +2,7 @@
 
 Live: https://weewzr.github.io/STRATO/
 
-An equation-first page for the verified STRATO BTCS solver (Method 1: Finite Difference BTCS, with Method 2: Analytical Solution beside it): the governing equation with a staged builder at the top, the live simulation directly under it (particle cross-section and 3D cutaway, radial profile, release fraction, inventory balance, numerical diagnostics), then the controls, an explanation of each active term and the research catalogue. Every number the page shows comes from the Rust solver compiled to WebAssembly (`crates/strato-wasm`, run in a worker) or from verified precomputed native output with a provenance header; no scientific equation is written in TypeScript.
+An equation-first page for the verified STRATO BTCS solver (Method A: BTCS, with Method B: Sturm–Liouville beside it): the governing equation with a staged builder at the top, the live simulation directly under it (particle cross-section and 3D cutaway, radial profile, release fraction, inventory balance, numerical diagnostics), then the controls, an explanation of each active term and the research catalogue. Every number the page shows comes from the Rust solver compiled to WebAssembly (`crates/strato-wasm`, run in a worker) or from verified precomputed native output with a provenance header; no scientific equation is written in TypeScript.
 
 What the demonstration can and cannot do today:
 

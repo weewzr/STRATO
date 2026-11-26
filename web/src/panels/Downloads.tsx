@@ -25,7 +25,7 @@ function save(name: string, text: string, type: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
-const FORMATS: { format: ExportFormat; label: string; stem: string; ext: string }[] = [
+const FORMATS: { format: Exclude<ExportFormat, 'comparison_csv'>; label: string; stem: string; ext: string }[] = [
   { format: 'timeseries_csv', label: 'Time series CSV', stem: 'timeseries', ext: 'csv' },
   { format: 'profiles_csv', label: 'Profiles CSV', stem: 'profiles', ext: 'csv' },
   { format: 'run_json', label: 'Run JSON', stem: 'run', ext: 'json' },
@@ -69,6 +69,7 @@ function DownloadItem({ item, onError }: { item: Item; onError: (message: string
               key={f.name}
               type="button"
               className="btn btn--small"
+              disabled={item.stale === true}
               data-testid={`dl-${item.id}-${f.label.toLowerCase().replace(/[^a-z]+/g, '-')}`}
               onClick={() => {
                 onError(null);
@@ -85,7 +86,7 @@ function DownloadItem({ item, onError }: { item: Item; onError: (message: string
       ) : null}
       {item.run && item.stale ? (
         <p className="downloads__text" data-testid={`dl-${item.id}-stale`}>
-          These are the results of the last finished run; the inputs have changed since.
+          These are the results of the last finished run; the inputs have changed since, so the files can be written again when the new run has finished.
         </p>
       ) : null}
     </li>
@@ -106,11 +107,11 @@ export function LiveDownloads() {
   const compareStale = reply !== null && comparison.key !== comparisonKey(baselineConfig, config);
 
   /** One data file of a run, written by the library's export in Rust and saved unchanged. */
-  const exportFile = async (cfg: CaseConfig, format: ExportFormat): Promise<{ text: string; type: string }> => {
+  const exportFile = async (cfg: CaseConfig, format: ExportFormat, baseline?: CaseConfig): Promise<{ text: string; type: string }> => {
     const client = solverClient();
     if (!client) throw new Error('The solver is not available, so no file can be written.');
     const prov = parameterProvenance(entry?.config, cfg);
-    const out = await client.exportRun(cfg, format, { inputFile: caseFile, parameterSource: prov.source, parameterClass: prov.parameterClass });
+    const out = await client.exportRun(cfg, format, { inputFile: caseFile, parameterSource: prov.source, parameterClass: prov.parameterClass }, baseline);
     if (out.body.status !== 'ok') throw new Error(out.body.errors.join('; '));
     return { text: out.body.text, type: out.body.media_type };
   };
@@ -154,7 +155,7 @@ export function LiveDownloads() {
       title: 'Comparison',
       run: reply?.modified ?? null,
       stale: compareStale,
-      text: 'Both runs and the difference of the release fraction, current minus baseline, as the solver returned them (the difference is computed in Rust on the output times both runs share).',
+      text: 'Both release fractions and their difference, the release fraction of the current inputs minus that of the baseline, at the output times both runs share, written by the solver in Rust as a CSV with the provenance header.',
       missing: (
         <>
           Appears when a comparison has run: open <a href={hrefFor('compare')}>Compare</a>.
@@ -163,9 +164,9 @@ export function LiveDownloads() {
       files: reply
         ? [
             {
-              label: 'Comparison reply JSON',
-              name: `strato-comparison-${reply.engine.commit}.json`,
-              build: () => Promise.resolve({ text: `${JSON.stringify(reply, null, 1)}\n`, type: 'application/json' }),
+              label: 'Comparison CSV',
+              name: `strato-comparison-${reply.engine.commit}.csv`,
+              build: () => exportFile(config, 'comparison_csv', baselineConfig),
             },
           ]
         : [],

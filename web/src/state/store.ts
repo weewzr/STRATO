@@ -114,7 +114,7 @@ export interface StratoState {
     profileLog: boolean;
     profileStart: boolean;
     releaseLog: boolean;
-    /** Which solution methods the release plot draws: Method 1 (finite-difference BTCS) and Method 2 (analytical solution). */
+    /** Which solution methods the release plot draws: Method A (finite-difference BTCS) and Method B (analytical solution). */
     showMethod1: boolean;
     showMethod2: boolean;
     simPlot: SimPlot;

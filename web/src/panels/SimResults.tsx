@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { BUILD } from '../build';
 import { BTCS_CAPABILITY } from '../equation/availability';
 import { layerColour } from '../design/layers';
@@ -19,7 +18,7 @@ import { Badge, Sci } from './Badge';
 // their unit (coordinator decisions 30 and 52).
 
 /** A returned number, formatted to `digits` significant digits, with the exact value attached. */
-function V({ v, unit, digits = 6, id }: { v: number | null | undefined; unit?: ReactNode; digits?: number; id: string }) {
+function V({ v, unit, digits = 6, id, name }: { v: number | null | undefined; unit?: string; digits?: number; id: string; name: string }) {
   if (v === null || v === undefined || !Number.isFinite(v)) {
     return (
       <span className="num muted" data-testid={id} data-value="">
@@ -28,7 +27,7 @@ function V({ v, unit, digits = 6, id }: { v: number | null | undefined; unit?: R
     );
   }
   return (
-    <span data-testid={id} data-value={String(v)} data-label="COMPUTED v2.0" title={`${sciText(v)} (value as returned)`}>
+    <span data-testid={id} data-value={String(v)} data-label="COMPUTED v2.0" title={`${name} (${unit ?? 'dimensionless'}): ${sciText(v)} (value as returned)`}>
       <Sci value={v} unit={unit} digits={digits} />
     </span>
   );
@@ -97,7 +96,7 @@ export function SolverStatus({ compact = false }: { compact?: boolean }) {
     </p>
   );
 }
-/** Release fraction at the end time: Method 1, with Method 2 at the same time when the series resolves it. */
+/** Release fraction at the end time: Method A, with Method B at the same time when the series resolves it. */
 export function ReleaseReadout() {
   const { run, stale } = useCurrentRun();
   const status = useStrato((s) => s.status);
@@ -210,37 +209,37 @@ export function BalancePanel() {
           <tr>
             <th scope="row">Initial inventory (mol)</th>
             <td className="num-col">
-              <V id="bal-start" v={b.start_inventory_mol} unit="mol" />
+              <V id="bal-start" name="Initial inventory" v={b.start_inventory_mol} unit="mol" />
             </td>
           </tr>
           <tr>
             <th scope="row">Remaining inventory in the particle (mol)</th>
             <td className="num-col">
-              <V id="bal-inventory" v={b.final.remaining_mol} unit="mol" />
+              <V id="bal-inventory" name="Remaining inventory in the particle" v={b.final.remaining_mol} unit="mol" />
             </td>
           </tr>
           <tr>
             <th scope="row">Cumulative release through the outer surface (mol)</th>
             <td className="num-col">
-              <V id="bal-released" v={b.final.released_mol} unit="mol" />
+              <V id="bal-released" name="Cumulative release through the outer surface" v={b.final.released_mol} unit="mol" />
             </td>
           </tr>
           <tr className="is-residual">
             <th scope="row">Mass-balance residual (mol)</th>
             <td className="num-col">
-              <V id="bal-residual" v={b.final.residual_mol} unit="mol" digits={3} />
+              <V id="bal-residual" name="Mass-balance residual" v={b.final.residual_mol} unit="mol" digits={3} />
             </td>
           </tr>
           <tr>
             <th scope="row">Derived rounding bound of the residual (mol)</th>
             <td className="num-col">
-              <V id="bal-bound" v={b.final.residual_bound_mol} unit="mol" digits={3} />
+              <V id="bal-bound" name="Derived rounding bound of the residual" v={b.final.residual_bound_mol} unit="mol" digits={3} />
             </td>
           </tr>
           <tr>
             <th scope="row">Largest relative mass-balance residual over the run (dimensionless)</th>
             <td className="num-col">
-              <V id="bal-max-rel" v={b.max_abs_residual_relative} digits={3} />
+              <V id="bal-max-rel" name="Largest relative mass-balance residual over the run" v={b.max_abs_residual_relative} digits={3} />
             </td>
           </tr>
         </tbody>
@@ -277,10 +276,10 @@ function LayerTable({ profile, names }: { profile: RunResponse['profiles'][numbe
               {names[i] ?? `Region ${i + 1}`}
             </th>
             <td className="num-col">
-              <V id={`layer-inv-${i}`} v={inv} unit="mol" digits={4} />
+              <V id={`layer-inv-${i}`} name={`Inventory in the ${names[i] ?? `region ${i + 1}`} layer`} v={inv} unit="mol" digits={4} />
             </td>
             <td className="num-col">
-              <V id={`layer-share-${i}`} v={profile.layer_share ? profile.layer_share[i] : null} digits={4} />
+              <V id={`layer-share-${i}`} name={`Share of the inventory in the particle held by the ${names[i] ?? `region ${i + 1}`} layer`} v={profile.layer_share ? profile.layer_share[i] : null} digits={4} />
             </td>
           </tr>
         ))}
@@ -339,7 +338,7 @@ export function DiagnosticsPanel() {
         <div className="diag__row">
           <dt>Time step used (s)</dt>
           <dd>
-            <V id="diag-dt" v={d.dt_used_s} unit="s" />
+            <V id="diag-dt" name="Time step used" v={d.dt_used_s} unit="s" />
             {d.dt_used_s !== d.dt_requested_s ? (
               <span className="muted">
                 {' '}
@@ -352,14 +351,14 @@ export function DiagnosticsPanel() {
           <div className="diag__row" key={`fo-${i}`}>
             <dt>Mesh Fourier number of the {run.grid.layer_names[i] ?? `layer ${i + 1}`} layer (dimensionless)</dt>
             <dd>
-              <V id={`diag-fo-${i}`} v={f} digits={4} />
+              <V id={`diag-fo-${i}`} name={`Mesh Fourier number of the ${run.grid.layer_names[i] ?? `layer ${i + 1}`} layer`} v={f} digits={4} />
             </dd>
           </div>
         ))}
         <div className="diag__row">
           <dt>Largest relative mass-balance residual (dimensionless)</dt>
           <dd>
-            <V id="diag-residual" v={d.max_abs_balance_residual_relative} digits={3} />
+            <V id="diag-residual" name="Largest relative mass-balance residual" v={d.max_abs_balance_residual_relative} digits={3} />
           </dd>
         </div>
         <div className="diag__row">
@@ -371,16 +370,16 @@ export function DiagnosticsPanel() {
         <div className="diag__row">
           <dt>Smallest concentration over all nodes and times (mol/m³)</dt>
           <dd>
-            <V id="diag-min" v={d.min_concentration_mol_m3} unit="mol/m³" digits={3} />
+            <V id="diag-min" name="Smallest concentration over all nodes and times" v={d.min_concentration_mol_m3} unit="mol/m³" digits={3} />
           </dd>
         </div>
         <div className="diag__row">
           <dt>Largest absolute difference between {METHOD_1} and {METHOD_2} in the release fraction (dimensionless)</dt>
-          <dd>{c ? <V id="diag-bc-max" v={c.max_abs_difference} digits={4} /> : <span className="muted">{METHOD_2} not available</span>}</dd>
+          <dd>{c ? <V id="diag-bc-max" name={`Largest absolute difference between ${METHOD_1} and ${METHOD_2} in the release fraction`} v={c.max_abs_difference} digits={4} /> : <span className="muted">{METHOD_2} not available</span>}</dd>
         </div>
         <div className="diag__row">
           <dt>Absolute difference between {METHOD_1} and {METHOD_2} at the end of the simulation (dimensionless)</dt>
-          <dd>{c ? <V id="diag-bc-final" v={c.final_abs_difference} digits={4} /> : <span className="muted">not available</span>}</dd>
+          <dd>{c ? <V id="diag-bc-final" name={`Absolute difference between ${METHOD_1} and ${METHOD_2} at the end of the simulation`} v={c.final_abs_difference} digits={4} /> : <span className="muted">not available</span>}</dd>
         </div>
         {c ? (
           <>
@@ -393,21 +392,21 @@ export function DiagnosticsPanel() {
             <div className="diag__row">
               <dt>Accuracy floor of {METHOD_2} (dimensionless)</dt>
               <dd>
-                <V id="diag-floor" v={c.accuracy_floor} digits={4} />
+                <V id="diag-floor" name={`Accuracy floor of ${METHOD_2}`} v={c.accuracy_floor} digits={4} />
               </dd>
             </div>
             <div className="diag__row">
-              <dt>{METHOD_2} valid from the time (s)</dt>
+              <dt>Time from which {METHOD_2} is valid (s)</dt>
               <dd>
-                <V id="diag-valid" v={c.valid_from_s} unit="s" digits={4} />
+                <V id="diag-valid" name={`Time from which ${METHOD_2} is valid`} v={c.valid_from_s} unit="s" digits={4} />
               </dd>
             </div>
           </>
         ) : null}
         <div className="diag__row diag__row--timing">
-          <dt>Solver time</dt>
+          <dt>Solver wall time in this browser (ms)</dt>
           <dd data-testid="diag-time">
-            {info ? `${info.elapsedMs.toFixed(1)} ms` : '–'} <span className="muted">wall time in this browser, not a result</span>
+            {info ? `${info.elapsedMs.toFixed(1)} ms` : '–'} <span className="muted">a measurement of the browser, not a result</span>
           </dd>
         </div>
       </dl>

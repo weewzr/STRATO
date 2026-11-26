@@ -107,7 +107,7 @@ export interface RunProfile {
   interface_flux: InterfaceFlux | null;
 }
 
-/** The independent solution: the Sturm-Liouville series, Method 2. */
+/** The independent solution: the Sturm-Liouville series, Method B. */
 export interface Analytical {
   applicable: boolean;
   name: string;
@@ -266,5 +266,5 @@ export interface ExportOk {
   text: string;
 }
 
-export type ExportFormat = 'timeseries_csv' | 'profiles_csv' | 'run_json';
+export type ExportFormat = 'timeseries_csv' | 'profiles_csv' | 'run_json' | 'comparison_csv';
 export type ExportReply = ExportOk | Rejected;

@@ -96,10 +96,10 @@
   --layer-sic: #2c9688;
   --layer-opyc: #7c57c7;
 
-  /* Plot series (web phase 5), each also told apart by its line style or marker, never by colour alone:
-     Method 1 (finite-difference BTCS), Method 2 (analytical solution), baseline run, difference curve; and the plot grid. */
-  --series-b: #24508f;
-  --series-c: #b04a00;
+  /* Plot series (web phase 5), all drawn as solid lines (decision 53, no dashed or dotted lines); Method A is #2563EB and Method B is #DC2626 in both themes:
+     Method A (finite-difference BTCS), Method B (analytical solution), baseline run, difference curve; and the plot grid. */
+  --series-b: #2563eb;
+  --series-c: #dc2626;
   --series-base: #4f5663;
   --series-diff: #00735a;
   --plot-grid: #e6e8ec;
@@ -134,8 +134,8 @@
     --layer-ipyc: #426cd7;
     --layer-sic: #ace7c0;
     --layer-opyc: #d0bee9;
-    --series-b: #8fb3ec;
-    --series-c: #e69f00;
+    --series-b: #2563eb;
+    --series-c: #dc2626;
     --series-base: #9aa3b2;
     --series-diff: #2bb68d;
     --plot-grid: #262c35;
@@ -170,8 +170,8 @@
   --layer-ipyc: #426cd7;
   --layer-sic: #ace7c0;
   --layer-opyc: #d0bee9;
-  --series-b: #8fb3ec;
-  --series-c: #e69f00;
+  --series-b: #2563eb;
+  --series-c: #dc2626;
   --series-base: #9aa3b2;
   --series-diff: #2bb68d;
   --plot-grid: #262c35;

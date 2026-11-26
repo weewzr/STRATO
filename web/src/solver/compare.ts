@@ -64,7 +64,17 @@ export interface ReplyComparison {
 
 /** Leaves of the independent series (and its differences), where the series' own accuracy floor adds an allowance. */
 function seriesDerived(pattern: string): boolean {
-  return pattern.startsWith('.analytical.') || pattern.startsWith('.diagnostics.analytical_comparison');
+  // A compare reply holds two runs, .baseline and .modified, each with its own series.
+  const p = pattern.replace(/^\.(?:baseline|modified)/, '');
+  return p.startsWith('.analytical.') || p.startsWith('.diagnostics.analytical_comparison');
+}
+
+/** The series accuracy floor of the native reply that a leaf belongs to: that of the run itself, or of the half of a compare reply the leaf lies in. */
+function floorAt(native: unknown, path: string): number {
+  const root = native as Record<string, unknown> | null;
+  const half = path.startsWith('.baseline') ? root?.baseline : path.startsWith('.modified') ? root?.modified : root;
+  const floor = (half as { analytical?: { accuracy_floor?: unknown } | null } | null | undefined)?.analytical?.accuracy_floor;
+  return typeof floor === 'number' ? floor : 0;
 }
 
 /** A text without the provenance line that records the commit of the build: the two builds stamp their own. */
@@ -77,14 +87,12 @@ function withoutCommitLine(s: string): string {
  * `btcs_parity compare` (crates/strato-wasm/examples/btcs_parity.rs): |a - b| <= rtol max(|a|, |b|) for
  * every number, identical array lengths and object keys, equal strings, booleans and nulls. One stated
  * addition, for the values that come from the independent series: the accuracy floor of that case (read
- * from the native reply) is added as an absolute allowance, because the native and WebAssembly builds
+ * from the native reply, for each run of a compare reply) is added as an absolute allowance, because the native and WebAssembly builds
  * use different exp, cos and sin routines (tolerances.rs, SERIES_FLOOR_RULE); `accuracy_floor` and
  * `min_flux_ratio` themselves and every BTCS value keep the strict rule. The `commit` fields, and the
  * `# commit:` line of an exported file, record the build that wrote them and are not compared.
  */
 export function compareReplies(native: unknown, wasm: unknown, rtol: number): ReplyComparison {
-  const n = native as { analytical?: { accuracy_floor?: number } | null };
-  const floor = typeof n?.analytical?.accuracy_floor === 'number' ? n.analytical.accuracy_floor : 0;
   const out: ReplyComparison = { compared: 0, identical: 0, failures: [], ok: true };
   const byPattern = new Map<string, LeafFailure>();
   const fail = (path: string, a: unknown, b: unknown) => {
@@ -101,7 +109,7 @@ export function compareReplies(native: unknown, wasm: unknown, rtol: number): Re
         return;
       }
       const pattern = path.replace(/\[\d+\]/g, '[]');
-      const extra = seriesDerived(pattern) && !pattern.endsWith('.accuracy_floor') && !pattern.endsWith('.min_flux_ratio') ? floor : 0;
+      const extra = seriesDerived(pattern) && !pattern.endsWith('.accuracy_floor') && !pattern.endsWith('.min_flux_ratio') ? floorAt(native, path) : 0;
       if (Math.abs(a - b) > rtol * Math.max(Math.abs(a), Math.abs(b)) + extra) fail(path, a, b);
       return;
     }

@@ -18,7 +18,7 @@ import { Badge, Sci } from './Badge';
 import { TableBox } from '../sections/common';
 
 // The verification panels of the Verify section (web phase 5; prompt/DESIGN_SPECIFICATION.md Section
-// 8.3): Method 1 against Method 2, the independent check with its observed orders in time and in
+// 8.3): Method A against Method B, the independent check with its observed orders in time and in
 // space, and the balance residual with its derived rounding bound, from the precomputed output of the
 // native program (label PRECOMPUTED, with its provenance header), and the live run's own diagnostics
 // from the wrapper (COMPUTED v2.0). The pointwise difference between the two methods is shown only
@@ -34,10 +34,10 @@ export function ProvenanceNote({ doc, file }: { doc: PrecomputedHeader; file: st
         <>
           {' '}
           on <code>{doc.input_file}</code>
-          {doc.input_sha256 ? (
+          {doc.input_file_sha256 ? (
             <>
               {' '}
-              (SHA-256 <code className="hash">{doc.input_sha256.slice(0, 12)}</code>)
+              (SHA-256 <code className="hash">{doc.input_file_sha256.slice(0, 12)}</code>)
             </>
           ) : null}
         </>
@@ -86,7 +86,7 @@ function exportSource(doc: PrecomputedHeader, file: string): string {
   return `${file} (${doc.label}), native ${doc.solver}, solver version ${doc.strato_version} at commit ${doc.commit.slice(0, 7)}, ${doc.command}; synthetic five-layer verification case, not physical data.`;
 }
 
-/** Method 1 against Method 2: the two release fractions and their pointwise difference. */
+/** Method A against Method B: the two release fractions and their pointwise difference. */
 export function MethodComparisonPanel() {
   const { doc, error } = usePrecomputed<ComparisonDoc>('btcs_vs_analytical.json');
   const theme = usePlotTheme();
@@ -103,7 +103,7 @@ export function MethodComparisonPanel() {
         label="PRECOMPUTED"
         caption={
           <>
-            Release fraction of the verified synthetic case from {METHOD_1} (solid) and {METHOD_2} (dashed), the {a.name}, as the native
+            Release fraction of the verified synthetic case from {METHOD_1} (blue line) and {METHOD_2} (red line), the {a.name}, as the native
             program wrote them (<code>btcs_vs_analytical.csv</code>). <ProvenanceNote doc={doc} file="btcs_vs_analytical.json" />
           </>
         }
@@ -124,7 +124,7 @@ export function MethodComparisonPanel() {
           <>
             Absolute difference of the release fractions of {METHOD_1} and {METHOD_2} of the verified case at every output time, as the Rust
             tool computed it from the native reply (column <code>Absolute difference of the release fractions (dimensionless)</code>); a
-            discretisation error of {METHOD_1}, not a defect. The dotted line is the accuracy floor of {METHOD_2} ({a.accuracy_floor},
+            discretisation error of {METHOD_1}, not a defect. The thin horizontal line is the accuracy floor of {METHOD_2} ({a.accuracy_floor},
             valid from the time {a.valid_from_s} s, {a.modes} eigenmodes; largest difference {a.max_abs_difference}, final difference{' '}
             {a.final_abs_difference}). This plot is shown only from the native file: for inputs changed on Explore, the page shows the two
             curves and the largest and final difference that the solver returns, because the pointwise difference of two nearly equal

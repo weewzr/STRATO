@@ -89,7 +89,7 @@ test.describe('block B plots', () => {
     await waitForRun(page);
     const last = NATIVE.profiles.length - 1;
     const profile = await drawn(page, 'profile-plot');
-    // WebAssembly against the native wrapper: Method 1, the grid and the profiles are bit-identical.
+    // WebAssembly against the native wrapper: Method A, the grid and the profiles are bit-identical.
     expect(identical(trace(profile, 'profile').x, NATIVE.grid.node_radii_m)).toBe(true);
     expect(identical(trace(profile, 'profile').y, NATIVE.profiles[last]!.c_mol_per_m3)).toBe(true);
     expect(identical(trace(profile, 'profile-start').y, NATIVE.profiles[0]!.c_mol_per_m3)).toBe(true);
@@ -122,7 +122,7 @@ test.describe('block B plots', () => {
     for (const id of ['profile-figure', 'release-figure']) {
       const fig = page.getByTestId(id);
       await expect(fig.locator('.figure__head .badge')).toHaveText('COMPUTED v2.0');
-      await expect(fig.locator('figcaption')).toContainText('Source: Method 1: Finite Difference BTCS, solver version');
+      await expect(fig.locator('figcaption')).toContainText('Source: Method A: BTCS, solver version');
       await expect(fig.locator('figcaption')).toContainText('Page build');
     }
     await expect(page.getByTestId('profile-plot').locator('.xtitle')).toHaveText('Radius (m)');
@@ -130,8 +130,8 @@ test.describe('block B plots', () => {
     await expect(page.getByTestId('release-plot').locator('.xtitle')).toHaveText('Time (s)');
     await expect(page.getByTestId('release-plot').locator('.ytitle')).toHaveText('Release fraction (dimensionless)');
     // The legend of the release plot names the two methods.
-    await expect(page.getByTestId('release-plot').locator('.legend')).toContainText('Method 1: Finite Difference BTCS');
-    await expect(page.getByTestId('release-plot').locator('.legend')).toContainText('Method 2: Analytical Solution');
+    await expect(page.getByTestId('release-plot').locator('.legend')).toContainText('Method A: BTCS');
+    await expect(page.getByTestId('release-plot').locator('.legend')).toContainText('Method B: Sturm–Liouville');
   });
 
   test('display options change the plot only: no input, no run', async ({ page, problems }) => {
@@ -146,7 +146,7 @@ test.describe('block B plots', () => {
     await expect.poll(async () => (await drawn(page, 'profile-plot')).map((t) => t.id)).toEqual(['profile']);
     const layout = await page.getByTestId('release-plot-graph').evaluate((el) => (el as unknown as { layout: { yaxis: { type: string } } }).layout.yaxis.type);
     expect(layout).toBe('log');
-    // Switching Method 2 off removes its curve only.
+    // Switching Method B off removes its curve only.
     await page.getByTestId('release-method-2').uncheck();
     await expect.poll(async () => (await drawn(page, 'release-plot')).map((t) => t.id).sort()).toEqual(['release-b', 'release-cursor']);
     expect(await page.getByTestId('block-b').getAttribute('data-input-key')).toBe(key);
@@ -161,7 +161,7 @@ test.describe('block B plots', () => {
     const { name, text } = await download(page, 'release-plot-svg');
     expect(name).toMatch(/^strato-release-[0-9a-f]{7}\.svg$/);
     expect(text).toContain('<svg');
-    expect(text).toContain('Method 1: Finite Difference BTCS');
+    expect(text).toContain('Method A: BTCS');
     expect(text).toContain('COMPUTED v2.0');
     expect(text).toContain('page build');
   });
@@ -263,6 +263,7 @@ test.describe('downloads', () => {
     await waitForRun(page);
     const release = await drawn(page, 'release-plot');
     const profile = await drawn(page, 'profile-plot');
+    const shownBound = Number(await page.getByTestId('bal-bound').getAttribute('data-value'));
     await nav(page, 'Data');
     const ts = await download(page, 'dl-run-time-series-csv');
     expect(ts.name).toMatch(/^strato-run-timeseries-[0-9a-f]{7}\.csv$/);
@@ -280,6 +281,9 @@ test.describe('downloads', () => {
     expect(parsed.names).toContain('Release fraction (dimensionless)');
     expect(identical(parsed.columns['Time (s)']!, trace(release, 'release-b').x)).toBe(true);
     expect(identical(parsed.columns['Release fraction (dimensionless)']!, trace(release, 'release-b').y)).toBe(true);
+    // The rounding bound of the mass-balance residual on the page is the value in the file: one quantity, one value.
+    const bounds = parsed.columns['Derived a-posteriori rounding bound of the mass-balance residual (mol)']!;
+    expect(bounds[bounds.length - 1]).toBe(shownBound);
 
     const pr = parseCsv((await download(page, 'dl-run-profiles-csv')).text);
     const times = pr.columns['Time (s)']!;
@@ -301,11 +305,17 @@ test.describe('downloads', () => {
     await expect.poll(async () => (await drawn(page, 'compare-plot')).map((t) => t.id)).toContain('compare-difference');
     const traces = await drawn(page, 'compare-plot');
     await nav(page, 'Data');
-    const cmp = JSON.parse((await download(page, 'dl-comparison-comparison-reply-json')).text) as CompareOk;
-    expect(cmp.status).toBe('ok');
-    expect(identical(cmp.difference.release_fraction, trace(traces, 'compare-difference').y)).toBe(true);
-    expect(identical(cmp.baseline.release_fraction, trace(traces, 'compare-baseline').y)).toBe(true);
-    expect(identical(cmp.modified.release_fraction, trace(traces, 'compare-modified').y)).toBe(true);
+    const cmp = await download(page, 'dl-comparison-comparison-csv');
+    expect(cmp.name).toMatch(/^strato-comparison-[0-9a-f]{7}\.csv$/);
+    const pc = parseCsv(cmp.text);
+    // The file starts with the library's provenance header and carries the full names with the units.
+    expect(pc.meta.label).toBe('numerical solution of the stated model; not experimental validation');
+    expect(pc.meta.input_sha256).toMatch(/^[0-9a-f]{64}$/);
+    expect(pc.meta.baseline_input_sha256).toMatch(/^[0-9a-f]{64}$/);
+    expect(pc.meta.parameter_source).toBeTruthy();
+    expect(identical(pc.columns['Release fraction of the baseline run (dimensionless)']!, trace(traces, 'compare-baseline').y)).toBe(true);
+    expect(identical(pc.columns['Release fraction of the run with the current inputs (dimensionless)']!, trace(traces, 'compare-modified').y)).toBe(true);
+    expect(identical(pc.columns['Release fraction of the current inputs minus release fraction of the baseline (dimensionless)']!, trace(traces, 'compare-difference').y)).toBe(true);
   });
 
   test('the parameter table can be searched', async ({ page, problems }) => {

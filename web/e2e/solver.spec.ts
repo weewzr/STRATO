@@ -10,7 +10,7 @@ import { expect, gotoSection, test, waitForRun } from './fixtures';
 // test H of the directive): the WebAssembly build against the native wrapper, per value, at the rule
 // of the wrapper's parity example (relative 1e-12, identical array lengths and keys; the independent
 // series adds its own accuracy floor), for the default run and for the small cases of the battery
-// (validate, run, the data export, build info); rejected inputs with the wrapper's own messages; and
+// (validate, run, compare, the data exports, build info); rejected inputs with the wrapper's own messages; and
 // every value of block B equal to the wrapper's value.
 
 const read = (...p: string[]) => JSON.parse(readFileSync(join(process.cwd(), ...p), 'utf8')) as Record<string, unknown>;
@@ -86,7 +86,12 @@ test.describe('browser parity', () => {
     expect(compareArrays('release_fraction', run.release_fraction, NATIVE.release_fraction, PARITY_RTOL).ok).toBe(true);
   });
 
-  for (const name of ['validate_toml', 'validate_rejected_dt', 'run_single_step', 'export_timeseries_csv', 'build_info']) {
+  // Every case of the battery file, among them the compare and the comparison export.
+  test('the battery file holds the compare and the comparison export', () => {
+    expect(Object.keys(BATTERY)).toEqual(expect.arrayContaining(['run_profile_times', 'run_rejected_steps', 'compare_coarse_sic_diffusivity', 'export_comparison_csv']));
+  });
+
+  for (const name of Object.keys(BATTERY)) {
     test(`the battery case ${name} equals the native reply at the parity rule`, async ({ page, problems }) => {
       void problems;
       await gotoSection(page, 'explore');
@@ -121,9 +126,9 @@ test.describe('browser parity', () => {
     await gotoSection(page, 'explore');
     const cfg = CASE.data.config as { time: Record<string, number>; regions: Record<string, unknown>[] };
     const cases: [string, unknown, RegExp][] = [
-      ['run', { schema: 2, config: { ...cfg, time: { ...cfg.time, dt_s: 0 } } }, /invalid time controls/],
-      ['run', { schema: 2, config: { ...cfg, regions: cfg.regions.slice(0, 4) } }, /exactly five physical regions/],
-      ['run', { schema: 2, config: { ...cfg, time: { ...cfg.time, dt_s: 0.001 } } }, /MAX_STEPS/],
+      ['run', { schema: 2, config: { ...cfg, time: { ...cfg.time, dt_s: 0 } } }, /Time step \(s\) is 0; it must be a finite number larger than 0 s/],
+      ['run', { schema: 2, config: { ...cfg, regions: cfg.regions.slice(0, 4) } }, /Exactly five layers are required, but 4 were given/],
+      ['run', { schema: 2, config: { ...cfg, time: { ...cfg.time, dt_s: 0.001 } } }, /above the limit of 20000 time steps/],
       ['run', { schema: 2, config: { ...cfg, regions: cfg.regions.map((r, i) => (i === 0 ? { ...r, diffusivity_m2_s: 'INSERT_VALUE_HERE' } : r)) } }, /INSERT_VALUE_HERE/],
       ['run', { schema: 2, config: cfg, mechanisms: ['decay'] }, /not supported by this solver build/],
       ['run', { schema: 1, config: cfg }, /unsupported request schema/],
@@ -172,7 +177,7 @@ test.describe('block B shows the wrapper values', () => {
       await expect(page.getByTestId(id).locator('.badge').first()).toHaveText('COMPUTED v2.0');
     }
     // The solver and its verification status are on the page.
-    await expect(page.getByTestId('solver-status')).toContainText('Method 1: Finite Difference BTCS');
+    await expect(page.getByTestId('solver-status')).toContainText('Method A: BTCS');
     await expect(page.getByTestId('solver-version')).toHaveText(NATIVE.solver.version);
     await expect(page.getByTestId('solver-status').locator('[data-status-for]')).toHaveAttribute('data-status', 'VERIFIED');
   });
@@ -184,9 +189,9 @@ test.describe('block B shows the wrapper values', () => {
     const field = page.getByTestId('d-field-0');
     await field.fill('0');
     await waitForRun(page, 'rejected');
-    await expect(page.getByTestId('run-rejected')).toContainText('invalid region Kernel');
+    await expect(page.getByTestId('run-rejected')).toContainText('Diffusivity of the Kernel layer (m²/s) is 0; it must be a finite number larger than 0 m²/s');
     // The wrapper's own validation message is also listed beside the controls.
-    await expect(page.getByTestId('validation-errors')).toContainText('invalid region Kernel');
+    await expect(page.getByTestId('validation-errors')).toContainText('Diffusivity of the Kernel layer (m²/s) is 0; it must be a finite number larger than 0 m²/s');
     await expect(page.getByTestId('release-readout').locator('.badge')).toHaveCount(0);
     await expect(page.getByTestId('status-result')).toHaveText('Result: none yet');
     await field.fill('2e-12');
@@ -196,5 +201,23 @@ test.describe('block B shows the wrapper values', () => {
     const f = Number(await page.getByTestId('release-value').getAttribute('data-value'));
     expect(f).toBeGreaterThan(0);
     expect(f).not.toBe(NATIVE.diagnostics.final_release_fraction);
+  });
+
+  test('a time step that needs too many steps is refused in words that name the quantities, without any identifier of the code', async ({ page, problems }) => {
+    void problems;
+    await gotoSection(page, 'explore');
+    await waitForRun(page);
+    const dt = page.getByTestId('dt-field');
+    await dt.fill('0.5');
+    await waitForRun(page, 'rejected');
+    const alert = page.getByTestId('run-rejected');
+    await expect(alert).toContainText('The number of time steps (the simulation duration divided by the time step, rounded up) is 400000, above the limit of 20000 time steps');
+    await expect(page.getByTestId('validation-errors')).toContainText('above the limit of 20000 time steps');
+    for (const id of ['run-rejected', 'validation-errors']) {
+      const text = (await page.getByTestId(id).textContent()) ?? '';
+      expect(text, id).not.toMatch(/MAX_|dt_s|end_time_s|ceil\(/);
+    }
+    await dt.fill('200');
+    await waitForRun(page);
   });
 });

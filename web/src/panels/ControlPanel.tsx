@@ -176,8 +176,8 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
       </fieldset>
       <fieldset className="group">
         <legend className="group__legend">Time</legend>
-        <NumberField label="Time step" unit="s" value={config.time.dt_s} onCommit={(v) => setTimeField('dt_s', v)} />
-        <NumberField label="Simulation duration" unit="s" value={config.time.end_time_s} onCommit={(v) => setTimeField('end_time_s', v)} />
+        <NumberField label="Time step" unit="s" testId="dt-field" value={config.time.dt_s} onCommit={(v) => setTimeField('dt_s', v)} />
+        <NumberField label="Simulation duration" unit="s" testId="duration-field" value={config.time.end_time_s} onCommit={(v) => setTimeField('end_time_s', v)} />
         <NumberField
           label="Time steps between output rows"
           unit="dimensionless"

@@ -124,8 +124,8 @@ export function profileFigure(run: RunOk, row: number, opts: ProfileOptions, the
       x,
       y: start.c_mol_per_m3,
       mode: 'lines',
-      line: { color: theme.seriesBase, width: 1.5, dash: 'dot' },
-      hovertemplate: 'Radius = %{x:.4~s} m<br>Concentration = %{y:.4~e} mol/m³<extra>start</extra>',
+      line: { color: theme.seriesBase, width: 1.5 },
+      hovertemplate: 'Radius (m) = %{x:.4~s}<br>Concentration (mol/m³) = %{y:.4~e}<extra>start</extra>',
       meta: { id: 'profile-start', label: 'start profile', unit: 'mol/m^3' },
     });
   }
@@ -137,7 +137,7 @@ export function profileFigure(run: RunOk, row: number, opts: ProfileOptions, the
       y: profile.c_mol_per_m3,
       mode: 'lines',
       line: { color: theme.seriesB, width: 2 },
-      hovertemplate: `Radius = %{x:.4~s} m<br>Concentration = %{y:.4~e} mol/m³<extra>${METHOD_1}</extra>`,
+      hovertemplate: `Radius (m) = %{x:.4~s}<br>Concentration (mol/m³) = %{y:.4~e}<extra>${METHOD_1}</extra>`,
       meta: { id: 'profile', label: METHOD_1, unit: 'mol/m^3' },
     });
   }
@@ -160,16 +160,16 @@ export function profileFigure(run: RunOk, row: number, opts: ProfileOptions, the
 
 export interface ReleaseOptions {
   log: boolean;
-  /** Draw the curve of Method 1 (finite-difference BTCS). */
+  /** Draw the curve of Method A (finite-difference BTCS). */
   showMethod1: boolean;
-  /** Draw the curve of Method 2 (the analytical solution), where it applies. */
+  /** Draw the curve of Method B (the analytical solution), where it applies. */
   showMethod2: boolean;
 }
 
 /**
- * Release fraction against time from Method 1 (finite-difference BTCS) and Method 2 (the analytical
+ * Release fraction against time from Method A (finite-difference BTCS) and Method B (the analytical
  * solution) on the same axes (prompt/DESIGN_SPECIFICATION.md Section 4.4), with the validity start
- * and accuracy floor of Method 2 and a playback cursor at the output row shown in the particle.
+ * and accuracy floor of Method B and a playback cursor at the output row shown in the particle.
  */
 export function releaseFigure(run: RunOk, row: number, opts: ReleaseOptions, theme: PlotTheme): Figure {
   const a = run.analytical && run.analytical.applicable ? run.analytical : null;
@@ -182,7 +182,7 @@ export function releaseFigure(run: RunOk, row: number, opts: ReleaseOptions, the
       y: run.release_fraction,
       mode: 'lines',
       line: { color: theme.seriesB, width: 2 },
-      hovertemplate: `Time = %{x:.4~s} s<br>Release fraction = %{y:.6~g}<extra>${METHOD_1}</extra>`,
+      hovertemplate: `Time (s) = %{x:.4~s}<br>Release fraction (dimensionless) = %{y:.6~g}<extra>${METHOD_1}</extra>`,
       meta: { id: 'release-b', label: METHOD_1, unit: '1' },
     });
   }
@@ -193,8 +193,8 @@ export function releaseFigure(run: RunOk, row: number, opts: ReleaseOptions, the
       x: a.times_s,
       y: a.release_fraction,
       mode: 'lines',
-      line: { color: theme.seriesC, width: 2, dash: 'dash' },
-      hovertemplate: `Time = %{x:.4~s} s<br>Release fraction = %{y:.6~g}<extra>${METHOD_2}</extra>`,
+      line: { color: theme.seriesC, width: 2 },
+      hovertemplate: `Time (s) = %{x:.4~s}<br>Release fraction (dimensionless) = %{y:.6~g}<extra>${METHOD_2}</extra>`,
       meta: { id: 'release-c', label: METHOD_2, unit: '1' },
     });
   }
@@ -209,7 +209,7 @@ export function releaseFigure(run: RunOk, row: number, opts: ReleaseOptions, the
       mode: 'markers',
       marker: { color: theme.surface, size: 9, symbol: 'circle', line: { color: theme.text, width: 2 } },
       showlegend: false,
-      hovertemplate: `Playback: time = %{x:.4~s} s<br>Release fraction = %{y:.6~g}<extra>${METHOD_1}</extra>`,
+      hovertemplate: `Playback time (s) = %{x:.4~s}<br>Release fraction (dimensionless) = %{y:.6~g}<extra>${METHOD_1}</extra>`,
       meta: { id: 'release-cursor', label: 'playback row', unit: '1' },
     });
   }
@@ -225,12 +225,12 @@ export function releaseFigure(run: RunOk, row: number, opts: ReleaseOptions, the
       xanchor: 'left',
       yanchor: 'top',
       xshift: 3,
-      text: `${METHOD_2} valid from ${sciText(a.valid_from_s, 4).replace(' × 10^', 'e')} s`,
+      text: `${METHOD_2} valid from time ${sciText(a.valid_from_s, 4).replace(' × 10^', 'e')} s`,
       showarrow: false,
       font: { size: 10, color: theme.muted },
     });
     if (opts.log) {
-      shapes.push({ type: 'line', xref: 'paper', yref: 'y', x0: 0, x1: 1, y0: a.accuracy_floor, y1: a.accuracy_floor, line: { color: theme.seriesC, width: 1, dash: 'dot' } });
+      shapes.push({ type: 'line', xref: 'paper', yref: 'y', x0: 0, x1: 1, y0: a.accuracy_floor, y1: a.accuracy_floor, line: { color: theme.seriesC, width: 1 } });
       annotations.push({
         xref: 'paper',
         yref: 'y',
@@ -238,14 +238,14 @@ export function releaseFigure(run: RunOk, row: number, opts: ReleaseOptions, the
         y: Math.log10(a.accuracy_floor),
         xanchor: 'right',
         yanchor: 'bottom',
-        text: `${METHOD_2} accuracy floor ${sciText(a.accuracy_floor, 4).replace(' × 10^', 'e')}`,
+        text: `${METHOD_2} accuracy floor (dimensionless) ${sciText(a.accuracy_floor, 4).replace(' × 10^', 'e')}`,
         showarrow: false,
-        font: { size: 10, color: theme.seriesC },
+        font: { size: 10, color: theme.text },
       });
     }
   }
   if (tRow !== undefined) {
-    shapes.push({ type: 'line', xref: 'x', yref: 'paper', x0: tRow, x1: tRow, y0: 0, y1: 1, line: { color: theme.text, width: 1, dash: 'dot' } });
+    shapes.push({ type: 'line', xref: 'x', yref: 'paper', x0: tRow, x1: tRow, y0: 0, y1: 1, line: { color: theme.text, width: 1 } });
   }
   return {
     data,
@@ -267,7 +267,7 @@ export interface CompareOptions {
 
 /**
  * Model comparison (prompt/DESIGN_SPECIFICATION.md Section 8.1): the baseline and the current release
- * curves of Method 1, and optionally the difference curve that compare returns (current minus
+ * curves of Method A, and optionally the difference curve that compare returns (current minus
  * baseline on the shared output times, computed in Rust) on a secondary axis.
  */
 export function compareFigure(reply: CompareOk, opts: CompareOptions, theme: PlotTheme): Figure {
@@ -279,8 +279,8 @@ export function compareFigure(reply: CompareOk, opts: CompareOptions, theme: Plo
       x: reply.baseline.times_s,
       y: reply.baseline.release_fraction,
       mode: 'lines',
-      line: { color: theme.seriesBase, width: 2, dash: 'dash' },
-      hovertemplate: 'Time = %{x:.4~s} s<br>Release fraction = %{y:.6~g}<extra>baseline</extra>',
+      line: { color: theme.seriesBase, width: 2 },
+      hovertemplate: 'Time (s) = %{x:.4~s}<br>Release fraction (dimensionless) = %{y:.6~g}<extra>baseline</extra>',
       meta: { id: 'compare-baseline', label: 'baseline', unit: '1' },
     });
   }
@@ -291,7 +291,7 @@ export function compareFigure(reply: CompareOk, opts: CompareOptions, theme: Plo
     y: reply.modified.release_fraction,
     mode: 'lines',
     line: { color: theme.seriesB, width: 2 },
-    hovertemplate: 'Time = %{x:.4~s} s<br>Release fraction = %{y:.6~g}<extra>current</extra>',
+    hovertemplate: 'Time (s) = %{x:.4~s}<br>Release fraction (dimensionless) = %{y:.6~g}<extra>current</extra>',
     meta: { id: 'compare-modified', label: 'current inputs', unit: '1' },
   });
   if (opts.showDifference) {
@@ -302,8 +302,8 @@ export function compareFigure(reply: CompareOk, opts: CompareOptions, theme: Plo
       y: reply.difference.release_fraction,
       mode: 'lines',
       yaxis: 'y2',
-      line: { color: theme.seriesDiff, width: 2, dash: 'dot' },
-      hovertemplate: 'Time = %{x:.4~s} s<br>Difference of the release fraction = %{y:.4~e}<extra>difference</extra>',
+      line: { color: theme.seriesDiff, width: 2 },
+      hovertemplate: 'Time (s) = %{x:.4~s}<br>Difference of the release fraction (dimensionless) = %{y:.4~e}<extra>difference</extra>',
       meta: { id: 'compare-difference', label: 'difference (compare)', unit: '1' },
     });
   }
@@ -334,7 +334,7 @@ export interface PrecomputedHeader {
   strato_version: string;
   commit: string;
   input_file?: string;
-  input_sha256?: string;
+  input_file_sha256?: string;
   command: string;
   rustc?: string;
   created_utc: string;
@@ -406,7 +406,7 @@ function floorLine(floor: number | null, theme: PlotTheme): { shapes: unknown[];
   const shapes: unknown[] = [];
   const annotations: unknown[] = [];
   if (floor !== null && Number.isFinite(floor) && floor > 0) {
-    shapes.push({ type: 'line', xref: 'paper', yref: 'y', x0: 0, x1: 1, y0: floor, y1: floor, line: { color: theme.seriesC, width: 1, dash: 'dot' } });
+    shapes.push({ type: 'line', xref: 'paper', yref: 'y', x0: 0, x1: 1, y0: floor, y1: floor, line: { color: theme.seriesC, width: 1 } });
     annotations.push({
       xref: 'paper',
       yref: 'y',
@@ -414,16 +414,16 @@ function floorLine(floor: number | null, theme: PlotTheme): { shapes: unknown[];
       y: Math.log10(floor),
       xanchor: 'right',
       yanchor: 'bottom',
-      text: `${METHOD_2} accuracy floor ${sciText(floor, 4).replace(' × 10^', 'e')}`,
+      text: `${METHOD_2} accuracy floor (dimensionless) ${sciText(floor, 4).replace(' × 10^', 'e')}`,
       showarrow: false,
-      font: { size: 10, color: theme.seriesC },
+      font: { size: 10, color: theme.text },
     });
   }
   return { shapes, annotations };
 }
 
 /**
- * The pointwise absolute difference between Method 1 and Method 2 at every output time, as the Rust
+ * The pointwise absolute difference between Method A and Method B at every output time, as the Rust
  * tool wrote it from the native reply (btcs_vs_analytical.csv). Shown only from this precomputed file:
  * the live page returns the largest and the final difference, not the pointwise one.
  */
@@ -439,13 +439,13 @@ export function methodDifferenceFigure(doc: ComparisonDoc, floor: number | null,
         mode: 'lines+markers',
         line: { color: theme.seriesB, width: 1.5 },
         marker: { color: theme.seriesB, size: 4 },
-        hovertemplate: 'Time = %{x:.4~s} s<br>Absolute difference of the release fraction = %{y:.4~e}<extra></extra>',
+        hovertemplate: 'Time (s) = %{x:.4~s}<br>Absolute difference of the release fraction (dimensionless) = %{y:.4~e}<extra></extra>',
         meta: { id: 'bc-difference', label: 'abs_difference of btcs_vs_analytical.csv', unit: '1' },
       },
     ],
     layout: baseLayout(theme, {
       xaxis: axis(theme, 'Time (s)', { tickformat: '~s', hoverformat: '.4~s', rangemode: 'tozero' }),
-      yaxis: axis(theme, 'Absolute difference of the release fraction (dimensionless)', { type: 'log', exponentformat: 'power', dtick: 1 }),
+      yaxis: axis(theme, 'Absolute difference of the<br>release fraction (dimensionless)', { type: 'log', exponentformat: 'power', dtick: 1 }),
       shapes,
       annotations,
       showlegend: false,
@@ -453,7 +453,7 @@ export function methodDifferenceFigure(doc: ComparisonDoc, floor: number | null,
   };
 }
 
-/** The release fractions of Method 1 and Method 2 of the verified case, as the native wrapper wrote them. */
+/** The release fractions of Method A and Method B of the verified case, as the native wrapper wrote them. */
 export function methodReleaseFigure(doc: ComparisonDoc, theme: PlotTheme): Figure {
   return {
     data: [
@@ -464,7 +464,7 @@ export function methodReleaseFigure(doc: ComparisonDoc, theme: PlotTheme): Figur
         y: doc.data.release_fraction_btcs,
         mode: 'lines',
         line: { color: theme.seriesB, width: 2 },
-        hovertemplate: `Time = %{x:.4~s} s<br>Release fraction = %{y:.6~g}<extra>${METHOD_1}</extra>`,
+        hovertemplate: `Time (s) = %{x:.4~s}<br>Release fraction (dimensionless) = %{y:.6~g}<extra>${METHOD_1}</extra>`,
         meta: { id: 'bc-release-b', label: 'release_fraction_btcs', unit: '1' },
       },
       {
@@ -473,8 +473,8 @@ export function methodReleaseFigure(doc: ComparisonDoc, theme: PlotTheme): Figur
         x: doc.data.t_s,
         y: doc.data.release_fraction_analytical,
         mode: 'lines',
-        line: { color: theme.seriesC, width: 2, dash: 'dash' },
-        hovertemplate: `Time = %{x:.4~s} s<br>Release fraction = %{y:.6~g}<extra>${METHOD_2}</extra>`,
+        line: { color: theme.seriesC, width: 2 },
+        hovertemplate: `Time (s) = %{x:.4~s}<br>Release fraction (dimensionless) = %{y:.6~g}<extra>${METHOD_2}</extra>`,
         meta: { id: 'bc-release-c', label: 'release_fraction_analytical', unit: '1' },
       },
     ],
@@ -493,25 +493,25 @@ export function methodReleaseFigure(doc: ComparisonDoc, theme: PlotTheme): Figur
  */
 export function checkFigure(doc: CheckDoc, theme: PlotTheme): Figure {
   const d = doc.data;
-  const trace = (name: string, y: number[], colour: string, dash: 'solid' | 'dash', id: string): Trace => ({
+  const trace = (name: string, y: number[], colour: string, id: string): Trace => ({
     type: 'scatter',
     name,
     x: d.t_s,
     y,
     mode: 'lines+markers',
-    line: { color: colour, width: 2, dash },
+    line: { color: colour, width: 2 },
     marker: { color: colour, size: 6 },
-    hovertemplate: `Time = %{x:.4~s} s<br>${name} = %{y:.4~e}<extra></extra>`,
+    hovertemplate: `Time (s) = %{x:.4~s}<br>${name} = %{y:.4~e}<extra></extra>`,
     meta: { id, label: name, unit: '1' },
   });
   return {
     data: [
-      trace('Absolute difference of the BTCS release fraction from the independent reference (dimensionless)', d.abs_difference, theme.seriesB, 'solid', 'check-difference'),
-      trace('Absolute difference of the reference from the estimated numerical limit (dimensionless)', d.limit_difference, theme.seriesC, 'dash', 'check-limit'),
+      trace('Absolute difference of the BTCS release fraction from the independent reference (dimensionless)', d.abs_difference, theme.seriesB, 'check-difference'),
+      trace('Absolute difference of the reference from the estimated numerical limit (dimensionless)', d.limit_difference, theme.seriesDiff, 'check-limit'),
     ],
     layout: baseLayout(theme, {
       xaxis: axis(theme, 'Time (s)', { type: 'log', tickformat: '~s', hoverformat: '.4~s', exponentformat: 'power' }),
-      yaxis: axis(theme, 'Absolute difference of the release fraction (dimensionless)', { type: 'log', exponentformat: 'power', dtick: 1 }),
+      yaxis: axis(theme, 'Absolute difference of the<br>release fraction (dimensionless)', { type: 'log', exponentformat: 'power', dtick: 1 }),
       legend: { orientation: 'h', x: 0, xanchor: 'left', y: -0.35, yanchor: 'top', font: { size: 11, color: theme.text }, bgcolor: 'rgba(0,0,0,0)' },
       margin: { l: 56, r: 16, t: 8, b: 110, pad: 0 },
     }),
@@ -534,7 +534,7 @@ export function residualFigure(doc: RunDoc, theme: PlotTheme): Figure {
         mode: 'lines+markers',
         line: { color: theme.seriesB, width: 1.5 },
         marker: { color: theme.seriesB, size: 4 },
-        hovertemplate: 'Time = %{x:.4~s} s<br>Residual = %{y:.3~e} mol<extra></extra>',
+        hovertemplate: 'Time (s) = %{x:.4~s}<br>Mass-balance residual (mol) = %{y:.3~e}<extra></extra>',
         meta: { id: 'balance-residual', label: 'balance_residual_mol', unit: 'mol' },
       },
       {
@@ -543,8 +543,8 @@ export function residualFigure(doc: RunDoc, theme: PlotTheme): Figure {
         x: s.t_s,
         y: s.balance_residual_bound_mol,
         mode: 'lines',
-        line: { color: theme.muted, width: 1.5, dash: 'dot' },
-        hovertemplate: 'Time = %{x:.4~s} s<br>Bound = %{y:.3~e} mol<extra></extra>',
+        line: { color: theme.muted, width: 1.5 },
+        hovertemplate: 'Time (s) = %{x:.4~s}<br>Derived rounding bound of the residual (mol) = %{y:.3~e}<extra></extra>',
         meta: { id: 'balance-bound', label: 'balance_residual_bound_mol', unit: 'mol' },
       },
     ],

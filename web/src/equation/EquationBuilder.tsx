@@ -207,12 +207,15 @@ function StagePicker({ stage, onPick, asSelect }: { stage: Stage; onPick: (s: St
   );
 }
 
-function TermCard({ term, catalogue, id, floating }: { term: TermId; catalogue: Catalogue; id: string; floating: boolean }) {
+function TermCard({ term, catalogue, id, floating, onLeave }: { term: TermId; catalogue: Catalogue; id: string; floating: boolean; onLeave: () => void }) {
   const def = TERMS[term];
   if (!def) return null;
   const status = def.mechanism ? statusOf(catalogue, def.mechanism) : undefined;
   return (
-    <div className={`term-card${floating ? ' term-card--float' : ''}`} id={id} data-testid="term-card" data-term={term} role="region" aria-label={`About the part: ${def.name}`}>
+    <div className={`term-card${floating ? ' term-card--float' : ''}`} id={id} data-testid="term-card" data-term={term} role="region" aria-label={`About the part: ${def.name}`} onBlur={(e) => {
+        // Keyboard focus leaving the card for anything outside it closes the preview.
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) onLeave();
+      }}>
       <p className="term-card__eyebrow">
         Part of step <span className="stage-num">{def.stage}</span>
       </p>
@@ -276,7 +279,12 @@ function TermList({
               aria-controls={cardId}
               onClick={() => onPin(pinned === def.id ? null : def.id)}
               onFocus={() => onPreview(def.id)}
-              onBlur={() => onPreview(null)}
+              onBlur={(e) => {
+                // Tab from the last part moves focus into the card that this part opened (its links):
+                // the card must stay, or the focused link would be removed and focus would fall to the page.
+                if (document.getElementById(cardId)?.contains(e.relatedTarget as Node | null)) return;
+                onPreview(null);
+              }}
               onMouseEnter={() => onPreview(def.id)}
               data-term={def.id}
               data-testid={`term-${def.id}`}
@@ -601,7 +609,7 @@ export function EquationBuilder({ compact }: { compact: boolean }) {
         </div>
         <div className="builder__side">
           <TermList stage={stage} catalogue={catalogue} shown={shown} onPreview={setPreview} pinned={pinned} onPin={setPinned} cardId={cardId} />
-          {shown ? <TermCard term={shown} catalogue={catalogue} id={cardId} floating={floating} /> : <div id={cardId} hidden />}
+          {shown ? <TermCard term={shown} catalogue={catalogue} id={cardId} floating={floating} onLeave={() => setPreview(null)} /> : <div id={cardId} hidden />}
         </div>
       </div>
       <MoreRow

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { METHOD_2 } from '../methods';
 import { Sci } from '../panels/Badge';
 import { statusOf, useCatalogue } from '../research/catalogue';
 import type { RunOk } from '../solver/types';
@@ -101,8 +102,8 @@ export function liveRows(stage: Stage, run: RunOk, row: number): Row[] {
         { id: 'live-within', label: 'Every residual within its rounding bound', value: run.balance.tolerance.within_bound },
         ...(d.analytical_comparison
           ? [
-              { id: 'live-an-max', label: 'Largest absolute difference of the release fraction from the analytical solution (dimensionless)', value: d.analytical_comparison.max_abs_difference, digits: 4 },
-              { id: 'live-an-final', label: 'Absolute difference of the release fraction from the analytical solution at the end of the run (dimensionless)', value: d.analytical_comparison.final_abs_difference, digits: 4 },
+              { id: 'live-an-max', label: `Largest absolute difference of the release fraction from ${METHOD_2} (dimensionless)`, value: d.analytical_comparison.max_abs_difference, digits: 4 },
+              { id: 'live-an-final', label: `Absolute difference of the release fraction from ${METHOD_2} at the end of the run (dimensionless)`, value: d.analytical_comparison.final_abs_difference, digits: 4 },
             ]
           : []),
       ];
@@ -136,7 +137,7 @@ export function LiveValues({ stage }: { stage: Stage }) {
     <dl className="diag" data-testid="live-numbers">
       {rows.map((r) => (
         <div className="diag__row" key={r.id}>
-          <dt>{r.label}</dt>
+          <dt>{r.unit ? `${r.label} (${r.unit})` : r.label}</dt>
           <dd data-testid={r.id} data-value={String(r.value)}>
             {show(r.value, r.unit, r.digits)}
           </dd>

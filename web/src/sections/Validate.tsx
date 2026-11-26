@@ -43,7 +43,7 @@ export function Validate() {
           <strong>Model predictions require generation, decay and temperature-dependent diffusion.</strong> Heating tests change the
           temperature over time and the measured nuclides decay, so a comparison needs temperature-dependent diffusivity, temperature histories
           and radioactive decay. These are shown in the equation builder as labelled previews and are not solved. A constant-temperature result
-          of Method 1: Finite Difference BTCS is never compared with heating-test data.
+          of Method A: BTCS is never compared with heating-test data.
         </p>
       </Note>
       <ValidationLayer />

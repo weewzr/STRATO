@@ -90,20 +90,19 @@ export function bandOfBins(edges: readonly number[], bins: number): number[] {
 }
 
 /**
- * Tick marks of the legend, labelled by the full name of the position on the scale (the top of the
- * scale is the largest concentration of the run): 0, half and the top on the linear scale; every third
+ * Tick marks of the legend, labelled in words by the position on the scale as a fraction of the largest concentration of the run: 0, half and the top on the linear scale; every third
  * decade below the top on the logarithmic scale.
  */
 export function legendTicks(scale: ColourScale): { position: number; label: string }[] {
   if (scale === 'linear')
     return [
       { position: 0, label: '0' },
-      { position: 0.5, label: '½ top' },
-      { position: 1, label: 'top' },
+      { position: 0.5, label: 'half of the largest' },
+      { position: 1, label: 'the largest' },
     ];
   const ticks: { position: number; label: string }[] = [];
   const sup = (n: number) => String(n).replace(/\d/g, (k) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[Number(k)] ?? k);
-  for (let d = LOG_DECADES; d > 0; d -= 3) ticks.push({ position: 1 - d / LOG_DECADES, label: `10⁻${sup(d)} top` });
-  ticks.push({ position: 1, label: 'top' });
+  for (let d = LOG_DECADES; d > 0; d -= 3) ticks.push({ position: 1 - d / LOG_DECADES, label: `10⁻${sup(d)} of the largest` });
+  ticks.push({ position: 1, label: 'the largest' });
   return ticks;
 }

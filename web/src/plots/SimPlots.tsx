@@ -12,7 +12,7 @@ import { usePlotTheme } from './theme';
 
 // The plots of block B (web phase 5; prompt/DESIGN_SPECIFICATION.md Sections 4.3 and 4.4), directly
 // under the equation beside the particle: the radial concentration profile at the playback time and
-// the release fraction of Method 1 and Method 2 with a playback cursor. Every plotted value is an array
+// the release fraction of Method A and Method B with a playback cursor. Every plotted value is an array
 // of the wrapper's RunResponse as returned (owner decision M4). On a phone one plot is shown at a time,
 // with a switcher.
 
@@ -113,7 +113,7 @@ export function RadialProfile() {
         <strong>Figure 2.</strong> Concentration at each node of the solver grid at the playback time, plotted at the node radii and joined
         by straight lines, against the radius; the layers are the coloured bands, in the colours of the particle.{' '}
         {log ? 'Logarithmic axis over six decades up to the largest concentration of the run, the scale of the particle colouring; values below it lie off the axis.' : 'Linear axis from zero to the largest concentration of the run.'}
-        {showStart ? ' Dotted: the start profile at t = 0.' : null} The axis stays fixed during playback, so the frames compare.
+        {showStart ? ' Grey line: the start profile at time 0 s.' : null} The axis stays fixed during playback, so the frames compare.
         <FigureSource run={run} />
       </figcaption>
     </figure>
@@ -170,17 +170,17 @@ export function ReleaseCurves() {
         testId="release-plot"
         height={PLOT_HEIGHT}
         minIntervalMs={playing ? PLAYING_REDRAW_MS : 0}
-        label={`Release fraction against time: ${METHOD_1} (solid) and ${METHOD_2} (dashed) as the solver returned them, ${log ? 'on a logarithmic axis' : 'on a linear axis'}, with the playback time marked.`}
+        label={`Release fraction against time: ${METHOD_1} (blue line) and ${METHOD_2} (red line) as the solver returned them, ${log ? 'on a logarithmic axis' : 'on a linear axis'}, with the playback time marked.`}
         exportInfo={{ name: `strato-release-${run.engine.commit}`, source: runSource(run) }}
       />
       <figcaption className="figure__caption">
-        <strong>Figure 3.</strong> Fraction of the initial inventory released through the outer surface, from {METHOD_1} (solid) and from{' '}
-        {METHOD_2} (dashed), at the output times the solver recorded; the dotted line and the ring mark the playback time.{' '}
+        <strong>Figure 3.</strong> Fraction of the initial inventory released through the outer surface, from {METHOD_1} (blue line) and from{' '}
+        {METHOD_2} (red line), at the output times the solver recorded; the thin vertical line and the ring mark the playback time.{' '}
         {a ? (
           <>
             {METHOD_2} is valid from the time <Sci value={a.valid_from_s} unit="s" digits={4} /> (shaded before) and accurate to{' '}
             <Sci value={a.accuracy_floor} digits={4} />
-            {log ? ' (the dotted horizontal line)' : ''}; it uses {a.modes} eigenmodes.{' '}
+            {log ? ' (the thin horizontal line)' : ''}; it uses {a.modes} eigenmodes.{' '}
           </>
         ) : (
           `${METHOD_2} was not computed for these inputs; the reason is listed under the numerical diagnostics. `

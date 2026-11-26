@@ -52,13 +52,34 @@ test.describe('progressive equation builder at 1440 x 900', () => {
       if (s === 14 || PREVIEWS.includes(s)) await expect(page.getByTestId('preview-banner')).toBeVisible();
       else if (s === 13) await expect(page.getByTestId('live-note')).toContainText('not experimental validation');
       else await expect(page.getByTestId('live-note')).toContainText('Live: the simulation below solves these equations with the verified finite-difference BTCS Rust solver');
-      await expect(page.getByTestId('strip-stage')).toHaveText(`Step ${s} shown; simulation: Method 1: Finite Difference BTCS`);
+      await expect(page.getByTestId('strip-stage')).toHaveText(`Step ${s} shown; simulation: Method A: BTCS`);
       expect(await simulationSnapshot(page)).toEqual(before);
     }
     await page.waitForTimeout(400);
     expect(await solverRequests(page)).toBe(sentBefore);
     await expect(page.getByTestId('block-b')).toHaveAttribute('data-input-key', keyBefore ?? '');
     expect(requests).toEqual([]);
+  });
+
+  test('Tab from the last part of a step moves into the card of that part, and keyboard focus is never lost', async ({ page, problems }) => {
+    void problems;
+    await gotoSection(page, 'explore');
+    const buttons = page.locator('.eq-term-btn');
+    const n = await buttons.count();
+    expect(n).toBeGreaterThan(1);
+    await buttons.nth(n - 1).focus();
+    const where = () => page.evaluate(() => ({ tag: document.activeElement?.tagName ?? '', inCard: document.activeElement?.closest('[data-testid="term-card"]') !== null }));
+    await page.keyboard.press('Tab');
+    const first = await where();
+    expect(first.tag).not.toBe('BODY');
+    expect(first.inCard).toBe(true);
+    // Through the links of the card and out of it: focus is on an element every time, never on the page body.
+    for (let i = 0; i < 4; i++) {
+      await page.keyboard.press('Tab');
+      expect((await where()).tag, `Tab press ${i + 2}`).not.toBe('BODY');
+    }
+    await page.keyboard.press('Shift+Tab');
+    expect((await where()).tag).not.toBe('BODY');
   });
 
   test('every research status shown equals the generated catalogue', async ({ page, problems }) => {

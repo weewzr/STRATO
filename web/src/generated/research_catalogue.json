@@ -4,9 +4,9 @@
   "kind": "research_catalogue",
   "generator": "scripts/web/generate_data.py v1",
   "strato_version": "1.0.1",
-  "commit": "433b814338138ef841052bc43ad0ff9888949580",
+  "commit": "cd9081982c09d892ec136fdb4dae98783575eb2b",
   "command": "python -I -X utf8 scripts/web/generate_data.py catalogue",
-  "created_utc": "2026-11-26T03:49:21Z",
+  "created_utc": "2026-11-26T04:47:01Z",
   "note": "CATALOGUE marks a data file of research statuses and references; it is not a result label.",
   "entry_format": "blocks-1: the entry files of docs/research/ as heading, paragraph, list, table and display-maths blocks with inline spans; text copied, nothing computed",
   "inputs": [
@@ -16,7 +16,7 @@
     },
     {
       "path": "data/research/mechanisms.csv",
-      "sha256": "cfccc915386fe4470671ab37b27a9be72e09cbfcced71da800bff002bff476e7"
+      "sha256": "5e2d997a67ecb1ca97b0e95978982aa70613a8f4c87b85d6919e31ee3aec881f"
     },
     {
       "path": "data/research/references.csv",
@@ -68,7 +68,7 @@
     },
     {
       "path": "docs/research/roadmap.md",
-      "sha256": "96dd07858109d1057bf3eea38e23650b1226e02167bbb84a7188600c821abeb3"
+      "sha256": "841ec3e0e52a4407bef8dfd082671e4c526e09304506bfbd2996f32ef40736f9"
     },
     {
       "path": "docs/research/species-ag.md",
@@ -121,7 +121,7 @@
         "species": "all",
         "material_domain": "synthetic_five_layer",
         "status": "VERIFIED",
-        "status_basis": "The BTCS solver (result label COMPUTED v2.0) solves the layered equation by the spherical backward-time central-space finite-difference scheme (Method 1) and is compared with the Sturm-Liouville analytical solution (Method 2). Conservation in exact arithmetic and positivity are proved for the scheme as specified; the tests show second-order convergence in space, first-order convergence in time, a balance residual within its derived rounding bound and agreement with the analytical solution on the synthetic five-layer case. Numerical verification only: no comparison with measurements exists.",
+        "status_basis": "The BTCS solver (result label COMPUTED v2.0) solves the layered equation by the spherical backward-time central-space finite-difference scheme (Method A) and is compared with the Sturm-Liouville analytical solution (Method B). Conservation in exact arithmetic and positivity are proved for the scheme as specified; the tests show second-order convergence in space, first-order convergence in time, a balance residual within its derived rounding bound and agreement with the analytical solution on the synthetic five-layer case. Numerical verification only: no comparison with measurements exists.",
         "evidence": [
           "tests/btcs_verification.rs",
           "tests/btcs_regression.rs",
@@ -14702,7 +14702,7 @@
                 },
                 {
                   "t": "text",
-                  "v": " The governing equation of STRATO, layered spherical diffusion with a constant diffusivity per layer, shown first, with the live simulation of the verified synthetic case under it, solved by Method 1 (finite-difference BTCS) and, where it applies, by Method 2 (the analytical Sturm-Liouville solution)."
+                  "v": " The governing equation of STRATO, layered spherical diffusion with a constant diffusivity per layer, shown first, with the live simulation of the verified synthetic case under it, solved by Method A (finite-difference BTCS) and, where it applies, by Method B (the analytical Sturm-Liouville solution)."
                 }
               ],
               [

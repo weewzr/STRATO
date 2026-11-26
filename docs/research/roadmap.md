@@ -29,7 +29,7 @@ Every future phase on this page is described only as planned. No phase is dated 
 
 ## Brick 1: baseline demonstration
 
-- **Adds.** The governing equation of STRATO, layered spherical diffusion with a constant diffusivity per layer, shown first, with the live simulation of the verified synthetic case under it, solved by Method 1 (finite-difference BTCS) and, where it applies, by Method 2 (the analytical Sturm-Liouville solution).
+- **Adds.** The governing equation of STRATO, layered spherical diffusion with a constant diffusivity per layer, shown first, with the live simulation of the verified synthetic case under it, solved by Method A (finite-difference BTCS) and, where it applies, by Method B (the analytical Sturm-Liouville solution).
 - **Evidence.** BTCS verification: the finite-difference solution against the analytical series, the observed orders, the balance and the regression tests (`tests/btcs_verification.rs`, `tests/btcs_regression.rs`, `tests/btcs_properties.rs`, golden files in `tests/golden/btcs/`), and the formulation in `docs/mathematics/btcs/`.
 - **Status.** VERIFIED for the synthetic five-layer case (`inputs/synthetic/synthetic_five_layer.toml`) only. The synthetic diffusivities are test values, not material data; the AGR-1 particle is shown as geometry only and is never combined with them.
 - **To advance to VALIDATED.** Not applicable to a synthetic case. Validation comes with brick 3.
