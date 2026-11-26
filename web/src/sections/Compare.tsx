@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { BUILD } from '../build';
 import { findCase } from '../data/case';
+import { ExperimentalComparisons } from '../graph/Comparisons';
 import { plain } from '../format';
 import { METHOD_1 } from '../methods';
 import { Badge, Sci } from '../panels/Badge';
@@ -179,6 +180,7 @@ export function Compare() {
           predictions of the <a href={hrefFor('validate')}>Validate</a> section are not drawn here.
         </p>
       </Note>
+      <ExperimentalComparisons />
     </article>
   );
 }

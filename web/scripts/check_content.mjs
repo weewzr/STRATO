@@ -47,6 +47,10 @@ for (const f of textFiles) {
   for (const s of forbidden) if (text.includes(s)) textFailures.push(`${rel}: contains a forbidden string`);
   if (/[A-Za-z]:\\Users\\|\/home\/[a-z]|\/Users\/[A-Za-z]/.test(text)) pathFailures.push(`${rel}: local absolute path`);
 }
+rule('no test fixture and no test harness in the build', [
+  ...files.map((f) => relative(root, f).split(sep).join('/')).filter((p) => /harness|fixture/i.test(p)),
+  ...textFiles.filter((f) => readFileSync(f, 'utf8').includes('FIXTURE')).map((f) => `${relative(root, f)}: contains FIXTURE`),
+]);
 rule('no link to the prompt/ folder', linkFailures);
 rule('no internal-comparison text or agreement figure', textFailures);
 rule('no local absolute path', pathFailures);

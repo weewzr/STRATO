@@ -1,4 +1,5 @@
 import { repoFile } from '../build';
+import { ExperimentalComparisons } from '../graph/Comparisons';
 import { hrefFor } from '../route';
 import { useStrato } from '../state/store';
 import { Note, SectionHeading } from './common';
@@ -63,6 +64,7 @@ export function Validate() {
         The agreement of the two solution methods on the synthetic case is verification and appears under{' '}
         <a href={hrefFor('verify')}>Verify</a>.
       </p>
+      <ExperimentalComparisons />
     </article>
   );
 }

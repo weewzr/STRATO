@@ -1,0 +1,44 @@
+{
+  "fixture": "FIXTURE: invented values for tests of the graph component, not data, never shipped",
+  "schema": 1,
+  "id": "FIXTURE-bounds",
+  "nuclide": "Sr-90",
+  "temperature": { "value": 1800, "unit": "°C" },
+  "time_unit": "h",
+  "method_a": {
+    "t": [0, 50, 100, 150, 200, 250, 300],
+    "f": [0, 0.0001, 0.0004, 0.0009, 0.0016, 0.0025, 0.0036]
+  },
+  "method_b": {
+    "t": [0, 50, 100, 150, 200, 250, 300],
+    "f": [0, 0.00011, 0.00041, 0.00091, 0.00161, 0.00251, 0.00361]
+  },
+  "observations": [{ "kind": "upper_bound", "t": [100, 200, 300], "f": [0.01, 0.02, 0.03] }],
+  "r2": [
+    {
+      "metric": "r2",
+      "method": "A",
+      "n": 3,
+      "value": null,
+      "status": "unavailable",
+      "reason_code": "upper_bounds",
+      "caption_plain": "R² is not given: the published values are experimental upper bounds, not measurements.",
+      "label_latex": "",
+      "label_plain": "",
+      "source": { "citation_apa": "FIXTURE: Invented, C. (2002). Not a real publication, a third time. FIXTURE Institute Report, 0.", "link": "https://example.org/fixture-not-a-real-publication-3", "location": "FIXTURE Figure 1" }
+    },
+    {
+      "metric": "r2",
+      "method": "B",
+      "n": 3,
+      "value": null,
+      "status": "unavailable",
+      "reason_code": "upper_bounds",
+      "caption_plain": "R² is not given: the published values are experimental upper bounds, not measurements.",
+      "label_latex": "",
+      "label_plain": "",
+      "source": { "citation_apa": "FIXTURE: Invented, C. (2002). Not a real publication, a third time. FIXTURE Institute Report, 0.", "link": "https://example.org/fixture-not-a-real-publication-3", "location": "FIXTURE Figure 1" }
+    }
+  ],
+  "source": { "citation_apa": "FIXTURE: Invented, C. (2002). Not a real publication, a third time. FIXTURE Institute Report, 0.", "link": "https://example.org/fixture-not-a-real-publication-3", "location": "FIXTURE Figure 1" }
+}

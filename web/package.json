@@ -13,6 +13,7 @@
     "check:catalogue": "cargo run --locked --release --quiet --manifest-path ../crates/Cargo.toml -p strato-webtools -- check-catalogue --root ..",
     "build": "npm run check:catalogue && node scripts/check_wasm_pkg.mjs && tsc -p tsconfig.json --noEmit && vite build",
     "preview": "vite preview --port 4173 --strictPort",
+    "harness": "vite --host 127.0.0.1 --port 4433 --strictPort",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",

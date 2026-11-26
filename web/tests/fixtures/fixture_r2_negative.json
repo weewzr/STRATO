@@ -1,0 +1,29 @@
+{
+  "fixture": "FIXTURE: invented values for tests of the graph component, not data, never shipped",
+  "schema": 1,
+  "id": "FIXTURE-negative",
+  "nuclide": "Cs-137",
+  "temperature": { "value": 1600, "unit": "°C" },
+  "time_unit": "h",
+  "method_a": {
+    "t": [0, 20, 40, 60, 80, 100, 120],
+    "f": [0, 0.001, 0.004, 0.009, 0.016, 0.025, 0.036]
+  },
+  "method_b": null,
+  "observations": [{ "kind": "measurement", "t": [20, 40, 60, 80, 100, 120], "f": [0.1, 0.12, 0.3, 0.32, 0.5, 0.52] }],
+  "r2": [
+    {
+      "metric": "r2",
+      "method": "A",
+      "n": 6,
+      "value": -0.42,
+      "status": "FIXTURE",
+      "reason_code": null,
+      "caption_plain": "",
+      "label_latex": "R^2 = -0.42",
+      "label_plain": "R² (Method A: BTCS) = -0.42",
+      "source": { "citation_apa": "FIXTURE: Invented, B. (2001). Not a real publication either. FIXTURE Report, 0.", "link": "https://example.org/fixture-not-a-real-publication-2", "location": "FIXTURE Table 0" }
+    }
+  ],
+  "source": { "citation_apa": "FIXTURE: Invented, B. (2001). Not a real publication either. FIXTURE Report, 0.", "link": "https://example.org/fixture-not-a-real-publication-2", "location": "FIXTURE Table 0" }
+}

@@ -1326,6 +1326,28 @@ select.field__input {
   position: relative;
   min-width: 0;
 }
+
+/* Experimental-comparison graph: caption and source stand below the whole plot. */
+.expfig {
+  margin-top: var(--space-4);
+}
+.expfig__title {
+  margin: 0;
+  font-size: var(--fs-ui);
+}
+.expfig__caption,
+.expfig__source {
+  margin: var(--space-2) 0 0;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  max-width: var(--measure);
+  overflow-wrap: anywhere;
+}
+.expfig__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+}
 .plot__graph {
   width: 100%;
   min-width: 0;
