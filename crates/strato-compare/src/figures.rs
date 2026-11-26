@@ -1948,6 +1948,8 @@ fn nuclide_figure(
         let bottom = pts.iter().map(|p| p.1).fold(-1.0f64, f64::min).floor() - 0.5;
         let title_right = if has_point {
             format!("Signed log10 ratio, model over measured value, {nuc}")
+        } else if pts.is_empty() {
+            format!("Deviation of the model from the measurements, {nuc}: not defined")
         } else {
             format!("Log10 ratio, model over measured value, for scale only, {nuc}")
         };
