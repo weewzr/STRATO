@@ -363,8 +363,9 @@ impl PhysicsInput {
     }
 
     /// Checks the hypotheses of Document 5 that the data must meet: the end time equal to
-    /// `steps * dt` of the base input to rounding, `lambda` finite and not negative, every source history non-negative, every history defined on the whole run, a
-    /// positive temperature.
+    /// `steps * dt` of the base input to rounding, `lambda` finite and not negative, every
+    /// source history non-negative, every history defined on the whole run, a positive
+    /// temperature.
     ///
     /// # Errors
     ///

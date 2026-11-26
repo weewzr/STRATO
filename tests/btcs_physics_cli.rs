@@ -211,9 +211,9 @@ fn cli_source_and_decay_run_agrees_with_the_library_bit_for_bit() {
 fn cli_temperature_history_run_exports_the_temperature_and_reassembles() {
     // The diffusivities come from exp and ln of the platform library. Their last bit was seen
     // to differ between a test thread and the command-line process (one unit in the last place
-    // of one D), and an independent verification probe (not committed) found 17161 of 100010 exp/ln results different between the
-    // main thread and a spawned thread inside one executable (spawned and nested spawned
-    // threads agreed); the cause is not established. The rounding noise of the solve then
+    // of one D), and a verification probe that is not committed found
+    // exp/ln results that differed between the main thread and a spawned thread inside one
+    // executable (spawned and nested spawned threads agreed); the cause is not established. The rounding noise of the solve then
     // differs at the 1e-12 level. Document 5, Section 3.5 does not claim bit identity across
     // platforms for this path, and none is asserted: the checks are structural, and the
     // residual bound holds in the file itself.
@@ -379,9 +379,136 @@ fn two_term_law_is_data_not_code_and_is_reported_as_a_sum() {
     let json = fs::read_to_string(dir.join("out").join("btcs_run.json")).unwrap();
     assert!(json.contains("\"form\":\"sum of terms\""));
     assert!(json.contains("\"form\":\"single term\""));
-    // 800 degC = 1073.15 K and 900 degC = 1173.15 K lie inside the stated range of the sum.
-    assert!(json.contains("\"steps_below_range\":0"));
-    assert!(json.contains("\"steps_above_range\":0"));
+    // 800 degC = 1073.15 K and 900 degC = 1173.15 K lie inside the stated range (900 K to
+    // 1500 K) of the sum of the buffer. The counts are read from the buffer entry itself: a
+    // missing degC to K conversion would put 800 K below the range and fail here.
+    let steps = json_number_after(&json, "\"steps\":");
+    let buffer = json
+        .split("{\"material\":\"buffer\",\"form\":\"sum of terms\"")
+        .nth(1)
+        .expect("the buffer entry of the sum law");
+    let buffer = &buffer[..buffer.find("\"steps_range_not_stated\"").unwrap()];
+    assert!(steps > 1.0);
+    assert_eq!(json_number_after(buffer, "\"steps_within_range\":"), steps);
+    assert_eq!(json_number_after(buffer, "\"steps_below_range\":"), 0.0);
+    assert_eq!(json_number_after(buffer, "\"steps_above_range\":"), 0.0);
+    let _ = fs::remove_dir_all(&dir);
+}
+
+/// The number that follows the first occurrence of `key` in `text`.
+fn json_number_after(text: &str, key: &str) -> f64 {
+    let rest = &text[text.find(key).unwrap_or_else(|| panic!("no {key}")) + key.len()..];
+    let end = rest
+        .find(|c: char| !(c.is_ascii_digit() || matches!(c, '.' | '-' | 'e' | 'E' | '+')))
+        .unwrap_or(rest.len());
+    rest[..end].parse().unwrap()
+}
+
+#[test]
+fn per_material_source_refuses_the_fields_of_the_yield_mode() {
+    // Decision 15: an input that names an activation product gets no source through the
+    // per-material mode either; the yield fields are refused, not ignored.
+    let dir = scratch("permat");
+    let bin = env!("CARGO_BIN_EXE_strato-btcs");
+    let ok = "[physics.source]\nmode = \"per_material\"\n[physics.source.kernel]\nvalue = 1.0e-6\n";
+    let file = dir.join("ok.toml");
+    fs::write(&file, input_text(ok)).unwrap();
+    let r = Command::new(bin)
+        .arg(&file)
+        .arg("--out")
+        .arg(dir.join("o0"))
+        .output()
+        .unwrap();
+    assert!(r.status.success(), "{}", String::from_utf8_lossy(&r.stderr));
+    for (k, extra) in [
+        "product = \"activation_product\"\nyield_kind = \"independent\"\nyield_atoms_per_fission = 1.0e-4\n",
+        "product = \"direct_fission_product\"\n",
+        "yield_atoms_per_fission = 0.06\n",
+        "fission_rate_origin = \"user-supplied\"\n",
+    ]
+    .iter()
+    .enumerate()
+    {
+        let text = format!(
+            "[physics.source]\nmode = \"per_material\"\n{extra}[physics.source.kernel]\nvalue = 1.0e-6\n"
+        );
+        let file = dir.join(format!("bad{k}.toml"));
+        fs::write(&file, input_text(&text)).unwrap();
+        let out = dir.join(format!("ob{k}"));
+        let r = Command::new(bin)
+            .arg(&file)
+            .arg("--out")
+            .arg(&out)
+            .output()
+            .unwrap();
+        assert!(!r.status.success(), "case {k} was accepted");
+        let err = String::from_utf8_lossy(&r.stderr);
+        assert!(err.contains("decision 15") && err.contains("per_material"), "{err}");
+        assert!(!out.join("btcs_timeseries.csv").exists());
+    }
+    // The library refuses the same input before any run.
+    let text = input_text(
+        "[physics.source]\nmode = \"per_material\"\nproduct = \"activation_product\"\nyield_kind = \"independent\"\nyield_atoms_per_fission = 1.0e-4\n[physics.source.kernel]\nvalue = 1.0e-6\n",
+    );
+    let file = dir.join("lib.toml");
+    fs::write(&file, &text).unwrap();
+    let cfg = Config::load(&file).unwrap();
+    let input = validate_input(&cfg, &LIMITS).unwrap();
+    let err = load_physics(&text, input, cfg.time.end_time_s).unwrap_err();
+    assert!(format!("{err:#}").contains("decision 15"));
+    let _ = fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn empty_source_or_class_of_a_law_is_refused_and_the_origin_sets_the_class() {
+    let dir = scratch("empty");
+    let bin = env!("CARGO_BIN_EXE_strato-btcs");
+    for (k, (from, to)) in [
+        ("source = \"synthetic row 1\"", "source = \"\""),
+        (
+            "class = \"synthetic, not literature data\"",
+            "class = \"  \"",
+        ),
+    ]
+    .iter()
+    .enumerate()
+    {
+        let laws = laws_text().replacen(from, to, 1);
+        let file = dir.join(format!("empty{k}.toml"));
+        fs::write(
+            &file,
+            input_text(&format!(
+                "[physics.temperature]\nunit = \"K\"\nvalue = 1000.0\n\n{laws}"
+            )),
+        )
+        .unwrap();
+        let r = Command::new(bin)
+            .arg(&file)
+            .arg("--out")
+            .arg(dir.join(format!("oe{k}")))
+            .output()
+            .unwrap();
+        assert!(!r.status.success(), "case {k} was accepted");
+        let err = String::from_utf8_lossy(&r.stderr);
+        assert!(err.contains("must not be empty"), "{err}");
+    }
+    // V3-m3: the class of the fission-rate density follows the origin the input records.
+    let derived = full_physics("direct_fission_product", false).replace(
+        "fission_rate_origin = \"user-supplied\"",
+        "fission_rate_origin = \"derived from a published burnup (calculated)\"",
+    );
+    let file = dir.join("derived.toml");
+    fs::write(&file, input_text(&derived)).unwrap();
+    let e = run_cli(&file, &dir.join("od"));
+    let entry = e
+        .json
+        .split("{\"name\":\"Fission-rate density")
+        .nth(1)
+        .expect("the fission-rate parameter");
+    let entry = &entry[..entry.find("\"}").unwrap()];
+    assert!(entry.contains("derived or calculated"), "{entry}");
+    assert!(entry.contains("\"value\":{\"interpolation\":\"constant\",\"value\":"));
+    assert!(!entry.contains("\"class\":\"user-supplied"));
     let _ = fs::remove_dir_all(&dir);
 }
 

@@ -406,11 +406,25 @@ pub fn physics_run_json(
         &prov.parameter_class,
     ));
     if let Some(o) = &labels.fission_rate_origin {
+        let value = match &labels.fission_rate {
+            Some(f) => history_json(f)?,
+            None => "null".to_string(),
+        };
+        // The class follows the origin the input records (decision 42): a value of the user's
+        // own, or a derived or calculated one with the origin text kept as written.
+        let class = if o.trim().eq_ignore_ascii_case("user-supplied") {
+            "user-supplied; not an experimentally validated irradiation condition".to_string()
+        } else {
+            format!(
+                "derived or calculated, origin as recorded in the input; not an experimentally \
+                 validated irradiation condition ({o})"
+            )
+        };
         params.push(param_json(
             "Fission-rate density, an explicit input with no default (fissions/m^3/s)",
-            &json_str("see physics.source"),
+            &value,
             o,
-            "user-supplied; not an experimentally validated irradiation condition",
+            &class,
         ));
     }
     params.push(param_json(

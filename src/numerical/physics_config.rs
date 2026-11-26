@@ -209,12 +209,14 @@ struct FileWithPhysics {
 }
 
 /// Texts that the export records beside the numbers.
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct PhysicsLabels {
     /// What the source is.
     pub source: String,
     /// Origin of the fission-rate density, if there is one.
     pub fission_rate_origin: Option<String>,
+    /// The fission-rate density history in fissions m^-3 s^-1, if there is one.
+    pub fission_rate: Option<TimeFunction>,
     /// Per material: the law, its source row and class, as a line of text.
     pub diffusivity: Vec<String>,
     /// What the decay constant is.
@@ -380,9 +382,36 @@ pub fn load_physics(
                         .clone()
                         .unwrap_or_else(|| "user-supplied".to_string()),
                 );
-                SourceModel::kernel_fission(&rate, fy, product)?
+                let model = SourceModel::kernel_fission(&rate, fy, product)?;
+                labels.fission_rate = Some(rate);
+                model
             }
             "per_material" => {
+                // Decision 15: a species declared as an activation product has no source until
+                // a production model is approved. The fields of the fission-yield mode would be
+                // dropped silently here, so they are refused instead of ignored.
+                let stray: Vec<&str> = [
+                    ("product", s.product.is_some()),
+                    ("yield_kind", s.yield_kind.is_some()),
+                    (
+                        "yield_atoms_per_fission",
+                        s.yield_atoms_per_fission.is_some(),
+                    ),
+                    ("fission_rate_density", s.fission_rate_density.is_some()),
+                    ("fission_rate_origin", s.fission_rate_origin.is_some()),
+                ]
+                .into_iter()
+                .filter_map(|(n, present)| present.then_some(n))
+                .collect();
+                if !stray.is_empty() {
+                    bail!(
+                        "[physics.source] mode \"per_material\" takes only the five per-material \
+                         histories; {} belong to mode \"kernel_fission_yield\" and would be \
+                         ignored (an activation product has no source until a production model \
+                         is approved, decision 15)",
+                        stray.join(", ")
+                    );
+                }
                 let hs = [&s.kernel, &s.buffer, &s.ipyc, &s.sic, &s.opyc];
                 let names = ["kernel", "buffer", "ipyc", "sic", "opyc"];
                 let mut per: Vec<TimeFunction> = Vec::new();
