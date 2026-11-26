@@ -1,26 +1,27 @@
-# STRATO experimental comparison: deviation of the model from the measurement versus time; rows whose denominator is not established (DATA INCOMPLETE) carry the measured value, the model value and the log10 ratio for scale only, with no deviation
+# STRATO experimental comparison: deviation of the model from the measurement versus time; upper bounds, among them the window upper bounds under premise BP1 (E-010..E-014 and E-033..E-037, model value over the window), carry the bound, the model value, the log10 ratio and the excess, with no deviation and no NRMSE; rows whose denominator is not established would carry the measured value, the model value and the log10 ratio for scale only
 # label: numerical solution of the stated model; not experimental validation; the comparison with the register is a comparison of release behaviour, not a validation
 # solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1
-# commit: c9978f0f64b04fe18f312c82c38592f36d05d2f8
+# commit: b6331621ca70dc453e6856bdd1263bf61c15260b
 # model_limitations: kernel-only start (inventory-matched start node); constant diffusion coefficient per layer evaluated at the test temperature from the first hour (heating ramps are not modelled); no radioactive decay and no fission-product generation in the solver yet; perfect interface contact; absorbing outer surface; one intact particle, no matrix; the model fraction is a fraction of the particle's own inventory
 # parameter_source: geometry design AGR1-B-M16 (register rows G-01 G-02 G-03 G-04 G-05); diffusion coefficients chosen by the strato-data selection function (decision 47) for the heating-test phase, that is the rows of register sets C16-T2 and C16-BUF as printed, evaluated at the test temperature (the kernel rows are UO2 surrogates: no UCO measurement exists, decision 40); the class of each coefficient (owner ruling 16) and its phase of use are in the sensitivity file and in the coefficient_sets of comparison.json
 # parameter_class: coefficients are the published heating-test correlation of the register (class and phase per row in the sensitivity file); radii are the registered measured baseline geometry; every measurement keeps its register row id
-# release_measurements_sha256: 873352515ae4c64d57acce407100e40c1b11d8bbfde80beb948a98adb96ef2f2
+# release_measurements_sha256: b25e390f831a491f68398644efff1cfbc8c8b901cf95a167baaa314bc5bcbc4d
 # arrhenius_sha256: 2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4
 # geometry_sha256: 8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f
 # temperature_histories_sha256: 6ab3201672afd15f92ec9e529318377c829afaa5804288a3a694032145ab4af0
 Row identifier,Comparison status,Kind of evaluation,Nuclide,Test temperature (°C),Time at temperature (h),Measured value or bound (dimensionless),Model value compared (dimensionless),"Signed deviation, model minus measurement (dimensionless)",Absolute deviation (dimensionless),Relative deviation (percent),"Signed log10 ratio, model over measurement (dimensionless)",Excess of the model over a bound (dimensionless)
-E-033,DATA INCOMPLETE,measured and model value for scale only (denominator not established; no deviation formed),Ag-110m,1.6e3,3e2,1.8e-3,5.918821931398587e-1,,,,2.5169627692536993e0,
-E-034,DATA INCOMPLETE,measured and model value for scale only (denominator not established; no deviation formed),Ag-110m,1.6e3,3e2,2.5e-3,5.918821931398587e-1,,,,2.3742952656849674e0,
-E-035,DATA INCOMPLETE,measured and model value for scale only (denominator not established; no deviation formed),Ag-110m,1.6e3,3e2,6e-4,5.918821931398587e-1,,,,2.9940840239733615e0,
-E-036,DATA INCOMPLETE,measured and model value for scale only (denominator not established; no deviation formed),Ag-110m,1.6e3,4e2,1.5e-4,7.033093564328766e-1,,,,3.6710551360061534e0,
-E-037,DATA INCOMPLETE,measured and model value for scale only (denominator not established; no deviation formed),Ag-110m,1.7e3,3.03e2,2.8e-3,7.757381156047615e-1,,,,2.442557099524608e0,
+E-033,EXCEEDS REPORTED UPPER BOUND,window upper bound under premise BP1 (inequality over the window),Ag-110m,1.6e3,3e2,1.8e-3,5.918821931398587e-1,,,,2.5169627692536993e0,5.900821931398587e-1
+E-034,EXCEEDS REPORTED UPPER BOUND,window upper bound under premise BP1 (inequality over the window),Ag-110m,1.6e3,3e2,2.5e-3,5.918821931398587e-1,,,,2.3742952656849674e0,5.893821931398587e-1
+E-035,EXCEEDS REPORTED UPPER BOUND,window upper bound under premise BP1 (inequality over the window),Ag-110m,1.6e3,3e2,6e-4,5.918821931398587e-1,,,,2.9940840239733615e0,5.912821931398586e-1
+E-036,EXCEEDS REPORTED UPPER BOUND,window upper bound under premise BP1 (inequality over the window),Ag-110m,1.6e3,3e2,1.5e-4,5.918821931398587e-1,,,,3.596144015301324e0,5.917321931398587e-1
+E-037,EXCEEDS REPORTED UPPER BOUND,window upper bound under premise BP1 (inequality over the window),Ag-110m,1.7e3,3e2,2.8e-3,7.729193396149385e-1,,,,2.4409761427987093e0,7.701193396149385e-1
 E-028,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs,1.6e3,3e2,5e-6,9.041912496619471e-4,,,,2.2572902954846636e0,8.991912496619471e-4
 E-029,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs,1.8e3,1e2,5e-6,1.064421993613218e-1,,,,4.328143835243234e0,1.0643719936132179e-1
-E-010,DATA INCOMPLETE,measured and model value for scale only (denominator not established; no deviation formed),Cs-134,1.6e3,3e2,8.5e-8,9.041912496619471e-4,,,,4.0268413741063895e0,
-E-011,DATA INCOMPLETE,measured and model value for scale only (denominator not established; no deviation formed),Cs-134,1.6e3,3e2,3.7e-7,9.041912496619471e-4,,,,3.3880585757536874e0,
-E-012,DATA INCOMPLETE,measured and model value for scale only (denominator not established; no deviation formed),Cs-134,1.6e3,3e2,1.9e-6,9.041912496619471e-4,,,,2.6775066988678535e0,
-E-013,DATA INCOMPLETE,measured and model value for scale only (denominator not established; no deviation formed),Cs-134,1.6e3,3e2,1.6e-6,9.041912496619471e-4,,,,2.752140317164758e0,
+E-010,EXCEEDS REPORTED UPPER BOUND,window upper bound under premise BP1 (inequality over the window),Cs-134,1.6e3,3e2,8.5e-8,9.041912496619471e-4,,,,4.0268413741063895e0,9.04106249661947e-4
+E-011,EXCEEDS REPORTED UPPER BOUND,window upper bound under premise BP1 (inequality over the window),Cs-134,1.6e3,3e2,3.7e-7,9.041912496619471e-4,,,,3.3880585757536874e0,9.038212496619471e-4
+E-012,EXCEEDS REPORTED UPPER BOUND,window upper bound under premise BP1 (inequality over the window),Cs-134,1.6e3,3e2,1.9e-6,9.041912496619471e-4,,,,2.6775066988678535e0,9.022912496619471e-4
+E-013,EXCEEDS REPORTED UPPER BOUND,window upper bound under premise BP1 (inequality over the window),Cs-134,1.6e3,3e2,1.6e-6,9.041912496619471e-4,,,,2.752140317164758e0,9.02591249661947e-4
+E-014,EXCEEDS REPORTED UPPER BOUND,window upper bound under premise BP1 (inequality over the window),Cs-134,1.6e3,3e2,1.6e-8,9.041912496619471e-4,,,,4.752140317164757e0,9.04175249661947e-4
 E-015,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,3e2,2.79e-7,9.041912496619471e-4,,,,3.510656096547085e0,9.039122496619471e-4
 E-016,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,3e2,6.75e-7,9.041912496619471e-4,,,,3.1269565269896575e0,9.035162496619471e-4
 E-017,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,3e2,3.8e-6,9.041912496619471e-4,,,,2.3764767032038723e0,9.003912496619471e-4
@@ -31,7 +32,6 @@ E-187,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,3e2,2.7
 E-193,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,3e2,6.77e-7,9.041912496619471e-4,,,,3.125671631135538e0,9.03514249661947e-4
 E-198,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,3e2,3.8e-6,9.041912496619471e-4,,,,2.3764767032038723e0,9.003912496619471e-4
 E-199,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,3e2,4.75e-6,9.041912496619471e-4,,,,2.279566690195816e0,8.994412496619471e-4
-E-014,DATA INCOMPLETE,measured and model value for scale only (denominator not established; no deviation formed),Cs-134,1.6e3,4e2,1.6e-8,3.028855095503881e-3,,,,5.277158513942563e0,
 E-019,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,4e2,9.43e-7,3.028855095503881e-3,,,,3.5067668038611592e0,3.0279120955038806e-3
 E-201,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.6e3,4e2,9.41e-7,3.028855095503881e-3,,,,3.507688873171231e0,3.027914095503881e-3
 E-020,EXCEEDS REPORTED UPPER BOUND,upper bound (inequality),Cs-134,1.7e3,2.55e2,8.08e-8,4.778061173017858e-2,,,,5.771840344901732e0,4.7780530930178575e-2

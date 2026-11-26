@@ -1,10 +1,10 @@
 <svg width="1560" height="1447" viewBox="0 0 1560 1447" xmlns="http://www.w3.org/2000/svg">
 <rect x="0" y="0" width="1560" height="1447" opacity="1" fill="#FFFFFF" stroke="none"/>
 <text x="24" y="14" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="20.967741935483872" opacity="1" fill="#191919">
-I. Silver-110m (Ag-110m): measurements, BTCS prediction, analytical prediction and the ratios of the model to the measurements, for scale only
+I. Silver-110m (Ag-110m): measurements, BTCS prediction, analytical prediction and why no deviation is defined
 </text>
 <text x="24" y="48" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.903225806451614" opacity="1" fill="#191919">
-Measurements of Ag-110m, BTCS prediction, analytical prediction where valid, and the ratios of the model to the measurements, which are for scale only because no deviation is defined; hours counted from reaching the test temperature
+Measurements of Ag-110m, BTCS prediction, analytical prediction where valid, and the reason why no deviation of the model from the measurements is defined; hours counted from reaching the test temperature
 </text>
 <text x="395" y="83" dy="0.76em" text-anchor="middle" font-family="sans-serif" font-size="15.32258064516129" opacity="1" fill="#191919">
 Fraction of Ag-110m released versus time at temperature
@@ -788,33 +788,33 @@ Time at temperature (h)
 <line opacity="1" stroke="#787878" stroke-width="2" x1="574" y1="238" x2="582" y2="230"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="574" y1="188" x2="582" y2="196"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="574" y1="196" x2="582" y2="188"/>
-<polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="1" points="578,248 578,246 "/>
-<polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="2" points="578,240 585,247 578,254 571,247 578,240 "/>
-<polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="1" points="578,241 578,239 "/>
-<polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="2" points="578,233 585,240 578,247 571,240 578,233 "/>
-<polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="1" points="578,270 578,268 "/>
-<polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="2" points="578,262 585,269 578,276 571,269 578,262 "/>
-<polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="1" points="738,298 738,296 "/>
-<polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="2" points="738,290 745,297 738,304 731,297 738,290 "/>
-<polyline fill="none" opacity="1" stroke="#E69F00" stroke-width="1" points="583,239 583,237 "/>
-<polyline fill="none" opacity="1" stroke="#E69F00" stroke-width="2" points="583,231 590,238 583,245 576,238 583,231 "/>
 <polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="2" points="328,190 335,197 328,204 321,197 328,190 "/>
 <polyline fill="none" opacity="1" stroke="#CC79A7" stroke-width="2" points="106,210 113,217 106,224 99,217 106,210 "/>
 <polyline fill="none" opacity="1" stroke="#CC79A7" stroke-width="2" points="174,143 181,150 174,157 167,150 174,143 "/>
 <polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="2" points="174,194 181,201 174,208 167,201 174,194 "/>
+<polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="1" points="578,248 578,246 "/>
+<polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="572,241 584,241 578,254 572,241 "/>
+<polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="1" points="578,241 578,239 "/>
+<polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="572,234 584,234 578,247 572,234 "/>
+<polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="1" points="578,270 578,268 "/>
+<polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="572,263 584,263 578,276 572,263 "/>
+<polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="1" points="578,298 578,296 "/>
+<polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="572,291 584,291 578,304 572,291 "/>
+<polyline fill="none" opacity="1" stroke="#E69F00" stroke-width="1" points="578,239 578,237 "/>
+<polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="572,232 584,232 578,245 572,232 "/>
 <rect x="573" y="123" width="10" height="10" opacity="1" fill="none" stroke="#0072B2"/>
 <rect x="573" y="123" width="10" height="10" opacity="1" fill="none" stroke="#0072B2"/>
 <rect x="573" y="123" width="10" height="10" opacity="1" fill="none" stroke="#0072B2"/>
-<rect x="733" y="120" width="10" height="10" opacity="1" fill="none" stroke="#0072B2"/>
-<rect x="578" y="118" width="10" height="10" opacity="1" fill="none" stroke="#E69F00"/>
+<rect x="573" y="123" width="10" height="10" opacity="1" fill="none" stroke="#0072B2"/>
+<rect x="573" y="118" width="10" height="10" opacity="1" fill="none" stroke="#E69F00"/>
 <text x="764" y="555" dy="-0.5ex" text-anchor="end" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-105 registered values drawn: 96 NOT DIRECTLY COMPARABLE (grey context), 9 DATA INCOMPLETE
+105 registered values drawn: 96 NOT DIRECTLY COMPARABLE (grey context), 4 DATA INCOMPLETE
 </text>
 <text x="764" y="578" dy="-0.5ex" text-anchor="end" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-0 upper bounds, 0 point comparisons; 75 of the drawn values digitised, 30 tabulated or printed
+5 upper bounds, 0 point comparisons; 75 of the drawn values digitised, 30 tabulated or printed
 </text>
 <text x="1165" y="83" dy="0.76em" text-anchor="middle" font-family="sans-serif" font-size="15.32258064516129" opacity="1" fill="#191919">
-Log10 ratio, model over measured value, for scale only, Ag-110m
+Deviation of the model from the measurements, Ag-110m: not defined
 </text>
 <line opacity="1" stroke="#EBEBEB" stroke-width="1" x1="868" y1="587" x2="868" y2="103"/>
 <line opacity="1" stroke="#EBEBEB" stroke-width="1" x1="884" y1="587" x2="884" y2="103"/>
@@ -931,37 +931,42 @@ Time at temperature (h)
 <line opacity="0.2" stroke="#000000" stroke-width="1" x1="1188" y1="587" x2="1188" y2="103"/>
 <line opacity="0.2" stroke="#000000" stroke-width="1" x1="1348" y1="587" x2="1348" y2="103"/>
 <line opacity="0.2" stroke="#000000" stroke-width="1" x1="1508" y1="587" x2="1508" y2="103"/>
-<line opacity="0.2" stroke="#000000" stroke-width="1" x1="868" y1="547" x2="1541" y2="547"/>
-<line opacity="0.2" stroke="#000000" stroke-width="1" x1="868" y1="466" x2="1541" y2="466"/>
-<line opacity="0.2" stroke="#000000" stroke-width="1" x1="868" y1="386" x2="1541" y2="386"/>
-<line opacity="0.2" stroke="#000000" stroke-width="1" x1="868" y1="305" x2="1541" y2="305"/>
-<line opacity="0.2" stroke="#000000" stroke-width="1" x1="868" y1="224" x2="1541" y2="224"/>
-<line opacity="0.2" stroke="#000000" stroke-width="1" x1="868" y1="144" x2="1541" y2="144"/>
+<line opacity="0.2" stroke="#000000" stroke-width="1" x1="868" y1="587" x2="1541" y2="587"/>
+<line opacity="0.2" stroke="#000000" stroke-width="1" x1="868" y1="507" x2="1541" y2="507"/>
+<line opacity="0.2" stroke="#000000" stroke-width="1" x1="868" y1="426" x2="1541" y2="426"/>
+<line opacity="0.2" stroke="#000000" stroke-width="1" x1="868" y1="345" x2="1541" y2="345"/>
+<line opacity="0.2" stroke="#000000" stroke-width="1" x1="868" y1="265" x2="1541" y2="265"/>
+<line opacity="0.2" stroke="#000000" stroke-width="1" x1="868" y1="184" x2="1541" y2="184"/>
+<line opacity="0.2" stroke="#000000" stroke-width="1" x1="868" y1="103" x2="1541" y2="103"/>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="867,103 867,587 "/>
-<text x="858" y="547" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="858" y="587" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+-1.5
+</text>
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,587 867,587 "/>
+<text x="858" y="507" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 -1.0
 </text>
-<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,547 867,547 "/>
-<text x="858" y="466" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,507 867,507 "/>
+<text x="858" y="426" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+-0.5
+</text>
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,426 867,426 "/>
+<text x="858" y="345" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 0.0
 </text>
-<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,466 867,466 "/>
-<text x="858" y="386" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,345 867,345 "/>
+<text x="858" y="265" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+0.5
+</text>
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,265 867,265 "/>
+<text x="858" y="184" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 1.0
 </text>
-<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,386 867,386 "/>
-<text x="858" y="305" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-2.0
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,184 867,184 "/>
+<text x="858" y="103" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+1.5
 </text>
-<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,305 867,305 "/>
-<text x="858" y="224" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-3.0
-</text>
-<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,224 867,224 "/>
-<text x="858" y="144" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-4.0
-</text>
-<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,144 867,144 "/>
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,103 867,103 "/>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="868,588 1541,588 "/>
 <text x="868" y="598" dy="0.76em" text-anchor="middle" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 0
@@ -983,15 +988,13 @@ Time at temperature (h)
 400
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="1508,588 1508,593 "/>
-<polyline fill="none" opacity="1" stroke="#787878" stroke-width="1" points="868,466 1541,466 "/>
-<text x="1204" y="112" dy="0.76em" text-anchor="middle" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-no deviation is defined for these rows: the denominator of the fraction is not established
+<polyline fill="none" opacity="1" stroke="#787878" stroke-width="1" points="868,345 1541,345 "/>
+<text x="1204" y="281" dy="0.5ex" text-anchor="middle" font-family="sans-serif" font-size="14.516129032258064" opacity="1" fill="#191919">
+NO DEVIATION IS DEFINED FOR Ag-110m
 </text>
-<polyline fill="none" opacity="1" stroke="#191919" stroke-width="2" points="1348,256 1355,263 1348,270 1341,263 1348,256 "/>
-<polyline fill="none" opacity="1" stroke="#191919" stroke-width="2" points="1348,268 1355,275 1348,282 1341,275 1348,268 "/>
-<polyline fill="none" opacity="1" stroke="#191919" stroke-width="2" points="1348,218 1355,225 1348,232 1341,225 1348,218 "/>
-<polyline fill="none" opacity="1" stroke="#191919" stroke-width="2" points="1508,163 1515,170 1508,177 1501,170 1508,163 "/>
-<polyline fill="none" opacity="1" stroke="#191919" stroke-width="2" points="1353,262 1360,269 1353,276 1346,269 1353,262 "/>
+<text x="1204" y="410" dy="0.5ex" text-anchor="middle" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+no row is a point comparison; no NRMSE is formed (see the lines below)
+</text>
 <polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="3" points="40,659 74,659 "/>
 <text x="84" y="650" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
 BTCS model, 1600 °C (marker colour is the test temperature)
@@ -1015,25 +1018,29 @@ BTCS model, 1800 °C (marker colour is the test temperature)
 <text x="844" y="676" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
 Plus: analytical prediction (independent series), only where valid
 </text>
-<polyline fill="none" opacity="1" stroke="#191919" stroke-width="2" points="56,704 63,711 56,718 49,711 56,704 "/>
+<polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="50,705 62,705 56,718 50,705 "/>
 <text x="84" y="702" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
+Upper bound exceeded by the model (EXCEEDS REPORTED UPPER BOUND)
+</text>
+<polyline fill="none" opacity="1" stroke="#191919" stroke-width="2" points="816,704 823,711 816,718 809,711 816,704 "/>
+<text x="844" y="702" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
 Hollow diamond: DATA INCOMPLETE, shown for scale, not a comparison
 </text>
-<line opacity="1" stroke="#787878" stroke-width="2" x1="812" y1="707" x2="820" y2="715"/>
-<line opacity="1" stroke="#787878" stroke-width="2" x1="812" y1="715" x2="820" y2="707"/>
-<text x="844" y="702" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
+<line opacity="1" stroke="#787878" stroke-width="2" x1="52" y1="733" x2="60" y2="741"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="52" y1="741" x2="60" y2="733"/>
+<text x="84" y="728" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
 Grey cross: NOT DIRECTLY COMPARABLE context (muted)
 </text>
-<rect x="51" y="732" width="10" height="10" opacity="1" fill="none" stroke="#191919"/>
-<text x="84" y="728" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
-Hollow square: model over the same 24 h-to-end window as a matrix-corrected value
-</text>
-<polyline fill="none" opacity="1" stroke="#787878" stroke-width="3" points="800,737 834,737 "/>
+<rect x="811" y="732" width="10" height="10" opacity="1" fill="none" stroke="#191919"/>
 <text x="844" y="728" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
-Vertical bar: reading uncertainty of a digitised value; no bar: printed value, exact
+Hollow square: model over the same window (24 h to the plateau end) as a window upper bound
 </text>
 <polyline fill="none" opacity="1" stroke="#787878" stroke-width="3" points="40,763 74,763 "/>
 <text x="84" y="754" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
+Vertical bar: reading uncertainty of a digitised value; no bar: printed value, exact
+</text>
+<polyline fill="none" opacity="1" stroke="#787878" stroke-width="3" points="800,763 834,763 "/>
+<text x="844" y="754" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
 Marker colour: test temperature, as the line of the same colour
 </text>
 <text x="24" y="792" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="13.709677419354838" opacity="1" fill="#191919">
@@ -1046,7 +1053,7 @@ Register rows of Ag-110m (including rows labelled with the element only): 175; 1
 printed and exact as printed.
 </text>
 <text x="24" y="856" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-Comparison status of these rows: DATA INCOMPLETE 10; NOT DIRECTLY COMPARABLE 165.
+Comparison status of these rows: DATA INCOMPLETE 5; NOT DIRECTLY COMPARABLE 165; EXCEEDS REPORTED UPPER BOUND 5.
 </text>
 <text x="24" y="875" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 NOT DIRECTLY COMPARABLE because the measured quantity is not the model quantity: 29 x deposition_cup_history (deposition-cup collection); 52 x failed_or_released_particles (failed SiC or
@@ -1061,40 +1068,40 @@ inventory location); 16 x loose_particles_with_failures (loose particles includi
 fuel).
 </text>
 <text x="24" y="951" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-E-033 | 1600 °C | 300 h at temperature | measured 1.800e-3 (digitised) | model 5.919e-1 | signed log10 ratio 2.517e0 for scale only: the denominator is not established (decision 22), so no
+E-033 | 1600 °C | window 24-300 h at temperature | bound 1.800e-3 (digitised, matrix-corrected fraction of the as-run calculated compact inventory) | model over the same window 5.919e-1 |
 </text>
 <text x="24" y="970" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-absolute or relative deviation is formed
+model over bound 3.288e2 | window upper bound under premise BP1: not a point comparison, so no deviation, no relative deviation and no NRMSE is formed
 </text>
 <text x="24" y="989" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-E-034 | 1600 °C | 300 h at temperature | measured 2.500e-3 (digitised) | model 5.919e-1 | signed log10 ratio 2.374e0 for scale only: the denominator is not established (decision 22), so no
+E-034 | 1600 °C | window 24-300 h at temperature | bound 2.500e-3 (digitised, matrix-corrected fraction of the as-run calculated compact inventory) | model over the same window 5.919e-1 |
 </text>
 <text x="24" y="1008" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-absolute or relative deviation is formed
+model over bound 2.368e2 | window upper bound under premise BP1: not a point comparison, so no deviation, no relative deviation and no NRMSE is formed
 </text>
 <text x="24" y="1027" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-E-035 | 1600 °C | 300 h at temperature | measured 6.000e-4 (digitised) | model 5.919e-1 | signed log10 ratio 2.994e0 for scale only: the denominator is not established (decision 22), so no
+E-035 | 1600 °C | window 24-300 h at temperature | bound 6.000e-4 (digitised, matrix-corrected fraction of the as-run calculated compact inventory) | model over the same window 5.919e-1 |
 </text>
 <text x="24" y="1046" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-absolute or relative deviation is formed
+model over bound 9.865e2 | window upper bound under premise BP1: not a point comparison, so no deviation, no relative deviation and no NRMSE is formed
 </text>
 <text x="24" y="1065" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-E-036 | 1600 °C | 400 h at temperature | measured 1.500e-4 (digitised) | model 7.033e-1 | signed log10 ratio 3.671e0 for scale only: the denominator is not established (decision 22), so no
+E-036 | 1600 °C | window 24-300 h at temperature | bound 1.500e-4 (digitised, matrix-corrected fraction of the as-run calculated compact inventory) | model over the same window 5.919e-1 |
 </text>
 <text x="24" y="1084" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-absolute or relative deviation is formed
+model over bound 3.946e3 | window upper bound under premise BP1: not a point comparison, so no deviation, no relative deviation and no NRMSE is formed
 </text>
 <text x="24" y="1103" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-E-037 | 1700 °C | 303 h at temperature | measured 2.800e-3 (digitised) | model 7.757e-1 | signed log10 ratio 2.443e0 for scale only: the denominator is not established (decision 22), so no
+E-037 | 1700 °C | window 24-300 h at temperature | bound 2.800e-3 (digitised, matrix-corrected fraction of the as-run calculated compact inventory) | model over the same window 7.729e-1 |
 </text>
 <text x="24" y="1122" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-absolute or relative deviation is formed
+model over bound 2.760e2 | window upper bound under premise BP1: not a point comparison, so no deviation, no relative deviation and no NRMSE is formed
 </text>
 <text x="24" y="1141" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-No Ag-110m row supports a point comparison, so the absolute deviation, the relative deviation in percent and the log-space root-mean-square deviation are not defined for Ag-110m (the log10
+No Ag-110m row supports a point comparison, so the absolute deviation, the relative deviation in percent and the log-space root-mean-square deviation are not defined for Ag-110m; no number
 </text>
 <text x="24" y="1160" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-ratios above are for scale only and enter no aggregate); no number is substituted.
+is substituted.
 </text>
 <text x="24" y="1193" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 Experimental values: Collin et al. (2016); IAEA (1997); IAEA (2012); Morris et al. (2016); Stempien et al. (2023). Only the rows whose status supports a comparison are drawn in colour; rows that are NOT DIRECTLY
@@ -1121,7 +1128,7 @@ is exported only where (1) the time is not earlier than the series&apos; own min
 from zero, the base run and the run with half the step differ by a large factor, and the report states for each curve the time after which they agree within 10 percent (a reading aid, not a tolerance). Model: STRATO
 </text>
 <text x="24" y="1337" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-BTCS five-layer spherical finite difference, package version 1.0.1, commit c9978f0f64b04fe18f312c82c38592f36d05d2f8; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the
+BTCS five-layer spherical finite difference, package version 1.0.1, commit b6331621ca70dc453e6856bdd1263bf61c15260b; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the
 </text>
 <text x="24" y="1355" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at the test temperature; kernel-only start; constant temperature; decay and generation are not in the solver. This is a numerical
