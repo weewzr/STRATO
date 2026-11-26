@@ -9,6 +9,9 @@ Work toward v2.0 (Phase 2). The order is mathematics first, then pseudocode, the
 - Planned: radioactive decay, fission-product generation, inventory accounting, Arrhenius diffusivity and temperature histories.
 - The list of v1.0 to v2.0 changes (design only, no Phase 2 code yet) is kept in [docs/development/v1_to_v2_changes.md](docs/development/v1_to_v2_changes.md).
 
+### Added
+- Property functions and closed-form references for the Phase G mechanisms in `src/physics/` (Arrhenius diffusivity, decay constant, volumetric fission source, well-mixed and homogeneous-sphere references), derived in `docs/mathematics/STRATO_Property_Functions.md`. They are not coupled to any solver, and the document is not yet published on the site.
+
 ### Changed
 - The web tooling is Rust (stage R1 of the Rust migration): `crates/strato-webtools`, a member of the tools workspace `crates/Cargo.toml`, is one command-line tool with the subcommands `case`, `catalogue`, `colormaps`, `geometry`, `figures`, `precomputed`, `check-catalogue` and `build-wasm`. It replaces `scripts/web/generate_data.py`, `check_catalogue.py`, `build_wasm.py`, `build_wasm.sh`, `precompute.sh`, their Python tests and `web/scripts/check_catalogue.mjs`; Git history keeps them. Its output is byte for byte the data files the Python generator wrote (apart from the fields that record when and where a file was written), and the catalogue check prints the same lines and exits with the same codes; `web.yml`, `web/package.json` and the documentation call the Rust tool. The solver is reached only through `crates/strato-webtools/src/solver.rs`.
 - Licence changed from MIT to AGPL-3.0-only, the licence of the Outram Park project that the planned web demo builds on. Releases v1.0.0 and v1.0.1 remain available under MIT.

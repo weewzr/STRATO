@@ -18,5 +18,6 @@
 pub mod analytical;
 pub mod config;
 pub mod numerical;
+pub mod physics;
 pub mod postprocessing;
 pub mod validation;
