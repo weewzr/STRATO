@@ -15,8 +15,9 @@ Synthetic, notional or demonstration values never appear in `data/`. Synthetic i
 | `diffusivity/arrhenius.csv` | Arrhenius terms for kernel, buffer, PyC, SiC, matrix and structural graphite (TECDOC-978 Tables A-1 to A-5, Eq. 4-10), Collin (2016) Table 2, Hales (2021) Table 1, TECDOC-1674 Table 7.1 and Eq. 10.9, buffer and failed-layer conventions; since 2026-11-25 also the Collin (2015) irradiation-phase set C15 and the Schappel (2020) fits S20 | 141 |
 | `nuclear/decay.csv` | ENSDF half-lives, decay constants with uncertainty, decay modes, daughters, production class | 16 |
 | `nuclear/fission_yields.csv` | JEFF-3.1.1 independent and cumulative thermal yields for U-235 and Pu-239, ENDF/B cross-check, production class | 56 |
-| `temperature/temperature_histories.csv` | AGR-1 safety-test procedure and modelled schedule, as-run deviations, irradiation temperatures, CRP-6 schedules, JAERI conditions, the 4-2-2 and 4-4-2 test histories | 157 |
-| `experimental/release_measurements.csv` | AGR-1 compact release fractions (printed, digitised, upper bounds), failed-particle counts, JAERI Table 4-9, CRP-6 text values, AGR-1 and AGR-2 tabulated totals, digitised time series (ids E-316 to E-373 withdrawn, never reused) | 482 |
+| `temperature/temperature_histories.csv` | AGR-1 safety-test procedure and modelled schedule, as-run deviations, irradiation temperatures, CRP-6 schedules, JAERI conditions, the 4-2-2 and 4-4-2 test histories | 164 |
+| `experimental/release_measurements.csv` | AGR-1 compact release fractions (printed, digitised, upper bounds), failed-particle counts, JAERI Table 4-9, CRP-6 text values, AGR-1 and AGR-2 tabulated totals, digitised time series (ids E-316 to E-373 withdrawn, never reused); E-541 to E-636 (26 Nov 2026): Cs-134 and Cs-137 of the 4-4-2 loose particles, Cs-134 and Sr-90 of compact 4-3-3 (FACS), Ag-110m and Cs-137 of the HFR-K3/1 sphere | 578 |
+| `experimental/curve_assessment.csv` | one record per release-versus-time curve: the rows of the curve (`row_ids`), specimen level, bound class, decay correction, coating-failure basis, R2 class (all PLOT ONLY today) and reason code, registered history and geometry, model configuration, source with page and link, value kind, verification status (decision 69; fields of `metric-r2.md` Section 1.3) | 14 |
 | `irradiation/agr1_irradiation_conditions.csv` | AGR-1 irradiation history, fuel and compact data, burnup, fluence and temperatures of each compact, kernel inventory | 506 |
 | `irradiation/agr1_burnup_by_cycle.csv` | burnup and fast fluence of 72 compacts and 6 capsule averages after each of 13 ATR cycles | 2028 |
 | `irradiation/agr1_power_history_digitised.csv` | capsule-average heat generation history (digitised) | 744 |
@@ -33,6 +34,10 @@ Synthetic, notional or demonstration values never appear in `data/`. Synthetic i
 - `particle_applicability` (`release_measurements.csv` only): whether the value is compact, particle-batch or sphere level and what it implies for a single intact particle.
 - Activation products Ag-110m, Cs-134 and Eu-154 (and their isomer or ground-state partners) carry "NO fission-yield source" in `decay.csv` and "do NOT use as a fission-yield source" in `fission_yields.csv`.
 - Units are in the column names or in a `unit` column. Activation energies are stored in $\mathrm{kJ\ mol^{-1}}$ and must be multiplied by $10^3$ before use with $R_g$ in $\mathrm{J\ mol^{-1}\ K^{-1}}$.
+
+## Time series and curve assessments
+
+A release-versus-time curve is a set of rows of `release_measurements.csv` (one specimen, one nuclide, one temperature history, one release definition). `experimental/curve_assessment.csv` names the rows of each curve (`row_ids`) and records what decides whether an R2 may be computed: specimen level, bound class, decay correction, coating-failure basis, R2 class, reason code, the registered history and geometry of a model run, the source with its page and link, and the verification status. The notes cell of every row from E-541 on starts with its dataset id. Digitised rows state their reading uncertainty in `reading_uncertainty` (value and time), the procedure and the coordinates are in section 12 of `B6_audit_log.md`, and the time column `time_h` is in hours. The family EX of `strato-data check` tests this.
 
 ## Checking
 
