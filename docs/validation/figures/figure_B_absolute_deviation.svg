@@ -188,51 +188,51 @@ Time at temperature (h)
 <line opacity="0.2" stroke="#000000" stroke-width="1" x1="98" y1="103" x2="771" y2="103"/>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="97,103 97,407 "/>
 <text x="88" y="382" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-11
+10⁻¹¹
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,382 97,382 "/>
 <text x="88" y="357" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-10
+10⁻¹⁰
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,357 97,357 "/>
 <text x="88" y="331" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-9
+10⁻⁹
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,331 97,331 "/>
 <text x="88" y="306" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-8
+10⁻⁸
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,306 97,306 "/>
 <text x="88" y="281" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-7
+10⁻⁷
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,281 97,281 "/>
 <text x="88" y="255" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-6
+10⁻⁶
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,255 97,255 "/>
 <text x="88" y="230" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-5
+10⁻⁵
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,230 97,230 "/>
 <text x="88" y="205" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-4
+10⁻⁴
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,205 97,205 "/>
 <text x="88" y="179" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-3
+10⁻³
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,179 97,179 "/>
 <text x="88" y="154" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-2
+10⁻²
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,154 97,154 "/>
 <text x="88" y="129" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-1
+10⁻¹
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,129 97,129 "/>
 <text x="88" y="103" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-0
+10⁰
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,103 97,103 "/>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="98,408 771,408 "/>
@@ -422,43 +422,43 @@ Time at temperature (h)
 <line opacity="0.2" stroke="#000000" stroke-width="1" x1="868" y1="103" x2="1541" y2="103"/>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="867,103 867,407 "/>
 <text x="858" y="377" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-3
+10⁻³
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,377 867,377 "/>
 <text x="858" y="347" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-2
+10⁻²
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,347 867,347 "/>
 <text x="858" y="316" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-1
+10⁻¹
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,316 867,316 "/>
 <text x="858" y="286" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e0
+10⁰
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,286 867,286 "/>
 <text x="858" y="255" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e1
+10¹
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,255 867,255 "/>
 <text x="858" y="225" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e2
+10²
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,225 867,225 "/>
 <text x="858" y="195" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e3
+10³
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,195 867,195 "/>
 <text x="858" y="164" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e4
+10⁴
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,164 867,164 "/>
 <text x="858" y="134" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e5
+10⁵
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,134 867,134 "/>
 <text x="858" y="103" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e6
+10⁶
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="862,103 867,103 "/>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="868,408 1541,408 "/>
@@ -514,7 +514,7 @@ Relative deviation is undefined for a measured value that is not positive and no
 denominator is not established (DATA INCOMPLETE, decision 22) has no deviation and is not drawn; its measured and model values are in figure A. Upper bounds are inequalities and never enter a deviation; an exceeded
 </text>
 <text x="24" y="556" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-bound is drawn in vermilion whatever the test temperature. Model: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit 3a0ba1c2894bbb17040e2e60c5fcb2ba10414c2f; registered AGR1-B-M16
+bound is drawn in vermilion whatever the test temperature. Model: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit c9978f0f64b04fe18f312c82c38592f36d05d2f8; registered AGR1-B-M16
 </text>
 <text x="24" y="574" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at the test temperature; kernel-only start; constant temperature;

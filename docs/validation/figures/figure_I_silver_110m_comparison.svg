@@ -1,10 +1,10 @@
-<svg width="1560" height="1429" viewBox="0 0 1560 1429" xmlns="http://www.w3.org/2000/svg">
-<rect x="0" y="0" width="1560" height="1429" opacity="1" fill="#FFFFFF" stroke="none"/>
+<svg width="1560" height="1447" viewBox="0 0 1560 1447" xmlns="http://www.w3.org/2000/svg">
+<rect x="0" y="0" width="1560" height="1447" opacity="1" fill="#FFFFFF" stroke="none"/>
 <text x="24" y="14" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="20.967741935483872" opacity="1" fill="#191919">
-I. Silver-110m (Ag-110m): measurements, BTCS prediction, analytical prediction and deviations
+I. Silver-110m (Ag-110m): measurements, BTCS prediction, analytical prediction and the ratios of the model to the measurements, for scale only
 </text>
 <text x="24" y="48" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.903225806451614" opacity="1" fill="#191919">
-Measurements of Ag-110m, BTCS prediction, analytical prediction where valid, and the deviations of the model from the measurements; hours counted from reaching the test temperature
+Measurements of Ag-110m, BTCS prediction, analytical prediction where valid, and the ratios of the model to the measurements, which are for scale only because no deviation is defined; hours counted from reaching the test temperature
 </text>
 <text x="395" y="83" dy="0.76em" text-anchor="middle" font-family="sans-serif" font-size="15.32258064516129" opacity="1" fill="#191919">
 Fraction of Ag-110m released versus time at temperature
@@ -178,47 +178,47 @@ Time at temperature (h)
 <line opacity="0.2" stroke="#000000" stroke-width="1" x1="98" y1="118" x2="771" y2="118"/>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="97,103 97,587 "/>
 <text x="88" y="587" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-10
+10⁻¹⁰
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,587 97,587 "/>
 <text x="88" y="541" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-9
+10⁻⁹
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,541 97,541 "/>
 <text x="88" y="494" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-8
+10⁻⁸
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,494 97,494 "/>
 <text x="88" y="447" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-7
+10⁻⁷
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,447 97,447 "/>
 <text x="88" y="400" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-6
+10⁻⁶
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,400 97,400 "/>
 <text x="88" y="353" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-5
+10⁻⁵
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,353 97,353 "/>
 <text x="88" y="306" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-4
+10⁻⁴
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,306 97,306 "/>
 <text x="88" y="259" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-3
+10⁻³
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,259 97,259 "/>
 <text x="88" y="212" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-2
+10⁻²
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,212 97,212 "/>
 <text x="88" y="165" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e-1
+10⁻¹
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,165 97,165 "/>
 <text x="88" y="118" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-1e0
+10⁰
 </text>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="92,118 97,118 "/>
 <polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="98,588 771,588 "/>
@@ -1015,123 +1015,118 @@ BTCS model, 1800 °C (marker colour is the test temperature)
 <text x="844" y="676" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
 Plus: analytical prediction (independent series), only where valid
 </text>
-<polygon opacity="1" fill="#191919" points="50,705 62,705 56,718 "/>
+<polyline fill="none" opacity="1" stroke="#191919" stroke-width="2" points="56,704 63,711 56,718 49,711 56,704 "/>
 <text x="84" y="702" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
-Upper bound, model within it (WITHIN REPORTED UPPER BOUND)
-</text>
-<polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="810,705 822,705 816,718 810,705 "/>
-<text x="844" y="702" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
-Upper bound exceeded by the model (EXCEEDS REPORTED UPPER BOUND)
-</text>
-<polyline fill="none" opacity="1" stroke="#191919" stroke-width="2" points="56,730 63,737 56,744 49,737 56,730 "/>
-<text x="84" y="728" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
 Hollow diamond: DATA INCOMPLETE, shown for scale, not a comparison
 </text>
-<line opacity="1" stroke="#787878" stroke-width="2" x1="812" y1="733" x2="820" y2="741"/>
-<line opacity="1" stroke="#787878" stroke-width="2" x1="812" y1="741" x2="820" y2="733"/>
-<text x="844" y="728" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
+<line opacity="1" stroke="#787878" stroke-width="2" x1="812" y1="707" x2="820" y2="715"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="812" y1="715" x2="820" y2="707"/>
+<text x="844" y="702" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
 Grey cross: NOT DIRECTLY COMPARABLE context (muted)
 </text>
-<rect x="51" y="758" width="10" height="10" opacity="1" fill="none" stroke="#191919"/>
-<text x="84" y="754" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
+<rect x="51" y="732" width="10" height="10" opacity="1" fill="none" stroke="#191919"/>
+<text x="84" y="728" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
 Hollow square: model over the same 24 h-to-end window as a matrix-corrected value
 </text>
-<polyline fill="none" opacity="1" stroke="#787878" stroke-width="3" points="800,763 834,763 "/>
-<text x="844" y="754" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
+<polyline fill="none" opacity="1" stroke="#787878" stroke-width="3" points="800,737 834,737 "/>
+<text x="844" y="728" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
 Vertical bar: reading uncertainty of a digitised value; no bar: printed value, exact
 </text>
-<polyline fill="none" opacity="1" stroke="#787878" stroke-width="3" points="40,789 74,789 "/>
-<text x="84" y="780" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
+<polyline fill="none" opacity="1" stroke="#787878" stroke-width="3" points="40,763 74,763 "/>
+<text x="84" y="754" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
 Marker colour: test temperature, as the line of the same colour
 </text>
-<text x="24" y="818" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="13.709677419354838" opacity="1" fill="#191919">
+<text x="24" y="792" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="13.709677419354838" opacity="1" fill="#191919">
 Numerical deviations of the model from the measurements of Ag-110m
 </text>
-<text x="24" y="844" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="818" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 Register rows of Ag-110m (including rows labelled with the element only): 175; 119 digitised from published figures (labelled digitised, with their reading uncertainty), 56 tabulated or
 </text>
-<text x="24" y="863" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="837" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 printed and exact as printed.
 </text>
-<text x="24" y="882" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="856" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 Comparison status of these rows: DATA INCOMPLETE 10; NOT DIRECTLY COMPARABLE 165.
 </text>
-<text x="24" y="901" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="875" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 NOT DIRECTLY COMPARABLE because the measured quantity is not the model quantity: 29 x deposition_cup_history (deposition-cup collection); 52 x failed_or_released_particles (failed SiC or
 </text>
-<text x="24" y="920" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="894" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 releasing particle); 1 x fuel_sphere (fuel sphere of a benchmark); 32 x includes_in_pile_inventory (total includes in-pile inventory); 22 x irradiation_phase_quantity (irradiation-phase
 </text>
-<text x="24" y="939" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="913" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 inventory location); 16 x loose_particles_with_failures (loose particles including failed ones); 2 x mixed_particles (mixture of failed and intact particles); 11 x other_fuel_batch (AGR-2
 </text>
-<text x="24" y="958" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="932" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 fuel).
 </text>
-<text x="24" y="977" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="951" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 E-033 | 1600 °C | 300 h at temperature | measured 1.800e-3 (digitised) | model 5.919e-1 | signed log10 ratio 2.517e0 for scale only: the denominator is not established (decision 22), so no
 </text>
-<text x="24" y="996" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="970" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 absolute or relative deviation is formed
 </text>
-<text x="24" y="1015" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="989" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 E-034 | 1600 °C | 300 h at temperature | measured 2.500e-3 (digitised) | model 5.919e-1 | signed log10 ratio 2.374e0 for scale only: the denominator is not established (decision 22), so no
 </text>
-<text x="24" y="1034" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="1008" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 absolute or relative deviation is formed
 </text>
-<text x="24" y="1053" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="1027" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 E-035 | 1600 °C | 300 h at temperature | measured 6.000e-4 (digitised) | model 5.919e-1 | signed log10 ratio 2.994e0 for scale only: the denominator is not established (decision 22), so no
 </text>
-<text x="24" y="1072" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="1046" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 absolute or relative deviation is formed
 </text>
-<text x="24" y="1091" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="1065" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 E-036 | 1600 °C | 400 h at temperature | measured 1.500e-4 (digitised) | model 7.033e-1 | signed log10 ratio 3.671e0 for scale only: the denominator is not established (decision 22), so no
 </text>
-<text x="24" y="1110" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="1084" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 absolute or relative deviation is formed
 </text>
-<text x="24" y="1129" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="1103" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 E-037 | 1700 °C | 303 h at temperature | measured 2.800e-3 (digitised) | model 7.757e-1 | signed log10 ratio 2.443e0 for scale only: the denominator is not established (decision 22), so no
 </text>
-<text x="24" y="1148" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="1122" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 absolute or relative deviation is formed
 </text>
-<text x="24" y="1167" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="1141" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 No Ag-110m row supports a point comparison, so the absolute deviation, the relative deviation in percent and the log-space root-mean-square deviation are not defined for Ag-110m (the log10
 </text>
-<text x="24" y="1186" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+<text x="24" y="1160" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 ratios above are for scale only and enter no aggregate); no number is substituted.
 </text>
-<text x="24" y="1219" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+<text x="24" y="1193" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 Experimental values: Collin et al. (2016); IAEA (1997); IAEA (2012); Morris et al. (2016); Stempien et al. (2023). Only the rows whose status supports a comparison are drawn in colour; rows that are NOT DIRECTLY
 </text>
-<text x="24" y="1237" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+<text x="24" y="1211" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 COMPARABLE are muted grey context, because they measure another quantity than the model computes (failed particles, totals that include release in the reactor, another fuel, fuel spheres). A bar on a marker is the
 </text>
-<text x="24" y="1255" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-reading uncertainty of the register (the error of reading the point off the published figure); it is not a measurement uncertainty, and the sources report none for these rows, so no other error bar is drawn. Compact
+<text x="24" y="1229" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+reading uncertainty of the register (the error of reading the point off the published figure); it is not a measurement uncertainty, and the sources report no per-value measurement uncertainty for these rows (a
 </text>
-<text x="24" y="1273" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-values are not single-particle values; rows at a temperature outside 1600 to 1800 °C or whose value is not a fraction are not drawn. Analytical-series values are drawn only where the criterion holds: a value of the
+<text x="24" y="1247" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+general 5 percent systematic gamma-measurement error stated for the Stempien 2023 values is not a per-value uncertainty and changes no status), so no other error bar is drawn. Compact values are not single-particle
 </text>
-<text x="24" y="1291" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-independent analytical series is exported only where (1) the time is not earlier than the series&apos; own minimum valid time (omitted modes below exp(-40) of their weight) and (2) the value exceeds the series&apos; estimated
+<text x="24" y="1265" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+values; rows at a temperature outside 1600 to 1800 °C or whose value is not a fraction are not drawn. Analytical-series values are drawn only where the criterion holds: a value of the independent analytical series
 </text>
-<text x="24" y="1309" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-absolute accuracy (about 2.2e-16 over the smallest flux ratio of the shooting solution), and is positive; otherwise it is left empty. The early part of every BTCS curve is not converged in time: where the release is
+<text x="24" y="1283" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+is exported only where (1) the time is not earlier than the series&apos; own minimum valid time (omitted modes below exp(-40) of their weight) and (2) the value exceeds the series&apos; estimated absolute accuracy (about
 </text>
-<text x="24" y="1327" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-still rising steeply from zero, the base run and the run with half the step differ by a large factor, and the report states for each curve the time after which they agree within 10 percent (a reading aid, not a
+<text x="24" y="1301" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+2.2e-16 over the smallest flux ratio of the shooting solution), and is positive; otherwise it is left empty. The early part of every BTCS curve is not converged in time: where the release is still rising steeply
 </text>
-<text x="24" y="1345" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-tolerance). Model: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit 3a0ba1c2894bbb17040e2e60c5fcb2ba10414c2f; registered AGR1-B-M16 geometry; published heating-test diffusion
+<text x="24" y="1319" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+from zero, the base run and the run with half the step differ by a large factor, and the report states for each curve the time after which they agree within 10 percent (a reading aid, not a tolerance). Model: STRATO
 </text>
-<text x="24" y="1363" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-coefficients chosen by the strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at the test temperature; kernel-only start; constant temperature; decay and generation are not in the solver.
+<text x="24" y="1337" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+BTCS five-layer spherical finite difference, package version 1.0.1, commit c9978f0f64b04fe18f312c82c38592f36d05d2f8; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the
 </text>
-<text x="24" y="1381" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-This is a numerical comparison, not an experimental validation.
+<text x="24" y="1355" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at the test temperature; kernel-only start; constant temperature; decay and generation are not in the solver. This is a numerical
+</text>
+<text x="24" y="1373" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+comparison, not an experimental validation.
 </text>
 </svg>
