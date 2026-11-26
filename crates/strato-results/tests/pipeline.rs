@@ -1,5 +1,6 @@
 //! End-to-end tests of the results program on the real registers with the coarse `quick` grids:
-//! every output file carries its provenance, no NRMSE value exists while N = 0, nothing private is
+//! every output file carries its provenance, no R2 value exists for the registered curves and the
+//! first failing check of each is the one of `metric-r2.md` Section 3.5, nothing private is
 //! written, the manifest lists every file, and the check mode fails when a committed output is
 //! stale, missing or no longer produced.
 
@@ -35,7 +36,7 @@ fn the_pipeline_writes_a_checked_and_clean_file_set() {
     for must in [
         "support.json",
         "parameters.json",
-        "nrmse.json",
+        "r2.json",
         "bounds.json",
         "labels.json",
         "manifest.json",
@@ -43,7 +44,7 @@ fn the_pipeline_writes_a_checked_and_clean_file_set() {
         "verification/agreement.json",
         "verification/conservation.json",
         "csv/curves.csv",
-        "csv/nrmse.csv",
+        "csv/r2.csv",
     ] {
         assert!(files.contains_key(must), "missing output {must}");
     }
@@ -85,27 +86,48 @@ fn the_pipeline_writes_a_checked_and_clean_file_set() {
         assert!(!text.starts_with('\u{feff}'), "{name}: byte-order mark");
     }
 
-    // N = 0 everywhere today: not one record carries a value, and the record says why.
-    let nrmse = &files["nrmse.json"];
-    assert!(nrmse.contains("\"N\": 0"));
-    assert!(!nrmse.contains("\"N\": 1") && !nrmse.contains("\"N\": 2"));
-    let valued = nrmse
+    // The metric of the superseded decisions 64 and 65 appears nowhere, and no file is named for it.
+    for (name, text) in &files {
+        assert!(!name.to_lowercase().contains("nrmse"), "{name}");
+        for word in text.split(|c: char| !c.is_alphanumeric()) {
+            assert!(
+                !matches!(word, "NRMSE" | "RMSE" | "MAE") && !word.to_lowercase().contains("rmse"),
+                "{name}: the word {word}"
+            );
+        }
+    }
+
+    // No registered curve has an R2 value; every record says why.
+    let r2 = &files["r2.json"];
+    assert!(r2.contains("\"definition_id\": \"R2_LINEAR_PER_CURVE_V1\""));
+    let valued = r2
         .lines()
-        .filter(|l| l.trim_start().starts_with("\"nrmse_percent\":") && !l.contains("null"))
+        .filter(|l| l.trim_start().starts_with("\"r2\":") && !l.contains("null"))
         .count();
     assert_eq!(
         valued, 0,
-        "an NRMSE value exists although the registers hold no point set"
+        "an R2 value exists although every curve fails a check"
     );
-    for line in files["csv/nrmse.csv"]
+    assert_eq!(r2.matches("\"status\": \"unavailable\"").count(), 30);
+    assert!(!r2.contains("\"status\": \"available\""));
+    for line in files["csv/r2.csv"]
         .lines()
         .filter(|l| !l.starts_with('#'))
         .skip(1)
     {
         let cols: Vec<&str> = line.split(',').collect();
-        assert_eq!(cols[4], "0", "N is not 0 in {line}");
-        assert!(cols[7].is_empty(), "an NRMSE value in {line}");
+        assert!(cols[8].is_empty(), "an R2 value in {line}");
+        assert!(!cols[6].is_empty(), "no reason code in {line}");
     }
+    assert_eq!(
+        files
+            .keys()
+            .filter(|k| k.starts_with("comparison/"))
+            .count(),
+        15
+    );
+    let labels = &files["labels.json"];
+    assert!(labels.contains("\"r2_captions\"") && labels.contains("\"r2_display_rule\""));
 
     // The C15 documented-application label (science design 5.1): the cooldown, the startup ramp
     // and the 900 degC part carry it, in the file and (Scenario 4) in the panel title; normal
@@ -237,4 +259,67 @@ fn the_command_line_refuses_what_it_does_not_know() {
     let r = empty.to_string_lossy().to_string();
     assert_eq!(code(&["run", "--check", "--repo", &r]), Some(1));
     let _ = fs::remove_dir_all(&empty);
+}
+
+/// The table of `metric-r2.md` Section 3.5: the first failing check and its reason code for each of
+/// the fifteen registered curves, against the verified assessment of the data and against the
+/// first token of the reason that `curve_assessment.csv` records for the curve.
+#[test]
+fn the_first_failing_check_of_the_fifteen_curves_is_the_table_of_section_3_5() {
+    const TABLE: [(&str, &str, &str); 15] = [
+        ("HUNN16-442-CS134", "C2", "coating_failure"),
+        ("HUNN16-442-CS137", "C2", "coating_failure"),
+        ("HUNN14-442-AG110M", "C2", "coating_failure"),
+        ("HUNN14-442-SR90", "C2", "coating_failure"),
+        ("DEM15-433-CS134", "C1", "upper_bound"),
+        ("DEM15-433-SR90", "C1", "upper_bound"),
+        ("IAEA97-K31-AG110M", "C1", "upper_bound"),
+        ("IAEA97-K31-CS137", "C1", "upper_bound"),
+        ("IAEA97-K31-SR90", "C1", "upper_bound"),
+        ("STEMPIEN23-433-AG110M", "C1", "upper_bound"),
+        ("STEMPIEN23-643-AG110M", "C1", "upper_bound"),
+        ("STEMPIEN23-643-SR90", "C1", "upper_bound"),
+        ("HUNN14-422-AG110M", "C1", "upper_bound"),
+        ("IAEA97-JAERI-A-CS137-1600", "C4", "incompatible_definition"),
+        ("IAEA97-JAERI-A-CS137-1800", "C4", "incompatible_definition"),
+    ];
+    let files = generate(&Options {
+        repo: repo(),
+        commit: "test".into(),
+        quick: true,
+    })
+    .expect("the pipeline runs");
+    let register =
+        fs::read_to_string(repo().join("data/experimental/curve_assessment.csv")).unwrap();
+    let csv = &files["csv/r2.csv"];
+    for (id, check, code) in TABLE {
+        // The assessment of the data states the same first check.
+        let line = register
+            .lines()
+            .find(|l| l.starts_with(&format!("{id},")))
+            .unwrap_or_else(|| panic!("{id} is not in the curve assessment"));
+        assert!(
+            line.contains(&format!(",PLOT ONLY,{check} ")),
+            "{id}: the assessment does not say {check}"
+        );
+        for method in ['A', 'B'] {
+            let want = format!("r2.{id}.{method},");
+            let row = csv
+                .lines()
+                .find(|l| l.starts_with(&want))
+                .unwrap_or_else(|| panic!("no record {want}"));
+            let cols: Vec<&str> = row.split(',').collect();
+            assert_eq!(cols[5], "unavailable", "{row}");
+            assert_eq!(cols[6], code, "{row}");
+            assert_eq!(cols[7].split(';').next(), Some(check), "{row}");
+            assert!(cols[8].is_empty() && cols[9].is_empty(), "{row}");
+        }
+        // The comparison file holds the points exactly as registered, the model and the caption.
+        let file = &files[&format!("comparison/{id}.json")];
+        assert!(
+            file.contains("\"points\"") && file.contains("\"caption_text\""),
+            "{id}"
+        );
+        assert!(file.contains("\"label_plain\": null"), "{id}");
+    }
 }

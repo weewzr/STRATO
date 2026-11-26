@@ -16,17 +16,13 @@ use crate::curves::{
     engine_cell, exp_temperatures, heating_curve, irradiation_curve, stage1, Context, Stage1,
     EXPL_HEATING_C, EXPL_IRRADIATION_C, NUCS,
 };
-use crate::experiment::{
-    bound_json, bounds, candidates, record_json, records, row_nuclide, row_temperature, BoundRec,
-    ModelSource, NrmseRecord, SetMeta,
-};
+use crate::experiment::{bound_json, bounds, row_nuclide, row_temperature, BoundRec};
 use crate::labels::labels_json;
-use crate::methodb::{applicability, Needs};
 use crate::output::{json_file, masked, Files, Prov, SCHEMA_VERSION};
 use crate::params::{generation_nuclides, rate_density, reference_generation, Laws};
+use crate::r2run::run_all;
 use crate::scen;
 use crate::verification::{agreement, conservation, convergence, Conservation};
-use strato::analytical::applicability::{SourceHistory, Stage};
 
 /// What to run.
 #[derive(Debug, Clone)]
@@ -107,7 +103,6 @@ pub fn generate(opts: &Options) -> Result<Files, String> {
 
     progress("EXP cells");
     // ---- EXP: the main experimental comparison, per nuclide and supported temperature.
-    let mut nrmse_records: Vec<NrmseRecord> = Vec::new();
     for nuc in &NUCS {
         for &t_c in exp_temperatures(nuc.id) {
             // The measurement times of this cell become sample times.
@@ -171,13 +166,9 @@ pub fn generate(opts: &Options) -> Result<Files, String> {
                 None,
             ));
             stage1_curves.push(s1);
-            let mut ramp_curve = None;
             for stage in [3u8, 4u8] {
                 let (json, ec) =
                     engine_cell(&prov, &reg, nuc, t_c, stage, &geometry, opts.quick, &extra)?;
-                if stage == 4 {
-                    ramp_curve = Some(ec.clone());
-                }
                 files.insert(format!("curves/{}.json", ec.key), json);
                 for r in &ec.csv_rows {
                     curves_csv.row(r.clone());
@@ -237,43 +228,6 @@ pub fn generate(opts: &Options) -> Result<Files, String> {
                         J::s("a post-irradiation heating test has no fission source (G = 0); generation belongs to the scenarios"),
                     ),
                 ]));
-            }
-
-            // NRMSE records: stage 1 (isothermal, Methods A and B) and stage 4 (ramp, Method A).
-            let cands = candidates(
-                &comparison,
-                &mut runner,
-                nuc,
-                t_c,
-                ModelSource::Isothermal { radii: &geometry },
-            )?;
-            let ramp = ramp_curve.as_ref().ok_or("no stage 4 curve")?;
-            let cands4 = candidates(&comparison, &mut runner, nuc, t_c, ModelSource::Ramp(ramp))?;
-            let m1 = SetMeta {
-                set_id: format!("nrmse.s1.exp.{}.{}c", nuc.id, fmt_c(t_c)),
-                nuclide: nuc.name.to_string(),
-                temperature_c: t_c,
-                model_config_id: format!("s1.exp.{}.{}c", nuc.id, fmt_c(t_c)),
-            };
-            for r in records(&m1, &cands, &Ok(())) {
-                nrmse_records.push(r);
-            }
-            let m4 = SetMeta {
-                set_id: format!("nrmse.s4.exp.{}.{}c", nuc.id, fmt_c(t_c)),
-                nuclide: nuc.name.to_string(),
-                temperature_c: t_c,
-                model_config_id: format!("s4.exp.{}.{}c", nuc.id, fmt_c(t_c)),
-            };
-            let na = applicability(&Needs {
-                stage: Stage::TemperatureDependentDiffusivity,
-                source: SourceHistory::None,
-                decay_per_s: 0.0,
-                temperature: ramp.temperature.clone(),
-                kernel_step_start: true,
-            })
-            .map(|_| ());
-            for r in records(&m4, &cands4, &na) {
-                nrmse_records.push(r);
             }
         }
     }
@@ -406,7 +360,7 @@ pub fn generate(opts: &Options) -> Result<Files, String> {
     }
 
     progress("experiment files");
-    // ---- Experiment files, bounds, NRMSE.
+    // ---- Experiment files and bounds.
     let mut obs_csv = prov.csv(
         "experimental bound comparisons (statuses for the technical section)",
         &[
@@ -515,7 +469,7 @@ pub fn generate(opts: &Options) -> Result<Files, String> {
             vec![
                 (
                     "statement",
-                    J::s("An exceeded bound stays visible (decision 23). A bound comparison is neither an NRMSE point nor a validation: the register total includes inventory outside the SiC, so the model is expected not to exceed the bound only if no more than the compact inventory is released (science design Section 1.4)."),
+                    J::s("An exceeded bound stays visible (decision 23). A bound comparison is neither a point of an R\u{b2} curve nor a validation: the register total includes inventory outside the SiC, so the model is expected not to exceed the bound only if no more than the compact inventory is released (science design Section 1.4)."),
                 ),
                 (
                     "status_texts",
@@ -525,76 +479,88 @@ pub fn generate(opts: &Options) -> Result<Files, String> {
             ],
         ),
     );
-    let mut nrmse_csv = prov.csv(
-        "NRMSE records (metric-nrmse.md Section 7); no value exists while N = 0",
+    progress("R2 records");
+    // ---- R2 records and comparison files of the registered experimental curves (metric-r2.md).
+    let r2 = run_all(&prov, &reg, &opts.repo, opts.quick)?;
+    let mut r2_csv = prov.csv(
+        "R2 records of the registered experimental curves (metric-r2.md Section 7.1); no value exists unless every check passes",
         &[
-            "Set id",
-            "Nuclide",
-            "Test temperature (degC)",
+            "Record id",
+            "Curve id",
             "Method",
+            "Nuclide",
             "N",
-            "F_scale (dimensionless)",
-            "F_scale definition id",
-            "NRMSE (percent)",
+            "Status",
+            "Reason code",
+            "Failed checks",
+            "R2 (dimensionless)",
             "Display",
-            "Empty reason",
-            "Method applicable",
-            "Rows used",
+            "Definition id",
+            "Rows",
             "Rows excluded (row id:reason)",
         ],
     );
-    for r in &nrmse_records {
-        nrmse_csv.row(vec![
-            format!("{}.{}", r.meta.set_id, r.method),
-            r.meta.nuclide.clone(),
-            format!("{}", r.meta.temperature_c),
-            r.method.to_string(),
+    for r in &r2.records {
+        r2_csv.row(vec![
+            r.record_id.clone(),
+            r.curve_id.clone(),
+            r.method.letter().to_string(),
+            reg.curves
+                .get(&r.curve_id)
+                .map(|c| c.nuclide.clone())
+                .unwrap_or_default(),
             r.n.to_string(),
-            r.value
-                .as_ref()
-                .map_or(String::new(), |v| format!("{:e}", v.f_scale)),
-            crate::nrmse::FSCALE_DEFINITION_ID.to_string(),
-            r.value
-                .as_ref()
-                .map_or(String::new(), |v| format!("{:e}", v.nrmse_percent)),
+            if r.available {
+                "available"
+            } else {
+                "unavailable"
+            }
+            .to_string(),
+            r.reason.map_or(String::new(), |c| c.code().to_string()),
+            r.failed_checks
+                .iter()
+                .map(|c| c.id())
+                .collect::<Vec<_>>()
+                .join(";"),
+            r.r2.map_or(String::new(), |v| format!("{v:e}")),
             r.display.clone().unwrap_or_default(),
-            r.empty_reason
-                .map_or(String::new(), |e| e.code().to_string()),
-            r.method_applicable.to_string(),
-            r.rows_used.join(" "),
-            r.rows_excluded.join(" "),
+            crate::r2::DEFINITION_ID.to_string(),
+            r.row_ids.join(";"),
+            r.rows_excluded.join(";"),
         ]);
     }
-    let with_value = nrmse_records.iter().filter(|r| r.value.is_some()).count();
+    let with_value = r2.records.iter().filter(|r| r.r2.is_some()).count();
+    for (name, text) in &r2.files {
+        files.insert(name.clone(), text.clone());
+    }
     files.insert(
-        "nrmse.json".into(),
+        "r2.json".into(),
         json_file(
             &prov,
-            "NRMSE records (the experimental comparison metric of decisions 64 and 65)",
+            "R2 records of the registered experimental curves (the whole-curve agreement metric of decision 69)",
             vec![
                 (
                     "definition",
                     J::obj(vec![
-                        ("id", J::s(crate::nrmse::FSCALE_DEFINITION_ID)),
+                        ("id", J::s(crate::r2::DEFINITION_ID)),
                         (
                             "formula",
-                            J::s("NRMSE(%) = 100 sqrt((1/N) sum_i (F_model,i - F_exp,i)^2) / F_scale, F_scale = max_i F_exp,i over the compatible points of the set"),
+                            J::s("R2 = 1 - SS_res / SS_tot, SS_res = sum_i (F_exp,i - F_model,i)^2, SS_tot = sum_i (F_exp,i - mean F_exp)^2, over the N matched points of one curve; per curve, never pooled"),
                         ),
-                        ("document", J::s("metric-nrmse.md")),
+                        ("document", J::s("metric-r2.md")),
                     ]),
                 ),
                 (
                     "present_state",
                     J::s(format!(
-                        "{with_value} of {} records have a value. The registers hold no compatible point set today (science design Section 1.3: the AGR-1 heating-test totals and time series are upper bounds, not point comparisons), so N = 0 and no NRMSE value is produced; none is formed by relaxing a rule. The record names every excluded row and its reason.",
-                        nrmse_records.len()
+                        "{with_value} of {} records have a value. Every registered curve fails at least one check of the definition (the first failing check of each curve is in its record), so no value is produced; none is formed by relaxing a check.",
+                        r2.records.len()
                     )),
                 ),
                 (
-                    "difference_from_the_web_specification",
-                    J::s("deviations.json of web-v3-spec Section 4.2 is replaced by this file (nrmse.json): science design Section 7.3 and metric-nrmse.md Section 7 define the NRMSE record, and the spec's delta_exp definition is superseded by decision 64."),
+                    "records",
+                    J::Arr(r2.records.iter().map(|r| r.json.clone()).collect()),
                 ),
-                ("records", J::Arr(nrmse_records.iter().map(record_json).collect())),
             ],
         ),
     );
@@ -655,12 +621,15 @@ pub fn generate(opts: &Options) -> Result<Files, String> {
     }
 
     // ---- Labels and support.
-    files.insert("labels.json".into(), labels_json(&prov, &nrmse_records));
+    files.insert(
+        "labels.json".into(),
+        labels_json(&prov, &r2.records, &r2.captions),
+    );
     files.insert("support.json".into(), support_json(&prov, &reg, cells)?);
     files.insert("csv/curves.csv".into(), curves_csv.finish());
     files.insert("csv/scenario_series.csv".into(), scen_csv.finish());
     files.insert("csv/bounds.csv".into(), obs_csv.finish());
-    files.insert("csv/nrmse.csv".into(), nrmse_csv.finish());
+    files.insert("csv/r2.csv".into(), r2_csv.finish());
     files.insert("csv/convergence.csv".into(), c1.finish());
     files.insert("csv/agreement.csv".into(), c2.finish());
     files.insert("csv/conservation.csv".into(), c3.finish());
@@ -746,7 +715,10 @@ fn cell_json(
                 ),
                 ("dataset_ids", J::Arr(vec![J::s(dataset)])),
                 ("row_ids", J::Arr(rows)),
-                ("nrmse_label", J::s("none: no value exists while N = 0")),
+                (
+                    "r2_records",
+                    J::s("r2.json: no R\u{b2} value exists for the registered curves"),
+                ),
             ]),
         ),
         ("curve_file", J::s(format!("curves/{key}.json"))),

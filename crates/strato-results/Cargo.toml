@@ -1,7 +1,7 @@
 [package]
 name = "strato-results"
 version = "0.1.0"
-description = "The shared results pipeline of STRATO: one program that writes every number and figure data set used by the website, the report and the deck (curves, scenarios, experimental data, NRMSE records, bound statuses, verification figures) with provenance headers, and a check mode that fails when a committed output is stale. A tool, not part of the WebAssembly solver."
+description = "The shared results pipeline of STRATO: one program that writes every number and figure data set used by the website, the report and the deck (curves, scenarios, experimental data, R2 records, bound statuses, verification figures) with provenance headers, and a check mode that fails when a committed output is stale. A tool, not part of the WebAssembly solver."
 edition.workspace = true
 license.workspace = true
 repository.workspace = true

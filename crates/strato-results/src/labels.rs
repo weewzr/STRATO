@@ -3,8 +3,9 @@
 
 use strato_compare::json::J;
 
-use crate::experiment::{record_json, NrmseRecord, A1, BP1, BP2};
+use crate::experiment::{A1, BP1, BP2};
 use crate::output::{json_file, Prov};
+use crate::r2curve::R2Record;
 
 /// The colour of Method A.
 pub const COLOUR_A: &str = "#2563EB";
@@ -23,8 +24,9 @@ fn text(id: &str, plain: &str, latex: &str) -> J {
     ])
 }
 
-/// The `labels.json` file.
-pub fn labels_json(prov: &Prov, records: &[NrmseRecord]) -> String {
+/// The `labels.json` file: the label texts, the R2 labels of the records and the caption record of
+/// every curve (`metric-r2.md` Sections 7.3 and 7.4).
+pub fn labels_json(prov: &Prov, records: &[R2Record], captions: &[J]) -> String {
     let texts = vec![
         text("method_a", "Method A: BTCS", "\\text{Method A: BTCS}"),
         text(
@@ -130,29 +132,27 @@ pub fn labels_json(prov: &Prov, records: &[NrmseRecord]) -> String {
             "\\text{C15 evaluated outside its documented application (955 to 1197 }^{\\circ}\\mathrm{C})",
         ),
     ];
-    let nr: Vec<J> = records
+    let r2: Vec<J> = records
         .iter()
         .map(|r| {
             J::obj(vec![
-                ("set_id", J::s(format!("{}.{}", r.meta.set_id, r.method))),
+                ("record_id", J::s(r.record_id.clone())),
+                (
+                    "status",
+                    J::s(if r.available {
+                        "available"
+                    } else {
+                        "unavailable"
+                    }),
+                ),
+                ("reason_code", r.reason.map_or(J::Null, |c| J::s(c.code()))),
                 ("display", r.display.clone().map_or(J::Null, J::s)),
-                (
-                    "label_latex",
-                    r.display
-                        .as_ref()
-                        .map_or(J::Null, |d| J::s(crate::nrmse::label(r.method, d).0)),
-                ),
-                (
-                    "label_plain",
-                    r.display
-                        .as_ref()
-                        .map_or(J::Null, |d| J::s(crate::nrmse::label(r.method, d).1)),
-                ),
+                ("label_latex", r.label_latex.clone().map_or(J::Null, J::s)),
+                ("label_plain", r.label_plain.clone().map_or(J::Null, J::s)),
                 ("shown_on_graph", J::Bool(r.display.is_some())),
             ])
         })
         .collect();
-    let _ = record_json;
     json_file(
         prov,
         "label texts of the graphs generated in Rust",
@@ -171,20 +171,21 @@ pub fn labels_json(prov: &Prov, records: &[NrmseRecord]) -> String {
                 ]),
             ),
             (
-                "nrmse_display_rule",
-                J::s("NRMSE_A = x% in blue and NRMSE_B = y% in red, two significant figures from the stored display string; nothing else on the graph: no N, no uncertainty, no status word, no placeholder where no value exists (metric-nrmse.md Section 6)"),
+                "r2_display_rule",
+                J::s("R²_A = x in blue and R²_B = y in red, from the stored display string, which is rounded toward minus infinity; nothing else inside the plot area: no N, no interval, no status word, no placeholder where no value exists; the reason, the citation and the link stand below the graph (metric-r2.md Sections 7.2 to 7.4)"),
             ),
             (
-                "nrmse_label_templates",
+                "r2_label_templates",
                 J::obj(vec![
-                    ("latex_a", J::s("\\mathrm{NRMSE}_{\\mathrm{A}} = <display>\\,\\%")),
-                    ("latex_b", J::s("\\mathrm{NRMSE}_{\\mathrm{B}} = <display>\\,\\%")),
-                    ("plain_a", J::s("NRMSE_A = <display>%")),
-                    ("plain_b", J::s("NRMSE_B = <display>%")),
+                    ("latex_a", J::s("R^{2}_{\\mathrm{A}} = <display_latex>")),
+                    ("latex_b", J::s("R^{2}_{\\mathrm{B}} = <display_latex>")),
+                    ("plain_a", J::s("R²_A = <display>")),
+                    ("plain_b", J::s("R²_B = <display>")),
                 ]),
             ),
             ("texts", J::Arr(texts)),
-            ("nrmse_labels", J::Arr(nr)),
+            ("r2_labels", J::Arr(r2)),
+            ("r2_captions", J::Arr(captions.to_vec())),
         ],
     )
 }
