@@ -493,7 +493,7 @@ export function StepBody({ stage, physics, showTitle }: { stage: Stage; physics:
             <ul className="more__links" aria-label="Code of the BTCS solver">
               {impl.code.map((c) => (
                 <li key={`${c.path}:${c.symbol}`}>
-                  Code: <a href={codeHref(c)}>{c.label}</a> in <code>{c.path}</code>
+                  Code: <a href={codeHref(c)} title={c.path}>{c.label}</a>
                 </li>
               ))}
             </ul>
@@ -502,7 +502,7 @@ export function StepBody({ stage, physics, showTitle }: { stage: Stage; physics:
             <ul className="more__links" aria-label="Code on the development branch" data-testid="dev-code">
               {impl.devCode.map((c) => (
                 <li key={`${c.path}:${c.symbol}`}>
-                  Code, development branch, not in this build: {c.label} in <code>{c.path}</code>
+                  Code, development branch, not in this build: <span title={c.path}>{c.label}</span>
                 </li>
               ))}
             </ul>
@@ -559,9 +559,6 @@ export function StepBody({ stage, physics, showTitle }: { stage: Stage; physics:
       refs: '',
       body: (
         <>
-          <p className="more__note" data-testid="live-values">
-            {def.live}
-          </p>
           {support.supported ? (
             <LiveValues stage={stage} />
           ) : (
@@ -616,11 +613,6 @@ export function StepBody({ stage, physics, showTitle }: { stage: Stage; physics:
           <p className="eq-where" data-testid="equation-caption">
             {def.summary}
           </p>
-          {stage === 13 ? (
-            <p className="live-note" data-testid="live-note">
-              Numerical verification checks that the code solves its own equations. It is not experimental validation. The checks of the solver and their results are under Verify.
-            </p>
-          ) : null}
           {stage === STAGES[STAGES.length - 1] && catalogueRows.length > 0 ? <Stage6Catalogue rows={catalogueRows} catalogue={catalogue} /> : null}
         </div>
         <div className="builder__side">

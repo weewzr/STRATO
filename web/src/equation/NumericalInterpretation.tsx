@@ -1,7 +1,7 @@
 import { useId } from 'react';
 import { useStrato } from '../state/store';
 import { simulationMethod } from './availability';
-import { scenarioStatus, STATUS_DEFINITION } from './capability';
+import { scenarioStatus } from './capability';
 import { StepBody } from './EquationBuilder';
 import { effectivePhysics, itemExpandId, itemStatus, itemVisible, NOTATION, NUMERICAL_ITEMS, scenarioNote, type NumericalItem } from './numerics';
 import { SCENARIO_LABEL } from './scenarios';
@@ -44,11 +44,6 @@ function Item({ item }: { item: NumericalItem }) {
       <div id={ids.panel} className="num-item__body" role="region" aria-labelledby={ids.head} hidden={!open}>
         {open ? (
           <>
-            {item.mechanism !== null && !loading ? (
-              <p className="num-item__status" data-testid={`num-status-text-${item.id}`}>
-                {STATUS_DEFINITION[status]}
-              </p>
-            ) : null}
             {scenario !== null && note !== null ? (
               <p className="scenario-note" data-testid={`scenario-note-${item.id}`} data-scenario={scenario}>
                 <strong>{SCENARIO_LABEL[scenario]}</strong> <StatusTag status={scenarioStatus(cap, scenario)} loading={loading} id={`scenario-note-status-${item.id}`} /> <RichText text={note} />
@@ -88,7 +83,6 @@ export function NumericalInterpretation() {
         <h2 id={ids.title} className="block__title">
           Numerical Interpretation
         </h2>
-        <p className="block__context">How the equation above is discretised by the backward-time central-space (BTCS) scheme and solved in Rust.</p>
       </div>
       <button
         type="button"
@@ -103,15 +97,11 @@ export function NumericalInterpretation() {
       <div id={ids.panel} className="numerical" data-testid="numerical-interpretation" hidden={!open}>
         {open ? (
           <>
-            <p className="numerical__status" data-testid="numerical-status" data-supported={support.supported ? 'true' : 'false'}>
-              {method === 'loading'
-                ? 'The solver that runs the simulation is loading.'
-                : method === 'unavailable'
-                  ? 'The solver of this page does not offer the BTCS capability at the live status, so the simulation shows no result.'
-                  : support.supported
-                    ? 'The simulation solves these equations with the verified finite-difference BTCS Rust solver.'
-                    : 'No simulation runs for this selection; Live simulation gives the reason. The equations and explanations remain.'}
-            </p>
+            {support.supported && method === 'btcs' ? null : (
+              <p className="numerical__status" data-testid="numerical-status" data-supported={support.supported ? 'true' : 'false'}>
+                {method === 'loading' ? 'The solver is loading.' : method === 'unavailable' ? 'The solver of this page does not offer the BTCS capability, so no result is shown.' : 'No simulation runs for this selection.'}
+              </p>
+            )}
             <p className="numerical__notation" data-testid="numerical-notation">
               <RichText text={NOTATION} />
             </p>

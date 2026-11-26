@@ -74,15 +74,10 @@ export const DISCLAIMERS = [
 ];
 
 /**
- * TEMPORARY, NAMED EXCEPTION: "explore" is the only page not yet cleaned. It is rebuilt by the other
- * workstream (Workstream A) and cleaned in the integration task, which REMOVES THIS EXCEPTION (and the
- * whole table) once the rebuilt Explore page passes every rule. Every other page and the shell (header and
- * footer) pass all rules.
- * The check prints a NOTE for an exception that is no longer needed, so it can be removed.
+ * No page is excepted from any rule. The parameter exceptions of the evaluation functions remains for the
+ * tests of the guards themselves (a fixture can name an exception to prove that it is reported).
  */
-export const TEMPORARY_EXCEPTIONS = {
-  explore: ['build-hash', 'path', 'caption', 'prose', 'disclaimer'],
-};
+export const TEMPORARY_EXCEPTIONS = {};
 
 const norm = (s) => s.replace(/[‘’]/g, "'").replace(/\s+/g, ' ').trim();
 

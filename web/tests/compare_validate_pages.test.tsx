@@ -32,7 +32,10 @@ describe('what left Compare and Validate is in Scientific Documentation', () => 
     expect(text('validate-limits')).toContain('A constant-temperature result of Method A: BTCS is never compared with heating-test data');
     expect(text('validate-status')).toContain('It is a different question from verification');
     expect(text('validate-status')).toContain('What the Validate page will show');
-    expect(text('validate-status')).toContain('Error metrics computed in Rust, never typed in.');
-    expect(text('validate-status')).not.toContain('R²');
+    // The R² rule (decisions 69 and 74) replaced the sentence on error metrics: R² is the only displayed agreement metric.
+    expect(text('validate-status')).toContain('R² is the only displayed agreement metric');
+    expect(text('validate-status')).toContain('computed in Rust per release-versus-time curve');
+    expect(text('validate-status')).toContain('a caption below the graph says why');
+    expect(text('validate-status')).not.toContain('never typed in');
   });
 });

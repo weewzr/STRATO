@@ -9,7 +9,6 @@ import {
   entryPathOfSlug,
   firstColumn,
   GALLERY_ENTRY,
-  introBlocks,
   pageReferences,
   regimeEntry,
   REGIMES,
@@ -23,7 +22,7 @@ import {
   rowKey,
 } from '../research/entries';
 import { Counts } from '../research/FutureResearch';
-import { GalleryItem, GalleryPlanned, ReferenceList, RowChip, RowList, RowRecords, RowTable, StatusLegend } from '../research/parts';
+import { GalleryItem, ReferenceList, RowChip, RowList, RowRecords, RowTable, StatusLegend } from '../research/parts';
 import { isImplementedStatus } from '../research/status';
 import { hrefDocumentation, hrefFor, hrefResearch, useResearchPath } from '../route';
 import { SectionHeading, TableBox, useHeadingFocus } from './common';
@@ -290,52 +289,35 @@ const GALLERY_TITLES = {
 
 function GalleryPage({ cat }: { cat: Catalogue }) {
   const entry = cat.entries[GALLERY_ENTRY];
-  const intro = introBlocks(entry);
   const groups = (['screenshot', 'reconstruction', 'placeholder'] as const).map((k) => ({ kind: k, items: cat.gallery.filter((g) => g.kind === k) }));
-  const refs = pageReferences(intro, cat.gallery.map((g) => g.reference_ids));
+  const planned = groups.find((g) => g.kind === 'placeholder')?.items.length ?? 0;
   return (
     <div className="gallery-page" data-testid="gallery-page">
       <Crumbs items={[{ label: 'Materials Studio gallery' }]} />
       <PageTitle>{entry?.title ?? 'Materials Studio gallery'}</PageTitle>
       <p className="gallery-page__status" data-testid="gallery-status">
-        Planned calculations only: no image exists yet. <a href={hrefDocumentation('research-gallery')}>Rules</a>
+        {planned} planned calculations; no image exists yet. <a href={hrefDocumentation('research-gallery')}>Rules</a>
+        {' · '}
+        <a href={hrefDocumentation('research-gallery-planned')}>The planned calculations</a>
       </p>
-      <ul className="gallery-kinds" aria-label="Kinds of gallery item">
-        {groups.map((g) => (
-          <li key={g.kind} className={`gallery-kinds__item gallery-kinds__item--${g.kind}`} data-kind-count={g.items.length}>
-            <span className="gallery-kinds__swatch" aria-hidden="true" />
-            {GALLERY_TITLES[g.kind]}: <span className="gallery-kinds__n">{g.items.length}</span>
-          </li>
-        ))}
-      </ul>
       {groups
-        .filter((g) => g.items.length > 0)
+        .filter((g) => g.kind !== 'placeholder' && g.items.length > 0)
         .map((g) => (
           <section key={g.kind} className={`gallery-group gallery-group--${g.kind}`} aria-labelledby={`gallery-${g.kind}`} data-testid={`gallery-group-${g.kind}`}>
             <h2 id={`gallery-${g.kind}`}>{GALLERY_TITLES[g.kind]}</h2>
-            {g.kind === 'placeholder' ? (
-              <GalleryPlanned items={g.items} />
-            ) : (
-              <div className="gallery-grid">
-                {g.items.map((it) => (
-                  <GalleryItem key={it.item_id} item={it} catalogue={cat} />
-                ))}
-              </div>
-            )}
+            <div className="gallery-grid">
+              {g.items.map((it) => (
+                <GalleryItem key={it.item_id} item={it} catalogue={cat} />
+              ))}
+            </div>
           </section>
         ))}
-      <div className="prose">
-        <h2 className="entry-h entry-h--2">References for the planned subjects</h2>
-        <ReferenceList ids={refs} catalogue={cat} label="References for the planned subjects" />
-      </div>
     </div>
   );
 }
 
 function RoadmapPage({ cat }: { cat: Catalogue }) {
   const entry = cat.entries[ROADMAP_ENTRY];
-  // The introduction of the document (before its first heading) is in Scientific Documentation, once.
-  const body = bodyBlocks(entry).slice(introBlocks(entry).length);
   const summary = roadmapSummary(cat);
   return (
     <div className="roadmap-page" data-testid="roadmap-page">
@@ -372,9 +354,9 @@ function RoadmapPage({ cat }: { cat: Catalogue }) {
           })}
         </ol>
       </section>
-      <div className="prose">
-        <Blocks blocks={body} catalogue={cat} />
-      </div>
+      <p className="roadmap-page__more" data-testid="roadmap-more">
+        <a href={hrefDocumentation('research-roadmap-body')}>Status gates, summary and brick narratives</a>
+      </p>
     </div>
   );
 }

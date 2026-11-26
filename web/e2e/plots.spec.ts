@@ -122,8 +122,9 @@ test.describe('block B plots', () => {
     for (const id of ['profile-figure', 'release-figure']) {
       const fig = page.getByTestId(id);
       await expect(fig.locator('.figure__head .badge')).toHaveText('COMPUTED v2.0');
-      await expect(fig.locator('figcaption')).toContainText('Source: Method A: BTCS, solver version');
-      await expect(fig.locator('figcaption')).toContainText('Page build');
+      // One sentence under the figure; the source line (solver version and build) is in the exported file and in Scientific Documentation.
+      await expect(fig.locator('figcaption')).not.toContainText('Page build');
+      expect(((await fig.locator('figcaption').innerText()) ?? '').length).toBeLessThanOrEqual(220);
     }
     await expect(page.getByTestId('profile-plot').locator('.xtitle')).toHaveText('Radius (m)');
     await expect(page.getByTestId('profile-plot').locator('.ytitle')).toHaveText('Concentration (mol/m³)');

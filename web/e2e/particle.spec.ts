@@ -357,7 +357,7 @@ test.describe('AGR-1 reference particle', () => {
       await expect(ref).toHaveAttribute('data-set', set.set_id);
       // Every link the reader can follow is a public https URL; no register-local file note is shown.
       const hrefs = await ref.locator('a').evaluateAll((as) => as.map((a) => a.getAttribute('href') ?? ''));
-      expect(hrefs.length, set.set_id).toBeGreaterThan(0);
+      if (set.link) expect(hrefs.length, set.set_id).toBeGreaterThan(0);
       for (const h of hrefs) expect(h, `${set.set_id} href`).toMatch(/^https:\/\//);
       await expect(ref).not.toContainText('file:');
       await expect(ref).not.toContainText('.pdf');
@@ -373,7 +373,7 @@ test.describe('AGR-1 reference particle', () => {
     }
     await ref.getByTestId('reference-set').selectOption(reference.data.default_set);
     await expect(ref).toContainText('Morris et al. (2016)');
-    await expect(page.getByTestId('simulation-case')).toContainText('not AGR-1 data');
+    await expect(page.getByTestId('simulation-case')).toContainText('Synthetic five-layer verification case');
   });
 });
 

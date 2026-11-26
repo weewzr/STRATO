@@ -2,7 +2,7 @@
 // and Sections 3.1 and 3.2): every page of the Research section and block E render from the
 // generated catalogue; every status is one of the five words and equals its row; no pending
 // mechanism has an enabled switch; no entry lacks its references; gallery placeholders show no image.
-import { act, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import catalogueJson from '../src/generated/research_catalogue.json';
@@ -232,7 +232,8 @@ describe('statuses shown equal the catalogue, as word and shape', () => {
   it('shows only the five words, each chip of a row equal to that row, on every Research page and in block E', () => {
     const check = (where: string) => {
       const chips = Array.from(document.querySelectorAll<HTMLElement>('.status-chip'));
-      if (where !== 'references') expect(chips.length, where).toBeGreaterThan(0);
+      // The references page and the gallery (one status line, no placeholder cards) carry no status chip.
+      if (where !== 'references' && where !== 'gallery') expect(chips.length, where).toBeGreaterThan(0);
       for (const c of chips) {
         const word = c.querySelector('.status-chip__word')?.textContent ?? '';
         expect(STATUSES as readonly string[], `${where}: ${word}`).toContain(word);
@@ -401,23 +402,19 @@ describe('no pending mechanism has an enabled switch', () => {
 });
 
 describe('Materials Studio gallery', () => {
-  it('lists every placeholder compactly as PENDING with its title and species, and no image', () => {
+  it('shows the placeholders as one compact status line (the count and two links), with no card and no image', () => {
     renderPage('gallery');
-    const items = screen.getAllByTestId('gallery-item');
-    expect(items).toHaveLength(CATALOGUE.gallery.length);
-    for (const it of items) {
-      const row = CATALOGUE.gallery.find((g) => g.item_id === it.dataset.item)!;
-      expect(it.dataset.kind).toBe(row.kind);
-      if (row.kind !== 'placeholder') continue;
-      expect(it.querySelector('img, canvas, svg:not(.status-chip__shape), picture, video')).toBeNull();
-      expect(it.querySelector('.status-chip__word')?.textContent).toBe('PENDING');
-      expect(it.textContent).toContain(row.title);
-    }
-    // The sentence that all planned calculations share is not repeated on the page.
+    const planned = CATALOGUE.gallery.filter((g) => g.kind === 'placeholder');
+    const line = screen.getByTestId('gallery-status');
+    expect(line.textContent).toContain(`${planned.length} planned calculations; no image exists yet.`);
+    const hrefs = [...line.querySelectorAll('a')].map((a) => a.getAttribute('href'));
+    expect(hrefs).toEqual(['#/documentation/research-gallery', '#/documentation/research-gallery-planned']);
+    expect(screen.queryAllByTestId('gallery-item')).toHaveLength(0);
+    expect(screen.queryByTestId('gallery-planned')).toBeNull();
+    // The sentence that all planned calculations share is not on the page.
     expect(document.body.textContent ?? '').not.toContain('planned for a future phase of the project');
     expect(document.querySelector('[data-section="research"] img')).toBeNull();
   });
-
   it('holds the full text of every planned calculation once in Scientific Documentation, with the future-phase wording', () => {
     render(<Documentation />);
     const details = screen.getAllByTestId('gallery-detail');
@@ -464,10 +461,23 @@ describe('roadmap, future phases and block E', () => {
     expect(planned.length).toBeGreaterThan(0);
     renderPage('roadmap');
     const roadmap = screen.getByTestId('roadmap-page');
-    expect(roadmap.textContent).toMatch(/Materials Studio calculations/);
-    expect(roadmap.textContent).toMatch(/FLiBe and cover-gas transport/);
+    // The narrative blocks, the status gates and the summary left the page (decision 71); the page keeps the bricks, one link
+    // to them, and brick 9 names the downstream transport as planned for a future phase.
+    expect(roadmap.textContent).toMatch(/FLiBe coolant and cover gas/);
     expect(roadmap.textContent).toMatch(/planned for a future phase/);
+    expect(roadmap.textContent).not.toMatch(/Delivered by/);
+    expect(roadmap.textContent).not.toMatch(/Status gates \(all bricks\)/);
     expect(within(roadmap).getByTestId('roadmap-bricks').querySelectorAll('[data-brick]')).toHaveLength(9);
+    expect(within(roadmap).getByTestId('roadmap-more').querySelector('a')?.getAttribute('href')).toBe('#/documentation/research-roadmap-body');
+    cleanup();
+    // The full document body is in Scientific Documentation, with the two future items, the summary and its Delivered by column.
+    render(<Documentation />);
+    const body = document.getElementById('doc-research-roadmap-body')?.textContent ?? '';
+    expect(body).toMatch(/Materials Studio calculations/);
+    expect(body).toMatch(/FLiBe and cover-gas transport/);
+    expect(body).toMatch(/planned for a future phase/);
+    expect(body).toMatch(/Status gates \(all bricks\)/);
+    expect(body).toMatch(/Delivered by/);
   });
 
   // The summary of the catalogue left the Explore page with the hierarchy of 26 Nov 2026 (block E is now

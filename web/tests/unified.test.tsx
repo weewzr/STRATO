@@ -65,7 +65,7 @@ describe('the reply is shown only under the selection it was computed for', () =
     expect(screen.getByTestId('bal-inventory').dataset.value).toBe(String(RUN.balance.final.remaining_mol));
     act(() => useStrato.getState().setSelection({ physics: 'decay' }));
     expect(screen.queryByTestId('bal-inventory')).toBeNull();
-    expect(screen.getByTestId('balance-panel').textContent).toContain('Appears when the Rust solver has run');
+    expect(screen.getByTestId('balance-panel').textContent).toContain('Label: none');
   });
 
   it('gives the live values of a numerical step no number of a reply computed for another selection', () => {
@@ -86,23 +86,20 @@ describe('the running computation is described from the capability of the build'
     });
     render(<ActiveModel />);
     const text = screen.getByTestId('active-model').textContent ?? '';
-    expect(text).toContain('Method A: BTCS');
-    expect(text).toContain('no generation and no decay');
-    // The sentence starts with a capital letter (the earlier text began it in lower case).
-    expect(text).toContain('. Fission-product generation, radioactive decay and temperature-dependent diffusion are not computed by this build');
-    expect(text).toContain('Running computation');
+    // One line; the solver is named by the status line beside it, the scope sentence is in Scientific Documentation.
+    expect(text).toBe('Computes: Baseline diffusion. Not computed: fission-product generation, radioactive decay and temperature-dependent diffusion.');
     expect(screen.getByTestId('active-model').dataset.computed).toBe('');
   });
 
-  it('says that nothing runs, and names the solver of the build, when the selection is not computed', () => {
+  it('does not say that it computes the selection, and says what the build computes, when the selection is not computed', () => {
     act(() => {
       useStrato.getState().setSolver({ state: 'ready' });
       useStrato.getState().setCapabilities([BTCS_CAPABILITY]);
     });
     render(<ActiveModel supported={false} />);
     const text = screen.getByTestId('active-model').textContent ?? '';
-    expect(text).toContain('Solver of this build: Method A: BTCS');
-    expect(text).not.toContain('Running computation');
+    expect(text).toContain('This build computes: Baseline diffusion');
+    expect(text).not.toMatch(/^Computes/);
   });
 
   it('derives the baseline phrase from the capability object', () => {
@@ -111,7 +108,7 @@ describe('the running computation is described from the capability of the build'
       useStrato.getState().setCapabilities(['some_other_capability']);
     });
     render(<ActiveModel />);
-    expect(screen.getByTestId('active-model').textContent).toContain('It implements no model of this page');
+    expect(screen.getByTestId('active-model').textContent).toContain('No model of this page');
   });
 
   it('says nothing before the wrapper has reported', () => {

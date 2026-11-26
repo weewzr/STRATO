@@ -169,7 +169,7 @@ describe('Explore page (owner decision M7)', () => {
     // Without a solver reply (no worker in this test) the readout says so and carries no label.
     expect(within(e).getByTestId('release-readout').textContent).toContain('Waiting for the solver');
     expect(within(e).getByTestId('release-readout').querySelector('.badge')).toBeNull();
-    expect(within(d).getByTestId('simulation-case').textContent).toContain('not AGR-1 data');
+    expect(within(d).getByTestId('simulation-case').textContent).toContain('Synthetic five-layer verification case');
     // Block B holds the five scenario buttons.
     expect(within(screen.getByTestId('block-b')).getAllByRole('radio')).toHaveLength(5);
   });

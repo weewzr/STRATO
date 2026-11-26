@@ -145,11 +145,11 @@ describe('particle view', () => {
     render(<ParticleView config={DEFAULT_CASE.config} provenance={DEFAULT_CASE.provenance} />);
     const caption = () => screen.getByTestId('particle-figure').querySelector('figcaption')?.textContent ?? '';
     expect(useStrato.getState().view.logColour).toBe(true);
-    expect(caption()).toContain('logarithmic colour scale over 6 decades up to the largest nodal concentration of the run');
-    expect(caption()).toContain('at or below 10⁻⁶ of it take the lowest colour');
-    expect(caption()).not.toContain('from 0 to');
+    // One sentence; the details of the scale (the largest nodal concentration, the lowest colour) are in Scientific Documentation (explore-figures).
+    expect(caption()).toContain('logarithmic colour scale over 6 decades');
+    expect(caption()).not.toContain('linear');
     fireEvent.change(screen.getByTestId('colour-scale'), { target: { value: 'linear' } });
-    expect(caption()).toContain('linear colour scale from 0 to the largest nodal concentration of the run');
+    expect(caption()).toContain('linear colour scale');
   });
 });
 

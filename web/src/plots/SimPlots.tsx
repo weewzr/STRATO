@@ -1,8 +1,6 @@
 import { useId, useMemo, type KeyboardEvent, type ReactNode } from 'react';
 import { BUILD } from '../build';
-import { findCase } from '../data/case';
 import { METHOD_1, METHOD_2 } from '../methods';
-import { hrefFor } from '../route';
 import { Badge, Sci } from '../panels/Badge';
 import type { RunOk } from '../solver/types';
 import { useShownRun } from '../solver/shown';
@@ -38,24 +36,11 @@ function EmptyFigure({ title, testId, number }: { title: ReactNode; testId: stri
         <span className="readout__nolabel">Label: none</span>
         <span className="figure__kind">{title}</span>
       </div>
-      <p className="plotfig__empty">Appears when the Rust solver has run the current inputs.</p>
+      <p className="plotfig__empty">No result yet.</p>
       <figcaption className="figure__caption">
-        <strong>Figure {number}.</strong> {title}: drawn from the solver's reply; no plot is shown without one.
+        <strong>Figure {number}.</strong> {title}.
       </figcaption>
     </figure>
-  );
-}
-
-function FigureSource({ run }: { run: RunOk }) {
-  const caseId = useStrato((s) => s.caseId);
-  const entry = findCase(caseId);
-  return (
-    <span className="figure__source">
-      Source: {METHOD_1}, solver version {run.solver.version}, Rust solver in WebAssembly, build <code>{run.engine.commit}</code>, run on the active
-      parameters starting from <code>{entry?.provenance.input_file ?? 'the case file'}</code> (synthetic verification case, not physical data).
-      Page build <code>{BUILD.commit}</code>. Values as returned by the solver; the CSV and JSON of this run are under{' '}
-      <a href={hrefFor('data')}>Data</a>.
-    </span>
   );
 }
 
@@ -103,11 +88,7 @@ export function RadialProfile() {
         exportInfo={{ name: `strato-profile-${run.engine.commit}`, source: runSource(run) }}
       />
       <figcaption className="figure__caption">
-        <strong>Figure 2.</strong> Concentration at each node of the solver grid at the playback time, plotted at the node radii and joined
-        by straight lines, against the radius; the layers are the coloured bands, in the colours of the particle.{' '}
-        {log ? 'Logarithmic axis over six decades up to the largest concentration of the run, the scale of the particle colouring; values below it lie off the axis.' : 'Linear axis from zero to the largest concentration of the run.'}
-        {showStart ? ' Grey line: the start profile at time 0 s.' : null} The axis stays fixed during playback, so the frames compare.
-        <FigureSource run={run} />
+        <strong>Figure 2.</strong> Concentration at each solver node against radius at the playback time{showStart ? '; the grey line is the start profile' : ''}.
       </figcaption>
     </figure>
   );
@@ -167,22 +148,7 @@ export function ReleaseCurves() {
         exportInfo={{ name: `strato-release-${run.engine.commit}`, source: runSource(run) }}
       />
       <figcaption className="figure__caption">
-        <strong>Figure 3.</strong> Fraction of the initial inventory released through the outer surface, from {METHOD_1} (blue line) and from{' '}
-        {METHOD_2} (red line), at the output times the solver recorded; the thin vertical line and the ring mark the playback time.{' '}
-        {a ? (
-          <>
-            {METHOD_2} is valid from the time <Sci value={a.valid_from_s} unit="s" digits={4} /> (shaded before) and accurate to{' '}
-            <Sci value={a.accuracy_floor} digits={4} />
-            {log ? ' (the thin grey horizontal line)' : ''}; it uses {a.modes} eigenmodes.{' '}
-          </>
-        ) : (
-          `${METHOD_2} was not computed for these inputs; the reason is listed under the numerical diagnostics. `
-        )}
-        The pointwise difference of the two curves is not drawn here: it is a difference of two nearly equal numbers, sensitive to their
-        last digits, which differ between this browser build and the native build of the solver. The largest and the final difference that
-        the solver returns are in the numerical diagnostics; the pointwise difference of the verified case, from the native program, is
-        plotted under <a href={hrefFor('verify')}>Verify</a>.
-        <FigureSource run={run} />
+        <strong>Figure 3.</strong> Fraction of the initial inventory released through the outer surface; the vertical line marks the playback time.{a ? null : ` ${METHOD_2} was not computed for these inputs.`}
       </figcaption>
     </figure>
   );

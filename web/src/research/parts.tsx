@@ -328,24 +328,6 @@ export function withoutNotPerformed(text: string): string {
   return text.replace(NOT_PERFORMED, '');
 }
 
-/** The planned calculations as a compact list: title, status and species. Their full text is in Scientific Documentation. */
-export function GalleryPlanned({ items }: { items: readonly GalleryRow[] }) {
-  return (
-    <ul className="gallery-planned" aria-label="Planned calculations" data-testid="gallery-planned">
-      {items.map((it) => {
-        const species = gallerySpecies(it.species);
-        return (
-          <li key={it.item_id} className="gallery-planned__item" data-testid="gallery-item" data-kind={it.kind} data-item={it.item_id}>
-            <StatusChip status={it.status} compact />
-            <span className="gallery-planned__title">{it.title}</span>
-            <span className="gallery-planned__meta">{species.length > 0 ? species.join(', ') : 'no species'}</span>
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
 /** One planned calculation in full, once (Scientific Documentation): the texts of its gallery row, nothing shortened. */
 export function GalleryPlannedDetail({ item, catalogue }: { item: GalleryRow; catalogue: Catalogue }) {
   const species = gallerySpecies(item.species);

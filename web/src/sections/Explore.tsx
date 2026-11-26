@@ -1,5 +1,4 @@
 import { useId } from 'react';
-import { repoFile } from '../build';
 import { simulationMethod } from '../equation/availability';
 import { PHYSICS_LABEL } from '../equation/physics';
 import { unsupportedMessage } from '../equation/capability';
@@ -17,6 +16,7 @@ import { Playback } from '../panels/Playback';
 import { ParticleView } from '../particle/ParticleView';
 import { ReferenceParticle } from '../particle/ReferenceParticle';
 import { SimPlots } from '../plots/SimPlots';
+import { hrefDocumentation } from '../route';
 import { configDifferences, inputKey, useStrato } from '../state/store';
 import { useHeadingFocus } from './common';
 
@@ -85,19 +85,11 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
             Live simulation
           </h2>
           <p className="block__context" data-testid="simulation-case">
-            Simulation case: {entry?.title ?? caseId}, not AGR-1 data.
+            Case: {entry?.title ?? caseId} <a href={hrefDocumentation('explore-case')}>Case and scope</a>
           </p>
-          <SolverStatus compact />
+          <SolverStatus />
         </div>
         <ActiveModel supported={support.supported} />
-        <p className="block__note">
-          The simulation uses the synthetic five-layer verification case,{' '}
-          <a href={repoFile('inputs/synthetic/synthetic_five_layer.toml')}>
-            <code>inputs/synthetic/synthetic_five_layer.toml</code>
-          </a>
-          . Its radii and diffusivities were chosen to test the solver. They are not measured TRISO properties, and no result from this case is a prediction of real
-          fission-product release.
-        </p>
         {support.supported ? (
           <>
             <div className="strip" role="group" aria-label="Simulation strip" data-testid="sim-strip">
@@ -132,7 +124,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
             </div>
             <RunProblemNote />
             <div className="sim">
-              <div className="sim__particle">{entry ? <ParticleView config={config} provenance={entry.provenance} /> : null}</div>
+              <div className="sim__particle">{entry ? <ParticleView config={config} /> : null}</div>
               <div className="sim__side">
                 <ReferenceParticle />
               </div>
@@ -147,11 +139,6 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           <h3 id={ids.c} className="controls-block__title">
             Numerical controls
           </h3>
-          <p className="block__context" data-testid="controls-context">
-            {support.supported
-              ? `Inputs of the solver, each checked by the solver itself; a change reruns ${METHOD_1} after a short pause.`
-              : 'Inputs are kept; they are checked and run when a selection that this build computes is chosen.'}
-          </p>
           {compact ? (
             <div className="controls-summary" data-testid="controls-summary">
               <p className="controls-summary__text" role="status">
@@ -177,11 +164,12 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           <h2 id={ids.e} className="block__title">
             Results
           </h2>
-          <p className="block__context">Model output only; no experimental data are shown here. Experimental comparisons will appear under Validate; none is available in this build.</p>
+          <p className="block__context">
+            <a href={hrefDocumentation('explore-figures')}>Figure details</a>
+          </p>
         </div>
         {support.supported ? (
           <>
-            <ActiveModel short />
             <ReleaseReadout />
             <div className="results-plots">
               <SimPlots compact={compact} />
@@ -190,7 +178,6 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
               <BalancePanel />
               <DiagnosticsPanel />
             </div>
-            <SolverStatus />
           </>
         ) : (
           <p className="sim-alert" role="status" data-testid="unsupported-results">

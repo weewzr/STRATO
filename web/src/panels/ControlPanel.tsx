@@ -4,7 +4,6 @@ import { layerColour } from '../design/layers';
 import { clamp, sciText } from '../format';
 import { unsupportedMessage } from '../equation/capability';
 import { useSelectionSupport } from '../equation/useCapability';
-import { METHOD_1 } from '../methods';
 import { configDifferences, useStrato } from '../state/store';
 import { Sci } from './Badge';
 import { NumberField } from './NumberField';
@@ -67,7 +66,6 @@ function LayerFields({ r, i }: { r: RegionConfig; i: number }) {
         integer
         onCommit={(v) => setRegionField(i, 'cells', v)}
         testId={`n-field-${i}`}
-        hint={i === 0 ? 'Whole number of at least 1 per layer; the grid has one more node than intervals.' : undefined}
       />
     </>
   );
@@ -94,7 +92,7 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
   // A reset or a case load must also clear an unsent draft, even when the stored value did not change.
   const [resetCount, setResetCount] = useState(0);
   const fieldsKey = `${caseId}:${resetCount}`;
-  const ids = { mech: useId(), run: useId(), step: useId(), title: useId(), caseHint: useId() };
+  const ids = { run: useId(), title: useId() };
   const sheet = layout === 'sheet';
   const errors = validation.state === 'rejected' || validation.state === 'error' ? validation.errors : [];
 
@@ -108,7 +106,6 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
         className="field__input"
         value={caseId}
         onChange={(e) => loadCase(e.target.value)}
-        aria-describedby={ids.caseHint}
         data-testid="case-select"
       >
         {CASES.map((c) => (
@@ -117,9 +114,6 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
           </option>
         ))}
       </select>
-      <p className="field__hint" id={ids.caseHint}>
-        Synthetic values chosen for verification, not measured TRISO properties.
-      </p>
     </div>
   );
 
@@ -165,7 +159,7 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
           unit="K"
           value={config.temperature_k}
           onCommit={setTemperature}
-          hint="Required by the input format and recorded with the result. The solver does not use it: the diffusivities are constant."
+          hint="Recorded with the result; not used by this solver."
         />
       </fieldset>
       <fieldset className="group">
@@ -180,10 +174,6 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
           integer
           onCommit={(v) => setTimeField('output_every_steps', v)}
         />
-        <p className="field__hint" id={ids.step}>
-          The solver divides the duration into the whole number of equal steps that is at least the duration divided by the time step, and
-          reports the step it used.
-        </p>
         {validation.warnings.map((m) => (
           <p className="field__msg" key={m} role="status" data-testid="validation-warning">
             {m}
@@ -216,7 +206,7 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
           type="button"
           className="btn btn--primary"
           aria-disabled={solverState !== 'ready' || !support.supported}
-          aria-describedby={support.supported ? ids.run : `${ids.run}-unsupported`}
+          aria-describedby={support.supported ? undefined : `${ids.run}-unsupported`}
           data-testid="run"
           onClick={() => {
             if (!support.supported) {
@@ -257,12 +247,7 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
           Set current as baseline
         </button>
       </div>
-      {support.supported ? (
-        <p id={ids.run} className="field__hint">
-          {METHOD_1}, the verified STRATO solver compiled to WebAssembly, runs in your browser. A change of input reruns it after a short
-          pause; Run starts a run at once. The solver itself checks every input.
-        </p>
-      ) : (
+      {support.supported ? null : (
         <p id={`${ids.run}-unsupported`} className="field__hint" data-testid="run-unsupported">
           Run is off for this selection; Live simulation gives the reason.
         </p>

@@ -61,7 +61,8 @@ for (const vp of [
       for (const p of PAGES) {
         await gotoResearch(page, p.page);
         const n = await checkStatuses(page, '[data-section="research"]');
-        if (p.page !== 'references') expect(n, p.name).toBeGreaterThan(0);
+        // The references page and the gallery (one status line) carry no status chip.
+        if (p.page !== 'references' && p.page !== 'gallery') expect(n, p.name).toBeGreaterThan(0);
         const switches = page.locator('[data-section="research"] [role="switch"]');
         for (const s of await switches.all()) await expect(s).toHaveAttribute('aria-disabled', 'true');
         await expect(page.locator('[data-section="research"] img')).toHaveCount(0);
@@ -127,7 +128,8 @@ test.describe('catalogue switches by keyboard', () => {
     const switches = page.getByTestId('stage6').locator('[role="switch"]');
     expect(await switches.count()).toBeGreaterThan(0);
     for (const s of await switches.all()) await expect(s).toHaveAttribute('aria-disabled', 'true');
-    await switches.first().click({ force: true });
+    // The click is sent to the switch itself: a forced click at its coordinates can land on the footer that covers the edge of the window.
+    await switches.first().dispatchEvent('click');
     await expect(switches.first()).toHaveAttribute('aria-checked', 'false');
     expect(await checkStatuses(page, '[data-testid="stage6"]')).toBeGreaterThan(0);
     expect(await solverRequests(page)).toBe(before);

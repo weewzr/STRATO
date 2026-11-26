@@ -103,7 +103,7 @@ test.describe('placeholders', () => {
     expect(phases).not.toContain('5');
     for (const p of phases) expect(p).toMatch(/^\d(\.\d)?$/);
     await expect(page.locator('[data-placeholder-phase] .badge')).toHaveCount(0);
-    await expect(page.getByTestId('simulation-case')).toContainText('Synthetic five-layer verification case, not AGR-1 data');
+    await expect(page.getByTestId('simulation-case')).toContainText('Synthetic five-layer verification case');
   });
 
   // Run runs the solver; a selection that the build does not implement sends nothing and shows nothing.

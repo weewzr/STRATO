@@ -29,6 +29,10 @@ export const SCENARIO_KIND = 'Prescribed-input simulation, not a validated react
  * combined model; choosing another physics clears the scenario.
  */
 export const SCENARIO_RULE =
+  'A scenario selects the combined model; choosing another physics clears the scenario.';
+
+/** The rule in full, as verified (Scientific Documentation). */
+export const SCENARIO_RULE_FULL =
   'Rule: every scenario shown here (a history from a fresh particle) needs generation, decay and temperature-dependent diffusion, so choosing one selects the combined model, and choosing another physics clears the scenario.';
 
 /** Every scenario requires the combined model; no scenario at all requires nothing. */
@@ -51,8 +55,10 @@ const G_UNIT = String.raw`\mathrm{mol\ m^{-3}\ s^{-1}}`;
 const D_UNIT = String.raw`\mathrm{m^2\ s^{-1}}`;
 
 export interface ScenarioInfo {
-  /** Two to four sentences: what the scenario is and which existing terms it changes. */
+  /** Two sentences: what the scenario is and which existing terms it changes (the text of the page). */
   explanation: string[];
+  /** The full text of the scenario, as verified: the part that is not on the page is in Scientific Documentation (documentation/explore.tsx). */
+  full: string[];
   /** The symbols it changes or holds, with their definitions. */
   params: ScenarioParam[];
 }
@@ -96,6 +102,10 @@ export const SCENARIOS: Record<ScenarioId, ScenarioInfo> = {
   steady: {
     explanation: [
       'Constant prescribed operating conditions: the generation G and the particle temperature T are held constant in time.',
+      'This does not impose that the time derivative of C is zero: constant conditions do not make the field stationary, and C(r,t) keeps changing.',
+    ],
+    full: [
+      'Constant prescribed operating conditions: the generation G and the particle temperature T are held constant in time.',
       'This does not impose that the time derivative of C is zero.',
       'Constant conditions do not make the field stationary: the run starts from its initial state (a fresh particle holds no inventory), and the concentration approaches a balance of generation, release and decay only over times longer than the irradiation, so C(r,t) keeps changing.',
     ],
@@ -106,6 +116,10 @@ export const SCENARIOS: Record<ScenarioId, ScenarioInfo> = {
   },
   shutdown: {
     explanation: [
+      'From the state at the end of normal operation, generation ends at shutdown and the temperature follows a prescribed cooldown; radioactive decay continues.',
+      'G becomes G(r,t) and D(r,T) becomes D(r,T(t)); the equation gains no term.',
+    ],
+    full: [
       'Starting from the state at the end of normal operation, generation ends at shutdown, and the temperature follows a prescribed cooldown.',
       'Radioactive decay continues after shutdown, so the inventory keeps falling, while diffusion slows as the particle cools.',
       'G becomes G(r,t), falling from its operating value, and D(r,T) becomes D(r,T(t)); the equation gains no term.',
@@ -114,6 +128,10 @@ export const SCENARIOS: Record<ScenarioId, ScenarioInfo> = {
   },
   startup: {
     explanation: [
+      'From a fresh particle, the prescribed generation and temperature histories both rise from their starting values as power is raised.',
+      'G becomes G(r,t) and D(r,T) becomes D(r,T(t)); the equation gains no term.',
+    ],
+    full: [
       'Starting from a fresh particle, the prescribed generation and temperature histories both rise from their starting values as power is raised.',
       'The rising temperature raises the diffusivities, while the generation feeds the kernel.',
       'G becomes G(r,t) and D(r,T) becomes D(r,T(t)); the equation gains no term.',
@@ -122,6 +140,10 @@ export const SCENARIOS: Record<ScenarioId, ScenarioInfo> = {
   },
   'control-rod': {
     explanation: [
+      'Control-rod insertion is represented only by its consequence for the particle: prescribed changes of the fission-rate history and of the temperature history; no control-rod term enters the equation.',
+      'G becomes G(r,t) and D(r,T) becomes D(r,T(t)), both driven by the prescribed histories.',
+    ],
+    full: [
       'Control-rod insertion is represented only by its consequence for the particle: prescribed changes of the fission-rate history and of the temperature history.',
       'No control-rod term enters the equation, and STRATO does not model rod motion, neutron kinetics or the core.',
       'G becomes G(r,t) and D(r,T) becomes D(r,T(t)), both driven by the prescribed histories.',
@@ -135,6 +157,10 @@ export const SCENARIOS: Record<ScenarioId, ScenarioInfo> = {
   },
   refuelling: {
     explanation: [
+      'Fuel removal from the state at the end of normal operation: the particle is stored, generation ends and the temperature falls to a storage value, while diffusion and decay continue.',
+      'Mechanical refuelling is not simulated; reinsertion or irradiation in several passes is a future scenario.',
+    ],
+    full: [
       'Fuel removal, starting from the state at the end of normal operation: the particle leaves the reactor and is stored, so generation ends and the temperature falls to a storage value, while diffusion and decay continue.',
       'Mechanical refuelling is not simulated, and reinsertion or irradiation in several passes is a future scenario, because no registered input history supports it.',
       'G becomes G(r,t) and D(r,T) becomes D(r,T(t)), as for shutdown; the equation gains no term.',
@@ -158,6 +184,10 @@ export const SCENARIO_RESET = 'No operating scenario selected, because the physi
 
 /** Shown in block B while no scenario is selected. */
 export const NO_SCENARIO_TEXT =
+  'No scenario selected: the physics above is taken with constant inputs.';
+
+/** The text in full, as verified (Scientific Documentation). */
+export const NO_SCENARIO_TEXT_FULL =
   'No operating scenario is selected: the physics chosen above is taken with constant inputs, and the simulation block says whether this build runs it; it is labelled by that physics, not by a scenario. Choose a scenario to see its prescribed histories.';
 
 export { SCENARIO_IDS };

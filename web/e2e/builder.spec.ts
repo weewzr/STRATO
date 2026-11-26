@@ -54,7 +54,8 @@ test.describe('Numerical Interpretation at 1440 x 900', () => {
     page.on('request', (r) => {
       if (!['font', 'image'].includes(r.resourceType()) && !r.url().endsWith('/favicon.svg')) requests.push(`${r.resourceType()} ${r.url()}`);
     });
-    await expect(page.getByTestId('numerical-status')).toContainText('The simulation solves these equations with the verified finite-difference BTCS Rust solver');
+    // A selection that the build solves needs no status line in the interpretation (the sentence is in Scientific Documentation).
+    await expect(page.getByTestId('numerical-status')).toHaveCount(0);
     for (const id of BASELINE_ITEMS) {
       await page.getByTestId(`num-toggle-${id}`).click();
       await expect(page.getByTestId(`num-toggle-${id}`)).toHaveAttribute('aria-expanded', 'true');

@@ -2,9 +2,7 @@ import { useId, useState } from 'react';
 import { repoFile } from '../build';
 import type { CaseEntry, CaseConfig } from '../data/case';
 import { plain } from '../format';
-import { useCatalogue } from '../research/catalogue';
-import { linkCheckedDate } from '../research/entries';
-import { hrefDocumentation } from '../route';
+import { hrefDocumentation, hrefResearch } from '../route';
 import { useStrato } from '../state/store';
 import { TableBox } from '../sections/common';
 
@@ -168,12 +166,11 @@ export function ParameterProvenance({ entry }: { entry: CaseEntry }) {
 }
 
 /**
- * One reference list: the key references of the README that the research catalogue does not hold (Gelbard 2003
- * and IAEA 1997 are catalogue entries, with their links, and are shown once there), then every reference of
- * the research catalogue.
+ * The key reference of the README that the research catalogue does not hold (Hales et al. 2021), and a link
+ * to the one list of the catalogue's references on the Research pages (Gelbard 2003 and IAEA 1997 are
+ * catalogue entries). The citations are not repeated here.
  */
 export function References() {
-  const cat = useCatalogue();
   return (
     <>
       <ul className="refs" data-testid="catalogue-refs">
@@ -181,19 +178,12 @@ export function References() {
           Hales, J. D., Jiang, W., Toptan, A., &amp; Gamble, K. A. (2021). Modeling fission product diffusion in TRISO fuel particles with
           BISON. <em>Journal of Nuclear Materials, 548</em>, 152840. <a href="https://doi.org/10.1016/j.jnucmat.2021.152840">doi:10.1016/j.jnucmat.2021.152840</a>
         </li>
-        {cat.references.map((r) => (
-          <li key={r.reference_id} data-ref={r.reference_id}>
-            {r.citation}{' '}
-            {/^https?:\/\//.test(r.doi_or_url) ? <a href={r.doi_or_url}>{r.doi_or_url}</a> : <span className="muted">{r.doi_or_url || 'no link'}</span>}
-            {linkCheckedDate(r.link_checked) ? (
-              <span className="muted"> (link checked {r.link_checked})</span>
-            ) : (
-              <span className="muted"> (link: {r.link_checked || 'not checked'})</span>
-            )}
-          </li>
-        ))}
       </ul>
       <p>
+        <a href={hrefResearch('references')} data-testid="data-references-link">
+          References of the research catalogue
+        </a>
+        {' · '}
         <a href={repoFile('data/reference/STRATO_Parameter_Register.md')}>Parameter register</a>
       </p>
     </>

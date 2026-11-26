@@ -1,6 +1,4 @@
 import { Component, lazy, Suspense, useId, useState, type ReactNode } from 'react';
-import { BUILD } from '../build';
-import { METHOD_1 } from '../methods';
 import type { CaseProvenance, CaseConfig } from '../data/case';
 import { layerColour } from '../design/layers';
 import { sciText } from '../format';
@@ -20,9 +18,6 @@ import { hasWebGL2 } from './webgl';
 // the wrapper's RunResponse or an input; nothing is computed (owner decision M4).
 
 const Particle3D = lazy(() => import('./Particle3D'));
-
-/** Bottom of the logarithmic colour scale, as a fraction of the top (10 to the power -LOG_DECADES). */
-const LOG_FLOOR = `10⁻${String(LOG_DECADES).replace(/\d/g, (k) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[Number(k)] ?? k)}`;
 
 class ThreeBoundary extends Component<{ onError: (message: string) => void; children: ReactNode }, { failed: boolean }> {
   override state = { failed: false };
@@ -61,8 +56,7 @@ function Legend({ run }: { run: RunOk }) {
   return (
     <div className="legend" data-testid="colour-legend" data-colormap={map} data-scale={scale}>
       <p className="legend__title">
-        Concentration (mol/m³) on a {scale === 'log' ? `log scale, ${LOG_DECADES} decades` : 'linear scale'} up to the largest nodal concentration of
-        the run, <Sci value={top} unit="mol/m³" /> <span className="muted">(returned by the solver)</span>.
+        Concentration (mol/m³), {scale === 'log' ? `log scale, ${LOG_DECADES} decades,` : 'linear scale,'} up to <Sci value={top} unit="mol/m³" />, the largest of the run.
       </p>
       <div className="legend__bar" style={{ backgroundImage: gradient }} aria-hidden="true" />
       <div className="legend__ticks" aria-hidden="true">
@@ -146,21 +140,12 @@ function LayerDetail({ index, run, config }: { index: number; run: RunOk | null;
             <Badge label={run.label} />
           </dd>
         </>
-      ) : (
-        <>
-          <dt>Inventory share (dimensionless)</dt>
-          <dd className="muted">appears when the solver has run these inputs</dd>
-        </>
-      )}
-      <dt>Provenance</dt>
-      <dd className="inspector__prov">
-        {run ? 'inputs echoed by the solver; inventory and share computed by the Rust wrapper' : 'active parameters (no run)'}
-      </dd>
+      ) : null}
     </dl>
   );
 }
 
-export function ParticleView({ config, provenance }: { config: CaseConfig; provenance: CaseProvenance }) {
+export function ParticleView({ config }: { config: CaseConfig; provenance?: CaseProvenance }) {
   const { run, stale } = useShownRun();
   const selected = useStrato((s) => s.view.selectedLayer);
   const selectLayer = useStrato((s) => s.selectLayer);
@@ -291,41 +276,9 @@ export function ParticleView({ config, provenance }: { config: CaseConfig; prove
       {detail !== null ? <LayerDetail index={detail} run={run} config={config} /> : null}
       <figcaption id={captionId} className="figure__caption">
         <strong>Figure 1.</strong>{' '}
-        {run ? (
-          <>
-            The concentration of the synthetic verification case at every node of the solver grid at the playback time, each node painted over its band of radii,{' '}
-            {logColour ? (
-              <>
-                on a fixed logarithmic colour scale over {LOG_DECADES} decades up to the largest nodal concentration of the run (values at or below {LOG_FLOOR} of it take the lowest colour)
-              </>
-            ) : (
-              <>
-                on a fixed linear colour scale from 0 to the largest nodal concentration of the run
-              </>
-            )}
-            ; the tick labels under the colour bar give the fraction of that largest concentration (dimensionless); the {names.length} layers are drawn to scale with their boundaries in the layer colours. The playback shows
-            the output times the solver recorded; nothing is interpolated.
-          </>
-        ) : (
-          <>
-            The {names.length} layers of the particle at the outer radii of the active parameters, drawn to scale, one colour per layer.
-            Schematic only: the fill carries no concentration data.
-          </>
-        )}
-        <span className="figure__source">
-          {run ? (
-            <>
-              Source: {METHOD_1}, solver version {run.solver.version} ({run.label}), Rust solver in WebAssembly, build <code>{run.engine.commit}</code>, run on the
-              active parameters starting from <code>{provenance.input_file}</code> (synthetic verification case, not physical data); colour
-              table {COLORMAP_LABEL[map]} from matplotlib. Page build <code>{BUILD.commit}</code>.
-            </>
-          ) : (
-            <>
-              Source: active parameters, starting from <code>{provenance.input_file}</code> (synthetic verification case, not physical
-              data). STRATO page build <code>{BUILD.commit}</code>.
-            </>
-          )}
-        </span>
+        {run
+          ? `Concentration at every node of the solver grid at the playback time, on a fixed ${logColour ? `logarithmic colour scale over ${LOG_DECADES} decades` : 'linear colour scale'}.`
+          : 'The layers at the outer radii of the active parameters, drawn to scale; no concentration data.'}
       </figcaption>
     </figure>
   );

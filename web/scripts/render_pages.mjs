@@ -91,7 +91,10 @@ function snapshotInPage() {
     for (const el of main.querySelectorAll('p, li, dd, blockquote')) {
       // A bibliographic reference is a citation, not prose; it is counted by no rule.
       if (el.closest('table, nav, [hidden], .ref-list, .refs') || el.querySelector('p, li, dd')) continue;
-      const t = el.innerText.trim();
+      // A typeset formula is not prose: its text (the KaTeX markup and the MathML copy, one symbol per line) is left out of the count.
+      const copy = el.cloneNode(true);
+      copy.querySelectorAll('.katex').forEach((k) => k.replaceWith(' '));
+      const t = (copy.textContent ?? '').replace(/\s+/g, ' ').trim();
       const n = t === '' ? 0 : t.split(/\s+/).length;
       if (n > longestBlockWords) {
         longestBlockWords = n;

@@ -140,7 +140,7 @@ describe('what the selected physics and scenario show', () => {
       expect(screen.getByTestId(`num-status-${id}`).dataset.status).toBe('planned');
     }
     expect(screen.getByTestId('numerical-status').dataset.supported).toBe('false');
-    expect(screen.getByTestId('numerical-status').textContent).toMatch(/^No simulation runs for this selection; Live simulation gives the reason\./);
+    expect(screen.getByTestId('numerical-status').textContent).toBe('No simulation runs for this selection.');
     // The full reason is stated once, in Live simulation and Results; the interpretation only points to it.
     expect(screen.getByTestId('numerical-status').textContent).not.toMatch(/does not implement/);
     // The statuses come from the wrapper's report: a build that reports a mechanism at the live status labels it so.
@@ -152,11 +152,12 @@ describe('what the selected physics and scenario show', () => {
   it('says the solver loads, and that the baseline is solved, without claiming more', () => {
     render(<NumericalInterpretation />);
     openRegion();
-    expect(screen.getByTestId('numerical-status').textContent).toMatch(/solver that runs the simulation is loading/);
+    expect(screen.getByTestId('numerical-status').textContent).toBe('The solver is loading.');
     act(() => useStrato.getState().setCapabilities([BTCS_CAPABILITY]));
-    expect(screen.getByTestId('numerical-status').textContent).toMatch(/^The simulation solves these equations with the verified finite-difference BTCS Rust solver\.$/);
+    // A supported selection needs no status line: the sentence that said so is in Scientific Documentation (explore-numerical).
+    expect(screen.queryByTestId('numerical-status')).toBeNull();
     act(() => useStrato.getState().setCapabilities(['generation']));
-    expect(screen.getByTestId('numerical-status').textContent).toMatch(/does not offer the BTCS capability at the live status/);
+    expect(screen.getByTestId('numerical-status').textContent).toMatch(/does not offer the BTCS capability/);
   });
 
   it('adds the right-hand side vector with generation, the diagonal note with decay, the coefficients with temperature and the whole formulation with the combined model', () => {
@@ -342,9 +343,9 @@ describe('a step: equation, parts and disclosures', () => {
     expect(screen.queryByTestId('live-numbers')).toBeNull();
   });
 
-  it('labels the verification step as verification, not validation, and the release-fraction step as a pointer to Validate', () => {
+  it('keeps the verification step free of measurements; its statement that it is not validation is in Scientific Documentation', () => {
     render(<StepBody stage={13} physics="baseline" showTitle={false} />);
-    expect(screen.getByTestId('live-note').textContent).toMatch(/not experimental validation/);
+    expect(screen.queryByTestId('live-note')).toBeNull();
     expect(screen.getByTestId('equation').textContent).not.toMatch(/measured/i);
   });
 });

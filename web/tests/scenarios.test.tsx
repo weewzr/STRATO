@@ -170,8 +170,23 @@ describe('the explanation of the selected scenario', () => {
     }
   });
 
-  it('says what the directive requires of each scenario', () => {
-    const text = (s: ScenarioId) => SCENARIOS[s].explanation.join(' ');
+  it('says on the page, in two sentences, what the directive requires of each scenario', () => {
+    const page = (s: ScenarioId) => SCENARIOS[s].explanation.join(' ');
+    expect(page('steady')).toMatch(/does not impose that the time derivative of C is zero/);
+    expect(page('steady')).toMatch(/constant conditions do not make the field stationary/);
+    expect(page('shutdown')).toMatch(/radioactive decay continues/);
+    expect(page('shutdown')).toMatch(/generation ends at shutdown and the temperature follows a prescribed cooldown/);
+    expect(page('startup')).toMatch(/both rise from their starting values as power is raised/);
+    expect(page('control-rod')).toMatch(/no control-rod term enters the equation/);
+    expect(page('refuelling')).toMatch(/Mechanical refuelling is not simulated/);
+    expect(page('refuelling')).toMatch(/future scenario/);
+    for (const s of SCENARIO_IDS) expect(page(s).match(/[^.]+\./g)?.length, s).toBe(2);
+  });
+
+  // The full text of each scenario, as verified, is in Scientific Documentation (documentation/explore.tsx, tested in
+  // tests/explore_documentation.test.tsx); its wording is asserted here on the data that module renders.
+  it('keeps the full wording of each scenario, with what the directive requires of it', () => {
+    const text = (s: ScenarioId) => SCENARIOS[s].full.join(' ');
     // Steady-state operation: constant conditions, and explicitly not a stationary concentration field.
     expect(text('steady')).toMatch(/constant prescribed operating conditions/i);
     expect(text('steady')).toMatch(/does not impose that the time derivative of C is zero/);

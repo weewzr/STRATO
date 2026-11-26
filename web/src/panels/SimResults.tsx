@@ -1,4 +1,3 @@
-import { BUILD } from '../build';
 import { BTCS_CAPABILITY } from '../equation/availability';
 import { layerColour } from '../design/layers';
 import { count, sciText } from '../format';
@@ -45,22 +44,22 @@ function Updating({ stale }: { stale: boolean }) {
 }
 
 /**
- * The solver that runs the simulation: its method name, version and build, the result label and the
- * verification status read from the research catalogue (never typed here). Shown whenever the
- * module has loaded, with or without a run, so that no result appears without it.
+ * The solver that runs the simulation, on one line: its method name and version, the result label and
+ * the verification status read from the research catalogue (never typed here). Shown whenever the module
+ * has loaded, with or without a run, so that no result appears without it. The build, the scope and the
+ * verification statement are in Scientific Documentation.
  */
-export function SolverStatus({ compact = false }: { compact?: boolean }) {
+export function SolverStatus() {
   const build = useStrato((s) => s.solver.build);
   const state = useStrato((s) => s.solver.state);
-  const error = useStrato((s) => s.solver.error);
   const run = useStrato((s) => s.run);
   const catalogue = useCatalogue();
-  const testId = compact ? 'solver-status-line' : 'solver-status';
-  const cls = `solver-status${compact ? ' solver-status--compact' : ''}`;
+  const testId = 'solver-status-line';
+  const cls = 'solver-status solver-status--compact';
   if (state === 'failed') {
     return (
       <p className={`${cls} solver-status--failed`} role="alert" data-testid={testId} data-state="failed">
-        Solver: not available. {METHOD_1} did not load, so the page shows no result{compact ? '' : ` (${error ?? 'no reason given'})`}.
+        Solver: not available. {METHOD_1} did not load, so the page shows no result.
       </p>
     );
   }
@@ -74,19 +73,9 @@ export function SolverStatus({ compact = false }: { compact?: boolean }) {
   const solver = run?.solver ?? build.btcs.solver;
   const status = statusOf(catalogue, BTCS_CAPABILITY);
   const chip = status ? <StatusChip status={status} mechanism={BTCS_CAPABILITY} compact /> : 'unknown';
-  if (compact) {
-    return (
-      <p className={cls} data-testid={testId} data-state="ready">
-        <strong>{METHOD_1}</strong>, solver version <span data-testid="solver-version-line">{solver.version}</span>, build{' '}
-        <code>{solver.commit}</code>, <Badge label={solver.label} /> {chip}
-      </p>
-    );
-  }
   return (
     <p className={cls} data-testid={testId} data-state="ready">
-      <strong>{METHOD_1}</strong>: solver version <span data-testid="solver-version">{solver.version}</span>, built from commit{' '}
-      <code data-testid="solver-commit">{solver.commit}</code>, results labelled <Badge label={solver.label} />. Verification status in the
-      research catalogue: {chip}, numerical verification of the stated model, not experimental validation. Scope: {solver.scope}.
+      <strong>{METHOD_1}</strong> v<span data-testid="solver-version-line">{solver.version}</span> <Badge label={solver.label} /> {chip}
     </p>
   );
 }
@@ -109,7 +98,6 @@ export function ReleaseReadout() {
         <p className="readout__value readout__value--none">{text}</p>
         <p className="readout__meta">
           <span className="readout__nolabel">Label: none</span>
-          {problem ? 'No result for these inputs; the reason is shown below.' : 'The value and its result label appear when the Rust solver has run.'}
         </p>
       </div>
     );
@@ -194,10 +182,7 @@ export function BalancePanel() {
         </h3>
         <Badge label={run.label} />
       </header>
-      <p className="result-panel__note">
-        At the end of the simulation; the residual is zero in exact arithmetic, and the solver reports the derived rounding bound beside
-        it. <Updating stale={stale} />
-      </p>
+      <Updating stale={stale} />
       <table className="table table--compact">
         <tbody>
           <tr>
@@ -238,9 +223,6 @@ export function BalancePanel() {
           </tr>
         </tbody>
       </table>
-      <p className="result-panel__note" data-testid="bal-statement">
-        {/[.!?]\s*$/.test(b.statement) ? b.statement : `${b.statement}.`} {b.generated_and_decayed_note}
-      </p>
       {last ? <LayerTable profile={last} names={run.grid.layer_names} /> : null}
     </section>
   );
@@ -250,7 +232,7 @@ function LayerTable({ profile, names }: { profile: RunResponse['profiles'][numbe
   return (
     <TableBox label="Inventory by layer">
     <table className="table table--compact layer-table" data-testid="layer-table">
-      <caption className="table__caption">By layer at the end of the simulation (sums over the grid intervals of each layer, from the wrapper)</caption>
+      <caption className="table__caption">By layer at the end of the simulation</caption>
       <thead>
         <tr>
           <th scope="col">Layer</th>
@@ -290,7 +272,6 @@ function EmptyPanel({ title, testId }: { title: string; testId: string }) {
         <h3 className="result-panel__title">{title}</h3>
         <span className="readout__nolabel">Label: none</span>
       </header>
-      <p className="result-panel__note">Appears when the Rust solver has run the current inputs.</p>
     </section>
   );
 }
@@ -400,10 +381,11 @@ export function DiagnosticsPanel() {
         <div className="diag__row diag__row--timing">
           <dt>Solver wall time in this browser (ms)</dt>
           <dd data-testid="diag-time">
-            {info ? `${info.elapsedMs.toFixed(1)} ms` : '–'} <span className="muted">a measurement of the browser, not a result</span>
+            {info ? `${info.elapsedMs.toFixed(1)} ms` : '–'}
           </dd>
         </div>
       </dl>
+      <Updating stale={stale} />
       {c && !c.resolved ? (
         <p className="result-panel__note" data-testid="diag-unresolved">
           {METHOD_1} and {METHOD_2} differ by less than three times the accuracy floor of {METHOD_2}; the difference is not resolved.
@@ -416,11 +398,6 @@ export function DiagnosticsPanel() {
           ))}
         </ul>
       ) : null}
-      <p className="result-panel__note">
-        <Updating stale={stale} />
-        {METHOD_1}, solver version {run.solver.version}, WebAssembly build <code>{run.engine.commit}</code>
-        {run.engine.commit !== BUILD.commit ? <strong> (differs from the page build {BUILD.commit})</strong> : null}. {run.solver.nature}.
-      </p>
     </section>
   );
 }

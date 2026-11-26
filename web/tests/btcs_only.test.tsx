@@ -101,7 +101,7 @@ describe('a solver that cannot be loaded is a failure, not numbers', () => {
         <RunProblemNote />
       </>,
     );
-    expect(screen.getByTestId('solver-status').dataset.state).toBe('failed');
+    expect(screen.getByTestId('solver-status-line').dataset.state).toBe('failed');
     expect(screen.getByTestId('solver-failed').textContent).toContain('could not be loaded');
     expect(screen.getByTestId('solver-failed').textContent).toContain('CompileError');
     expect(screen.queryByTestId('release-value')).toBeNull();

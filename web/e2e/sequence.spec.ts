@@ -38,18 +38,15 @@ async function expectNothingSubstituted(page: Page, name: string) {
   await expect(page.getByTestId('unsupported-simulation')).toContainText('does not implement');
   await expect(page.getByTestId('unsupported-simulation')).toContainText(name);
   await expect(page.getByTestId('unsupported-results')).toContainText('no result is shown for this selection');
-  // The solver and the physics of the running computation stay identified in D.
-  await expect(page.getByTestId('active-model')).toContainText('Method A: BTCS');
-  await expect(page.getByTestId('active-model')).toContainText('not computed by this build');
-  // Nothing is running, so nothing says that a computation runs or that a change reruns it (finding of the science verifier).
-  await expect(page.getByTestId('active-model')).toContainText('Solver of this build');
-  await expect(page.getByTestId('active-model')).not.toContainText('Running computation');
-  await expect(page.getByTestId('controls-context')).not.toContainText('reruns');
-  await expect(page.getByTestId('controls-context')).not.toContainText('checked by the solver itself');
-  await expect(page.getByTestId('controls-context')).toContainText('Inputs are kept');
+  // The solver stays identified in D by its status line, and the physics of the build by one line.
+  await expect(page.getByTestId('solver-status-line').first()).toContainText('Method A: BTCS');
+  await expect(page.getByTestId('active-model')).toContainText('Not computed:');
+  // Nothing is running, so nothing says that a computation runs (finding of the science verifier); the sentences on reruns left the page.
+  await expect(page.getByTestId('active-model')).toContainText('This build computes');
+  await expect(page.getByTestId('block-d')).not.toContainText('reruns');
   // Every sentence starts with a capital letter.
   expect(await page.getByTestId('active-model').innerText()).not.toMatch(/[.!?]\s+[a-z]/);
-  for (const id of ['particle', 'release-readout', 'profile-figure', 'release-figure', 'balance-panel', 'diagnostics-panel', 'active-model-results']) {
+  for (const id of ['particle', 'release-readout', 'profile-figure', 'release-figure', 'balance-panel', 'diagnostics-panel']) {
     await expect(page.getByTestId(id), id).toHaveCount(0);
   }
 }
@@ -75,15 +72,12 @@ for (const vp of [
           await waitForRun(page);
           await expect(page.getByTestId('governing-equation')).toHaveAttribute('data-physics', 'baseline');
           expect(await page.locator('[data-testid="equation-governing"] [data-piece]').evaluateAll((e) => e.map((p) => (p as HTMLElement).dataset.piece))).toEqual(['lhs', 'operator']);
-          await expect(page.getByTestId('active-model')).toContainText('Method A: BTCS, solver version');
-          await expect(page.getByTestId('active-model')).toContainText('no generation and no decay');
-          await expect(page.getByTestId('active-model')).toContainText('Running computation');
-          await expect(page.getByTestId('controls-context')).toContainText('reruns');
+          await expect(page.getByTestId('solver-status-line')).toContainText('Method A: BTCS');
+          await expect(page.getByTestId('active-model')).toContainText('Computes: Baseline diffusion');
           expect(await page.getByTestId('active-model').innerText()).not.toMatch(/[.!?]\s+[a-z]/);
           expect(await page.getByTestId('block-e').innerText()).not.toMatch(/Compare and Validate/);
           await expect(page.getByTestId('num-number-1')).toBeVisible();
           await expect(page.getByTestId('num-item-1')).not.toContainText('Item 1');
-          await expect(page.getByTestId('active-model-results')).toContainText('Method A: BTCS');
           await expect(page.getByTestId('particle')).toBeVisible();
           await expect(page.getByTestId('release-readout')).toBeVisible();
           await expect(page.getByTestId('balance-panel')).toBeVisible();
@@ -102,7 +96,8 @@ for (const vp of [
             await expect(page.getByTestId(`num-item-${m.item}`)).toBeVisible();
             for (const other of MECHANISMS.filter((o) => o.id !== m.id)) await expect(page.getByTestId(`num-item-${other.item}`)).toHaveCount(0);
             await page.getByTestId(`num-toggle-${m.item}`).click();
-            await expect(page.getByTestId(`num-status-text-${m.item}`)).toContainText('does not report the mechanism');
+            // The item says in one word that the build does not report the mechanism (the sentence that explained it is the legend of the physics controls).
+            await expect(page.getByTestId(`num-status-${m.item}`)).toHaveAttribute('data-status', 'planned');
             // Its live values say that the build has not run it, and show no number of the baseline run.
             await expect(page.getByTestId(`num-item-${m.item}`).getByTestId('live-numbers-unsupported')).toContainText('No simulation runs for the selection');
             await expect(page.getByTestId(`num-item-${m.item}`).getByTestId('live-numbers')).toHaveCount(0);
