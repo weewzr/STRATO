@@ -259,7 +259,11 @@ pub fn check_data(text: &str) -> Result<Value> {
         let mut col: Vec<Value> = Vec::new();
         for r in &rows {
             let Some(cell) = r.get(k) else {
-                bail!("{}: a row has fewer than {} cells", s::CHECK_FILE, head.len());
+                bail!(
+                    "{}: a row has fewer than {} cells",
+                    s::CHECK_FILE,
+                    head.len()
+                );
             };
             col.push(if *key == "passed" {
                 match *cell {
@@ -300,7 +304,13 @@ pub fn build_files(ctx: &Context, raw: &RawRun) -> Result<Vec<(String, String)>>
     put(
         "btcs_vs_analytical.json",
         &with_data(
-            header(ctx, "btcs_vs_analytical", s::NATIVE_TEXT, None, s::NOTE_COMPARISON),
+            header(
+                ctx,
+                "btcs_vs_analytical",
+                s::NATIVE_TEXT,
+                None,
+                s::NOTE_COMPARISON,
+            ),
             vs,
         ),
     );
@@ -321,14 +331,26 @@ pub fn build_files(ctx: &Context, raw: &RawRun) -> Result<Vec<(String, String)>>
     put(
         "wrapper_native_battery.json",
         &with_data(
-            header(ctx, "wrapper_native_battery", s::BATTERY_TEXT, None, s::NOTE_BATTERY),
+            header(
+                ctx,
+                "wrapper_native_battery",
+                s::BATTERY_TEXT,
+                None,
+                s::NOTE_BATTERY,
+            ),
             raw.battery.clone(),
         ),
     );
     put(
         "wrapper_native_synthetic.json",
         &with_data(
-            header(ctx, "wrapper_native_run", s::NATIVE_TEXT, None, s::NOTE_WRAPPER),
+            header(
+                ctx,
+                "wrapper_native_run",
+                s::NATIVE_TEXT,
+                None,
+                s::NOTE_WRAPPER,
+            ),
             raw.native.clone(),
         ),
     );
@@ -482,8 +504,10 @@ pub fn collect(root: &Path) -> Result<RawRun> {
 
 /// The small cases of the parity battery with their requests and the native replies.
 fn collect_battery(root: &Path, env: &[(&str, String)]) -> Result<Value> {
-    let requests: Value = serde_json::from_str(&run_command(root, &s::battery_command("requests"), env)?)?;
-    let replies: Value = serde_json::from_str(&run_command(root, &s::battery_command("native"), env)?)?;
+    let requests: Value =
+        serde_json::from_str(&run_command(root, &s::battery_command("requests"), env)?)?;
+    let replies: Value =
+        serde_json::from_str(&run_command(root, &s::battery_command("native"), env)?)?;
     let (Some(req), Some(rep)) = (requests.as_object(), replies.as_object()) else {
         bail!("the battery output is not a JSON object");
     };
@@ -536,7 +560,10 @@ pub fn run(root: &Path, check: bool) -> Result<i32> {
         for name in s::RETIRED_FILES {
             let path = root.join(CSV_DIR).join(name);
             if path.exists() {
-                println!("RETIRED {} (a file of an earlier solver)", util::rel_posix(root, &path));
+                println!(
+                    "RETIRED {} (a file of an earlier solver)",
+                    util::rel_posix(root, &path)
+                );
                 bad += 1;
             }
         }

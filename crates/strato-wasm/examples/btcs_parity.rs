@@ -143,7 +143,9 @@ fn selected(names: &[String]) -> Vec<(&'static str, &'static str, String)> {
     for n in names {
         assert!(all.iter().any(|c| c.0 == n), "no case named {n}");
     }
-    all.into_iter().filter(|c| names.iter().any(|n| n == c.0)).collect()
+    all.into_iter()
+        .filter(|c| names.iter().any(|n| n == c.0))
+        .collect()
 }
 
 fn call(function: &str, input: &str) -> String {

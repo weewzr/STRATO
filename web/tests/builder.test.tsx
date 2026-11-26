@@ -99,7 +99,7 @@ describe('selecting a step changes the display only', () => {
   it('with the BTCS capability, steps one to twelve are live; the previews are not', () => {
     act(() => useStrato.getState().setCapabilities([BTCS_CAPABILITY]));
     render(<EquationBuilder compact={false} />);
-    expect(screen.getByTestId('live-note').textContent).toBe('Live: the simulation below solves these equations with Method 1, the verified finite-difference BTCS Rust solver.');
+    expect(screen.getByTestId('live-note').textContent).toBe('Live: the simulation below solves these equations with the verified finite-difference BTCS Rust solver.');
     act(() => screen.getByTestId('stage-15').click());
     expect(screen.getByTestId('preview-banner').textContent).toMatch(/^Preview only: this mechanism is not solved\./);
   });

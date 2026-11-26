@@ -39,7 +39,12 @@ pub const WEB_EXPORTS: [&str; 6] = [
 /// The finite-volume functions that the module still carries until the retirement task removes
 /// them. The page never calls them (web/tests/btcs_only.test.ts); the export check lists them so
 /// that no other export can slip in beside them.
-pub const LEGACY_EXPORTS: [&str; 4] = ["validate_config", "run_v1", "analytical_release", "compare_v1"];
+pub const LEGACY_EXPORTS: [&str; 4] = [
+    "validate_config",
+    "run_v1",
+    "analytical_release",
+    "compare_v1",
+];
 /// Every export the module may have: the web contract and the legacy functions.
 pub const REQUIRED_EXPORTS: [&str; 10] = [
     "abi_version",

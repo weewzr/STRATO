@@ -500,7 +500,7 @@ function Banner({ stage, method, catalogue }: { stage: Stage; method: Simulation
   if (method === 'btcs') {
     return (
       <p className="live-note" data-testid="live-note">
-        Live: the simulation below solves these equations with Method 1, the verified finite-difference BTCS Rust solver.
+        Live: the simulation below solves these equations with the verified finite-difference BTCS Rust solver.
       </p>
     );
   }
@@ -508,7 +508,7 @@ function Banner({ stage, method, catalogue }: { stage: Stage; method: Simulation
     <p className="live-note live-note--pending" data-testid="live-note">
       {method === 'loading'
         ? 'These are BTCS equations. The solver that runs the simulation below is loading.'
-        : 'These are the equations of Method 1. The solver reported by this page does not offer the BTCS capability at the live status, so the simulation below shows no result.'}
+        : 'These are the BTCS equations. The solver reported by this page does not offer the BTCS capability at the live status, so the simulation below shows no result.'}
     </p>
   );
 }

@@ -108,7 +108,9 @@ fn reference_geometry_is_reproduced() {
 /// Every line of `text` from the first one that starts with `marker`: the body of a file that the
 /// converter wrote, without the header lines it put in front of the command line's own.
 fn body_from(text: &str, marker: &str) -> String {
-    let at = text.find(marker).unwrap_or_else(|| panic!("no line starting with {marker}"));
+    let at = text
+        .find(marker)
+        .unwrap_or_else(|| panic!("no line starting with {marker}"));
     text[at..].to_string()
 }
 

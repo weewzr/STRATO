@@ -776,7 +776,11 @@ fn export_value(request: Value) -> Result<Value, Vec<String>> {
     }
     let p = prepare_value(run_request)?;
     let dt = p.input.dt;
-    let times: Vec<f64> = p.profile_steps.iter().map(|(s, _)| *s as f64 * dt).collect();
+    let times: Vec<f64> = p
+        .profile_steps
+        .iter()
+        .map(|(s, _)| *s as f64 * dt)
+        .collect();
     let result = btcs::run_input(&p.input, &times).map_err(|e| vec![format!("{e:#}")])?;
     let mut prov = Provenance::new(
         &p.cfg,
@@ -802,10 +806,7 @@ fn export_value(request: Value) -> Result<Value, Vec<String>> {
             profile_csv(&prov, &result.grid, &result.snapshots),
             "text/csv",
         ),
-        _ => (
-            run_json(&prov, &p.input, &result),
-            "application/json",
-        ),
+        _ => (run_json(&prov, &p.input, &result), "application/json"),
     };
     let text = text.map_err(|e| vec![format!("{e:#}")])?;
     Ok(json!({
@@ -826,7 +827,8 @@ fn export_value(request: Value) -> Result<Value, Vec<String>> {
 /// parameter_source?, parameter_class?}`, `format` one of [`EXPORT_FORMATS`].
 pub fn export_run(request_json: &str) -> String {
     let result = placeholder_check(request_json).and_then(|()| {
-        let v: Value = serde_json::from_str(request_json).map_err(|e| vec![format!("request: {e}")])?;
+        let v: Value =
+            serde_json::from_str(request_json).map_err(|e| vec![format!("request: {e}")])?;
         export_value(v)
     });
     match result {

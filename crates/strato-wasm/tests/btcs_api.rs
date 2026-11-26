@@ -817,7 +817,10 @@ fn export_time_series_csv_carries_the_provenance_header_and_the_run_values() {
 fn export_profiles_and_run_json_are_written_and_the_format_is_checked() {
     let p = export("profiles_csv");
     assert_eq!(p["status"], "ok", "{p}");
-    assert!(p["text"].as_str().unwrap().contains("Concentration (mol/m^3)"));
+    assert!(p["text"]
+        .as_str()
+        .unwrap()
+        .contains("Concentration (mol/m^3)"));
     let j = export("run_json");
     assert_eq!(j["status"], "ok", "{j}");
     assert_eq!(j["media_type"], "application/json");
@@ -825,7 +828,10 @@ fn export_profiles_and_run_json_are_written_and_the_format_is_checked() {
     assert!(parsed.is_object());
     let bad = export("xlsx");
     assert_eq!(bad["status"], "rejected");
-    assert!(bad["errors"][0].as_str().unwrap().contains("unknown export format"));
+    assert!(bad["errors"][0]
+        .as_str()
+        .unwrap()
+        .contains("unknown export format"));
     // A configuration that the solver rejects is rejected by the export with the same message.
     let req = json!({"schema": 2, "format": "timeseries_csv",
         "config": with(synthetic_config_value(), "/time/dt_s", json!(0.0))});

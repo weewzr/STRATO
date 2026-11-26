@@ -47,7 +47,10 @@ pub fn cli_command(snapshots: &str, commit: &str) -> Vec<String> {
     .to_vec();
     v.push(snapshots.to_string());
     v.extend(["--commit".to_string(), commit.to_string()]);
-    v.extend(["--parameter-source".to_string(), PARAMETER_SOURCE.to_string()]);
+    v.extend([
+        "--parameter-source".to_string(),
+        PARAMETER_SOURCE.to_string(),
+    ]);
     v.extend(["--parameter-class".to_string(), PARAMETER_CLASS.to_string()]);
     v
 }
@@ -152,8 +155,8 @@ pub const PRECOMPUTED_FILES: [&str; 9] = [
     "btcs_run.json",
     "btcs_vs_analytical.json",
     "btcs_independent_check.json",
-    "wrapper_native_synthetic.json",
     "wrapper_native_battery.json",
+    "wrapper_native_synthetic.json",
     "btcs_run.timeseries.csv",
     "btcs_run.profiles.csv",
     "btcs_vs_analytical.csv",
