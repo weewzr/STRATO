@@ -1,8 +1,9 @@
 import { repoFile } from '../build';
 import { Blocks } from '../research/Blocks';
 import { useCatalogue } from '../research/catalogue';
-import { GALLERY_ENTRY, introBlocks } from '../research/entries';
+import { GALLERY_ENTRY, introBlocks, ROADMAP_ENTRY } from '../research/entries';
 import { STATUS_INFO, STATUSES } from '../research/status';
+import { GalleryPlannedDetail } from '../research/parts';
 import { StatusChip } from '../research/StatusChip';
 import { TableBox } from '../sections/common';
 import type { DocContribution } from './types';
@@ -56,6 +57,31 @@ function GalleryRules() {
   );
 }
 
+function GalleryPlannedCalculations() {
+  const cat = useCatalogue();
+  const items = cat.gallery.filter((g) => g.kind === 'placeholder');
+  return (
+    <div className="prose" data-testid="research-gallery-planned">
+      <p>
+        This calculation has not been performed. It is planned for a future phase of the project. (This applies to each of the {items.length}{' '}
+        planned calculations below; no picture exists.)
+      </p>
+      {items.map((it) => (
+        <GalleryPlannedDetail key={it.item_id} item={it} catalogue={cat} />
+      ))}
+    </div>
+  );
+}
+
+function RoadmapIntro() {
+  const cat = useCatalogue();
+  return (
+    <div className="prose" data-testid="research-roadmap-intro">
+      <Blocks blocks={introBlocks(cat.entries[ROADMAP_ENTRY])} catalogue={cat} />
+    </div>
+  );
+}
+
 function CatalogueSources() {
   const cat = useCatalogue();
   return (
@@ -91,11 +117,16 @@ export const research: DocContribution = {
       title: 'What the research catalogue is',
       body: (
         <>
+          <p>
+            Mechanisms of fission-product transport in a TRISO particle, organised as research: what STRATO solves, what has been derived but
+            not implemented, and what is only proposed, with its evidence and what is missing.
+          </p>
           <p>Nothing in this section is simulated.</p>
           <p>Each row&apos;s live-simulation switch is shown disabled until the solver implements and verifies it.</p>
           <p>
             On the research entry pages: nothing on this page is a STRATO result, and every equation on it is a research concept that STRATO
-            does not solve.
+            does not solve. STRATO does not simulate silver, caesium, europium, iodine, krypton, palladium, ruthenium, strontium or xenon
+            today.
           </p>
           <p>
             No mechanism is switched on for a species automatically: a species is simulated only when a row of its own is implemented and
@@ -104,7 +135,9 @@ export const research: DocContribution = {
         </>
       ),
     },
+    { id: 'research-roadmap', title: 'Brick roadmap: introduction', body: <RoadmapIntro /> },
     { id: 'research-gallery', title: 'Materials Studio gallery: rules for the planned calculations', body: <GalleryRules /> },
+    { id: 'research-gallery-planned', title: 'Materials Studio gallery: the planned calculations', body: <GalleryPlannedCalculations /> },
   ],
   interpretation: [{ id: 'research-status-scale', title: 'Research status scale', body: <StatusScale /> }],
   provenance: [

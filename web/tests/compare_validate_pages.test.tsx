@@ -17,7 +17,7 @@ describe('Validate page', () => {
       'model predictions need generation, decay and temperature-dependent diffusion',
     );
     expect(container.querySelector('[data-mount="experimental-comparison-graph"]')).not.toBeNull();
-    const link = screen.getByRole('link', { name: 'Why and how' });
+    const link = screen.getByRole('link', { name: 'Why' });
     expect(allItemIds()).toContain(documentationAnchorFromHash(link.getAttribute('href') ?? ''));
   });
 });
@@ -31,6 +31,8 @@ describe('what left Compare and Validate is in Scientific Documentation', () => 
     expect(text('compare-and-validate')).toContain('independent');
     expect(text('validate-limits')).toContain('A constant-temperature result of Method A: BTCS is never compared with heating-test data');
     expect(text('validate-status')).toContain('It is a different question from verification');
-    expect(text('validate-status')).toContain('R² (coefficient of determination)');
+    expect(text('validate-status')).toContain('What this section will show');
+    expect(text('validate-status')).toContain('Error metrics computed in Rust, never typed in.');
+    expect(text('validate-status')).not.toContain('R²');
   });
 });

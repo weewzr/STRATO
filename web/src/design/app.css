@@ -1297,6 +1297,20 @@ select.field__input {
   margin: 0;
   accent-color: var(--accent);
 }
+/* Switches above a figure: the whole label is the 44 px target, and the box is larger than the default. */
+.switch-row .plot-option {
+  min-width: var(--touch-min);
+}
+.switch-row .plot-option input {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+/* The "Data file" link of a precomputed figure is a target of its own. */
+.figure__head a.figure__kind {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+}
 .plot {
   position: relative;
   min-width: 0;

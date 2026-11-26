@@ -24,7 +24,8 @@ function ValidationLayer() {
         Model predictions against measurements
       </button>
       <span id="validation-layer-why" className="muted" data-testid="validation-status">
-        No comparison is shown yet: model predictions need generation, decay and temperature-dependent diffusion.
+        No comparison is shown yet: model predictions need generation, decay and temperature-dependent diffusion.{' '}
+        <a href={hrefDocumentation('validate-status')}>Why</a>
       </span>
     </div>
   );
@@ -35,10 +36,6 @@ export function Validate() {
     <article className="section" data-section="validate">
       <SectionHeading>Validation against measurements</SectionHeading>
       <ValidationLayer />
-      <p>
-        Measured release, the model predictions and R² where it is defensible will appear here.{' '}
-        <a href={hrefDocumentation('validate-status')}>Why and how</a>
-      </p>
 
       {/* MOUNT POINT: the experimental-comparison graph component (web/src/graph, Workstream A) is placed here by the integration task. Leave empty until then. */}
       <div data-mount="experimental-comparison-graph" data-testid="experimental-comparison-mount" />

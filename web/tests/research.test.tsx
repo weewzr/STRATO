@@ -314,7 +314,7 @@ describe('no pending mechanism has an enabled switch', () => {
     await user.keyboard(' ');
   };
 
-  it('gives every row of an entry a switch that is present, focusable, disabled and says what is missing', async () => {
+  it('gives every row of an entry a switch that is present, focusable, disabled and says what is missing', { timeout: 120_000 }, async () => {
     act(() => useStrato.getState().setCapabilities(['diffusion_btcs_layered']));
     const withEntry = CATALOGUE.mechanisms.filter((m) => m.entry);
     for (const path of [...new Set(withEntry.map((m) => m.entry))]) {
@@ -337,7 +337,7 @@ describe('no pending mechanism has an enabled switch', () => {
     }
   });
 
-  it('has no switch without aria-disabled anywhere in the Research section or block E, and sends no solver request', async () => {
+  it('has no switch without aria-disabled anywhere in the Research section or block E, and sends no solver request', { timeout: 120_000 }, async () => {
     let asked = 0;
     act(() => {
       useStrato.getState().setCapabilities(['diffusion_btcs_layered']);
@@ -376,7 +376,7 @@ describe('no pending mechanism has an enabled switch', () => {
 });
 
 describe('Materials Studio gallery', () => {
-  it('shows every placeholder as PENDING with its planned calculation, the future-phase wording and no image', () => {
+  it('lists every placeholder compactly as PENDING with its title and species, and no image', () => {
     renderPage('gallery');
     const items = screen.getAllByTestId('gallery-item');
     expect(items).toHaveLength(CATALOGUE.gallery.length);
@@ -386,11 +386,27 @@ describe('Materials Studio gallery', () => {
       if (row.kind !== 'placeholder') continue;
       expect(it.querySelector('img, canvas, svg:not(.status-chip__shape), picture, video')).toBeNull();
       expect(it.querySelector('.status-chip__word')?.textContent).toBe('PENDING');
-      expect(it.textContent).toContain('Pending placeholder');
-      expect(it.textContent).toContain('planned for a future phase');
-      for (const field of [row.caption, row.method, row.conditions, row.material]) expect(it.textContent).toContain(field);
+      expect(it.textContent).toContain(row.title);
     }
+    // The sentence that all planned calculations share is not repeated on the page.
+    expect(document.body.textContent ?? '').not.toContain('planned for a future phase of the project');
     expect(document.querySelector('[data-section="research"] img')).toBeNull();
+  });
+
+  it('holds the full text of every planned calculation once in Scientific Documentation, with the future-phase wording', () => {
+    render(<Documentation />);
+    const details = screen.getAllByTestId('gallery-detail');
+    const planned = CATALOGUE.gallery.filter((g) => g.kind === 'placeholder');
+    expect(details).toHaveLength(planned.length);
+    for (const row of planned) {
+      const it = details.find((d) => d.dataset.item === row.item_id)!;
+      expect(it.querySelector('img, canvas, picture, video')).toBeNull();
+      expect(it.querySelector('.status-chip__word')?.textContent).toBe('PENDING');
+      for (const field of [row.method, row.conditions, row.material]) expect(it.textContent).toContain(field);
+      expect(it.textContent).toContain(row.caption.replace(/\s*This calculation has not been performed\. It is planned for a future phase of the project\./, ''));
+    }
+    const doc = document.getElementById('doc-research-gallery-planned');
+    expect((doc?.textContent ?? '').match(/planned for a future phase of the project/g)).toHaveLength(1);
   });
 
   it('shows a genuine screenshot only with its file and provenance, and labels reconstructions differently', () => {

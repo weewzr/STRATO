@@ -217,7 +217,7 @@ Wording rule: both items, and every other future phase on this page, are describ
 
 ### 8.3 Verification panel (Verify)
 
-Code B against Code C error, convergence plots (spatial and temporal, with reference slopes 2 and 1), balance residual, golden regression status and native/wasm parity, each with its label (COMPUTED v1.0 or PRECOMPUTED). The commit and the command that produced a result are in the exported file and in Scientific Documentation, not in the figure caption. The graphs and results come first; the checks and their evidence are described in Scientific Documentation.
+Method A: BTCS against Method B: Sturm–Liouville error, convergence plots (spatial and temporal, with reference slopes 2 and 1), balance residual, golden regression status and native/wasm parity, each with its label (COMPUTED v2.0 or PRECOMPUTED). The commit and the command that produced a result are in the exported file and in Scientific Documentation, not in the figure caption. The graphs and results come first; the checks and their evidence are described in Scientific Documentation.
 
 ### 8.4 Provenance and references (Data)
 

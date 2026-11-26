@@ -15,14 +15,12 @@ export function isRepoPath(text: string): boolean {
   return WHOLE.test(text);
 }
 
-/** The words that name a path: its last part without the extension, a directory with its parent. */
+/** The words that name a path: the file name with its extension; a folder by its last part with a slash. */
 export function pathLabel(path: string): string {
-  if (path === 'data/nuclear/decay.csv') return 'nuclear-data register';
   const parts = path.split('/').filter(Boolean);
-  const isDir = path.endsWith('/') || !/\.\w+$/.test(parts[parts.length - 1] ?? '');
-  const last = (parts[parts.length - 1] ?? path).replace(/\.\w+$/, '');
-  const named = isDir && parts.length > 1 ? `${parts[parts.length - 2]} ${last}` : last;
-  return named.replace(/_/g, ' ');
+  const last = parts[parts.length - 1] ?? path;
+  const isDir = path.endsWith('/') || !/\.\w+$/.test(last);
+  return isDir ? `${last}/` : last;
 }
 
 export function PathLink({ path }: { path: string }) {

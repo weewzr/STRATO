@@ -59,10 +59,28 @@ function Fig({
       </div>
       {children}
       <figcaption className="figure__caption">
-        <strong>Figure {number}.</strong> {caption} <a href={hrefDocumentation(anchor)}>Method and limits</a>
+        <strong>Figure {number}.</strong> {caption}{' '}
+        <a className="nowrap" href={hrefDocumentation(anchor)}>Method and limits</a>
       </figcaption>
     </figure>
   );
+}
+
+/** Breaks a legend name into lines of at most `width` characters at word boundaries (Plotly reads <br>). */
+function wrapLegendName(name: string | undefined, width = 44): string {
+  if (!name) return '';
+  const lines: string[] = [];
+  let line = '';
+  for (const word of name.split(' ')) {
+    if (line !== '' && line.length + 1 + word.length > width) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = line === '' ? word : `${line} ${word}`;
+    }
+  }
+  lines.push(line);
+  return lines.join('<br>');
 }
 
 function exportSource(doc: PrecomputedHeader, file: string): string {
@@ -121,7 +139,12 @@ export function MethodComparisonPanel() {
 export function CheckFigurePanel() {
   const { doc, error } = usePrecomputed<CheckDoc>('btcs_independent_check.json');
   const theme = usePlotTheme();
-  const fig = useMemo(() => (doc ? checkFigure(doc, theme) : null), [doc, theme]);
+  const fig = useMemo(() => {
+    if (!doc) return null;
+    const f = checkFigure(doc, theme);
+    // Long legend names are broken into lines so that no entry is cut off by the plot edge.
+    return { ...f, data: f.data.map((t) => ({ ...t, name: wrapLegendName(t.name) })) };
+  }, [doc, theme]);
   if (!doc || !fig) return <Loading error={error} what="independent check" />;
   return (
     <Fig
@@ -161,7 +184,8 @@ export function ObservedOrdersTable() {
       <table className="table check-table" data-testid="observed-orders">
         <caption className="table__caption">
           <strong>Table 1.</strong> Independent check: release fraction against a reference without BTCS code, and observed orders of accuracy
-          (expected 1 in time, 2 in space) <Badge label="PRECOMPUTED" />. <a href={hrefDocumentation('verify-check')}>Method and limits</a>
+          (expected about 1 in time, about 2 in space) <Badge label="PRECOMPUTED" />.{' '}
+          <a className="nowrap" href={hrefDocumentation('verify-check')}>Method and limits</a>
         </caption>
         <thead>
           <tr>

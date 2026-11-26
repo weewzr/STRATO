@@ -1,5 +1,5 @@
 import { findCase } from '../data/case';
-import { hrefFor } from '../route';
+import { hrefDocumentation, hrefFor } from '../route';
 import { useStrato } from '../state/store';
 import type { DocContribution } from './types';
 
@@ -11,7 +11,7 @@ function CompareSource() {
   return (
     <>
       <p>
-        Both runs of a comparison start from <code>{caseFile}</code>. The CSV of the comparison, written by the solver in Rust with its
+        The case file of both runs is <code>{caseFile}</code>. The CSV of the comparison, written by the solver in Rust with its
         provenance header, is under <a href={hrefFor('data')}>Data</a>.
       </p>
     </>
@@ -29,7 +29,10 @@ export const compare: DocContribution = {
             Both runs use the verified solver of Method A: BTCS, so the comparison shows the effect of the inputs, not of new physics; this
             holds until generation, decay and temperature dependence are solved.
           </p>
-          <p>Both runs start from the same synthetic verification case, not physical data.</p>
+          <p>
+            Both runs start from the same synthetic verification case, not physical data (the case file is given under{' '}
+            <a href={hrefDocumentation('compare-source')}>Source of a comparison</a>).
+          </p>
         </>
       ),
     },
@@ -41,8 +44,8 @@ export const compare: DocContribution = {
       body: (
         <p>
           The green difference curve is the series that <code>compare</code> returns: the current minus the baseline release fraction,
-          computed in Rust at each output time both runs share. Runs with different output times are not compared, because the difference is
-          never interpolated.
+          computed in Rust at each output time both runs share; a wrapper test checks it point by point. Runs with different output times
+          are not compared, because the difference is never interpolated; such a comparison is rejected.
         </p>
       ),
     },

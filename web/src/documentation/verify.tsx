@@ -116,7 +116,7 @@ const CHECKS: { check: string; shows: string; evidence: { path: string; text: st
   {
     check: 'Difference curve of a comparison',
     shows:
-      'The difference curve on Compare is the series that compare returns, the current minus the baseline computed in Rust on the shared output times; a wrapper test checks it point by point. Runs with different output times are rejected, never interpolated.',
+      'A wrapper test checks the difference curve of Compare point by point. What the curve is, and the rule on output times, are stated once, in the entry "Difference curve of a comparison".',
     evidence: [
       { path: 'crates/strato-wasm/tests/btcs_api.rs', text: 'crates/strato-wasm/tests/btcs_api.rs' },
       { path: 'web/e2e/plots.spec.ts', text: 'web/e2e/plots.spec.ts' },

@@ -37,6 +37,7 @@ export const validate: DocContribution = {
             which asks whether the code solves its equations correctly. The agreement of the two solution methods on the synthetic case is
             verification and appears under <a href={hrefFor('verify')}>Verify</a>.
           </p>
+          <h4>What this section will show</h4>
           <ul className="prose-list">
             <li>
               Measured release from the{' '}
@@ -44,10 +45,7 @@ export const validate: DocContribution = {
               uncertainty and a reference for each series.
             </li>
             <li>Model predictions only from reviewed runs with the matching nuclide, particle geometry and temperature history.</li>
-            <li>
-              R² (coefficient of determination) is the only displayed whole-curve agreement metric; it is computed in Rust, never typed in.
-              Where R² is unavailable, a short caption below the graph says why.
-            </li>
+            <li>Error metrics computed in Rust, never typed in.</li>
           </ul>
         </>
       ),

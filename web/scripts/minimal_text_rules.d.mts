@@ -1,5 +1,6 @@
 export const CAPTION_MAX_CHARS: number;
 export const PROSE_MAX_WORDS: number;
+export const BLOCK_MAX_WORDS: number;
 export const PROSE_MAX_WORDS_BY_PAGE: Record<string, number>;
 export const DOCUMENTATION_PAGE: string;
 export const RULES: string[];
@@ -16,6 +17,8 @@ export interface PageSnapshot {
   shellText?: string;
   captions: string[];
   proseWords: number;
+  longestBlockWords?: number;
+  longestBlockText?: string;
 }
 
 export interface RuleResult {

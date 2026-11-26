@@ -84,7 +84,22 @@ function snapshotInPage() {
       words += t.split(/\s+/).length;
     }
   }
-  return { text, shellText, captions, proseWords: words };
+  // The longest single paragraph or list item outside tables (an item that holds other items is not counted).
+  let longestBlockWords = 0;
+  let longestBlockText = '';
+  if (main) {
+    for (const el of main.querySelectorAll('p, li, dd, blockquote')) {
+      // A bibliographic reference is a citation, not prose; it is counted by no rule.
+      if (el.closest('table, nav, [hidden], .ref-list, .refs') || el.querySelector('p, li, dd')) continue;
+      const t = el.innerText.trim();
+      const n = t === '' ? 0 : t.split(/\s+/).length;
+      if (n > longestBlockWords) {
+        longestBlockWords = n;
+        longestBlockText = t;
+      }
+    }
+  }
+  return { text, shellText, captions, proseWords: words, longestBlockWords, longestBlockText };
 }
 
 export async function collectSnapshots(dist) {

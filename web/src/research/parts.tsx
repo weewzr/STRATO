@@ -61,9 +61,9 @@ export function CatalogueSwitch({ row, compact = false }: { row: MechanismRow; c
       </p>
     );
   }
-  const reason = isImplementedStatus(row.status)
-    ? 'the solver does not report this mechanism as verified and available'
-    : 'STRATO does not solve this mechanism';
+  // A research-only mechanism needs no reason beside its status word: the statement that STRATO does not
+  // solve it is made once, in Scientific Documentation.
+  const reason = isImplementedStatus(row.status) ? 'the solver does not report this mechanism as verified and available' : '';
   return (
     <div className={`cat-switch${compact ? ' cat-switch--compact' : ''}`}>
       <button
@@ -79,7 +79,8 @@ export function CatalogueSwitch({ row, compact = false }: { row: MechanismRow; c
         <span className="mech__swatch mech__swatch--dotted" aria-hidden="true" />
         <span className="mech__name">Live simulation{row.species !== 'all' ? `, ${row.species}` : ''}</span>
         <span className="mech__term">
-          Not available: status {row.status}; {reason}
+          Not available: status {row.status}
+          {reason ? `; ${reason}` : ''}
         </span>
         <span className="mech__state">Off</span>
       </button>
@@ -311,6 +312,80 @@ export function GalleryItem({ item, catalogue }: { item: GalleryRow; catalogue: 
           ))}
         </p>
       ) : null}
+    </article>
+  );
+}
+
+/** The sentence every planned calculation ends with; it is stated once, in Scientific Documentation. */
+const NOT_PERFORMED = /\s*This calculation has not been performed\. It is planned for a future phase of the project\./;
+
+/** A planned calculation's text without the sentence that all planned calculations share. */
+export function withoutNotPerformed(text: string): string {
+  return text.replace(NOT_PERFORMED, '');
+}
+
+/** The planned calculations as a compact list: title, status and species. Their full text is in Scientific Documentation. */
+export function GalleryPlanned({ items }: { items: readonly GalleryRow[] }) {
+  return (
+    <ul className="gallery-planned" aria-label="Planned calculations" data-testid="gallery-planned">
+      {items.map((it) => {
+        const species = gallerySpecies(it.species);
+        return (
+          <li key={it.item_id} className="gallery-planned__item" data-testid="gallery-item" data-kind={it.kind} data-item={it.item_id}>
+            <StatusChip status={it.status} compact />
+            <span className="gallery-planned__title">{it.title}</span>
+            <span className="gallery-planned__meta">{species.length > 0 ? species.join(', ') : 'no species'}</span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/** One planned calculation in full, once (Scientific Documentation): the texts of its gallery row, nothing shortened. */
+export function GalleryPlannedDetail({ item, catalogue }: { item: GalleryRow; catalogue: Catalogue }) {
+  const species = gallerySpecies(item.species);
+  return (
+    <article className="gallery-detail" data-testid="gallery-detail" data-item={item.item_id}>
+      <h4 className="gallery-detail__title">
+        {item.title} <StatusChip status={item.status} compact />
+      </h4>
+      <p>{withoutNotPerformed(item.caption)}</p>
+      <p>
+        <span className="record__lead">In plain words: </span>
+        {withoutNotPerformed(item.alt_text)}
+      </p>
+      <ul className="prose-list">
+        <li>Material: {item.material}</li>
+        <li>Species: {species.length > 0 ? species.join(', ') : 'none'}</li>
+        <li>Planned method: {item.method}</li>
+        <li>Planned conditions: {item.conditions}</li>
+        {item.mechanism_ids.length > 0 ? (
+          <li>
+            Catalogue entries:{' '}
+            {item.mechanism_ids.map((id, i) => {
+              const row = catalogue.mechanisms.find((m) => m.mechanism_id === id);
+              return (
+                <span key={id}>
+                  {i > 0 ? '; ' : ''}
+                  {row?.entry ? <a href={entryHref(row.entry)}>{row.name}</a> : id}
+                </span>
+              );
+            })}
+          </li>
+        ) : null}
+        {item.reference_ids.length > 0 ? (
+          <li>
+            Sources for the planned subject:{' '}
+            {item.reference_ids.map((id, i) => (
+              <span key={id}>
+                {i > 0 ? ' ' : null}
+                <Cite id={id} catalogue={catalogue} />
+              </span>
+            ))}
+          </li>
+        ) : null}
+      </ul>
     </article>
   );
 }

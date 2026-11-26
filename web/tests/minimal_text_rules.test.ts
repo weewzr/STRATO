@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
+  BLOCK_MAX_WORDS,
   CAPTION_MAX_CHARS,
   DOCUMENTATION_PAGE,
   evaluateSnapshots,
@@ -33,7 +34,7 @@ const words = (n: number) => Array.from({ length: n }, () => 'word').join(' ');
 
 describe('build hash and path guards', () => {
   it('passes a clean page', () => {
-    for (const rule of ['build-hash', 'path', 'caption', 'prose', 'disclaimer']) expect(failuresOf([page()], rule), rule).toEqual([]);
+    for (const rule of ['build-hash', 'path', 'caption', 'prose', 'block', 'disclaimer']) expect(failuresOf([page()], rule), rule).toEqual([]);
   });
 
   it('finds a build hash or digest, and not a number or a word', () => {
@@ -41,6 +42,35 @@ describe('build hash and path guards', () => {
     expect(failuresOf([page({ text: 'SHA-256 257fe9933a4c' })], 'build-hash')).toHaveLength(1);
     expect(failuresOf([page({ text: 'difference 3.997129786790144e-12 at 0.0002795123671863 s, defaced and 1000000' })], 'build-hash')).toEqual([]);
     expect('08ff6bb'.match(HASH_PATTERN)).not.toBeNull();
+  });
+
+  it('finds a hash at the end of a sentence, and still allows a version number', () => {
+    expect(failuresOf([page({ text: 'Built from commit 08ff6bb.' })], 'build-hash')).toHaveLength(1);
+    expect(failuresOf([page({ text: 'sha 257fe9933a4c. The CSV follows.' })], 'build-hash')).toHaveLength(1);
+    expect(failuresOf([page({ text: 'Page build 08ff6bb, then more.' })], 'build-hash')).toHaveLength(1);
+    expect(failuresOf([page({ text: 'solver version 2.0.0. Next sentence.' })], 'build-hash')).toEqual([]);
+  });
+
+  it('lets the research pages name a data file by its bare file name, and nothing with a directory', () => {
+    const research = (text: string) => page({ id: 'research-roadmap', page: 'research', text });
+    expect(failuresOf([research('half-lives from decay.csv and mechanisms.csv')], 'path')).toEqual([]);
+    expect(failuresOf([research('see data/nuclear/decay.csv')], 'path')).toHaveLength(1);
+    expect(failuresOf([research('run cargo test')], 'path')).toHaveLength(1);
+    expect(failuresOf([page({ text: 'half-lives from decay.csv' })], 'path')).toHaveLength(1);
+  });
+
+  it('limits the longest paragraph or list item of a page, wherever it stands', () => {
+    expect(failuresOf([page({ longestBlockWords: BLOCK_MAX_WORDS, longestBlockText: 'ok' })], 'block')).toEqual([]);
+    expect(failuresOf([page({ longestBlockWords: BLOCK_MAX_WORDS + 1, longestBlockText: 'A long introduction' })], 'block')).toHaveLength(1);
+    const doc = page({ id: 'documentation', page: DOCUMENTATION_PAGE, longestBlockWords: 400 });
+    expect(failuresOf([doc], 'block')).toEqual([]);
+  });
+
+  it('finds a hash at the end of a sentence, and still allows a version number', () => {
+    expect(failuresOf([page({ text: 'Built from commit 08ff6bb.' })], 'build-hash')).toHaveLength(1);
+    expect(failuresOf([page({ text: 'sha 257fe9933a4c. The CSV follows.' })], 'build-hash')).toHaveLength(1);
+    expect(failuresOf([page({ text: 'Page build 08ff6bb, then more.' })], 'build-hash')).toHaveLength(1);
+    expect(failuresOf([page({ text: 'solver version 2.0.0. Next sentence.' })], 'build-hash')).toEqual([]);
   });
 
   it('finds a repository path, a source file name and a build command in visible text', () => {

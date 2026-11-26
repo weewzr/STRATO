@@ -135,8 +135,6 @@ export function ParameterProvenance({ entry }: { entry: CaseEntry }) {
               </th>
               <th scope="col">Unit</th>
               <th scope="col">Class</th>
-              <th scope="col">Identifier</th>
-              <th scope="col">Source</th>
             </tr>
           </thead>
           <tbody>
@@ -152,18 +150,12 @@ export function ParameterProvenance({ entry }: { entry: CaseEntry }) {
                   </td>
                   <td>{r.unit}</td>
                   <td>{shortClass(r.status)}</td>
-                  <td>
-                    <code>{r.key}</code>
-                  </td>
-                  <td style={{ whiteSpace: 'nowrap' }}>
-                    <a href={repoFile(r.source)}>case file</a>
-                  </td>
                 </tr>
               );
             })}
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={7} className="muted">
+                <td colSpan={5}className="muted">
                   No parameter matches the search.
                 </td>
               </tr>
@@ -175,26 +167,20 @@ export function ParameterProvenance({ entry }: { entry: CaseEntry }) {
   );
 }
 
-/** The reference list: the key references of the README, and every reference of the research catalogue. */
+/**
+ * One reference list: the key references of the README that the research catalogue does not hold (Gelbard 2003
+ * and IAEA 1997 are catalogue entries, with their links, and are shown once there), then every reference of
+ * the research catalogue.
+ */
 export function References() {
   const cat = useCatalogue();
   return (
     <>
-      <ul className="refs" data-testid="readme-refs">
-        <li>
-          Gelbard, F. (2003). <em>Analytical modeling of fission product releases by diffusion from multicoated fuel particles</em>{' '}
-          (SAND2002-3966). Sandia National Laboratories.
-        </li>
-        <li>
-          International Atomic Energy Agency. (1997). <em>Fuel performance and fission product behaviour in gas cooled reactors</em>{' '}
-          (IAEA-TECDOC-978). IAEA.
-        </li>
-        <li>
+      <ul className="refs" data-testid="catalogue-refs">
+        <li data-testid="readme-ref">
           Hales, J. D., Jiang, W., Toptan, A., &amp; Gamble, K. A. (2021). Modeling fission product diffusion in TRISO fuel particles with
           BISON. <em>Journal of Nuclear Materials, 548</em>, 152840. <a href="https://doi.org/10.1016/j.jnucmat.2021.152840">doi:10.1016/j.jnucmat.2021.152840</a>
         </li>
-      </ul>
-      <ul className="refs" data-testid="catalogue-refs">
         {cat.references.map((r) => (
           <li key={r.reference_id} data-ref={r.reference_id}>
             {r.citation}{' '}

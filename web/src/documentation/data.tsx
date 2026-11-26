@@ -3,6 +3,7 @@ import { repoFile } from '../build';
 import { findCase } from '../data/case';
 import { METHOD_1, METHOD_2 } from '../methods';
 import { Badge } from '../panels/Badge';
+import { parameterRows } from '../panels/Provenance';
 import { TableBox } from '../sections/common';
 import { useStrato } from '../state/store';
 import type { DocContribution } from './types';
@@ -41,6 +42,37 @@ function CaseFileTable() {
             <tr key={r.item}>
               <th scope="row">{r.item}</th>
               <td>{r.value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </TableBox>
+  );
+}
+
+/** The key of every parameter in the case file (the identifier that left the Data table). */
+function KeyTable() {
+  const caseId = useStrato((s) => s.caseId);
+  const entry = findCase(caseId);
+  if (!entry) return null;
+  const rows = parameterRows(entry.config, entry.config, entry.provenance.input_file);
+  return (
+    <TableBox label="Key of every parameter in the case file">
+      <table className="table" data-testid="documentation-keys">
+        <caption className="visually-hidden">Key of every parameter in the case file</caption>
+        <thead>
+          <tr>
+            <th scope="col">Parameter</th>
+            <th scope="col">Key in the case file</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.key}>
+              <th scope="row">{r.parameter}</th>
+              <td>
+                <code>{r.key}</code>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -89,6 +121,7 @@ export const data: DocContribution = {
             source row and its class. The case file is the source row of every value.
           </p>
           <CaseFileTable />
+          <KeyTable />
           <p>
             None of these values comes from the parameter register, so no row has a register id; the synthetic values were chosen for
             verification and are not measured TRISO properties.
@@ -113,6 +146,18 @@ export const data: DocContribution = {
             parameters. Every column is named in full with its unit. Numbers are written in the shortest form that reads back to the same
             value, so a file reproduces the plotted values exactly. Each figure can also be saved as SVG or PNG with its source line.
           </p>
+          <ul className="prose-list" data-testid="documentation-live-files">
+            <li>
+              Current run: the run shown on Explore, written by the solver in Rust: the time series (inventory, release, mass-balance
+              residual with its derived bound), the concentration at every node at every output time, and the JSON of the whole run, each
+              file with the provenance header of {METHOD_1}.
+            </li>
+            <li>Baseline run: the baseline run of the last comparison, written by the solver in the same three files.</li>
+            <li>
+              Comparison: both release fractions and their difference, the release fraction of the current inputs minus that of the
+              baseline, at the output times both runs share, written by the solver in Rust as a CSV with the provenance header.
+            </li>
+          </ul>
           <ul className="prose-list" data-testid="documentation-precomputed-files">
             {PRECOMPUTED.map((f) => (
               <li key={f.title}>
@@ -135,7 +180,10 @@ export const data: DocContribution = {
       title: 'References of the Data page',
       body: (
         <>
-          <p>Key references of the STRATO model, as listed in the repository README.</p>
+          <p>
+            Key references of the STRATO model, as listed in the repository README. Gelbard (2003) and IAEA (1997) are entries of the
+            research catalogue and are shown once, with their links, in the catalogue list; Hales et al. (2021) is listed first.
+          </p>
           <p>
             References of the research catalogue (<code>data/research/references.csv</code>), each with the date its link was last opened.
           </p>

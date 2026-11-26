@@ -23,7 +23,7 @@ import {
   rowKey,
 } from '../research/entries';
 import { Counts } from '../research/FutureResearch';
-import { GalleryItem, ReferenceList, RowChip, RowList, RowRecords, RowTable, StatusLegend } from '../research/parts';
+import { GalleryItem, GalleryPlanned, ReferenceList, RowChip, RowList, RowRecords, RowTable, StatusLegend } from '../research/parts';
 import { isImplementedStatus } from '../research/status';
 import { hrefDocumentation, hrefFor, hrefResearch, useResearchPath } from '../route';
 import { SectionHeading, TableBox, useHeadingFocus } from './common';
@@ -314,11 +314,15 @@ function GalleryPage({ cat }: { cat: Catalogue }) {
         .map((g) => (
           <section key={g.kind} className={`gallery-group gallery-group--${g.kind}`} aria-labelledby={`gallery-${g.kind}`} data-testid={`gallery-group-${g.kind}`}>
             <h2 id={`gallery-${g.kind}`}>{GALLERY_TITLES[g.kind]}</h2>
-            <div className="gallery-grid">
-              {g.items.map((it) => (
-                <GalleryItem key={it.item_id} item={it} catalogue={cat} />
-              ))}
-            </div>
+            {g.kind === 'placeholder' ? (
+              <GalleryPlanned items={g.items} />
+            ) : (
+              <div className="gallery-grid">
+                {g.items.map((it) => (
+                  <GalleryItem key={it.item_id} item={it} catalogue={cat} />
+                ))}
+              </div>
+            )}
           </section>
         ))}
       <div className="prose">
@@ -331,7 +335,8 @@ function GalleryPage({ cat }: { cat: Catalogue }) {
 
 function RoadmapPage({ cat }: { cat: Catalogue }) {
   const entry = cat.entries[ROADMAP_ENTRY];
-  const body = bodyBlocks(entry);
+  // The introduction of the document (before its first heading) is in Scientific Documentation, once.
+  const body = bodyBlocks(entry).slice(introBlocks(entry).length);
   const summary = roadmapSummary(cat);
   return (
     <div className="roadmap-page" data-testid="roadmap-page">
@@ -351,12 +356,6 @@ function RoadmapPage({ cat }: { cat: Catalogue }) {
                 </p>
                 <div className="brick__body">
                   <p className="brick__adds">{s ? <Spans spans={s.adds} catalogue={cat} /> : null}</p>
-                  {s ? (
-                    <p className="brick__by">
-                      <span className="record__lead">Delivered by: </span>
-                      <Spans spans={s.deliveredBy} catalogue={cat} />
-                    </p>
-                  ) : null}
                   <ul className="brick__rows">
                     {rows.map((r) => (
                       <li key={rowKey(r)}>

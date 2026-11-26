@@ -56,13 +56,24 @@ export function Cite({ id, catalogue }: { id: string; catalogue: Catalogue }) {
   );
 }
 
+/**
+ * The two sentences that every entry of the catalogue opens with (the entry is not a STRATO result; its
+ * equations are research concepts) are stated once, in Scientific Documentation (research-limits); the
+ * document in the repository keeps them. Each equation keeps its own label.
+ */
+export function withoutEntryNotice(text: string): string {
+  return text
+    .replace(/\s*Every equation below is a research concept, not solved by STRATO\./, '')
+    .replace(/\s*STRATO does not simulate [a-z]+ today; nothing on this page is a STRATO result\./, '');
+}
+
 export function Spans({ spans, catalogue }: { spans: readonly Span[]; catalogue: Catalogue }) {
   return (
     <>
       {spans.map((s, i) => {
         switch (s.t) {
           case 'text':
-            return <Fragment key={i}>{s.v}</Fragment>;
+            return <Fragment key={i}>{withoutEntryNotice(s.v)}</Fragment>;
           case 'code':
             return isRepoPath(s.v) ? <PathLink key={i} path={s.v} /> : <code key={i}>{s.v}</code>;
           case 'math':

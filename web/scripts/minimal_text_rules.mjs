@@ -11,6 +11,7 @@
 //   shellText  the visible text of the header and footer (the same on every page, checked once as "shell")
 //   captions   the visible text of every figure caption and table caption of the view
 //   proseWords the number of words of explanatory prose before the first control, equation, graph or table
+//   longestBlockWords, longestBlockText (optional) the longest paragraph or list item outside tables, and its first words
 
 /** A figure or table caption is about one sentence: at most this many characters (with its "Figure n." prefix). */
 export const CAPTION_MAX_CHARS = 220;
@@ -27,19 +28,30 @@ export const PROSE_MAX_WORDS_BY_PAGE = { about: 120 };
 /** The one page that holds detailed, technical and implementation text; the hash and path rules do not apply to it. */
 export const DOCUMENTATION_PAGE = 'documentation';
 
-export const RULES = ['build-hash', 'path', 'caption', 'prose', 'disclaimer'];
+/** No single paragraph or list item of a page (outside Scientific Documentation) is longer than this many words. */
+export const BLOCK_MAX_WORDS = 100;
+
+/**
+ * Pages made of repository documents (the research catalogue) may name a data file or a test by its bare file
+ * name with the extension (decay.csv): that is the concise dataset identifier of rule 9, the link address holds
+ * the path. A path with a directory, a build command or a tool name still fails there.
+ */
+export const BARE_FILE_NAMES_ALLOWED = ['research'];
+
+export const RULES = ['build-hash', 'path', 'caption', 'prose', 'block', 'disclaimer'];
 
 export const RULE_MESSAGES = {
   'build-hash': 'a build hash or digest in the main interface (it belongs in Scientific Documentation)',
   path: 'a repository file path, source file name or build command in visible text (it belongs in Scientific Documentation; a link address may hold a path, its text may not)',
   caption: `a figure or table caption longer than ${CAPTION_MAX_CHARS} characters (a caption is about one sentence)`,
   prose: `more than ${PROSE_MAX_WORDS} words of prose before the first control, equation, graph or table`,
+  block: `a paragraph or list item longer than ${BLOCK_MAX_WORDS} words anywhere on a page (long explanations belong in Scientific Documentation)`,
   disclaimer: 'a registered disclaimer sentence that appears more than once in the site (it belongs once in Scientific Documentation)',
 };
 
 // Hexadecimal word of 7 to 64 characters with at least one digit and one letter a-f: a commit hash or digest.
 // A number such as 3.99e-12 is not one (the run starts after a dot or inside a longer word).
-export const HASH_PATTERN = /(?<![\w.-])(?=[0-9a-f]*\d)(?=[0-9a-f]*[a-f])[0-9a-f]{7,64}(?![\w.])/g;
+export const HASH_PATTERN = /(?<![\w.-])(?=[0-9a-f]*\d)(?=[0-9a-f]*[a-f])[0-9a-f]{7,64}(?![\w-]|\.\w)/g;
 
 // A path into the repository, a source or data file name, or a build command.
 export const PATH_PATTERN = new RegExp(
@@ -114,8 +126,13 @@ export function evaluateSnapshots(snapshots, exceptions = TEMPORARY_EXCEPTIONS) 
     const technical = s.page === DOCUMENTATION_PAGE;
     if (!technical) {
       for (const m of matches(s.text, HASH_PATTERN)) add(s.page, 'build-hash', `${s.id}: "${m}"`);
-      for (const m of matches(s.text, PATH_PATTERN)) add(s.page, 'path', `${s.id}: "${m}"`);
+      const bareOk = BARE_FILE_NAMES_ALLOWED.includes(s.page);
+      for (const m of matches(s.text, PATH_PATTERN)) {
+        if (bareOk && /^[\w-]+\.[a-z]+$/i.test(m)) continue;
+        add(s.page, 'path', `${s.id}: "${m}"`);
+      }
       const limit = PROSE_MAX_WORDS_BY_PAGE[s.page] ?? PROSE_MAX_WORDS;
+      if ((s.longestBlockWords ?? 0) > BLOCK_MAX_WORDS) add(s.page, 'block', `${s.id}: a block of ${s.longestBlockWords} words ("${short(s.longestBlockText ?? '')}"; limit ${BLOCK_MAX_WORDS})`);
       if (s.proseWords > limit) add(s.page, 'prose', `${s.id}: ${s.proseWords} words of prose before the first control, equation, graph or table (limit ${limit})`);
     }
     for (const c of s.captions) {
