@@ -550,7 +550,7 @@ $$
 
 *Equality of the two sides.* In derivation B's synthetic run (archive, Section 10.2) the raw values differed by up to 6% at $R_1$, and the two reconstructed values agreed to a relative $7.4\times10^{-11}$ or better, rounding.
 
-**Decision:** a post-processor that reports the flux at an interface reports Eq. (30a). This is the quantity that directive Phase D, test E, can use, with the status above: consistent to second order (proved), convergent at second order (observed only).
+**Decision:** a post-processor that reports the flux at an interface reports Eq. (30a). This is the quantity that directive Phase D, test E, can use, with the status above: consistent to second order (proved); successive-grid differences of the computed value fall at second order (observed only, self-convergence). Convergence of the computed value to the exact interface flow is not shown, because no exact five-layer interface flow was computed.
 
 ### 5.5 Consistency of the interface row
 
@@ -943,7 +943,7 @@ Eqs. (21), (35) and (37) are exact in exact arithmetic. In floating point the re
 | reconciliation, rows divided by $V_i$ | $6.91\times10^{-12}$ |
 | reconciliation, rows multiplied by $V_i$, plain summation | $1.27\times10^{-11}$ |
 
-The spread over a factor of about 20 for the same equations, and the opposite ranking of the two row scalings in two programs, show that the residual is rounding and depends on summation order and implementation details. No row scaling is shown to be better. The residual is larger than the $2.8\times10^{-13}$ of the retired finite-volume code (v1.0.0 Part V, Section 5.10.3) and smaller at smaller mesh ratios. **No exact conservation in floating point is claimed.** The Phase D test tolerance must be derived from an analysis of the rounding in the Rust implementation (the mesh ratio and the step count enter), not chosen to pass and not taken from this table.
+The spread over a factor of about 20 for the same equations, and the opposite ranking of the two row scalings in two programs, show that the residual is rounding and depends on summation order and implementation details. No row scaling is shown to be better. The residual is larger than the $2.8\times10^{-13}$ of the retired finite-volume code (v1.0.0 Part V, Section 5.10.3) and smaller at smaller mesh ratios. **No exact conservation in floating point is claimed.** The Phase D test tolerance must be derived from an analysis of the rounding in the Rust implementation (the mesh ratio and the step count enter), not chosen to pass and not taken from this table. That analysis is [Document 5](05_generation_decay_temperature.md), Section 5: the residual is bounded rigorously, a posteriori by Document 2 (F44) and a priori by (F45), about $7u$ per step times $1 + 2\Lambda_{\max}$ with $\Lambda_{\max}$ about twice the largest $\mathrm{Fo}$; the a-posteriori bound that the Rust tests compute has the same per-step constant to first order. The Rust measurements on the synthetic case with $\Delta t = 200\ \mathrm{s}$ and 1000 steps ($6.9\times10^{-12}$ to $8.3\times10^{-10}$ at 20 to 320 intervals per layer with the (F24) elimination of the current code; $2.3\times10^{-11}$ to $1.19\times10^{-9}$ with the textbook order of the first run) lie below (F44) by a factor of at least $75$. The residual has no fixed range: it scales with the number of steps times the largest $\mathrm{Fo}$; coordinator decision 36 records up to $2.3\times10^{-9}$ at very large $\mathrm{Fo}$, and a synthetic scratch case of Document 5, Section 5.7 (largest $\mathrm{Fo}$ up to $1.1\times10^7$, 3000 steps) reached $5.0\times10^{-8}$ in the Rust operation order, still below (F44).
 
 ### 9.5 Convergence
 
@@ -990,9 +990,9 @@ The constants are not tracked, hence the label PROOF OUTLINE. It gives no pointw
 | Thomas algorithm | pivots $m_i \ge 1 + \vert U_i\vert$, multipliers below one, no pivoting | PROVED (Section 9.3) |
 | Interface continuity | concentration exact (one shared node value); reconstructed flux (30a) equal from both sides | PROVED (Section 5.4) |
 | Interface flux formula (30a) | evaluated on the exact solution, equals the exact interface flow to $O\left(\left(\Delta r\right)^2 + \Delta r\,\Delta t\right)$ | PROVED (Section 5.4, consistency) |
-| Computed interface flux (30a) | second order in space | OBSERVED (Section 5.4); NOT PROVEN (no order proved) |
+| Computed interface flux (30a) | successive-grid differences fall at second order in space (self-convergence); convergence to the exact interface flow not shown | OBSERVED (Section 5.4); NOT PROVEN (no order proved) |
 | Conservation | $M^j + M_{\mathrm{rel}}^j = M^0$ exactly in exact arithmetic, any grid, any $\Delta t$, any centre row | PROVED (Eqs. (21), (35), (37)) |
-| Conservation in floating point | rounding residual $10^{-13}$ to $10^{-10}$ relative | OBSERVED (Section 9.4) |
+| Conservation in floating point | rounding residual, bounded rigorously by Document 2 (F44) and (F45) (and (F46) for the combined scheme); observed $10^{-13}$ to $1.2\times10^{-9}$ relative on the synthetic case with $\Delta t$ from $2$ to $200\ \mathrm{s}$ (Section 9.4), up to $5.0\times10^{-8}$ at largest $\mathrm{Fo}$ of order $10^7$ over 3000 steps; the residual scales with the step count times the largest $\mathrm{Fo}$ | PROVED bound (Document 5, Section 5); residual values OBSERVED (Section 9.4) |
 | Consistency | all rows; local order 2, except 1 at interface nodes and spacing jumps | PROVED (Section 9.5) |
 | Release formula | consistent to second order | PROVED (Eq. (36a)) |
 | Computed release rate | second order | OBSERVED (Section 6) |
@@ -1109,10 +1109,10 @@ The zero in position $(1,0)$ is $L_1 = 0$ (Section 4.3).
 **Open items for the following phases.**
 
 1. Directive A7 asks for an independent review. The reconciliation compared two independent derivations and checked each difference; the coordinator decides whether that satisfies A7 or whether Document 2 needs a further review before Phase C.
-2. Floating-point conservation (Section 9.4): analyse the rounding of the Rust Thomas solve and choose the Phase D tolerance from that analysis.
+2. Floating-point conservation (Section 9.4): done in [Document 5](05_generation_decay_temperature.md), Section 5; the tolerance is Document 2 (F44).
 3. Grid counts per layer for production runs: a convergence study on the AGR-1 geometry with literature diffusivities (Phase D), including whether grading towards $R_1$ helps at early times.
 4. A proof of second-order convergence of the computed release rate (Section 6), of the computed interface flux (30a) (Section 5.4), and of the discontinuous start (Section 9.5), are open.
-5. Phase G hooks (Document 2, Section 9, gives the places; none is derived here):
+5. Phase G hooks (Document 2, Section 9, gives the places; none is derived here). Now derived in [Document 5](05_generation_decay_temperature.md) and stated in Document 2, Section 11; Document 5 adopts the half-interval split and the surface release correction of derivation B, and adds the factor $\omega$ at $R_1$. The original list:
    - decay adds $\lambda\,\Delta t$ to every $B_i$, with the decayed amount $4\pi\lambda\,\Delta t\sum V_iC_i^{j+1}$ booked separately from the release;
    - generation adds $\Delta t\,G_i$ to the right-hand side, with the generated amount $4\pi\sum V_i\,\Delta t\,G_i$. Derivation B found two points that the G1 derivation must settle: a source that differs between two materials needs the half-interval split of $V_i$ at an interface node, and a source that is non-zero at $R_5$ breaks the cancellation in Eq. (36a), so the release then needs the generation in the outer half-interval of node $N$ (archive, Section 9). These findings are recorded, not adopted;
    - temperature changes $D_{i,\mathrm{inner}}$ and $D_{i,\mathrm{outer}}$ and triggers reassembly, with the same values used in the release.
