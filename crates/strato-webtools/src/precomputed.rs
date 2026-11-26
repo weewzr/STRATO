@@ -205,13 +205,13 @@ pub fn vs_analytical(native: &Value) -> Result<(Value, String)> {
         },
         "column_headers": {
             "t_s": "Time (s)",
-            "release_fraction_btcs": "Release fraction computed by BTCS (dimensionless)",
-            "release_fraction_analytical": "Release fraction of the analytical solution (dimensionless)",
+            "release_fraction_btcs": "Release fraction by Method A: BTCS (dimensionless)",
+            "release_fraction_analytical": "Release fraction by Method B: Sturm–Liouville (dimensionless)",
             "abs_difference": "Absolute difference of the release fractions (dimensionless)",
         },
     });
     let mut body = String::from(
-        "Time (s),Release fraction computed by BTCS (dimensionless),Release fraction of the analytical solution (dimensionless),Absolute difference of the release fractions (dimensionless)\n",
+        "Time (s),Release fraction by Method A: BTCS (dimensionless),Release fraction by Method B: Sturm–Liouville (dimensionless),Absolute difference of the release fractions (dimensionless)\n",
     );
     for i in 0..times.len() {
         let f = |x: Option<f64>| x.map_or(String::new(), float_repr);

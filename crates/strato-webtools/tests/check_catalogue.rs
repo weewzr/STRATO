@@ -237,6 +237,6 @@ fn command_line_exit_codes_and_lines() {
         .unwrap();
     assert_eq!(bad.status.code(), Some(1));
     let out = String::from_utf8(bad.stdout).unwrap();
-    assert!(out.contains("FAIL 9 generated catalogue: web/src/generated/research_catalogue.json is missing; run generate_data.py catalogue\n"), "{out}");
+    assert!(out.contains("FAIL 9 generated catalogue: web/src/generated/research_catalogue.json is missing; run strato-webtools catalogue\n"), "{out}");
     assert!(out.ends_with("RESULT FAIL\n"), "{out}");
 }

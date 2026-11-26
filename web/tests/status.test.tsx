@@ -140,7 +140,7 @@ describe('builder mechanism statuses on 2026-11-24', () => {
   it('the generated catalogue holds the builder rows and carries its provenance header', () => {
     expect(catalogueJson.label).toBe('CATALOGUE');
     expect(catalogueJson.kind).toBe('research_catalogue');
-    expect(catalogueJson.generator).toMatch(/^scripts\/web\/generate_data\.py v\d+$/);
+    expect(catalogueJson.generator).toMatch(/^strato-webtools v\d+$/);
     for (const i of catalogueJson.inputs) expect(i.sha256).toMatch(/^[0-9a-f]{64}$/);
     const ids = CATALOGUE.mechanisms.map((m) => m.mechanism_id);
     for (const id of ['diffusion_btcs_layered', 'generation', 'decay', 'inventory_accounting', 'diffusivity_temperature', 'diffusivity_layer_laws', 'interface_partition']) {

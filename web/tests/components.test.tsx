@@ -90,8 +90,22 @@ describe('ControlPanel', () => {
     await user.clear(field);
     await user.type(field, '5e-12');
     await user.click(screen.getByTestId('reset'));
-    expect(field.value).toBe('1e-12');
+    expect((screen.getByTestId('d-field-0') as HTMLInputElement).value).toBe('1e-12');
     expect(screen.getByTestId('announce').textContent).toBe('Parameters reset to the baseline.');
+  });
+
+  it('reset also clears an unsent invalid draft whose stored value did not change', async () => {
+    const user = userEvent.setup();
+    render(<ControlPanel />);
+    const stored = useStrato.getState().config.regions[0]?.cells;
+    const field = screen.getByTestId('n-field-0') as HTMLInputElement;
+    // Appending a decimal part to the stored whole number leaves text the field refuses to send.
+    await user.type(field, '.5');
+    expect(screen.getByText('Must be a whole number.')).toBeTruthy();
+    expect(useStrato.getState().config.regions[0]?.cells).toBe(stored);
+    await user.click(screen.getByTestId('reset'));
+    expect((screen.getByTestId('n-field-0') as HTMLInputElement).value).toBe(String(stored));
+    expect(screen.queryByText('Must be a whole number.')).toBeNull();
   });
 
   it('keeps the mechanism switches focusable, disabled and off', async () => {

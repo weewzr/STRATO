@@ -894,6 +894,22 @@ fn the_comparison_export_is_a_csv_with_the_provenance_header_and_the_difference_
     assert!(text.contains("# parameter_source: synthetic benchmark, not literature data"));
     assert!(text.contains("# input_sha256: "));
     assert!(text.contains("# baseline_input_sha256: "));
+    // Without the baseline's own source and class the header records the library default for them.
+    assert!(text.contains("# baseline_parameter_source: "));
+    assert!(text.contains("# baseline_parameter_class: "));
+    let mut own = json!({"schema": 2, "format": "comparison_csv", "config": current.clone(),
+        "baseline_config": synthetic_config_value(),
+        "baseline_parameter_source": "baseline source row",
+        "baseline_parameter_class": "baseline class"});
+    own["parameter_source"] = json!("current source row");
+    own["parameter_class"] = json!("current class");
+    let o: Value = serde_json::from_str(&strato_wasm::export_run(&own.to_string())).unwrap();
+    assert_eq!(o["status"], "ok", "{o}");
+    let ot = o["text"].as_str().unwrap();
+    assert!(ot.contains("# parameter_source: current source row\n"));
+    assert!(ot.contains("# parameter_class: current class\n"));
+    assert!(ot.contains("# baseline_parameter_source: baseline source row\n"));
+    assert!(ot.contains("# baseline_parameter_class: baseline class\n"));
     let rows: Vec<&str> = text.lines().filter(|l| !l.starts_with('#')).collect();
     assert_eq!(
         rows[0],

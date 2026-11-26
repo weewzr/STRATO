@@ -93,7 +93,7 @@ function ComparisonFigure() {
               </span>
             );
           })()}{' '}
-          (from compare). Solver time {comparison.elapsedMs !== null ? `${comparison.elapsedMs.toFixed(1)} ms` : '–'}, not a result.
+          (from compare). Solver wall time in this browser (ms): {comparison.elapsedMs !== null ? comparison.elapsedMs.toFixed(1) : '–'}, not a result.
         </p>
       ) : null}
       <figcaption className="figure__caption">

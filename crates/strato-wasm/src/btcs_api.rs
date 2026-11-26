@@ -867,6 +867,12 @@ struct ExportRequest {
     /// The baseline configuration of the format `comparison_csv`; `config` is the current one.
     #[serde(default)]
     baseline_config: Option<Value>,
+    /// Source row of the baseline's parameters (comparison export only).
+    #[serde(default)]
+    baseline_parameter_source: Option<String>,
+    /// Class of the baseline's parameters (comparison export only).
+    #[serde(default)]
+    baseline_parameter_class: Option<String>,
 }
 
 fn export_value(request: Value) -> Result<Value, Vec<String>> {
@@ -935,12 +941,21 @@ fn export_value(request: Value) -> Result<Value, Vec<String>> {
         )?;
         let base_result =
             btcs::run_input(&base.input, &[0.0]).map_err(|e| vec![format!("{e:#}")])?;
-        let base_prov = Provenance::new(
+        let mut base_prov = Provenance::new(
             &base.cfg,
             &base.input,
             req.input_file.as_deref().unwrap_or(""),
             BUILD_COMMIT,
         );
+        if req.baseline_parameter_source.is_some() || req.baseline_parameter_class.is_some() {
+            let source = req
+                .baseline_parameter_source
+                .unwrap_or_else(|| base_prov.parameter_source.clone());
+            let class = req
+                .baseline_parameter_class
+                .unwrap_or_else(|| base_prov.parameter_class.clone());
+            base_prov = base_prov.with_parameter_source(&source, &class);
+        }
         comparison_csv(&prov, &base_prov, &base_result.series, &result.series)
     } else {
         text

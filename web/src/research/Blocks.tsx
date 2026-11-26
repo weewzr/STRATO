@@ -5,7 +5,7 @@ import { referenceRow, type Block, type Catalogue, type Span } from './catalogue
 import { entryHref, spansText } from './entries';
 
 // Renders the entry text of the research catalogue from the blocks that
-// scripts/web/generate_data.py writes (headings, paragraphs, lists, tables, display maths and
+// strato-webtools writes (headings, paragraphs, lists, tables, display maths and
 // inline spans). No Markdown is parsed here and no text is added to the entry: only the label of
 // each display equation ("Research concept, not solved by STRATO", prompt/DESIGN_SPECIFICATION.md
 // Section 7.3) and its number within the page.

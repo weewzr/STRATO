@@ -2,9 +2,10 @@
 //!
 //! One command-line tool replaces `scripts/web/generate_data.py`, `check_catalogue.py`,
 //! `build_wasm.py` and the two shell wrappers. The files it writes (web/src/generated and
-//! web/public/data) are the same bytes the Python generator wrote, apart from the fields that
-//! record when, where and with which tool a file was written (`created_utc`, `commit`,
-//! `generator_sha256`, `rustc`), which `--check` ignores.
+//! web/public/data) have the same content as the Python generator wrote, apart from the
+//! generator and command fields, which now name this tool, and the fields that record when,
+//! where and with which tool a file was written (`created_utc`, `commit`, `generator_sha256`,
+//! `rustc`), which `--check` ignores.
 //!
 //! The tool does not know which numerical method produced the results it converts. The solver is
 //! reached only through [`solver`], which names its command lines and its output files.
@@ -25,12 +26,9 @@ use serde_json::Value;
 use std::path::{Path, PathBuf};
 use util::{Error, Result};
 
-/// The identifier that the provenance headers of the committed files carry. The files were
-/// written by the Python generator `scripts/web/generate_data.py`; this tool writes the same
-/// header text so that its output is byte for byte the committed files. The identifier is
-/// the format's name now, not a file that exists: change it in this one place, and regenerate,
-/// when the data files are next regenerated for a new solver.
-pub const GENERATOR: &str = "scripts/web/generate_data.py";
+/// The identifier that the provenance headers of the generated files carry: this tool's own
+/// name. (The retired Python generator wrote `scripts/web/generate_data.py` here.)
+pub const GENERATOR: &str = "strato-webtools";
 pub const GENERATOR_VERSION: u32 = 1;
 pub const SCHEMA: u32 = 1;
 

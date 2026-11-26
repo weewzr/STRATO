@@ -70,7 +70,7 @@ function Legend({ run }: { run: RunOk }) {
     <div className="legend" data-testid="colour-legend" data-colormap={map} data-scale={scale}>
       <p className="legend__title">
         Concentration (mol/m³) on a {scale === 'log' ? `log scale, ${LOG_DECADES} decades` : 'linear scale'} up to the largest nodal concentration of
-        the run, <Sci value={top} unit="mol/m³" /> <span className="muted">(returned by the solver)</span>. Tick labels: fraction of that largest concentration (dimensionless).
+        the run, <Sci value={top} unit="mol/m³" /> <span className="muted">(returned by the solver)</span>.
       </p>
       <div className="legend__bar" style={{ backgroundImage: gradient }} aria-hidden="true" />
       <div className="legend__ticks" aria-hidden="true">
@@ -311,7 +311,7 @@ export function ParticleView({ config, provenance }: { config: CaseConfig; prove
                 on a fixed linear colour scale from 0 to the largest nodal concentration of the run
               </>
             )}
-            ; the {names.length} layers are drawn to scale with their boundaries in the layer colours. The playback shows
+            ; the tick labels under the colour bar give the fraction of that largest concentration (dimensionless); the {names.length} layers are drawn to scale with their boundaries in the layer colours. The playback shows
             the output times the solver recorded; nothing is interpolated.
           </>
         ) : (

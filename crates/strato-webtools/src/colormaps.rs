@@ -95,10 +95,7 @@ pub fn build(root: &Path) -> Result<Value> {
         json!(catalogue::strato_version(root)?),
     );
     doc.insert("commit".into(), json!(util::head_commit(root)));
-    doc.insert(
-        "command".into(),
-        json!(format!("python -I -X utf8 {GENERATOR} colormaps")),
-    );
+    doc.insert("command".into(), json!(format!("{GENERATOR} colormaps")));
     doc.insert("created_utc".into(), json!(util::now_utc()));
     doc.insert(
         "note".into(),

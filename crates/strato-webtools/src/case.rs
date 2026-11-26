@@ -122,7 +122,7 @@ pub fn build(root: &Path, input_path: &Path) -> Result<(Value, String)> {
     let input_commit = util::git(root, &["log", "-1", "--format=%H", "--", &rel])?;
     let version = catalogue::strato_version(root)?;
     let generator = format!("{GENERATOR} v{GENERATOR_VERSION}");
-    let command = format!("python -I -X utf8 {GENERATOR} case {rel}");
+    let command = format!("{GENERATOR} case {rel}");
     let created = util::now_utc();
 
     let mut doc = Map::new();

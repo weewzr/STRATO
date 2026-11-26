@@ -358,6 +358,16 @@ pub fn comparison_csv(
     let _ = writeln!(s, "# baseline_input_sha256: {}", baseline.input_sha256);
     let _ = writeln!(
         s,
+        "# baseline_parameter_source: {}",
+        one_line(&baseline.parameter_source)
+    );
+    let _ = writeln!(
+        s,
+        "# baseline_parameter_class: {}",
+        one_line(&baseline.parameter_class)
+    );
+    let _ = writeln!(
+        s,
         "# difference: release fraction of the current inputs minus release fraction of the baseline, at the output times both runs share"
     );
     s.push_str(&header_line(&COMPARISON_COLUMNS));

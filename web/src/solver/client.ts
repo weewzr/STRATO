@@ -211,6 +211,8 @@ export class SolverClient {
     provenance: { inputFile: string; parameterSource: string; parameterClass: string },
     /** The baseline configuration of the format comparison_csv; config is then the current one. */
     baselineConfig?: unknown,
+    /** Source row and class of the baseline's parameters, written to the comparison header. */
+    baselineProvenance?: { parameterSource: string; parameterClass: string },
   ): Promise<Reply<ExportReply>> {
     return this.request<ExportReply>('export_run', {
       schema: 2,
@@ -220,6 +222,9 @@ export class SolverClient {
       parameter_source: provenance.parameterSource,
       parameter_class: provenance.parameterClass,
       ...(baselineConfig === undefined ? {} : { baseline_config: baselineConfig }),
+      ...(baselineProvenance === undefined
+        ? {}
+        : { baseline_parameter_source: baselineProvenance.parameterSource, baseline_parameter_class: baselineProvenance.parameterClass }),
     });
   }
   close(): void {

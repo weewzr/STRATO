@@ -124,7 +124,7 @@ export function MethodComparisonPanel() {
           <>
             Absolute difference of the release fractions of {METHOD_1} and {METHOD_2} of the verified case at every output time, as the Rust
             tool computed it from the native reply (column <code>Absolute difference of the release fractions (dimensionless)</code>); a
-            discretisation error of {METHOD_1}, not a defect. The thin horizontal line is the accuracy floor of {METHOD_2} ({a.accuracy_floor},
+            discretisation error of {METHOD_1}, not a defect. The thin grey horizontal line is the accuracy floor of {METHOD_2} ({a.accuracy_floor},
             valid from the time {a.valid_from_s} s, {a.modes} eigenmodes; largest difference {a.max_abs_difference}, final difference{' '}
             {a.final_abs_difference}). This plot is shown only from the native file: for inputs changed on Explore, the page shows the two
             curves and the largest and final difference that the solver returns, because the pointwise difference of two nearly equal

@@ -2,11 +2,11 @@
   "schema": 1,
   "label": "DISPLAY",
   "kind": "colormaps",
-  "generator": "scripts/web/generate_data.py v1",
+  "generator": "strato-webtools v1",
   "strato_version": "1.0.1",
-  "commit": "36f1a98848bec9d66fe515994e075cff09d6cefb",
-  "command": "python -I -X utf8 scripts/web/generate_data.py colormaps",
-  "created_utc": "2026-11-25T11:38:24Z",
+  "commit": "c749f173e3a00393befb296618953818dfeac1a4",
+  "command": "strato-webtools colormaps",
+  "created_utc": "2026-11-26T08:51:26Z",
   "note": "Colour tables for displaying solver values; not data and not a result label. Copied from matplotlib 3.11.2 lib/matplotlib/_cm_listed.py (see data/colormaps/README.md). rgb8 = int(255 * rgb), matplotlib's bytes conversion.",
   "inputs": [
     {

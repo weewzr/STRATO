@@ -230,7 +230,7 @@ export function releaseFigure(run: RunOk, row: number, opts: ReleaseOptions, the
       font: { size: 10, color: theme.muted },
     });
     if (opts.log) {
-      shapes.push({ type: 'line', xref: 'paper', yref: 'y', x0: 0, x1: 1, y0: a.accuracy_floor, y1: a.accuracy_floor, line: { color: theme.seriesC, width: 1 } });
+      shapes.push({ type: 'line', xref: 'paper', yref: 'y', x0: 0, x1: 1, y0: a.accuracy_floor, y1: a.accuracy_floor, line: { color: theme.muted, width: 1 } });
       annotations.push({
         xref: 'paper',
         yref: 'y',
@@ -406,7 +406,7 @@ function floorLine(floor: number | null, theme: PlotTheme): { shapes: unknown[];
   const shapes: unknown[] = [];
   const annotations: unknown[] = [];
   if (floor !== null && Number.isFinite(floor) && floor > 0) {
-    shapes.push({ type: 'line', xref: 'paper', yref: 'y', x0: 0, x1: 1, y0: floor, y1: floor, line: { color: theme.seriesC, width: 1 } });
+    shapes.push({ type: 'line', xref: 'paper', yref: 'y', x0: 0, x1: 1, y0: floor, y1: floor, line: { color: theme.muted, width: 1 } });
     annotations.push({
       xref: 'paper',
       yref: 'y',

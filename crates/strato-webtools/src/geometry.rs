@@ -344,7 +344,7 @@ pub fn build(root: &Path) -> Result<(Value, String)> {
     let commit = util::source_commit(root, &[TOOL_DIR, GEOMETRY_CSV]);
     let gen_sha = crate::generator_sha256(root);
     let input_sha = util::sha256_hex(&raw);
-    let command = format!("python -I -X utf8 {GENERATOR} geometry");
+    let command = format!("{GENERATOR} geometry");
     let created = util::now_utc();
     let note = concat!(
         "Registered geometry of the AGR-1 UCO TRISO particle (rule E2): geometry only, not a simulation and ",

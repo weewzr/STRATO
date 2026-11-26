@@ -180,7 +180,7 @@ export function ReleaseCurves() {
           <>
             {METHOD_2} is valid from the time <Sci value={a.valid_from_s} unit="s" digits={4} /> (shaded before) and accurate to{' '}
             <Sci value={a.accuracy_floor} digits={4} />
-            {log ? ' (the thin horizontal line)' : ''}; it uses {a.modes} eigenmodes.{' '}
+            {log ? ' (the thin grey horizontal line)' : ''}; it uses {a.modes} eigenmodes.{' '}
           </>
         ) : (
           `${METHOD_2} was not computed for these inputs; the reason is listed under the numerical diagnostics. `

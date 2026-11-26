@@ -537,7 +537,7 @@ pub fn check(root: &Path) -> Result<Report> {
             9,
             "generated catalogue",
             &[format!(
-                "{CATALOGUE_JSON} is missing; run generate_data.py catalogue"
+                "{CATALOGUE_JSON} is missing; run strato-webtools catalogue"
             )],
             "",
         );

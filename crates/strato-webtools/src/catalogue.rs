@@ -711,10 +711,7 @@ pub fn build(root: &Path) -> Result<Value> {
     );
     doc.insert("strato_version".into(), json!(strato_version(root)?));
     doc.insert("commit".into(), json!(util::head_commit(root)));
-    doc.insert(
-        "command".into(),
-        json!(format!("python -I -X utf8 {GENERATOR} catalogue")),
-    );
+    doc.insert("command".into(), json!(format!("{GENERATOR} catalogue")));
     doc.insert("created_utc".into(), json!(util::now_utc()));
     doc.insert(
         "note".into(),

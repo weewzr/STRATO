@@ -1,4 +1,4 @@
-import { useId, useMemo, useState, type ReactNode } from 'react';
+import { Fragment, useId, useMemo, useState, type ReactNode } from 'react';
 import { repoFile } from '../build';
 import { CASES, type RegionConfig } from '../data/case';
 import { layerColour } from '../design/layers';
@@ -100,6 +100,9 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
 
   const changed = useMemo(() => configDifferences(baseline, config).length, [baseline, config]);
   const [announce, setAnnounce] = useState('');
+  // A reset or a case load must also clear an unsent draft, even when the stored value did not change.
+  const [resetCount, setResetCount] = useState(0);
+  const fieldsKey = `${caseId}:${resetCount}`;
   const ids = { mech: useId(), run: useId(), step: useId(), title: useId(), caseHint: useId() };
   const sheet = layout === 'sheet';
   const errors = validation.state === 'rejected' || validation.state === 'error' ? validation.errors : [];
@@ -302,6 +305,7 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
           data-testid="reset"
           onClick={() => {
             resetToBaseline();
+            setResetCount((n) => n + 1);
             setAnnounce('Parameters reset to the baseline.');
           }}
         >
@@ -346,9 +350,9 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
           {caseField}
           <fieldset className="group">
             <legend className="group__legend">Layers</legend>
-            {layers}
+            <Fragment key={fieldsKey}>{layers}</Fragment>
           </fieldset>
-          {startAndTime}
+          <Fragment key={`t${fieldsKey}`}>{startAndTime}</Fragment>
           {mechanismSwitches}
         </div>
         <div className="panel__actions">{actions}</div>
@@ -363,10 +367,10 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
         {actions}
       </div>
       <div className="controls__layers" role="group" aria-label="Layer parameters">
-        {layers}
+        <Fragment key={fieldsKey}>{layers}</Fragment>
       </div>
       <div className="controls__rest">
-        {startAndTime}
+        <Fragment key={`t${fieldsKey}`}>{startAndTime}</Fragment>
         {mechanismSwitches}
       </div>
     </div>

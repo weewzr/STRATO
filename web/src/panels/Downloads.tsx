@@ -111,7 +111,14 @@ export function LiveDownloads() {
     const client = solverClient();
     if (!client) throw new Error('The solver is not available, so no file can be written.');
     const prov = parameterProvenance(entry?.config, cfg);
-    const out = await client.exportRun(cfg, format, { inputFile: caseFile, parameterSource: prov.source, parameterClass: prov.parameterClass }, baseline);
+    const baseProv = baseline === undefined ? undefined : parameterProvenance(entry?.config, baseline);
+    const out = await client.exportRun(
+      cfg,
+      format,
+      { inputFile: caseFile, parameterSource: prov.source, parameterClass: prov.parameterClass },
+      baseline,
+      baseProv === undefined ? undefined : { parameterSource: baseProv.source, parameterClass: baseProv.parameterClass },
+    );
     if (out.body.status !== 'ok') throw new Error(out.body.errors.join('; '));
     return { text: out.body.text, type: out.body.media_type };
   };
