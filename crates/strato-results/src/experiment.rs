@@ -1004,10 +1004,7 @@ pub fn candidates(
                 };
                 let f_a = f_end - f_start;
                 let r = r_end - r_start;
-                let slope_a = match (at(t_end + dt), at((t_end - dt).max(0.0))) {
-                    (Some(p), Some(m)) => (p - m) / (2.0 * dt),
-                    _ => 0.0,
-                };
+                let slope_a = model_slope(&at, t_end, dt);
                 // Method B at the same times, where it applies and the drawing mask accepts it.
                 let needs = Needs {
                     generation: false,
@@ -1039,12 +1036,7 @@ pub fn candidates(
                             Some(0.0)
                         };
                         let f_b = get(t_end).zip(start).map(|(e, s)| e - s);
-                        let slope_b = match (get((t_end + dt).max(0.0)), get((t_end - dt).max(0.0)))
-                        {
-                            (Some(p), Some(m)) => (p - m) / (2.0 * dt),
-                            _ => 0.0,
-                        };
-                        (f_b, slope_b)
+                        (f_b, model_slope(&get, t_end, dt))
                     }
                     MethodB::NotAvailable(_) => (None, 0.0),
                 };
@@ -1075,10 +1067,7 @@ pub fn candidates(
                 };
                 let resolved = flag(t_end).unwrap_or(false)
                     && (t_start <= 0.0 || flag(t_start).unwrap_or(false));
-                let slope_a = match (at(t_end + dt), at((t_end - dt).max(0.0))) {
-                    (Some(p), Some(m)) => (p - m) / (2.0 * dt),
-                    _ => 0.0,
-                };
+                let slope_a = model_slope(&at, t_end, dt);
                 (f_end - f_start, resolved, slope_a, None, 0.0)
             }
         };
@@ -1098,6 +1087,22 @@ pub fn candidates(
     // Rows of the same nuclide that the comparison program leaves out entirely (statuses with no
     // model) are already in `records`; nothing else exists.
     Ok(out)
+}
+
+/// The model slope s_i of `metric-nrmse.md` Section 5 at `t_end` (per hour): the central difference
+/// over t_end - dt .. t_end + dt, and, where t_end + dt lies past the last model sample, the
+/// one-sided difference over t_end - dt .. t_end (so the time-reading term is never dropped
+/// silently). It is 0 only when the model has no sample at t_end or t_end - dt.
+fn model_slope(at: &dyn Fn(f64) -> Option<f64>, t_end: f64, dt: f64) -> f64 {
+    let lo = (t_end - dt).max(0.0);
+    match (at(t_end + dt), at(lo)) {
+        (Some(p), Some(m)) => (p - m) / (2.0 * dt),
+        (None, Some(m)) => match at(t_end) {
+            Some(e) if t_end > lo => (e - m) / (t_end - lo),
+            _ => 0.0,
+        },
+        _ => 0.0,
+    }
 }
 
 /// The JSON of a record (the fields of `metric-nrmse.md` Section 7).
@@ -1418,8 +1423,13 @@ mod tests {
             dt_h: 5.0,
         };
         let mut runner = Runner::new(&reg, radii.clone(), settings).expect("runner");
-        let (t_end, t_start) = (20.0, 5.0);
+        // Late enough that the release is large against the accuracy floor of the series, so the
+        // drawing mask accepts the values (Cs-134 at 1600 degC: about 0.007 at 500 h).
+        let (t_end, t_start) = (1000.0, 500.0);
         let (rec, nuc, t_c) = fixture_record(&reg, t_end, t_start);
+        // Compute the curve past t_end first, so the central slope exists at t_end (the one-sided
+        // fallback at the end of the curve has its own test below).
+        runner.get(nuc.species, t_c, 1200.0).expect("curve");
         let got = candidates(
             &[rec],
             &mut runner,
@@ -1455,20 +1465,32 @@ mod tests {
             t_end * 3600.0,
             (t_end + dt) * 3600.0,
         ];
-        match method_b(needs, &radii.outer_m, &curve.d_m2_s, &ts) {
-            MethodB::Available(a) => {
-                let v = |k: usize| a.values[k];
-                if let (Some(e), Some(s)) = (v(2), v(0)) {
-                    assert_eq!(f_b, Some(e - s));
-                    if let (Some(p), Some(m)) = (v(3), v(1)) {
-                        assert_eq!(slope_b, (p - m) / (2.0 * dt));
-                    }
-                } else {
-                    assert_eq!(f_b, None);
-                }
-            }
-            MethodB::NotAvailable(_) => assert_eq!(f_b, None),
-        }
+        // Constant temperature, no generation, no decay, kernel-step start: Method B is exact
+        // here (decision 66(d)), so it must be available with a value at every sample time.
+        let MethodB::Available(a) = method_b(needs, &radii.outer_m, &curve.d_m2_s, &ts) else {
+            panic!(
+                "Method B must be available for the isothermal kernel-step fixture: {} at {} C {:?}",
+                nuc.id,
+                t_c,
+                method_b(needs, &radii.outer_m, &curve.d_m2_s, &ts)
+            );
+        };
+        let v = |k: usize| a.values[k].expect("a Method B value at the sample time");
+        assert_eq!(f_b, Some(v(2) - v(0)));
+        assert!(v(2) > v(0), "the release grows over the window");
+        assert_eq!(slope_b, (v(3) - v(1)) / (2.0 * dt));
+        assert!(slope_b > 0.0);
+    }
+
+    #[test]
+    fn the_model_slope_falls_back_to_a_one_sided_difference_past_the_last_sample() {
+        // f = 0.01 t on 0..30 h: the slope is 0.01 everywhere, also at the last sample.
+        let at = |t: f64| (0.0..=30.0).contains(&t).then_some(0.01 * t);
+        assert!((model_slope(&at, 10.0, 0.05) - 0.01).abs() < 1e-12);
+        assert!((model_slope(&at, 30.0, 0.05) - 0.01).abs() < 1e-12);
+        // No sample at t_end - dt: nothing to difference, the slope is reported as 0.
+        let none = |_t: f64| None;
+        assert_eq!(model_slope(&none, 10.0, 0.05), 0.0);
     }
 
     #[test]
@@ -1506,9 +1528,11 @@ mod tests {
         let (f, r, _, _, _) = run(&mut runner, 20.0, 0.0);
         assert!((f - 0.3).abs() < 1e-15 && !r);
         // A window: difference of the two ends, resolved only when both ends are; the slope
-        // beyond the last sample is zero.
+        // beyond the last sample is the one-sided difference over the last 0.05 h (0.3 over
+        // 20..30 is 0.03 per hour), not zero.
         let (f, r, _, slope, _) = run(&mut runner, 30.0, 10.0);
-        assert!((f - 0.5).abs() < 1e-15 && r && slope == 0.0);
+        assert!((f - 0.5).abs() < 1e-15 && r);
+        assert!((slope - 0.03).abs() < 1e-9, "slope {slope}");
         let (_, r, _, _, _) = run(&mut runner, 30.0, 20.0);
         assert!(!r, "the window start sample is unresolved");
     }
