@@ -1,11 +1,11 @@
 # STRATO experimental comparison: per-dataset aggregates; groups never mix nuclides or quantity definitions
 # label: numerical solution of the stated model; not experimental validation; the comparison with the register is a comparison of release behaviour, not a validation
 # solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1
-# commit: 388bacc
+# commit: 85ea748
 # model_limitations: kernel-only start (inventory-matched start node); constant diffusion coefficient per layer evaluated at the test temperature from the first hour (heating ramps are not modelled); no radioactive decay and no fission-product generation in the solver yet; perfect interface contact; absorbing outer surface; one intact particle, no matrix; the model fraction is a fraction of the particle's own inventory
 # parameter_source: geometry design AGR1-B-M16 (register rows G-01 G-02 G-03 G-04 G-05); diffusion coefficients chosen by the strato-data selection function (decision 47) for the heating-test phase, that is the rows of register sets C16-T2 and C16-BUF as printed, evaluated at the test temperature (the kernel rows are UO2 surrogates: no UCO measurement exists, decision 40); the class of each coefficient (owner ruling 16) and its phase of use are in the sensitivity file and in the coefficient_sets of comparison.json
 # parameter_class: coefficients are the published heating-test correlation of the register (class and phase per row in the sensitivity file); radii are the registered measured baseline geometry; every measurement keeps its register row id
-# release_measurements_sha256: 769cb15ea1701316e2d6a11e987c363a0096c07d36345c4c91d482fa0f27573a
+# release_measurements_sha256: 29f0d7bec6f40fb97c52c0bf7972782d7849a58f5f910527fe8efa8afa9ddda9
 # arrhenius_sha256: 2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4
 # geometry_sha256: 8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f
 # temperature_histories_sha256: b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d
@@ -79,6 +79,6 @@ AGR-2,Ag-110m,no counted failure; one particle released fission products,total c
 AGR-1,Cs-134,loose particles,cumulative release in particle equivalents (75 loose particles),Hunn et al. (2016; ORNL/TM-2015/161),16,0,0,16,0,0,0,0,0,1800,,0,,,,,,,0,,,,,E-541 E-542 E-543 E-544 E-545 E-546 E-547 E-548 E-549 E-550 E-551 E-552 E-553 E-554 E-555 E-556
 AGR-1,Cs-137,loose particles,cumulative release in particle equivalents (75 loose particles),Hunn et al. (2016; ORNL/TM-2015/161),16,0,0,16,0,0,0,0,0,1800,,0,,,,,,,0,,,,,E-557 E-558 E-559 E-560 E-561 E-562 E-563 E-564 E-565 E-566 E-567 E-568 E-569 E-570 E-571 E-572
 AGR-1,Cs-134,intact,cumulative compact release fraction,Demkowicz et al. (2015; FACS),11,0,0,11,0,0,0,0,0,1600,,0,,,,,,,0,,,,,E-573 E-574 E-575 E-576 E-577 E-578 E-579 E-580 E-581 E-582 E-583
-FRG,Ag-110m,all,cumulative sphere release fraction,IAEA (1997),21,0,0,21,0,0,0,0,0,1600,,0,,,,,,,0,,,,,E-595 E-596 E-597 E-598 E-599 E-600 E-601 E-602 E-603 E-604 E-605 E-606 E-607 E-608 E-609 E-610 E-611 E-612 E-613 E-614 E-615
+FRG,Ag-110m,all,cumulative sphere release fraction,IAEA (1997),22,0,0,22,0,0,0,0,0,1600,,0,,,,,,,0,,,,,E-595 E-596 E-597 E-598 E-599 E-600 E-601 E-602 E-603 E-604 E-605 E-606 E-607 E-608 E-609 E-610 E-611 E-612 E-613 E-614 E-615 E-658
 FRG,Cs-137,all,cumulative sphere release fraction,IAEA (1997),22,0,0,22,0,0,0,0,0,1600,,0,,,,,,,0,,,,,E-616 E-617 E-618 E-619 E-620 E-621 E-622 E-623 E-624 E-625 E-626 E-627 E-628 E-629 E-630 E-631 E-632 E-633 E-634 E-635 E-636 E-637
 FRG,Sr-90,all,cumulative sphere release fraction,IAEA (1997),20,0,0,20,0,0,0,0,0,1600,,0,,,,,,,0,,,,,E-638 E-639 E-640 E-641 E-642 E-643 E-644 E-645 E-646 E-647 E-648 E-649 E-650 E-651 E-652 E-653 E-654 E-655 E-656 E-657

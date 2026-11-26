@@ -37,7 +37,7 @@ fn status_counts_match_the_audit() {
             n(Status::Digitised),
             n(Status::NotVerified)
         ),
-        (263, 335, 1)
+        (263, 336, 1)
     );
     let n = |s: Status| r.temperature.rows.iter().filter(|x| x.status == s).count();
     assert_eq!(
@@ -277,7 +277,7 @@ fn an_upper_bound_is_not_a_point_value() {
         a[i] += 1;
         a
     });
-    assert_eq!(counts, [226, 341, 23, 1, 5, 3]);
+    assert_eq!(counts, [226, 342, 23, 1, 5, 3]);
 }
 
 #[test]

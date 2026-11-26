@@ -1979,12 +1979,12 @@ rising steeply from zero, the base run and the run with half the step differ by 
 tolerance). Not drawn because the time at temperature lies beyond the 420 h axis (the value is never moved onto the edge): E-150 (500 h), E-151 (500 h), E-154 (699 h), E-613 (428 h), E-614 (452 h), E-615 (475 h),
 </text>
 <text x="24" y="818" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-E-633 (428 h), E-634 (451 h), E-635 (476 h), E-636 (499 h), E-654 (428 h), E-655 (452 h), E-656 (475 h), E-657 (498 h). Model: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit
+E-633 (428 h), E-634 (451 h), E-635 (476 h), E-636 (499 h), E-654 (428 h), E-655 (452 h), E-656 (475 h), E-657 (498 h), E-658 (500 h). Model: STRATO BTCS five-layer spherical finite difference, package version
 </text>
 <text x="24" y="836" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-388bacc; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at the test temperature; kernel-only
+1.0.1, commit 85ea748; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at the test
 </text>
 <text x="24" y="854" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-start; constant temperature; decay and generation are not in the solver. This is a numerical comparison, not an experimental validation.
+temperature; kernel-only start; constant temperature; decay and generation are not in the solver. This is a numerical comparison, not an experimental validation.
 </text>
 </svg>
