@@ -805,10 +805,12 @@ fn compare_returns_modified_minus_baseline() {
 }
 
 #[test]
-fn build_info_reports_abi_3_and_the_btcs_capability() {
+fn build_info_reports_abi_4_and_the_btcs_capability() {
+    // ABI 4 (task btcs-wasm-v3) adds the stage and scenario functions; the `btcs` block that the
+    // site reads today is unchanged, which the assertions below state.
     let v: Value = serde_json::from_str(&strato_wasm::build_info()).unwrap();
-    assert_eq!(v["abi"], 3);
-    assert_eq!(strato_wasm::abi_version(), 3);
+    assert_eq!(v["abi"], 4);
+    assert_eq!(strato_wasm::abi_version(), 4);
     let b = &v["btcs"];
     assert_eq!(b["capabilities"], json!(["diffusion_btcs_layered"]));
     assert_eq!(b["label"], "COMPUTED v2.0");

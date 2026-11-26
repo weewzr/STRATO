@@ -359,6 +359,10 @@ fn is_series_derived(pattern: &str) -> bool {
         || p.starts_with(".method_b.release_fraction")
         || p.starts_with(".release_fraction[]")
         || p.starts_with(".release_fraction_of_total[]")
+        || p.starts_with(".missing_weight")
+        || p.starts_with(".withheld_reason_codes")
+        || p.starts_with(".method_b.missing_weight")
+        || p.starts_with(".method_b.withheld_reason_codes")
 }
 
 /// The series accuracy floor of the native reply that a leaf belongs to: that of the run itself, or
