@@ -7,8 +7,8 @@
     "solver_version": "1.0.1",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "6e52ee0",
-    "solver_source_sha256": "acc5acc5b3fa6143504c93c62e99586ae33fb7308d9c20a2e0f1e935c32a010d",
+    "commit": "unknown",
+    "solver_source_sha256": "f09fb0c09a8ed01f7456935584322ea65f555c999ac4247d707794aec349b89a",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
       "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
@@ -19,11 +19,11 @@
       "agr1_irradiation_conditions.csv": "31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d",
       "agr1_burnup_by_cycle.csv": "e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f",
       "agr1_power_history_digitised.csv": "25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a",
-      "scenarios/s1_normal_operation.csv": "13dc0e4a301893a3aa47b669d6972dbd1dd50b72afb8817dcf6582890e47d77f",
-      "scenarios/s2_shutdown_cooldown.csv": "49bdaa0f434666efe9a6536ab407114d526aac81495a4e91bc7ddace9e3cce8f",
-      "scenarios/s3_startup.csv": "7f72d73cf0ac00aa1501c9e576fa2096f225f271c2f26ea535923fd35988bdac",
-      "scenarios/s4_control_rod_insertion.csv": "78a939b1ed4b940e56efb764c01a4b32e3ea3f2c5808fdd252e2073d142543b0",
-      "scenarios/s5_fuel_removal.csv": "1faace1e655c8b79999dc0ff85737ffe2bd7bde60da774f0b6b759081b77ea19"
+      "scenarios/s1_normal_operation.csv": "c420e1e04e043ed0418099c27156cabda8188f40ce2fb239d1ce3916cccc7970",
+      "scenarios/s2_shutdown_cooldown.csv": "f575e9a42670e52293083907b3658fd7e3a99c279912861999f0cb847cbf6044",
+      "scenarios/s3_startup.csv": "bf2b6bd01168d0aa72f9db61f5fa4eae60ff39a81928eaed515ae8279916bfa7",
+      "scenarios/s4_control_rod_insertion.csv": "93856f2003ca65b7a7258d60819a47b8a651d695dffeff0fd7dc664b90309759",
+      "scenarios/s5_fuel_removal.csv": "4cad00101259e2fdbeec585f27d8910502a1858ab38bce59899c132b0caad9bb"
     }
   },
   "key": "s1.exp.ag110m.1600c",

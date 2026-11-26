@@ -7,8 +7,8 @@
     "solver_version": "1.0.1",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "6e52ee0",
-    "solver_source_sha256": "acc5acc5b3fa6143504c93c62e99586ae33fb7308d9c20a2e0f1e935c32a010d",
+    "commit": "unknown",
+    "solver_source_sha256": "f09fb0c09a8ed01f7456935584322ea65f555c999ac4247d707794aec349b89a",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
       "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
@@ -19,11 +19,11 @@
       "agr1_irradiation_conditions.csv": "31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d",
       "agr1_burnup_by_cycle.csv": "e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f",
       "agr1_power_history_digitised.csv": "25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a",
-      "scenarios/s1_normal_operation.csv": "13dc0e4a301893a3aa47b669d6972dbd1dd50b72afb8817dcf6582890e47d77f",
-      "scenarios/s2_shutdown_cooldown.csv": "49bdaa0f434666efe9a6536ab407114d526aac81495a4e91bc7ddace9e3cce8f",
-      "scenarios/s3_startup.csv": "7f72d73cf0ac00aa1501c9e576fa2096f225f271c2f26ea535923fd35988bdac",
-      "scenarios/s4_control_rod_insertion.csv": "78a939b1ed4b940e56efb764c01a4b32e3ea3f2c5808fdd252e2073d142543b0",
-      "scenarios/s5_fuel_removal.csv": "1faace1e655c8b79999dc0ff85737ffe2bd7bde60da774f0b6b759081b77ea19"
+      "scenarios/s1_normal_operation.csv": "c420e1e04e043ed0418099c27156cabda8188f40ce2fb239d1ce3916cccc7970",
+      "scenarios/s2_shutdown_cooldown.csv": "f575e9a42670e52293083907b3658fd7e3a99c279912861999f0cb847cbf6044",
+      "scenarios/s3_startup.csv": "bf2b6bd01168d0aa72f9db61f5fa4eae60ff39a81928eaed515ae8279916bfa7",
+      "scenarios/s4_control_rod_insertion.csv": "93856f2003ca65b7a7258d60819a47b8a651d695dffeff0fd7dc664b90309759",
+      "scenarios/s5_fuel_removal.csv": "4cad00101259e2fdbeec585f27d8910502a1858ab38bce59899c132b0caad9bb"
     }
   },
   "dataset_id": "agr1.ag110m.1600c",
@@ -58,6 +58,7 @@
       "drawn_on_graph": false,
       "duplicate_of": "E-178",
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Morris et al. (2016)",
       "source_location": "5.pdf Fig. 6; printed p. 29; idx 5",
       "denominator": "calculated compact inventory",
@@ -65,7 +66,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -92,6 +93,7 @@
       "drawn_on_graph": false,
       "duplicate_of": "E-172",
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Morris et al. (2016)",
       "source_location": "5.pdf Fig. 6; printed p. 29; idx 5",
       "denominator": "calculated compact inventory",
@@ -99,7 +101,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -126,6 +128,7 @@
       "drawn_on_graph": false,
       "duplicate_of": "E-183",
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Morris et al. (2016)",
       "source_location": "5.pdf Fig. 6; printed p. 29; idx 5",
       "denominator": "calculated compact inventory",
@@ -133,7 +136,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -160,6 +163,7 @@
       "drawn_on_graph": false,
       "duplicate_of": "E-186",
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Morris et al. (2016)",
       "source_location": "5.pdf Fig. 6; printed p. 29; idx 5",
       "denominator": "calculated compact inventory",
@@ -167,7 +171,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -194,6 +198,7 @@
       "drawn_on_graph": false,
       "duplicate_of": "E-184",
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Morris et al. (2016)",
       "source_location": "5.pdf Fig. 6; printed p. 29; idx 5",
       "denominator": "calculated compact inventory",
@@ -201,7 +206,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -228,6 +233,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Table 14; printed p. 25 (PDF p. 39); safety-test data of Demkowicz et al. (2015a)",
       "denominator": "calculated compact inventory",
@@ -235,7 +241,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -262,6 +268,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Table 14; printed p. 25 (PDF p. 39); safety-test data of Demkowicz et al. (2015a)",
       "denominator": "calculated compact inventory",
@@ -269,7 +276,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -296,6 +303,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Table 14; printed p. 25 (PDF p. 39); safety-test data of Demkowicz et al. (2015a)",
       "denominator": "calculated compact inventory",
@@ -303,7 +311,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -330,6 +338,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Table 14; printed p. 25 (PDF p. 39); safety-test data of Demkowicz et al. (2015a)",
       "denominator": "calculated compact inventory",
@@ -337,7 +346,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -364,6 +373,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Table 14; printed p. 25 (PDF p. 39); safety-test data of Demkowicz et al. (2015a)",
       "denominator": "calculated compact inventory",
@@ -371,7 +381,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -398,6 +408,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -405,7 +416,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -432,6 +443,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -439,7 +451,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -466,6 +478,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -473,7 +486,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -500,6 +513,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -507,7 +521,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -534,6 +548,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -541,7 +556,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -568,6 +583,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -575,7 +591,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -602,6 +618,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -609,7 +626,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -636,6 +653,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -643,7 +661,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -670,6 +688,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -677,7 +696,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -704,6 +723,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -711,7 +731,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -738,6 +758,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -745,7 +766,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -772,6 +793,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -779,7 +801,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -806,6 +828,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -813,7 +836,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -840,6 +863,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -847,7 +871,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -874,6 +898,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -881,7 +906,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -908,6 +933,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -915,7 +941,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -942,6 +968,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -949,7 +976,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -976,6 +1003,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -983,7 +1011,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1010,6 +1038,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1017,7 +1046,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1044,6 +1073,7 @@
       "drawn_on_graph": true,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1051,7 +1081,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     }
@@ -1080,6 +1110,30 @@
       "drawn_on_graph": false,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": {
+        "label": "prescribed input (assumed)",
+        "reason": "the source gives no exact start of the window (\"about 24 h\"); the registered value used above is 24 h",
+        "starts": [
+          {
+            "window_start_h": 2e1,
+            "model_A": 6.005630993742166e-1,
+            "model_A_refined": 6.006224939132012e-1,
+            "model_A_resolved": true,
+            "ratio_A": 3.3364616631900924e2,
+            "model_B": 6.006734642640065e-1,
+            "ratio_B": 3.3370748014667026e2
+          },
+          {
+            "window_start_h": 2.8e1,
+            "model_A": 5.818448452872846e-1,
+            "model_A_refined": 5.818933550478419e-1,
+            "model_A_resolved": true,
+            "ratio_A": 3.232471362707137e2,
+            "model_B": 5.819337026128906e-1,
+            "ratio_B": 3.232965014516059e2
+          }
+        ]
+      },
       "source": "Collin et al. (2016)",
       "source_location": "6.pdf Fig. 3; printed p. 382; idx 4",
       "denominator": "not established",
@@ -1088,7 +1142,7 @@
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
         "For the matrix-corrected rows BP1 is the source's own assumption, not an established fact: the authors call the correction an attempt that cannot separate particle release from matrix release. The window runs from about 24 h at temperature to the end of the 300 h plateau, or to the end of the test if shorter.",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1115,6 +1169,30 @@
       "drawn_on_graph": false,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": {
+        "label": "prescribed input (assumed)",
+        "reason": "the source gives no exact start of the window (\"about 24 h\"); the registered value used above is 24 h",
+        "starts": [
+          {
+            "window_start_h": 2e1,
+            "model_A": 6.005630993742166e-1,
+            "model_A_refined": 6.006224939132012e-1,
+            "model_A_resolved": true,
+            "ratio_A": 2.4022523974968664e2,
+            "model_B": 6.006734642640065e-1,
+            "ratio_B": 2.402693857056026e2
+          },
+          {
+            "window_start_h": 2.8e1,
+            "model_A": 5.818448452872846e-1,
+            "model_A_refined": 5.818933550478419e-1,
+            "model_A_resolved": true,
+            "ratio_A": 2.3273793811491385e2,
+            "model_B": 5.819337026128906e-1,
+            "ratio_B": 2.3277348104515622e2
+          }
+        ]
+      },
       "source": "Collin et al. (2016)",
       "source_location": "6.pdf Fig. 3; printed p. 382; idx 4",
       "denominator": "not established",
@@ -1123,7 +1201,7 @@
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
         "For the matrix-corrected rows BP1 is the source's own assumption, not an established fact: the authors call the correction an attempt that cannot separate particle release from matrix release. The window runs from about 24 h at temperature to the end of the 300 h plateau, or to the end of the test if shorter.",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1150,6 +1228,30 @@
       "drawn_on_graph": false,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": {
+        "label": "prescribed input (assumed)",
+        "reason": "the source gives no exact start of the window (\"about 24 h\"); the registered value used above is 24 h",
+        "starts": [
+          {
+            "window_start_h": 2e1,
+            "model_A": 6.005630993742166e-1,
+            "model_A_refined": 6.006224939132012e-1,
+            "model_A_resolved": true,
+            "ratio_A": 1.0009384989570277e3,
+            "model_B": 6.006734642640065e-1,
+            "ratio_B": 1.0011224404400109e3
+          },
+          {
+            "window_start_h": 2.8e1,
+            "model_A": 5.818448452872846e-1,
+            "model_A_refined": 5.818933550478419e-1,
+            "model_A_resolved": true,
+            "ratio_A": 9.697414088121411e2,
+            "model_B": 5.819337026128906e-1,
+            "ratio_B": 9.698895043548177e2
+          }
+        ]
+      },
       "source": "Collin et al. (2016)",
       "source_location": "6.pdf Fig. 3; printed p. 382; idx 4",
       "denominator": "not established",
@@ -1158,7 +1260,7 @@
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
         "For the matrix-corrected rows BP1 is the source's own assumption, not an established fact: the authors call the correction an attempt that cannot separate particle release from matrix release. The window runs from about 24 h at temperature to the end of the 300 h plateau, or to the end of the test if shorter.",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1185,6 +1287,30 @@
       "drawn_on_graph": false,
       "duplicate_of": null,
       "window_ends": null,
+      "window_start_sensitivity": {
+        "label": "prescribed input (assumed)",
+        "reason": "the source gives no exact start of the window (\"about 24 h\"); the registered value used above is 24 h",
+        "starts": [
+          {
+            "window_start_h": 2e1,
+            "model_A": 6.005630993742166e-1,
+            "model_A_refined": 6.006224939132012e-1,
+            "model_A_resolved": true,
+            "ratio_A": 4.003753995828111e3,
+            "model_B": 6.006734642640065e-1,
+            "ratio_B": 4.0044897617600436e3
+          },
+          {
+            "window_start_h": 2.8e1,
+            "model_A": 5.818448452872846e-1,
+            "model_A_refined": 5.818933550478419e-1,
+            "model_A_resolved": true,
+            "ratio_A": 3.8789656352485645e3,
+            "model_B": 5.819337026128906e-1,
+            "ratio_B": 3.879558017419271e3
+          }
+        ]
+      },
       "source": "Collin et al. (2016)",
       "source_location": "6.pdf Fig. 3; printed p. 382; idx 4",
       "denominator": "not established",
@@ -1193,7 +1319,7 @@
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
         "For the matrix-corrected rows BP1 is the source's own assumption, not an established fact: the authors call the correction an attempt that cannot separate particle release from matrix release. The window runs from about 24 h at temperature to the end of the 300 h plateau, or to the end of the test if shorter.",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1223,6 +1349,7 @@
         "E-425",
         "E-426"
       ],
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1230,7 +1357,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1260,6 +1387,7 @@
         "E-425",
         "E-427"
       ],
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1267,7 +1395,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1297,6 +1425,7 @@
         "E-425",
         "E-428"
       ],
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1304,7 +1433,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1334,6 +1463,7 @@
         "E-425",
         "E-429"
       ],
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1341,7 +1471,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1371,6 +1501,7 @@
         "E-425",
         "E-430"
       ],
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1378,7 +1509,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1408,6 +1539,7 @@
         "E-425",
         "E-431"
       ],
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1415,7 +1547,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1445,6 +1577,7 @@
         "E-425",
         "E-432"
       ],
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1452,7 +1585,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1482,6 +1615,7 @@
         "E-425",
         "E-433"
       ],
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1489,7 +1623,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1519,6 +1653,7 @@
         "E-425",
         "E-434"
       ],
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1526,7 +1661,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1556,6 +1691,7 @@
         "E-462",
         "E-463"
       ],
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1563,7 +1699,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1593,6 +1729,7 @@
         "E-462",
         "E-464"
       ],
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1600,7 +1737,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1630,6 +1767,7 @@
         "E-462",
         "E-465"
       ],
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1637,7 +1775,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1667,6 +1805,7 @@
         "E-462",
         "E-466"
       ],
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1674,7 +1813,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1704,6 +1843,7 @@
         "E-462",
         "E-467"
       ],
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1711,7 +1851,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1741,6 +1881,7 @@
         "E-462",
         "E-468"
       ],
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1748,7 +1889,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1778,6 +1919,7 @@
         "E-462",
         "E-469"
       ],
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1785,7 +1927,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1815,6 +1957,7 @@
         "E-462",
         "E-470"
       ],
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1822,7 +1965,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     },
@@ -1852,6 +1995,7 @@
         "E-462",
         "E-471"
       ],
+      "window_start_sensitivity": null,
       "source": "Stempien et al. (2023)",
       "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
       "denominator": "calculated compact inventory",
@@ -1859,7 +2003,7 @@
       "systematic_uncertainty": "5 % gamma counting (Stempien 2023 p. 10), kept separate and not combined into any number on a graph",
       "premises": [
         "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13).",
-        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p; size to be computed by the results pipeline from the Scenario 5 heating runs against the kernel-only runs; for Sr-90 no resolved effect, below 0.2 %). The net direction is not established for Ag-110m and Cs-134.",
+        "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134.",
         "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
       ]
     }

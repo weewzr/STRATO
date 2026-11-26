@@ -7,8 +7,8 @@
     "solver_version": "1.0.1",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "6e52ee0",
-    "solver_source_sha256": "acc5acc5b3fa6143504c93c62e99586ae33fb7308d9c20a2e0f1e935c32a010d",
+    "commit": "unknown",
+    "solver_source_sha256": "f09fb0c09a8ed01f7456935584322ea65f555c999ac4247d707794aec349b89a",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
       "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
@@ -19,11 +19,11 @@
       "agr1_irradiation_conditions.csv": "31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d",
       "agr1_burnup_by_cycle.csv": "e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f",
       "agr1_power_history_digitised.csv": "25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a",
-      "scenarios/s1_normal_operation.csv": "13dc0e4a301893a3aa47b669d6972dbd1dd50b72afb8817dcf6582890e47d77f",
-      "scenarios/s2_shutdown_cooldown.csv": "49bdaa0f434666efe9a6536ab407114d526aac81495a4e91bc7ddace9e3cce8f",
-      "scenarios/s3_startup.csv": "7f72d73cf0ac00aa1501c9e576fa2096f225f271c2f26ea535923fd35988bdac",
-      "scenarios/s4_control_rod_insertion.csv": "78a939b1ed4b940e56efb764c01a4b32e3ea3f2c5808fdd252e2073d142543b0",
-      "scenarios/s5_fuel_removal.csv": "1faace1e655c8b79999dc0ff85737ffe2bd7bde60da774f0b6b759081b77ea19"
+      "scenarios/s1_normal_operation.csv": "c420e1e04e043ed0418099c27156cabda8188f40ce2fb239d1ce3916cccc7970",
+      "scenarios/s2_shutdown_cooldown.csv": "f575e9a42670e52293083907b3658fd7e3a99c279912861999f0cb847cbf6044",
+      "scenarios/s3_startup.csv": "bf2b6bd01168d0aa72f9db61f5fa4eae60ff39a81928eaed515ae8279916bfa7",
+      "scenarios/s4_control_rod_insertion.csv": "93856f2003ca65b7a7258d60819a47b8a651d695dffeff0fd7dc664b90309759",
+      "scenarios/s5_fuel_removal.csv": "4cad00101259e2fdbeec585f27d8910502a1858ab38bce59899c132b0caad9bb"
     }
   },
   "statement": "the balance residual of (F41) is reported beside its derived rounding bound ((F46) for runs with generation, decay or a changing temperature; the baseline bound otherwise); a ratio of at most 1 means the balance closes within the documented bound",
@@ -45,8 +45,8 @@
     {
       "key": "s4.exp.ag110m.1600c",
       "steps": 8624,
-      "max_abs_residual_over_derived_bound": 9.144787171207279e-3,
-      "max_relative_residual": 2.7666297823878705e-9,
+      "max_abs_residual_over_derived_bound": 1.2593854167689345e-2,
+      "max_relative_residual": 2.7495168328321903e-9,
       "within_bound": true
     },
     {
@@ -66,8 +66,8 @@
     {
       "key": "s4.exp.ag110m.1700c",
       "steps": 8664,
-      "max_abs_residual_over_derived_bound": 9.144787171207279e-3,
-      "max_relative_residual": 1.9409027631616304e-9,
+      "max_abs_residual_over_derived_bound": 1.2593854167689345e-2,
+      "max_relative_residual": 1.9234836700544013e-9,
       "within_bound": true
     },
     {
@@ -87,8 +87,8 @@
     {
       "key": "s4.exp.cs134.1600c",
       "steps": 8624,
-      "max_abs_residual_over_derived_bound": 9.144787171207279e-3,
-      "max_relative_residual": 2.1812083232088525e-9,
+      "max_abs_residual_over_derived_bound": 9.71898418156404e-3,
+      "max_relative_residual": 2.1686070688891126e-9,
       "within_bound": true
     },
     {
@@ -108,8 +108,8 @@
     {
       "key": "s4.exp.cs134.1700c",
       "steps": 8664,
-      "max_abs_residual_over_derived_bound": 9.868770519442585e-3,
-      "max_relative_residual": 8.249134862774563e-9,
+      "max_abs_residual_over_derived_bound": 9.854430220398428e-3,
+      "max_relative_residual": 8.237148054539243e-9,
       "within_bound": true
     },
     {
@@ -129,8 +129,8 @@
     {
       "key": "s4.exp.cs134.1800c",
       "steps": 8704,
-      "max_abs_residual_over_derived_bound": 9.144787171207279e-3,
-      "max_relative_residual": 1.6296928021091816e-9,
+      "max_abs_residual_over_derived_bound": 9.71898418156404e-3,
+      "max_relative_residual": 1.6424355416715978e-9,
       "within_bound": true
     },
     {
@@ -150,8 +150,8 @@
     {
       "key": "s4.exp.sr90.1600c",
       "steps": 8624,
-      "max_abs_residual_over_derived_bound": 1.2775868750963315e-2,
-      "max_relative_residual": 7.37539684869198e-10,
+      "max_abs_residual_over_derived_bound": 1.3363889646951321e-2,
+      "max_relative_residual": 7.257522225760007e-10,
       "within_bound": true
     },
     {
@@ -171,232 +171,232 @@
     {
       "key": "s4.exp.sr90.1700c",
       "steps": 8664,
-      "max_abs_residual_over_derived_bound": 1.2775868750963315e-2,
-      "max_relative_residual": 2.9604513231022016e-10,
+      "max_abs_residual_over_derived_bound": 1.3363889646951321e-2,
+      "max_relative_residual": 2.84280843083219e-10,
       "within_bound": true
     },
     {
       "key": "s2.steady-state.sr90.1028c",
       "steps": 1241,
-      "max_abs_residual_over_derived_bound": 3.117455802168645e-3,
-      "max_relative_residual": 2.144423053471549e-11,
+      "max_abs_residual_over_derived_bound": 2.7892109175246048e-3,
+      "max_relative_residual": 3.051148503358258e-11,
       "within_bound": true
     },
     {
       "key": "s3.steady-state.sr90.1028c",
       "steps": 1241,
-      "max_abs_residual_over_derived_bound": 2.9971901073311356e-2,
-      "max_relative_residual": 2.540907546847642e-10,
+      "max_abs_residual_over_derived_bound": 2.7215486212765268e-2,
+      "max_relative_residual": 2.9274767038530177e-10,
       "within_bound": true
     },
     {
       "key": "s5.steady-state.sr90.1028c",
       "steps": 1241,
-      "max_abs_residual_over_derived_bound": 2.9971901073311356e-2,
-      "max_relative_residual": 2.540907546847642e-10,
+      "max_abs_residual_over_derived_bound": 2.7215486212765268e-2,
+      "max_relative_residual": 2.9274767038530177e-10,
       "within_bound": true
     },
     {
       "key": "s5.steady-state.cycles.sr90.1028c",
       "steps": 1246,
-      "max_abs_residual_over_derived_bound": 2.268181157123118e-2,
-      "max_relative_residual": 2.1337318573596963e-10,
+      "max_abs_residual_over_derived_bound": 2.2137899753193364e-2,
+      "max_relative_residual": 1.9106104351856056e-10,
       "within_bound": true
     },
     {
       "key": "s5.shutdown-cooldown.sr90.1028c",
       "steps": 1706,
-      "max_abs_residual_over_derived_bound": 2.71660514995292e-2,
-      "max_relative_residual": 2.290564652897966e-10,
+      "max_abs_residual_over_derived_bound": 2.7215486212765268e-2,
+      "max_relative_residual": 2.927501784739376e-10,
       "within_bound": true
     },
     {
       "key": "s5.startup.sr90.1028c",
       "steps": 1384,
-      "max_abs_residual_over_derived_bound": 3.332576498723859e-2,
-      "max_relative_residual": 3.258339627979196e-10,
+      "max_abs_residual_over_derived_bound": 3.574512533646371e-2,
+      "max_relative_residual": 3.8406048618548207e-10,
       "within_bound": true
     },
     {
       "key": "s5.control-rod-insertion.sr90.1028c",
       "steps": 1302,
-      "max_abs_residual_over_derived_bound": 1.8849608462986812e-2,
-      "max_relative_residual": 5.569887857728535e-11,
+      "max_abs_residual_over_derived_bound": 1.450929570635881e-2,
+      "max_relative_residual": 5.8075147810184905e-11,
       "within_bound": true
     },
     {
       "key": "s5.refuelling.sr90.1028c",
       "steps": 1706,
-      "max_abs_residual_over_derived_bound": 2.71660514995292e-2,
-      "max_relative_residual": 2.290564652897966e-10,
+      "max_abs_residual_over_derived_bound": 2.7215486212765268e-2,
+      "max_relative_residual": 2.927501784739376e-10,
       "within_bound": true
     },
     {
       "key": "s5.refuelling.heating1600.sr90.1028c",
       "steps": 8383,
-      "max_abs_residual_over_derived_bound": 2.795238150902866e-2,
-      "max_relative_residual": 2.6435285378210696e-10,
+      "max_abs_residual_over_derived_bound": 2.7215486212765268e-2,
+      "max_relative_residual": 4.970992419209741e-10,
       "within_bound": true
     },
     {
       "key": "s5.refuelling.heating1700.sr90.1028c",
       "steps": 8426,
-      "max_abs_residual_over_derived_bound": 2.7359020231578084e-2,
-      "max_relative_residual": 4.2789940439885634e-10,
+      "max_abs_residual_over_derived_bound": 2.7215486212765268e-2,
+      "max_relative_residual": 3.8312081553852604e-10,
       "within_bound": true
     },
     {
       "key": "s5.refuelling.heating1800.sr90.1028c",
       "steps": 8469,
-      "max_abs_residual_over_derived_bound": 2.687524733140305e-2,
-      "max_relative_residual": 5.409249492306976e-10,
+      "max_abs_residual_over_derived_bound": 2.7215486212765268e-2,
+      "max_relative_residual": 5.719597731814366e-10,
       "within_bound": true
     },
     {
       "key": "s5.steady-state.exploration.sr90.1197c",
       "steps": 1241,
-      "max_abs_residual_over_derived_bound": 2.880069371054069e-2,
-      "max_relative_residual": 2.4650332802865038e-9,
+      "max_abs_residual_over_derived_bound": 2.2068885313361764e-2,
+      "max_relative_residual": 2.3927770031889533e-9,
       "within_bound": true
     },
     {
       "key": "s5.shutdown-cooldown.exploration.sr90.1197c",
       "steps": 1723,
-      "max_abs_residual_over_derived_bound": 2.794432424860401e-2,
-      "max_relative_residual": 2.3785698908269222e-9,
+      "max_abs_residual_over_derived_bound": 2.2068885313361764e-2,
+      "max_relative_residual": 2.3933752651749232e-9,
       "within_bound": true
     },
     {
       "key": "s5.startup.exploration.sr90.1197c",
       "steps": 1384,
-      "max_abs_residual_over_derived_bound": 3.139635902765112e-2,
-      "max_relative_residual": 3.3951655961627296e-9,
+      "max_abs_residual_over_derived_bound": 2.9928888304266658e-2,
+      "max_relative_residual": 2.911913414898924e-9,
       "within_bound": true
     },
     {
       "key": "s5.control-rod-insertion.exploration.sr90.1197c",
       "steps": 1302,
-      "max_abs_residual_over_derived_bound": 2.253283933824303e-2,
-      "max_relative_residual": 6.159766886229217e-10,
+      "max_abs_residual_over_derived_bound": 6.113244474901556e-3,
+      "max_relative_residual": 3.302326219597226e-10,
       "within_bound": true
     },
     {
       "key": "s5.refuelling.exploration.sr90.1197c",
       "steps": 1723,
-      "max_abs_residual_over_derived_bound": 2.794432424860401e-2,
-      "max_relative_residual": 2.3785698908269222e-9,
+      "max_abs_residual_over_derived_bound": 2.2068885313361764e-2,
+      "max_relative_residual": 2.3933752651749232e-9,
       "within_bound": true
     },
     {
       "key": "s2.steady-state.cs137.1028c",
       "steps": 1241,
       "max_abs_residual_over_derived_bound": 4.422518862714863e-3,
-      "max_relative_residual": 1.8277946297184957e-8,
+      "max_relative_residual": 6.701812708411376e-8,
       "within_bound": true
     },
     {
       "key": "s3.steady-state.cs137.1028c",
       "steps": 1241,
-      "max_abs_residual_over_derived_bound": 1.5230153014436552e-2,
-      "max_relative_residual": 1.690516940736616e-7,
+      "max_abs_residual_over_derived_bound": 1.343573549309667e-2,
+      "max_relative_residual": 2.0072381020126494e-7,
       "within_bound": true
     },
     {
       "key": "s5.steady-state.cs137.1028c",
       "steps": 1241,
-      "max_abs_residual_over_derived_bound": 1.5230153014436552e-2,
-      "max_relative_residual": 1.690516940736616e-7,
+      "max_abs_residual_over_derived_bound": 1.343573549309667e-2,
+      "max_relative_residual": 2.0072381020126494e-7,
       "within_bound": true
     },
     {
       "key": "s5.steady-state.cycles.cs137.1028c",
       "steps": 1246,
-      "max_abs_residual_over_derived_bound": 1.2639506512220369e-2,
-      "max_relative_residual": 5.579284733040602e-8,
+      "max_abs_residual_over_derived_bound": 1.3897767183821238e-2,
+      "max_relative_residual": 8.362849752645867e-8,
       "within_bound": true
     },
     {
       "key": "s5.shutdown-cooldown.cs137.1028c",
       "steps": 1706,
-      "max_abs_residual_over_derived_bound": 1.5230153014436552e-2,
-      "max_relative_residual": 1.9421070003478273e-7,
+      "max_abs_residual_over_derived_bound": 1.343573549309667e-2,
+      "max_relative_residual": 2.0072381020126494e-7,
       "within_bound": true
     },
     {
       "key": "s5.startup.cs137.1028c",
       "steps": 1384,
-      "max_abs_residual_over_derived_bound": 2.3081130470391224e-2,
-      "max_relative_residual": 6.326331631389353e-8,
+      "max_abs_residual_over_derived_bound": 2.401236667752782e-2,
+      "max_relative_residual": 3.653010315864573e-8,
       "within_bound": true
     },
     {
       "key": "s5.control-rod-insertion.cs137.1028c",
       "steps": 1302,
-      "max_abs_residual_over_derived_bound": 1.332220305614316e-2,
-      "max_relative_residual": 2.120984314307e-7,
+      "max_abs_residual_over_derived_bound": 8.54805431250207e-3,
+      "max_relative_residual": 1.3609078029030714e-7,
       "within_bound": true
     },
     {
       "key": "s5.refuelling.cs137.1028c",
       "steps": 1706,
-      "max_abs_residual_over_derived_bound": 1.5230153014436552e-2,
-      "max_relative_residual": 1.9421070003478273e-7,
+      "max_abs_residual_over_derived_bound": 1.343573549309667e-2,
+      "max_relative_residual": 2.0072381020126494e-7,
       "within_bound": true
     },
     {
       "key": "s5.refuelling.heating1600.cs137.1028c",
       "steps": 8383,
-      "max_abs_residual_over_derived_bound": 1.5230153014436552e-2,
-      "max_relative_residual": 2.078303029544214e-7,
+      "max_abs_residual_over_derived_bound": 1.343573549309667e-2,
+      "max_relative_residual": 2.0072381020126494e-7,
       "within_bound": true
     },
     {
       "key": "s5.refuelling.heating1700.cs137.1028c",
       "steps": 8426,
-      "max_abs_residual_over_derived_bound": 1.5230153014436552e-2,
-      "max_relative_residual": 2.0563730538717373e-7,
+      "max_abs_residual_over_derived_bound": 1.343573549309667e-2,
+      "max_relative_residual": 2.0072381020126494e-7,
       "within_bound": true
     },
     {
       "key": "s5.refuelling.heating1800.cs137.1028c",
       "steps": 8469,
-      "max_abs_residual_over_derived_bound": 1.5230153014436552e-2,
-      "max_relative_residual": 2.080199188896783e-7,
+      "max_abs_residual_over_derived_bound": 1.343573549309667e-2,
+      "max_relative_residual": 2.0072381020126494e-7,
       "within_bound": true
     },
     {
       "key": "s5.steady-state.exploration.cs137.1197c",
       "steps": 1241,
-      "max_abs_residual_over_derived_bound": 1.4704955094825688e-2,
-      "max_relative_residual": 1.578049115546267e-7,
+      "max_abs_residual_over_derived_bound": 1.1085521281544506e-2,
+      "max_relative_residual": 1.827060323438149e-7,
       "within_bound": true
     },
     {
       "key": "s5.shutdown-cooldown.exploration.cs137.1197c",
       "steps": 1723,
-      "max_abs_residual_over_derived_bound": 1.4704955094825688e-2,
-      "max_relative_residual": 1.578049115546267e-7,
+      "max_abs_residual_over_derived_bound": 1.1085521281544506e-2,
+      "max_relative_residual": 1.827060323438149e-7,
       "within_bound": true
     },
     {
       "key": "s5.startup.exploration.cs137.1197c",
       "steps": 1384,
-      "max_abs_residual_over_derived_bound": 2.2914697046570696e-2,
-      "max_relative_residual": 2.1351883663218202e-8,
+      "max_abs_residual_over_derived_bound": 2.3782887532516964e-2,
+      "max_relative_residual": 8.596194117110045e-8,
       "within_bound": true
     },
     {
       "key": "s5.control-rod-insertion.exploration.cs137.1197c",
       "steps": 1302,
-      "max_abs_residual_over_derived_bound": 9.442726897659074e-3,
-      "max_relative_residual": 1.7998713362763541e-7,
+      "max_abs_residual_over_derived_bound": 8.109888120750504e-3,
+      "max_relative_residual": 1.5458199084587602e-7,
       "within_bound": true
     },
     {
       "key": "s5.refuelling.exploration.cs137.1197c",
       "steps": 1723,
-      "max_abs_residual_over_derived_bound": 1.4704955094825688e-2,
-      "max_relative_residual": 1.578049115546267e-7,
+      "max_abs_residual_over_derived_bound": 1.1085521281544506e-2,
+      "max_relative_residual": 1.827060323438149e-7,
       "within_bound": true
     }
   ]
