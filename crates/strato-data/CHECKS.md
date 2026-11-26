@@ -181,7 +181,7 @@ Workspace: the Rust tests and checks belong to the workspace of `crates/Cargo.to
 
 ## Family EX: release-versus-time curves (new in Rust; task experiment-data-integration)
 
-These checks read `release_measurements.csv`, `curve_assessment.csv` (see `curve.rs`), the history AGR1-FACS-4-3-3 of `temperature_histories.csv`, and, when present, the register document and the audit log. The numbers are the 14 curves and the 96 rows E-541..E-636.
+These checks read `release_measurements.csv`, `curve_assessment.csv` (see `curve.rs`), the history AGR1-FACS-4-3-3 of `temperature_histories.csv`, and, when present, the register document and the audit log. The numbers are the 15 curves and the 117 rows E-541..E-657.
 
 | Id | What it asserts | Function |
 |---|---|---|

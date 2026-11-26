@@ -22,7 +22,7 @@ fn row_counts_are_those_of_the_readme() {
     assert_eq!(r.decay.rows.len(), 16);
     assert_eq!(r.yields.rows.len(), 56);
     assert_eq!(r.temperature.rows.len(), 164);
-    assert_eq!(r.release.rows.len(), 578);
+    assert_eq!(r.release.rows.len(), 599);
 }
 
 #[test]
@@ -37,7 +37,7 @@ fn status_counts_match_the_audit() {
             n(Status::Digitised),
             n(Status::NotVerified)
         ),
-        (263, 314, 1)
+        (263, 335, 1)
     );
     let n = |s: Status| r.temperature.rows.iter().filter(|x| x.status == s).count();
     assert_eq!(
@@ -264,7 +264,7 @@ fn an_upper_bound_is_not_a_point_value() {
             .count()
             == 23
     );
-    // the value kinds partition the 578 rows
+    // the value kinds partition the 599 rows
     let counts = r.release.rows.iter().fold([0usize; 6], |mut a, x| {
         let i = match x.value {
             ReleaseValue::Point(_) => 0,
@@ -277,7 +277,7 @@ fn an_upper_bound_is_not_a_point_value() {
         a[i] += 1;
         a
     });
-    assert_eq!(counts, [226, 320, 23, 1, 5, 3]);
+    assert_eq!(counts, [226, 341, 23, 1, 5, 3]);
 }
 
 #[test]
@@ -484,4 +484,30 @@ fn release_rows_keep_what_was_measured_and_at_what_temperature() {
 fn the_vocabularies_are_closed() {
     assert_eq!(Status::from_cell("verified"), Some(Status::Verified));
     assert_eq!(Status::from_cell("Verified"), None);
+}
+
+#[test]
+fn row_ids_of_a_curve_may_mix_ranges_and_single_ids_in_curve_order() {
+    use strato_data::curve::expand_row_ids;
+    assert_eq!(
+        expand_row_ids("E-616,E-637,E-617..E-619").unwrap(),
+        ["E-616", "E-637", "E-617", "E-618", "E-619"]
+    );
+    assert_eq!(expand_row_ids("E-541..E-543").unwrap().len(), 3);
+    assert!(expand_row_ids("E-620..E-617").is_err());
+    assert!(expand_row_ids("E-616,X-1").is_err());
+}
+
+#[test]
+fn the_hfr_k3_1_curves_are_sphere_curves_and_the_cs_curve_keeps_its_time_order() {
+    use strato_data::curve::SpecimenLevel;
+    let r = real_register();
+    for id in ["IAEA97-K31-AG110M", "IAEA97-K31-CS137", "IAEA97-K31-SR90"] {
+        let c = r.curves.get(id).unwrap();
+        assert_eq!(c.specimen_level, SpecimenLevel::Sphere, "{id}");
+    }
+    let cs = r.curves.get("IAEA97-K31-CS137").unwrap();
+    assert_eq!(cs.row_ids.len(), 22);
+    assert_eq!(&cs.row_ids[..3], ["E-616", "E-637", "E-617"]);
+    assert_eq!(r.curves.get("IAEA97-K31-SR90").unwrap().row_ids.len(), 20);
 }

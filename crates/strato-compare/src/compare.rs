@@ -292,7 +292,7 @@ pub struct Dataset {
     pub group: String,
     /// Quantity as the register words it.
     pub quantity: String,
-    /// Source of the rows (the first row's).
+    /// Source of the rows (one source per dataset).
     pub source: String,
     /// Ids of the rows.
     pub row_ids: Vec<String>,
@@ -308,17 +308,19 @@ pub struct Dataset {
     pub max_duration_h: Option<f64>,
 }
 
-/// Group the records into datasets and aggregate. Groups never mix nuclides or quantity
-/// definitions.
+/// Group the records into datasets and aggregate. Groups never mix nuclides, quantity
+/// definitions or sources (a source's rows of several compacts stay pooled, as before).
 pub fn datasets(records: &[RowRecord]) -> Vec<Dataset> {
-    let mut order: Vec<(String, String, String, String)> = Vec::new();
-    let mut map: BTreeMap<(String, String, String, String), Vec<&RowRecord>> = BTreeMap::new();
+    type Key = (String, String, String, String, String);
+    let mut order: Vec<Key> = Vec::new();
+    let mut map: BTreeMap<Key, Vec<&RowRecord>> = BTreeMap::new();
     for r in records {
         let key = (
             r.row.program.as_str().to_string(),
             measured_text(&r.row),
             r.row.group.as_str().to_string(),
             r.row.quantity.as_str().to_string(),
+            r.row.source.clone(),
         );
         if !map.contains_key(&key) {
             order.push(key.clone());
@@ -357,7 +359,7 @@ pub fn datasets(records: &[RowRecord]) -> Vec<Dataset> {
                 nuclide: key.1.clone(),
                 group: key.2.clone(),
                 quantity: key.3.clone(),
-                source: rows[0].row.source.clone(),
+                source: key.4.clone(),
                 row_ids: rows.iter().map(|r| r.row.id.clone()).collect(),
                 counts,
                 point: point_aggregate(&points),

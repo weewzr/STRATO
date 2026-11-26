@@ -9,7 +9,7 @@
 //! reason are read from this file and never defaulted: a missing field is an error.
 //!
 //! The rows of a curve stay in `release_measurements.csv`; a curve names them by `row_ids`, a
-//! range `E-541..E-556` or a list `E-117,E-119`. A row belongs to at most one curve.
+//! range `E-541..E-556`, a list `E-117,E-119` or a mixture in the order of the curve (`E-616,E-637,E-617..E-636`). A row belongs to at most one curve.
 
 use std::collections::HashMap;
 
@@ -50,14 +50,16 @@ pub const HEADER: [&str; 25] = [
 ];
 
 string_enum! {
-    /// The physical level of the specimen of a curve (a sphere is treated at the compact level).
+    /// The physical level of the specimen of a curve.
     pub enum SpecimenLevel ("specimen level") {
         /// One particle.
         SingleParticle => "single_particle",
         /// A batch of loose particles.
         ParticleBatch => "particle_batch",
-        /// A compact (or a fuel sphere with matrix).
+        /// A compact.
         Compact => "compact",
+        /// A fuel sphere (particles in a graphite matrix, not a compact).
+        Sphere => "sphere",
     }
 }
 
@@ -156,23 +158,27 @@ pub struct Curve {
     pub notes: String,
 }
 
-/// Expand `E-541..E-556` or `E-117,E-119` into the list of ids.
+/// Expand `E-541..E-556`, `E-117,E-119` or a mixture such as `E-616,E-637,E-617..E-636` into
+/// the list of ids, in the order written (the order of the curve in time).
 pub fn expand_row_ids(text: &str) -> std::result::Result<Vec<String>, String> {
     let number = |s: &str| -> std::result::Result<u32, String> {
         s.strip_prefix("E-")
             .and_then(|n| n.parse::<u32>().ok())
             .ok_or_else(|| format!("`{s}` is not a row id of the form E-123"))
     };
-    if let Some((a, b)) = text.split_once("..") {
-        let (a, b) = (number(a)?, number(b)?);
-        if b < a {
-            return Err(format!("the range `{text}` runs backwards"));
+    let mut ids = Vec::new();
+    for item in text.split(',') {
+        if let Some((a, b)) = item.split_once("..") {
+            let (a, b) = (number(a)?, number(b)?);
+            if b < a {
+                return Err(format!("the range `{item}` runs backwards"));
+            }
+            ids.extend((a..=b).map(|n| format!("E-{n:03}")));
+        } else {
+            ids.push(format!("E-{:03}", number(item)?));
         }
-        return Ok((a..=b).map(|n| format!("E-{n:03}")).collect());
     }
-    text.split(',')
-        .map(|s| number(s).map(|n| format!("E-{n:03}")))
-        .collect()
+    Ok(ids)
 }
 
 fn read_curve(row: Row<'_>) -> Result<Curve> {

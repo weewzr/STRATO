@@ -367,11 +367,11 @@ Gridline fits (pixel coordinates of the page image; y at x = 500 px and x at y =
 | x at y = 300 px | 394.80 | 535.18 | 681.43 | 823.02 | 966.28 | 1111.93 |
 | slope (px per px) | -0.00571 | -0.00443 | -0.00574 | -0.00383 | -0.00564 | -0.00605 |
 
-Reading uncertainty: +/-6 % of the value (3 px on a logarithmic axis of about 120 px per decade: 3 px = 0.025 decade = 5.8 %) and +/-2 h (3 px of about 142 px per 100 h = 2.1 h). Time is rounded to 1 h and the value to two figures. Of about 30 printed markers per curve, 21 had a resolved interior and are recorded; a marker on a gridline crossing (the gridline fills its interior), merged with the line, or at the edge of the axis is not recorded. No marker was added by interpolation. Independent check: the marker centres were overlaid on the rendered region and looked at (every circle sits on a printed marker, none was found off the curve); the last Cs-137 marker (499 h, 1.1e-4) agrees with the CRP-6 text value E-150 (1e-4 at 500 h). Image identity: SHA-256 of the ink bitmap (one byte per pixel, 740 x 980 = 725,200 bytes, 69,726 ink pixels, row by row) of the region: `3ab8c46c4d08c08a57e13a8fc0f7e493096f569c05d66f602e649f993435921a`.
+Reading uncertainty: +/-6 % of the value (3 px on a logarithmic axis of about 120 px per decade: 3 px = 0.025 decade = 5.8 %) and +/-2 h (3 px of about 142 px per 100 h = 2.1 h). Time is rounded to 1 h and the value to two figures. Printed markers per curve: 22 on the Cs-137 curve and 22 on the Ag-110m curve (the first count, "about 30 printed markers", was wrong; recounted in 12.8). In this first pass 21 markers per curve had a resolved interior and were recorded; the 22nd Cs-137 marker (18 h) was missed and is E-637 (12.8); the 22nd Ag-110m marker lies on the 500 h gridline at the edge of the axis (hole of 3 px) and is not recorded. No marker was added by interpolation. Independent check: the marker centres were overlaid on the rendered region and looked at (every circle sits on a printed marker, none was found off the curve); the last Cs-137 marker (499 h, 1.1e-4) agrees with the CRP-6 text value E-150 (1e-4 at 500 h). Image identity: SHA-256 of the ink bitmap (one byte per pixel, 740 x 980 = 725,200 bytes, 69,726 ink pixels, row by row) of the region: `3ab8c46c4d08c08a57e13a8fc0f7e493096f569c05d66f602e649f993435921a`.
 
 ### 12.4 Curves that were not digitised, and why
 
-- **Fig. 4-7, Sr-90 of HFR-K3/1** (assessment rank 7 names Ag-110m, Cs-137 and Sr-90): the Sr-90 markers are small filled dots about as thick as the line itself (distance-transform radii of 3.6 to 6 px against a line half-width of about 2.5 px). Candidate maxima were found at spacings of 10 px that do not follow the plotting interval, so line-thickness variations cannot be told from markers. Not recorded. A cleaner copy of the figure, or the original paper (Schenk & Nabielek, 1991, Nuclear Technology, 96(3), 323-336, https://doi.org/10.13182/NT96-3-323), is needed.
+- **Fig. 4-7, Sr-90 of HFR-K3/1**: digitised in 12.8 (E-638..E-657) after the independent verification showed the filled dots to be separate. The first-pass reason that follows was too strict and is kept for the record. Assessment rank 7 names Ag-110m, Cs-137 and Sr-90. The Sr-90 markers are small filled dots about as thick as the line itself (distance-transform radii of 3.6 to 6 px against a line half-width of about 2.5 px). Candidate maxima were found at spacings of 10 px that do not follow the plotting interval, so line-thickness variations cannot be told from markers. Not recorded. A cleaner copy of the figure, or the original paper (Schenk & Nabielek, 1991, Nuclear Technology, 96(3), 323-336, https://doi.org/10.13182/NT96-3-323), is needed.
 - **Fig. 4-7, Kr-85 of HFR-K3/1**: drawn as a solid line without markers; not asked for by the assessment.
 - **Eu-154 curves** (Demkowicz Fig. 3, Hunn 2014 E-525..E-540): the assessment rejects them for a model curve (no Eu diffusivity row); the registered Hunn 2014 rows stay as they are.
 - **Ranks 10 and 11** (AGR-2 compacts, Morris et al. 2018, Hunn et al. 2017 and 2019): the assessment makes them depend on AGR-2 geometry rows that do not exist and marks them low priority; not done.
@@ -481,7 +481,7 @@ Each row below was written by the data task from the coordinates in the last col
 | E-614 | 452 | 2.3e-2 | marker interior centroid (1041.6, 474.6) px, hole 8 px |
 | E-615 | 475 | 2.5e-2 | marker interior centroid (1074.7, 472.0) px, hole 10 px |
 
-**IAEA97-K31-CS137**: E-616..E-636, 21 rows.
+**IAEA97-K31-CS137**: E-616..E-637, 22 rows (E-637 added in 12.8; the first 21 rows are E-616..E-636).
 
 | Row | t (h) | value | source coordinates |
 |---|---|---|---|
@@ -506,6 +506,7 @@ Each row below was written by the data task from the coordinates in the last col
 | E-634 | 451 | 5.4e-5 | marker interior centroid (1038.4, 788.4) px, hole 9 px |
 | E-635 | 476 | 7.5e-5 | marker interior centroid (1073.5, 771.8) px, hole 7 px |
 | E-636 | 499 | 1.1e-4 | marker interior centroid (1108.1, 752.7) px, hole 5 px |
+| E-637 | 18 | 6.0e-7 | marker interior centroid (415.0, 1024.0) px in the frame of 12.8, hole 5 px |
 
 ### 12.6 Temperature history rows TH-158..TH-164
 
@@ -516,3 +517,61 @@ History AGR1-FACS-4-3-3 (Demkowicz et al. 2015, Fig. 3 and Sec. 2.3). The grey T
 `curve_assessment.csv` holds one record per curve (25 columns: the fields of `metric-r2.md` Section 1.3 plus the registered history, geometry and model configuration of `experiment-comparability.md` Section 5, the source with page and link, the value kind and the verification status). The 14 records are DEM15-433-CS134, DEM15-433-SR90, HUNN16-442-CS134, HUNN16-442-CS137, IAEA97-K31-AG110M, IAEA97-K31-CS137 (new rows) and HUNN14-442-AG110M, HUNN14-442-SR90, STEMPIEN23-433-AG110M, STEMPIEN23-643-AG110M, STEMPIEN23-643-SR90, HUNN14-422-AG110M, IAEA97-JAERI-A-CS137-1600, IAEA97-JAERI-A-CS137-1800 (earlier rows: assessment only, their rows and values are unchanged). Every record is not independently verified, so the check C0 of the metric fails closed; none sets `r2_class` to R2 SUITABLE.
 
 Changes to the Rust checks of `strato-data`: the two checks `DI.release.reading-uncertainty` and `DI.release.denominator` count digitised rows and rows without a denominator; their counts (219 and 43) are the counts of the earlier register and are now taken over E-001..E-540, so the checks keep their meaning; the new rows are covered by the family EX (units, monotone times, source resolution, uncertainty and audit entry of every digitised row). No tolerance was loosened. The row counts of the tests of the crate were raised by the new rows (release 482 to 578, temperature 157 to 164).
+
+### 12.8 Corrections after independent verification (decision 45 procedure, task experiment-data-integration-fix, 2026-11-26)
+
+An independent verifier of the range 7de5bdb..764723e found six defects in this section's data integration. What was done, in the order of the findings:
+
+1. **Missing Cs-137 marker (blocker).** The first pass missed an open marker on the Cs-137 curve between the markers at 1 h and 43 h. It is added as E-637 (18 h, 6.0e-7). It is placed after E-616 in the order of the curve (the record lists `E-616,E-637,E-617..E-636`), so the ids E-617..E-636 are unchanged.
+2. **Count of printed markers (major).** The statement "21 of about 30 printed markers" is withdrawn from the 42 row notes, the two curve records, 12.3 and the handback. Recount on the render and on the hole list of the embedded image: Cs-137 22 printed markers (21 first pass plus E-637), all recorded; Ag-110m 22 printed triangles, 21 recorded and the 22nd on the 500 h gridline at the edge of the axis (hole of 3 px, 2 x 2 px), which the 5 px interior criterion excludes and which is therefore not recorded. The first pass found no further unresolved marker on either curve.
+3. **Comparison grouping (major).** Not a data defect: the comparison program grouped rows by programme, nuclide, group and quantity only, so the Sr-90 rows of compact 4-3-3 (Demkowicz et al. 2015, E-584..E-594) were pooled with the Sr-90 rows of compact 6-4-3 (Stempien et al. 2023) under the name of the first row's source. The grouping now includes the source, and the comparison outputs were regenerated (see the change log).
+4. **Source record (minor).** The register's source record IAEA (1997) is left as it was; a dated note beside it records that the URL was opened and checked on 2026-11-26 (12.1).
+5. **Sr-90 curve (minor).** Digitised as E-638..E-657 (20 filled dots), dataset IAEA97-K31-SR90, see below.
+6. **Specimen level (minor).** The vocabulary of `specimen_level` gains `sphere`; the records of the HFR-K3/1 curves use it. The bound class stays `compact_total` as the assessment gives it.
+
+**Image and frame.** The page image was taken from the PDF itself (pdf.js, the single image of PDF p. 144: 2480 x 3458 px, 1 bit per pixel, 1,071,980 bytes; SHA-256 of the packed bytes `040BB49A604E6A9023DFDAA04E5F12AA1B1E1231654E5974C5487210B9ED9683`), not from a render. Ink = bit 0. The ink bitmap of the region x 385 to 1124, y 270 to 1249 (740 x 980 px, one byte per pixel, row by row) has 70,051 ink pixels and SHA-256 `a211002fc5c7b4befd090ae505e24f4b88bf1582ce5a5238ade5eed7ddd0089e`. The first pass binarised a render and counted 69,726 ink pixels, and its pixel frame lies about 3 px higher in y; the pixel coordinates below are therefore in this frame, not in that of 12.5. Enclosed background components (4-connected, not touching the region border) of 3 to 60 px were listed; markers are those of 5 px or more with an extent of at least 3 x 3 px in the band of a curve.
+
+**Calibration in this frame** (Theil-Sen fits of the gridline centres over windows of 20 px; y of a horizontal line at x = 500 px, x of a vertical line at y = 300 px):
+
+| Decade line | 1e0 | 1e-1 | 1e-2 | 1e-3 | 1e-4 | 1e-5 | 1e-6 | 1e-7 | 1e-8 |
+|---|---|---|---|---|---|---|---|---|---|
+| y at x = 500 px | 284.41 | 402.85 | 521.76 | 641.50 | 761.06 | 877.36 | 996.74 | 1119.02 | 1239.47 |
+| slope (px per px) | 0.00205 | 0.00146 | 0.00118 | 0.00000 | 0.00111 | 0.00017 | 0.00157 | -0.00018 | 0.00093 |
+
+| Time line | 0 h | 100 h | 200 h | 300 h | 400 h | 500 h |
+|---|---|---|---|---|---|---|
+| x at y = 300 px | 394.95 | 535.52 | 681.86 | 823.38 | 966.23 | 1112.47 |
+| slope (px per px) | -0.00648 | -0.00607 | -0.00703 | -0.00564 | -0.00655 | -0.00668 |
+
+A marker centre is converted by linear interpolation in time between the vertical lines at its own row and by logarithmic interpolation in value between the horizontal lines at its own column. **Check of the frame:** the 41 markers of E-595..E-636 that are not at the edge of the axis were converted again in this frame; they agree with the registered values within 1.1 h and 3.3 % (the reading uncertainties are 2 h and 6 %), so the two frames give the same curves.
+
+**E-637.** Enclosed component of 5 px (3 x 3 px) at (415.0, 1024.0) px; converted: 17.6 h and 5.97e-7. The verifier's own calibration gave 17.6 h and 6.07e-7 (1.7 % apart). Recorded: 18 h and 6.0e-7, reading uncertainty 6 % and 2 h as for the other open markers.
+
+**Sr-90 (IAEA97-K31-SR90), E-638..E-657.** The filled dots are not enclosed components, so they were found with a distance transform: the ink of the region x 385 to 1124, y 1060 to 1249 got its Euclidean distance to the nearest background pixel (search radius 9 px); a local maximum of the distance (within 3 px) of 4.4 px or more is a candidate (the line itself reaches 3.6 to 4.0 px; dots reach 4.5 to 5.4 px), candidates less than 6 px apart are merged. The candidate list was compared with a 4-fold enlargement of the figure: 20 candidates on the Sr-90 curve are separate dots. Not taken: the candidates of the Kr-85 curve above y = 1075 px, the label Sr90, the junction of the Sr-90 line with the 1e-5 gridline at (570.6, 1121.3) px (distance 5.0 px, but at a gridline crossing and not a dot in the enlargement) and a thickening at (606, 1114) px. The Sr-90 reading uncertainty is larger than for open markers: +/-8 % of the value (4 px: the peak of a dot on a line of 8 px width is located to about 2 px in y and 3 px in x, plus the calibration residual) and +/-3 h. Observation, not used to place any dot: the times of the 20 dots agree with the times of the Cs-137 markers within 1.2 h, so both curves share their sampling times. A dot at 0 h is not recorded: no dot was found there.
+
+**IAEA97-K31-SR90**: E-638..E-657, 20 rows.
+
+| Row | t (h) | value | source coordinates |
+|---|---|---|---|
+| E-638 | 19 | 1.2e-8 | dot centre (415.3, 1228.3) px, inscribed radius 5.0 px |
+| E-639 | 42 | 2.0e-8 | dot centre (449.0, 1202.0) px, inscribed radius 5.0 px |
+| E-640 | 76 | 4.0e-8 | dot centre (497.0, 1167.0) px, inscribed radius 4.5 px |
+| E-641 | 97 | 6.0e-8 | dot centre (525.5, 1146.0) px, inscribed radius 4.5 px |
+| E-642 | 138 | 1.0e-7 | dot centre (586.0, 1117.0) px, inscribed radius 5.4 px |
+| E-643 | 162 | 1.1e-7 | dot centre (621.0, 1112.0) px, inscribed radius 5.0 px |
+| E-644 | 185 | 1.2e-7 | dot centre (653.7, 1107.7) px, inscribed radius 5.0 px |
+| E-645 | 212 | 1.3e-7 | dot centre (693.0, 1104.0) px, inscribed radius 5.0 px |
+| E-646 | 235 | 1.4e-7 | dot centre (726.0, 1103.0) px, inscribed radius 5.4 px |
+| E-647 | 257 | 1.4e-7 | dot centre (758.0, 1099.5) px, inscribed radius 5.0 px |
+| E-648 | 283 | 1.5e-7 | dot centre (794.5, 1099.0) px, inscribed radius 5.0 px |
+| E-649 | 306 | 1.6e-7 | dot centre (828.0, 1095.0) px, inscribed radius 5.0 px |
+| E-650 | 330 | 1.5e-7 | dot centre (862.0, 1096.0) px, inscribed radius 5.0 px |
+| E-651 | 352 | 1.6e-7 | dot centre (893.5, 1095.0) px, inscribed radius 5.0 px |
+| E-652 | 380 | 1.7e-7 | dot centre (932.5, 1092.0) px, inscribed radius 5.0 px |
+| E-653 | 403 | 1.7e-7 | dot centre (966.0, 1091.0) px, inscribed radius 5.1 px |
+| E-654 | 428 | 1.7e-7 | dot centre (1001.7, 1090.3) px, inscribed radius 5.0 px |
+| E-655 | 452 | 1.7e-7 | dot centre (1037.0, 1090.5) px, inscribed radius 5.0 px |
+| E-656 | 475 | 1.8e-7 | dot centre (1070.0, 1087.0) px, inscribed radius 5.0 px |
+| E-657 | 498 | 1.8e-7 | dot centre (1105.0, 1087.0) px, inscribed radius 4.5 px |
+
+**Totals after 12.8.** `release_measurements.csv` holds E-541..E-657 as the experiment-data integration's rows (117 rows: 96 of 12.5 plus E-637 and E-638..E-657); `curve_assessment.csv` holds 15 curve assessments. No earlier value, id or tolerance was changed; the cell texts of the 42 rows E-595..E-636 changed only in the marker count and the marker numbers of the Cs-137 rows after E-616 (the marker at 18 h is number 2, so every later Cs-137 marker number rose by one).
