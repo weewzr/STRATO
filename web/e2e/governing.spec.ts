@@ -88,6 +88,7 @@ test.describe('hierarchy and selection at 1440 x 900', () => {
     await expect(page.getByTestId('term-meanings')).toContainText('Fission-product generation');
     await page.waitForTimeout(300);
     expect(await solverRequests(page)).toBe(before);
+    if (dir) await page.screenshot({ path: join(dir, 'explore-unsupported-1440-full.png'), fullPage: true });
     // Back to the baseline: the simulation and the results return.
     await page.getByTestId('physics-baseline').click();
     await waitForRun(page);
