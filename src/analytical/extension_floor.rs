@@ -108,9 +108,22 @@ pub fn layers_of(d: [f64; 5]) -> Vec<Layer> {
 /// unreliable: rounding of phases of the order of 1e10 rad, and the cap on the number of
 /// modes then does not hold).
 pub fn layered_series(d: [f64; 5], n: usize) -> ModalRelease {
+    layered_series_on(RADII, d, n)
+}
+
+/// As [`layered_series`] on the given outer radii (m).
+pub fn layered_series_on(radii: [f64; 5], d: [f64; 5], n: usize) -> ModalRelease {
     let d_max = d.iter().cloned().fold(0.0, f64::max);
-    let lambda_max = d_max * (2.0 * PI * n as f64 / RADII[4]).powi(2);
-    ModalRelease::new(&layers_of(d), lambda_max, n).unwrap()
+    let lambda_max = d_max * (2.0 * PI * n as f64 / radii[4]).powi(2);
+    let layers: Vec<Layer> = radii
+        .iter()
+        .zip(d)
+        .map(|(&r, d)| Layer {
+            outer_radius: r,
+            diffusivity: d,
+        })
+        .collect();
+    ModalRelease::new(&layers, lambda_max, n).unwrap()
 }
 
 /// Kernel volume (m^3) of the reference particle.
@@ -217,6 +230,11 @@ pub struct Truth {
     pub decayed: f64,
     /// Release rate (mol s^-1), where the reference has it.
     pub flux: Option<f64>,
+    /// Computed bound on the rounding error of the reference itself, for the inventory, the
+    /// released inventory (both mol) and the flux (mol s^-1): the running bound of a self
+    /// reference. The closed-form reference of the physics module gives zeros: its agreement
+    /// with direct sums to 1e-15 is tested separately.
+    pub rounding: [f64; 3],
 }
 
 /// One case: initial inventory, decay constant and source history.
@@ -226,6 +244,8 @@ pub struct Case {
     pub lambda: f64,
     pub source: PiecewiseSource,
     pub v_k: f64,
+    /// Kernel radius and outer radius (m) of the particle.
+    pub geometry: (f64, f64),
 }
 
 impl Case {
@@ -274,6 +294,11 @@ impl Reference for SelfReference {
             released: st.released,
             decayed: st.decayed,
             flux: Some(st.flux),
+            rounding: [
+                st.inventory_rounding_bound,
+                st.release_rounding_bound,
+                st.flux_rounding_bound,
+            ],
         }
     }
 }
@@ -356,6 +381,7 @@ impl Reference for PhysicsReference {
             released: rel,
             decayed: dec,
             flux: (case.m0 == 0.0).then_some(flux),
+            rounding: [0.0; 3],
         }
     }
 }
@@ -471,14 +497,27 @@ pub struct Point {
     /// The estimated error `e_ext` of the production rule (`ModalState::estimated_errors`),
     /// same unit as `error`.
     pub estimated: f64,
+    /// The computed rounding bound of the evaluation under test (same unit as `error`), part
+    /// of `estimated`.
+    pub rounding: f64,
+    /// The computed rounding bound of the reference (same unit as `error`).
+    pub truth_rounding: f64,
 }
 
 impl Point {
-    /// `(error - bound_no_floor) / (floor * scale)`: the excess of the error over the computed
-    /// bound (52) or (53) in units of the floor term of the rule, which is what the factors
-    /// `EXT_FACTOR_*` have to cover.
+    /// `(error - bound_no_floor - rounding) / (floor * scale)`: the excess of the error over
+    /// the computed model bound (52) or (53) and the computed rounding bound, in units of the
+    /// floor term of the rule, which is what the factors `EXT_FACTOR_*` have to cover (the
+    /// error of the series). The reference's own rounding is removed from the error first.
     pub fn excess(&self) -> f64 {
-        (self.error - self.bound_no_floor) / (self.floor * self.scale)
+        (self.error - self.truth_rounding - self.bound_no_floor - self.rounding)
+            / (self.floor * self.scale)
+    }
+
+    /// The estimate holds at this point: the error does not exceed the estimate by more than
+    /// the rounding error of the reference.
+    pub fn within_estimate(&self) -> bool {
+        self.error <= self.estimated + self.truth_rounding
     }
 }
 
@@ -507,7 +546,7 @@ pub fn measure(
     let k = delta0 / st.early_release;
     let est = st.estimated_errors(floor);
     let mut pts = Vec::new();
-    let mk = |q: Q, value: f64, tr: f64, b: f64, scale: f64, estimated: f64| Point {
+    let mk = |q: Q, value: f64, tr: f64, b: f64, scale: f64, estimated: f64, own: f64| Point {
         n: series.eigenvalues.len(),
         q,
         t,
@@ -521,26 +560,45 @@ pub fn measure(
         floor,
         scale,
         estimated,
+        rounding: own,
+        truth_rounding: 0.0,
     };
-    pts.push(mk(
+    let [ri, rr, rf] = truth.rounding;
+    let mut inv = mk(
         Q::Inventory,
         st.inventory,
         truth.inventory,
         k * st.inventory_error_bound,
         st.age_input,
         est.inventory,
-    ));
-    pts.push(mk(
+        st.inventory_rounding_bound,
+    );
+    inv.truth_rounding = ri;
+    pts.push(inv);
+    let mut rel = mk(
         Q::Release,
         st.released,
         truth.released,
         k * st.release_error_bound,
         st.age_input,
         est.released,
-    ));
+        st.release_rounding_bound,
+    );
+    rel.truth_rounding = rr;
+    pts.push(rel);
     if let (Some(fl), Some(fb), Some(ef)) = (truth.flux, st.flux_error_bound, est.flux) {
         if st.flux_scale > 0.0 {
-            pts.push(mk(Q::Flux, st.flux, fl, k * fb, st.flux_scale, ef));
+            let mut p = mk(
+                Q::Flux,
+                st.flux,
+                fl,
+                k * fb,
+                st.flux_scale,
+                ef,
+                st.flux_rounding_bound,
+            );
+            p.truth_rounding = rf;
+            pts.push(p);
         }
     }
     pts
@@ -556,6 +614,8 @@ pub struct Geometry {
     /// Slowest decay rate `alpha_1` (s^-1) of the geometry.
     pub alpha_1: f64,
     pub v_k: f64,
+    /// Kernel radius and outer radius (m).
+    pub radii: (f64, f64),
     /// Earliest time of the set as a multiple of 1 / alpha_1 (0: from the cover).
     pub earliest: f64,
     /// The diffusivities (m^2 s^-1) of the five layers, as text for the table.
@@ -580,6 +640,7 @@ pub fn geometries(cfg: &SetConfig) -> Vec<Geometry> {
             reference: Box::new(move || Box::new(PhysicsReference { r, d })),
             alpha_1: PI * PI * d / (r * r),
             v_k: vk,
+            radii: (r, r),
             earliest: 1.0e-2,
             diffusivities: format!("one sphere of radius 175 um, D = {d:.1e}"),
         });
@@ -602,6 +663,7 @@ pub fn geometries(cfg: &SetConfig) -> Vec<Geometry> {
                 .unwrap()
                 .eigenvalue(1),
             v_k: vk,
+            radii: (RADII[0], RADII[4]),
             earliest: 0.0,
             diffusivities: format!("all five layers {d:.1e}"),
         });
@@ -616,34 +678,108 @@ pub fn geometries(cfg: &SetConfig) -> Vec<Geometry> {
         let d = [d_k, d_k, d_py, d_sic, d_py];
         out.push(layered(
             &format!("reference particle {t_c:.0} C"),
+            RADII,
             d,
-            vk,
             cfg.reference_modes,
         ));
     }
     // 5. strongly contrasted set (test values, not a correlation): a ratio of 1e7
     out.push(layered(
         "strongly contrasted",
+        RADII,
         [1.0e-11, 1.0e-9, 1.0e-12, 1.0e-16, 1.0e-12],
-        vk,
         cfg.reference_modes,
     ));
+    // 6. other radii (the geometries of the second verification of the estimate): five equal
+    //    layers on radii 200 to 450 um, shooting modes under test, closed-form modes as the
+    //    reference
+    {
+        let radii = [200.0e-6, 260.0e-6, 300.0e-6, 380.0e-6, 450.0e-6];
+        let d = 2.0e-13;
+        let closed_modes = cfg.closed_modes;
+        out.push(Geometry {
+            name: "equal layers 200 to 450 um".to_string(),
+            build: Box::new(move |n| layered_series_on(radii, [d; 5], n)),
+            reference: Box::new(move || {
+                Box::new(SelfReference {
+                    series: closed_form_series(radii[4], radii[0], d, closed_modes),
+                    kind: "closed-form modes",
+                })
+            }),
+            alpha_1: ClosedCore::core(radii[4], radii[0], d, 1.0)
+                .unwrap()
+                .eigenvalue(1),
+            v_k: 4.0 / 3.0 * PI * radii[0].powi(3),
+            radii: (radii[0], radii[4]),
+            earliest: 0.0,
+            diffusivities: format!("all five layers {d:.1e}"),
+        });
+    }
+    // 7. a contrasted layered particle on radii 250 to 465 um (kernel fraction 0.54)
+    out.push(layered(
+        "layered 250 to 465 um",
+        [250.0e-6, 350.0e-6, 390.0e-6, 425.0e-6, 465.0e-6],
+        [2.0e-13, 5.0e-12, 1.0e-13, 1.0e-15, 1.0e-13],
+        cfg.reference_modes,
+    ));
+    // 8. kernel step with closed-form modes (series floor at rounding level) in a particle of
+    //    kernel 160 um and outer radius 400 um, D = 1e-12
+    {
+        let (r_k, r, d) = (160.0e-6, 400.0e-6, 1.0e-12);
+        let closed_modes = cfg.closed_modes;
+        out.push(Geometry {
+            name: "kernel step 160 to 400 um".to_string(),
+            build: Box::new(move |n| closed_form_series(r, r_k, d, n)),
+            reference: Box::new(move || {
+                Box::new(SelfReference {
+                    series: closed_form_series(r, r_k, d, closed_modes),
+                    kind: "closed-form modes",
+                })
+            }),
+            alpha_1: ClosedCore::core(r, r_k, d, 1.0).unwrap().eigenvalue(1),
+            v_k: 4.0 / 3.0 * PI * r_k.powi(3),
+            radii: (r_k, r),
+            earliest: 0.0,
+            diffusivities: format!("one material {d:.1e}"),
+        });
+    }
+    // 9. a uniform sphere of 300 um with closed-form modes (floor at rounding level)
+    {
+        let (r, d) = (300.0e-6, 5.0e-15);
+        let closed_modes = cfg.closed_modes;
+        out.push(Geometry {
+            name: "uniform sphere 300 um".to_string(),
+            build: Box::new(move |n| uniform_series(r, d, n)),
+            reference: Box::new(move || {
+                Box::new(SelfReference {
+                    series: uniform_series(r, d, closed_modes),
+                    kind: "closed-form modes",
+                })
+            }),
+            alpha_1: PI * PI * d / (r * r),
+            v_k: 4.0 / 3.0 * PI * r.powi(3),
+            radii: (r, r),
+            earliest: 0.0,
+            diffusivities: format!("one sphere of radius 300 um, D = {d:.1e}"),
+        });
+    }
     out
 }
 
-fn layered(name: &str, d: [f64; 5], vk: f64, reference_modes: usize) -> Geometry {
-    let alpha_1 = layered_series(d, 1).eigenvalues[0];
+fn layered(name: &str, radii: [f64; 5], d: [f64; 5], reference_modes: usize) -> Geometry {
+    let alpha_1 = layered_series_on(radii, d, 1).eigenvalues[0];
     Geometry {
         name: name.to_string(),
-        build: Box::new(move |n| layered_series(d, n)),
+        build: Box::new(move |n| layered_series_on(radii, d, n)),
         reference: Box::new(move || {
             Box::new(SelfReference {
-                series: layered_series(d, reference_modes),
+                series: layered_series_on(radii, d, reference_modes),
                 kind: "shooting modes",
             })
         }),
         alpha_1,
-        v_k: vk,
+        v_k: 4.0 / 3.0 * PI * radii[0].powi(3),
+        radii: (radii[0], radii[4]),
         earliest: 0.0,
         diffusivities: format!(
             "D_kernel {:.2e}, D_buffer {:.2e}, D_IPyC {:.2e}, D_SiC {:.2e}, D_OPyC {:.2e}",
@@ -683,7 +819,7 @@ pub type GeometryPoints = (String, Vec<Point>);
 /// the time and the reference truth at that time.
 pub fn for_each_case(
     cfg: &SetConfig,
-    mut visit: impl FnMut(&str, &[ModalRelease], &Case, SourceShape, f64, &Truth),
+    mut visit: impl FnMut(&str, &[ModalRelease], &Case, SourceShape, f64, &Truth, &dyn Reference),
 ) {
     for geo in geometries(cfg) {
         if let Some(f) = &cfg.only {
@@ -707,10 +843,11 @@ pub fn for_each_case(
                     lambda,
                     source: shape.history(t_scale, 1.0 / (geo.v_k * t_scale)),
                     v_k: geo.v_k,
+                    geometry: geo.radii,
                 };
                 for &t in &times {
                     let truth = reference.truth(&case, t);
-                    visit(&name, &series, &case, shape, t, &truth);
+                    visit(&name, &series, &case, shape, t, &truth, reference.as_ref());
                 }
             }
         }
@@ -721,7 +858,7 @@ pub fn for_each_case(
 /// measured points.
 pub fn run_set(cfg: &SetConfig) -> Vec<GeometryPoints> {
     let mut all: Vec<GeometryPoints> = Vec::new();
-    for_each_case(cfg, |name, series, case, shape, t, truth| {
+    for_each_case(cfg, |name, series, case, shape, t, truth, _| {
         if all.last().map(|(n, _)| n.as_str()) != Some(name) {
             all.push((name.to_string(), Vec::new()));
         }
@@ -753,6 +890,9 @@ pub struct MaskReport {
     /// the mask withheld.
     pub raw_wrong: usize,
     pub raw_wrong_withheld: usize,
+    /// Of the values asked and drawn, those that are `F_post`.
+    pub post_event_asked: usize,
+    pub post_event_drawn: usize,
 }
 
 /// Ask the production mask ([`KernelRun::drawn`]) for the release fraction, the inventory
@@ -761,10 +901,11 @@ pub struct MaskReport {
 pub fn run_mask_set(cfg: &SetConfig, threshold: f64) -> MaskReport {
     use super::extensions::{Drawn, Quantity, Withheld};
     let mut rep = MaskReport::default();
-    for_each_case(cfg, |name, series, case, shape, t, truth| {
+    for_each_case(cfg, |name, series, case, shape, t, truth, reference| {
         for s in series {
             let run = KernelRun::new(s, case.m0, case.v_k, case.source.clone(), &case.decay())
-                .expect("valid run");
+                .expect("valid run")
+                .with_geometry(case.geometry.0, case.geometry.1);
             let total = case.m0 + case.v_k * case.source.generated_per_volume(t);
             let g_now = case.source.rate_at(t);
             let mut asks: Vec<(Quantity, f64)> = Vec::new();
@@ -778,8 +919,22 @@ pub fn run_mask_set(cfg: &SetConfig, threshold: f64) -> MaskReport {
             if let (Some(fl), true) = (truth.flux, g_now > 0.0) {
                 asks.push((Quantity::Beta, fl / (case.v_k * g_now)));
             }
+            // F_post against the reference: the event at twice the relaxation time of this
+            // mode count, the gained release over the inventory at the event
+            let t_e = 2.0 * s.min_valid_time();
+            if case.m0 > 0.0 && t >= t_e {
+                let at_event = reference.truth(case, t_e);
+                if at_event.inventory > 0.0 {
+                    asks.push((
+                        Quantity::PostEventRelease { t_event: t_e },
+                        (truth.released - at_event.released) / at_event.inventory,
+                    ));
+                }
+            }
             for (q, reference) in asks {
                 rep.asked += 1;
+                let is_post = matches!(q, Quantity::PostEventRelease { .. });
+                rep.post_event_asked += usize::from(is_post);
                 let raw = run.value(q, t).expect("valid").expect("defined");
                 let rel = if reference != 0.0 {
                     (raw - reference).abs() / reference.abs()
@@ -789,10 +944,12 @@ pub fn run_mask_set(cfg: &SetConfig, threshold: f64) -> MaskReport {
                 if rel > threshold {
                     rep.raw_wrong += 1;
                 }
-                let d = run.drawn(q, t).expect("valid");
+                // the gate is open here: the table measures the rule itself
+                let d = run.drawn_gated(q, t, true).expect("valid");
                 match &d {
                     Drawn::Value(v) => {
                         rep.drawn += 1;
+                        rep.post_event_drawn += usize::from(is_post);
                         let r = if reference != 0.0 {
                             (v - reference).abs() / reference.abs()
                         } else {
@@ -859,7 +1016,7 @@ pub fn summarise(cfg: &SetConfig, runs: &[(String, Vec<Point>)]) -> Vec<Cell> {
                     max_excess: sel.iter().map(|p| p.excess()).fold(f64::MIN, f64::max),
                     max_error_over_estimate: sel
                         .iter()
-                        .map(|p| p.error / p.estimated)
+                        .map(|p| p.error / (p.estimated + p.truth_rounding))
                         .fold(0.0, f64::max),
                     floor: sel[0].floor,
                 });
@@ -932,9 +1089,9 @@ mod tests {
     use super::*;
 
     use crate::analytical::extensions::{
-        EXTENSION_FLOOR_REESTIMATED, EXT_FACTOR_FLUX, EXT_FACTOR_INVENTORY, EXT_FACTOR_RELEASE,
-        MASK_RELATIVE_TOLERANCE, REGIME_ALPHA1_T_MAX, REGIME_LAMBDA_OVER_ALPHA1_MAX, REGIME_MODES,
-        REGIME_PIECES_MAX,
+        EXT_FACTOR_FLUX, EXT_FACTOR_INVENTORY, EXT_FACTOR_RELEASE, MASK_RELATIVE_TOLERANCE,
+        REGIME_ALPHA1_T_MAX, REGIME_KERNEL_FRACTION, REGIME_LAMBDA_OVER_ALPHA1_MAX, REGIME_MODES,
+        REGIME_OUTER_RADIUS, REGIME_PIECES_MAX,
     };
     use std::sync::OnceLock;
 
@@ -958,6 +1115,20 @@ mod tests {
 
     fn all_points() -> Vec<&'static Point> {
         runs().1.iter().flat_map(|(_, p)| p.iter()).collect()
+    }
+
+    /// The points of the geometries whose reference carries a computed rounding bound (the self
+    /// references). The reference of the physics module (the uniform sphere of 175 um) has none:
+    /// its own rounding, a few floors of the largest scale, differs between builds (0.9 and 3.1
+    /// floors of `Release` at 16 modes in a test build and in a release example), so its excess
+    /// is the noise of the reference and says nothing about the series.
+    fn bounded_reference_points() -> Vec<&'static Point> {
+        runs()
+            .1
+            .iter()
+            .filter(|(name, _)| !name.contains("physics module"))
+            .flat_map(|(_, p)| p.iter())
+            .collect()
     }
 
     #[test]
@@ -998,7 +1169,7 @@ mod tests {
     fn the_estimated_error_bounds_the_error_at_every_sampled_point() {
         for p in all_points() {
             assert!(
-                p.error <= p.estimated,
+                p.within_estimate(),
                 "{:?} N {} lambda {:.2e} {:?} t/t_v {:.3e}: error {:.3e} above estimate {:.3e}",
                 p.q,
                 p.n,
@@ -1011,24 +1182,28 @@ mod tests {
         }
     }
 
-    /// The factors of the floor terms carry the margin of 2 stated in Document 6, and they are
-    /// not far above what is observed (a factor divided by 8 would be violated).
+    /// The factors of the floor terms carry the margin of 2 stated in Document 6 over the excess
+    /// at the points whose reference has a computed rounding bound, and they are not far above
+    /// what is observed at any point (a factor divided by 8 would be violated).
     #[test]
     fn the_factors_have_the_stated_margin_and_are_needed() {
         for q in [Q::Inventory, Q::Release, Q::Flux] {
-            let max_excess = all_points()
-                .iter()
-                .filter(|p| p.q == q)
-                .map(|p| p.excess())
-                .fold(f64::MIN, f64::max);
+            let excess_of = |pts: Vec<&Point>| {
+                pts.iter()
+                    .filter(|p| p.q == q)
+                    .map(|p| p.excess())
+                    .fold(f64::MIN, f64::max)
+            };
+            let bounded = excess_of(bounded_reference_points());
             assert!(
-                2.0 * max_excess <= factor(q),
-                "{q:?}: observed excess {max_excess}, factor {}",
+                2.0 * bounded <= factor(q),
+                "{q:?}: observed excess {bounded}, factor {}",
                 factor(q)
             );
+            let any = excess_of(all_points());
             assert!(
-                max_excess > factor(q) / 8.0,
-                "{q:?}: observed excess {max_excess} does not need factor {}",
+                any > factor(q) / 8.0,
+                "{q:?}: observed excess {any} does not need factor {}",
                 factor(q)
             );
         }
@@ -1071,7 +1246,6 @@ mod tests {
     #[test]
     fn the_mask_draws_only_values_within_the_threshold() {
         let rep = run_mask_set(&SetConfig::test_set(), MASK_RELATIVE_TOLERANCE);
-        const { assert!(EXTENSION_FLOOR_REESTIMATED) };
         assert!(rep.wrong_drawn.is_empty(), "{:?}", rep.wrong_drawn);
         assert!(rep.max_drawn_error <= MASK_RELATIVE_TOLERANCE);
         // not vacuous: many values are drawn, early ones are withheld, and the unmasked values
@@ -1083,6 +1257,111 @@ mod tests {
         assert_eq!(rep.raw_wrong, rep.raw_wrong_withheld, "{rep:?}");
         // modes below the measured range (8 of the test set) are outside the regime
         assert!(rep.outside_regime > 0, "{rep:?}");
+        // F_post is in the comparison against the reference and is drawn where it is accurate
+        assert!(rep.post_event_asked > 100, "{rep:?}");
+        assert!(rep.post_event_drawn > 20, "{rep:?}");
+    }
+
+    /// Major 1 of the third verification round: the points (inside the regime, closed-form
+    /// series whose floor is the rounding unit) at which the earlier estimate with an observed
+    /// rounding factor was exceeded by plain summation. The estimate now carries a computed
+    /// rounding bound and holds at each of them, at mode counts of 1500 and 2048.
+    #[test]
+    fn points_where_an_observed_rounding_factor_failed_are_inside_the_estimate() {
+        let cfg = SetConfig::test_set();
+        let lambda = |name: &str| {
+            registered_decay_constants()
+                .into_iter()
+                .find(|(n, _)| n == name)
+                .unwrap()
+                .1
+        };
+        let geo_of = |name: &str| {
+            geometries(&cfg)
+                .into_iter()
+                .find(|g| g.name.contains(name))
+                .unwrap_or_else(|| panic!("{name}"))
+        };
+        // (geometry, N, nuclide, source, initial inventory, time as (multiple, unit))
+        // unit 0: t_v of the series, unit 1: 1 / alpha_1
+        let rows: [(&str, usize, &str, SourceShape, f64, f64, usize); 5] = [
+            (
+                "kernel step 160",
+                1500,
+                "Sr-90",
+                SourceShape::None,
+                1.0,
+                1.0,
+                0,
+            ),
+            (
+                "uniform sphere 300",
+                1500,
+                "Ba-137m",
+                SourceShape::None,
+                1.0,
+                1.003,
+                0,
+            ),
+            (
+                "kernel step 160",
+                1500,
+                "Ag-110",
+                SourceShape::Pulse,
+                0.0,
+                999.0,
+                1,
+            ),
+            (
+                "kernel step 160",
+                2048,
+                "Sr-90",
+                SourceShape::On,
+                0.0,
+                1.02,
+                0,
+            ),
+            (
+                "uniform sphere 300",
+                2048,
+                "Ag-110",
+                SourceShape::OffOn,
+                1.0,
+                999.0,
+                1,
+            ),
+        ];
+        for (name, n, nuclide, shape, m0, mult, unit) in rows {
+            let geo = geo_of(name);
+            let series = (geo.build)(n);
+            let t_scale = 1.0 / geo.alpha_1;
+            let t = mult
+                * if unit == 0 {
+                    series.min_valid_time()
+                } else {
+                    t_scale
+                };
+            let case = Case {
+                m0,
+                lambda: lambda(nuclide),
+                source: shape.history(t_scale, 1.0 / (geo.v_k * t_scale)),
+                v_k: geo.v_k,
+                geometry: geo.radii,
+            };
+            let reference = (geo.reference)();
+            let truth = reference.truth(&case, t);
+            let pts = measure(&series, &case, shape, &truth, t);
+            assert!(!pts.is_empty());
+            for p in &pts {
+                assert!(
+                    p.within_estimate(),
+                    "{name} N {n} {nuclide} {shape:?} t {t:.3e}: {:?} error {:.3e} estimate {:.3e} + reference {:.3e}",
+                    p.q, p.error, p.estimated, p.truth_rounding
+                );
+                // the rounding bound is a real part of the estimate here, not zero
+                assert!(p.rounding > 0.0, "{:?}", p.q);
+            }
+        }
     }
 
     /// The regime constants of the extension mask do not claim more than the full set covers.
@@ -1097,9 +1376,20 @@ mod tests {
         assert!(REGIME_PIECES_MAX <= SourceShape::Many.history(1.0, 1.0).rates().len());
         // the slowest mode rate of every geometry of the set
         let mut worst_ratio = 0.0f64;
+        let mut outer = (f64::INFINITY, 0.0f64);
+        let mut fraction = (f64::INFINITY, 0.0f64);
         for geo in geometries(&full) {
             worst_ratio = worst_ratio.max(lambda_max / geo.alpha_1);
+            outer = (outer.0.min(geo.radii.1), outer.1.max(geo.radii.1));
+            let f = geo.radii.0 / geo.radii.1;
+            fraction = (fraction.0.min(f), fraction.1.max(f));
         }
+        // the geometry the mask accepts is the hull of the measured geometries
+        let tol = 1.0e-9;
+        assert!(REGIME_OUTER_RADIUS.0 >= outer.0 * (1.0 - tol));
+        assert!(REGIME_OUTER_RADIUS.1 <= outer.1 * (1.0 + tol));
+        assert!(REGIME_KERNEL_FRACTION.0 >= fraction.0 * (1.0 - tol));
+        assert!(REGIME_KERNEL_FRACTION.1 <= fraction.1 * (1.0 + tol));
         assert!(
             REGIME_LAMBDA_OVER_ALPHA1_MAX <= worst_ratio,
             "regime {REGIME_LAMBDA_OVER_ALPHA1_MAX:e}, covered {worst_ratio:e}"
@@ -1231,7 +1521,7 @@ mod tests {
         for (name, points) in &runs {
             for p in points {
                 assert!(
-                    p.error <= p.estimated,
+                    p.within_estimate(),
                     "{name} {:?} N {} lambda {:.2e} {:?} t/t_v {:.3e}: error {:.3e} above {:.3e}",
                     p.q,
                     p.n,

@@ -2,8 +2,8 @@
 //! (B2) to (B5) against closed-form references and self references over the designed set.
 //!
 //! `cargo run --release --features extension-estimate --example extension_floor_table` runs
-//! the test set (about half a minute), `... -- full` the full set of the document (tens of
-//! minutes, the references of the layered geometries have 16 384 modes), `... -- full setup`
+//! the test set (about two minutes), `... -- full` the full set of the document (more than an
+//! hour in one thread, the references of the layered geometries have 16 384 modes), `... -- full setup`
 //! prints Table 8.1 only.
 
 use strato::analytical::extension_floor::*;
@@ -66,19 +66,21 @@ fn main() {
 
     println!();
     println!("Largest excess over the whole set, and the factor of the rule");
+    println!("(the rows of the physics-module reference are left out: that reference has no computed rounding bound, its excess is noise)");
     for (q, f) in [
         (Q::Inventory, EXT_FACTOR_INVENTORY),
         (Q::Release, EXT_FACTOR_RELEASE),
         (Q::Flux, EXT_FACTOR_FLUX),
     ] {
+        let bounded = |c: &&Cell| c.q == q && !c.geometry.contains("physics module");
         let m = cells
             .iter()
-            .filter(|c| c.q == q)
+            .filter(bounded)
             .map(|c| c.max_excess)
             .fold(f64::MIN, f64::max);
         let worst = cells
             .iter()
-            .filter(|c| c.q == q)
+            .filter(bounded)
             .fold(None, |acc: Option<&Cell>, c| {
                 if acc.is_none_or(|a| c.max_excess > a.max_excess) {
                     Some(c)
@@ -123,5 +125,9 @@ fn main() {
         rep.wrong_drawn.len(),
         rep.raw_wrong,
         rep.raw_wrong_withheld
+    );
+    println!(
+        "of the values asked, F_post: asked {}, drawn {}",
+        rep.post_event_asked, rep.post_event_drawn
     );
 }

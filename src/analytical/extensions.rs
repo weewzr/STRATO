@@ -52,27 +52,31 @@ pub const SERIES_FLOOR_FACTOR: f64 = 4.0;
 /// of the kernel step at `t_v`: the shooting error of the weights enters `1 - sum w exp(-alpha
 /// t_v)` with at most the observed ratio of check (v) (3.34, rounded up to 4). Document 6,
 /// Section 2.3 and Section 8 (the observed sum of the weight errors of the homogeneous
-/// particle is 3 floors at 64 modes and 5 floors at 1024 modes).
+/// particle is 2.9 floors at 64 modes and 4.3 floors at 1024 modes).
 pub const EARLY_RELEASE_FLOOR_FACTOR: f64 = 4.0;
 
 /// Whether the accuracy floor of the series has been re-estimated for (B2) to (B5) (science
 /// design Section 4.2, item 3, decision 68(c)): the estimate of Document 6, Section 8 exists
-/// and the independent verification of it passed, so the extension quantities are drawn where
-/// the rule of that section accepts them. With `false`, [`KernelRun::drawn`] returns
-/// [`Withheld::FloorNotReestimated`] for every quantity of a run with decay or a non-zero
-/// source.
-pub const EXTENSION_FLOOR_REESTIMATED: bool = true;
+/// AND the independent verification of it passed (decision 68(c) allows `true` only then).
+/// With `false`, [`KernelRun::drawn`] returns [`Withheld::FloorNotReestimated`] for every
+/// quantity of a run with decay or a non-zero source. The verification of the present estimate
+/// has not passed yet, so this stays `false`; the coordinator sets it after the verifier.
+pub const EXTENSION_FLOOR_REESTIMATED: bool = false;
 
-/// Factor of `floor * A(t)` (mol) added to the computed bound (52) of the inventory `M`
-/// (Document 6, Equation (54)). The largest observed excess of the error over the computed
-/// bound in the designed sets is 3.53 times `floor * A` (Table 8.2); 10 is a margin of 2.8.
-pub const EXT_FACTOR_INVENTORY: f64 = 10.0;
+/// Factor of `floor * A(t)` (mol) added to the computed bounds of the inventory `M` for the
+/// error of the series (Document 6, Equation (54)). It covers the error of the series only:
+/// the rounding of the evaluation is a computed bound (`ModalState::inventory_rounding_bound`).
+/// The largest observed excess of the error over the computed model and rounding bounds in the
+/// designed sets is 1.86 times `floor * A` (Table 8.2); 6 is a margin of 3.2.
+pub const EXT_FACTOR_INVENTORY: f64 = 6.0;
 /// As [`EXT_FACTOR_INVENTORY`] for the released inventory `M_rel`: the largest observed excess
-/// is 8.37 (test set; 6.96 in the full set), so 24 is a margin of 2.9.
-pub const EXT_FACTOR_RELEASE: f64 = 24.0;
-/// Factor of `floor * S_Phi(t)` (mol s^-1) added to the computed bound (53) of the release
-/// rate `Phi`: the largest observed excess is 2.58, so 8 is a margin of 3.1.
-pub const EXT_FACTOR_FLUX: f64 = 8.0;
+/// is 1.86 (full set, against references with a computed rounding bound), so 6 is a margin of
+/// 3.2. The uniform sphere of the physics module, whose reference has no rounding bound, shows
+/// 0.9 to 3.1 in different builds: noise of that reference (Document 6, Section 8.4).
+pub const EXT_FACTOR_RELEASE: f64 = 6.0;
+/// Factor of `floor * S_Phi(t)` (mol s^-1) added to the computed bounds of the release rate
+/// `Phi`: the largest observed excess is 1.86, so 6 is a margin of 3.2.
+pub const EXT_FACTOR_FLUX: f64 = 6.0;
 
 /// The regime in which the error estimate of Document 6, Section 8 was measured. A run outside
 /// it is withheld ([`Withheld::OutsideEstimatedRegime`]): nothing is claimed there. Smallest
@@ -89,6 +93,13 @@ pub const REGIME_ALPHA1_T_MAX: f64 = 1000.0;
 pub const REGIME_PIECES_MAX: usize = 13;
 /// Largest `accuracy_floor()` of the designed set (the strongly contrasted set, 1.62e-9).
 pub const REGIME_FLOOR_MAX: f64 = 2.0e-9;
+/// Smallest and largest outer radius (m) of the particles of the designed set (Table 8.1: a
+/// uniform sphere of 175 um to a layered particle of 465 um). A run must declare its geometry
+/// ([`KernelRun::with_geometry`]); outside this range it is withheld.
+pub const REGIME_OUTER_RADIUS: (f64, f64) = (175.0e-6, 465.0e-6);
+/// Smallest and largest ratio kernel radius over outer radius of the designed set (0.4 for a
+/// kernel of 160 um in 400 um, 1 for the uniform spheres).
+pub const REGIME_KERNEL_FRACTION: (f64, f64) = (0.4, 1.0);
 
 /// Number of layers of the particle (kernel, buffer, IPyC, SiC, OPyC), hence the number of
 /// entries of [`Decay::PerLayer`].
@@ -356,6 +367,15 @@ pub struct ModalState {
     /// Bound on `|Phi - Phi(exact)|` (mol s^-1), equation (53) of Document 6; valid from
     /// `t >= t_v` only, `None` before.
     pub flux_error_bound: Option<f64>,
+    /// A-posteriori bound (mol) on the rounding error of `M`, from a running error analysis of
+    /// the evaluation (compensated sums; Document 6, Section 8.2). It does not contain the
+    /// error of the series (the accuracy floor). Zero for the existing series (no source, no
+    /// decay), which the floor test of item 3 judges.
+    pub inventory_rounding_bound: f64,
+    /// As [`ModalState::inventory_rounding_bound`] for `M_rel` (mol).
+    pub release_rounding_bound: f64,
+    /// As [`ModalState::inventory_rounding_bound`] for `Phi` (mol s^-1).
+    pub flux_rounding_bound: f64,
     /// `A(t) = M^0 + V_K sum_{k: s_k < t} G_k (t - s_k)` (mol): the input weighted by its
     /// age, the scale of the cancellation in the sums of (51) (Document 6, Section 8).
     pub age_input: f64,
@@ -380,14 +400,19 @@ impl ModalState {
     }
 
     /// The error estimate of Document 6, Section 8 for a series whose `accuracy_floor()` is
-    /// `floor`: the computed bounds (52), (53) plus the floor terms (54) to (56).
+    /// `floor`: the computed model bounds (52), (53), plus the computed rounding bound of the
+    /// evaluation, plus the floor terms (54) to (56) for the error of the series.
     pub fn estimated_errors(&self, floor: f64) -> EstimatedErrors {
         EstimatedErrors {
-            inventory: self.inventory_error_bound + EXT_FACTOR_INVENTORY * floor * self.age_input,
-            released: self.release_error_bound + EXT_FACTOR_RELEASE * floor * self.age_input,
+            inventory: self.inventory_error_bound
+                + self.inventory_rounding_bound
+                + EXT_FACTOR_INVENTORY * floor * self.age_input,
+            released: self.release_error_bound
+                + self.release_rounding_bound
+                + EXT_FACTOR_RELEASE * floor * self.age_input,
             flux: self
                 .flux_error_bound
-                .map(|b| b + EXT_FACTOR_FLUX * floor * self.flux_scale),
+                .map(|b| b + self.flux_rounding_bound + EXT_FACTOR_FLUX * floor * self.flux_scale),
         }
     }
 }
@@ -459,55 +484,197 @@ impl Drawn {
     }
 }
 
+/// Unit roundoff `u = 2^-53` of `f64` (round to nearest): every elementary operation
+/// `fl(a op b)` is `(a op b)(1 + d)` with `|d| <= u`.
+const UNIT_ROUNDOFF: f64 = f64::EPSILON / 2.0;
+
+/// ASSUMED relative error of `exp` and `exp_m1` of the platform's math library: one unit in
+/// the last place, `2 u` (the standard accuracy of a good library; not proved here).
+const LIBM_REL_ERROR: f64 = 2.0 * UNIT_ROUNDOFF;
+
+/// A value with a running bound on the rounding error accumulated in computing it (running
+/// error analysis, Document 6 Section 8.2): `|computed - exact| <= e`, for exact inputs, the
+/// standard model of floating-point arithmetic and the assumed accuracy of `exp`. The error of
+/// the series itself (eigenvalues and weights, the accuracy floor) is NOT in `e`.
+#[derive(Debug, Clone, Copy)]
+struct Ev {
+    v: f64,
+    e: f64,
+}
+
+/// An exact input.
+fn ev(v: f64) -> Ev {
+    Ev { v, e: 0.0 }
+}
+
+impl Ev {
+    /// A difference of two exact numbers computed in floating point: error `u |v|`.
+    fn rounded(v: f64) -> Self {
+        Self {
+            v,
+            e: UNIT_ROUNDOFF * v.abs(),
+        }
+    }
+
+    fn exp(self) -> Self {
+        let v = self.v.exp();
+        Self {
+            v,
+            e: v * (self.e.exp_m1() * (1.0 + LIBM_REL_ERROR) + LIBM_REL_ERROR),
+        }
+    }
+
+    fn exp_m1(self) -> Self {
+        let v = self.v.exp_m1();
+        let propagated = self.e * (self.v + self.e).exp();
+        Self {
+            v,
+            e: propagated * (1.0 + LIBM_REL_ERROR) + LIBM_REL_ERROR * v.abs(),
+        }
+    }
+}
+
+impl std::ops::Neg for Ev {
+    type Output = Ev;
+    fn neg(self) -> Ev {
+        Ev {
+            v: -self.v,
+            e: self.e,
+        }
+    }
+}
+
+impl std::ops::Add for Ev {
+    type Output = Ev;
+    fn add(self, o: Ev) -> Ev {
+        let v = self.v + o.v;
+        Ev {
+            v,
+            e: self.e + o.e + UNIT_ROUNDOFF * v.abs(),
+        }
+    }
+}
+
+impl std::ops::Sub for Ev {
+    type Output = Ev;
+    fn sub(self, o: Ev) -> Ev {
+        let v = self.v - o.v;
+        Ev {
+            v,
+            e: self.e + o.e + UNIT_ROUNDOFF * v.abs(),
+        }
+    }
+}
+
+impl std::ops::Mul for Ev {
+    type Output = Ev;
+    fn mul(self, o: Ev) -> Ev {
+        let v = self.v * o.v;
+        Ev {
+            v,
+            e: self.v.abs() * o.e + o.v.abs() * self.e + self.e * o.e + UNIT_ROUNDOFF * v.abs(),
+        }
+    }
+}
+
+impl std::ops::Div for Ev {
+    type Output = Ev;
+    fn div(self, o: Ev) -> Ev {
+        let v = self.v / o.v;
+        let den = o.v.abs() - o.e;
+        let e = if den > 0.0 {
+            (self.e + v.abs() * o.e) / den + UNIT_ROUNDOFF * v.abs()
+        } else {
+            f64::INFINITY
+        };
+        Ev { v, e }
+    }
+}
+
+/// Error-free transformation of a sum (Knuth): `a + b = s + q` exactly.
+fn two_sum(a: f64, b: f64) -> (f64, f64) {
+    let s = a + b;
+    let z = s - a;
+    (s, (a - (s - z)) + (b - z))
+}
+
+/// The sum of `terms` by compensated summation (Ogita, Rump and Oishi, "Sum2"): the computed
+/// sum `r` of the computed terms obeys `|r - sum| <= u |sum| + gamma_{n-1}^2 sum |term|` with
+/// `gamma_k = k u / (1 - k u)`, a bound that holds for any term order and carries no factor
+/// `n` in front of `u`. The error of each term (its own `e`) is added.
+fn sum_terms(terms: impl Iterator<Item = Ev>) -> Ev {
+    let (mut s, mut c, mut e, mut abs, mut n) = (0.0f64, 0.0f64, 0.0f64, 0.0f64, 0usize);
+    for t in terms {
+        let (ns, q) = two_sum(s, t.v);
+        s = ns;
+        c += q;
+        e += t.e;
+        abs += t.v.abs();
+        n += 1;
+    }
+    let r = s + c;
+    let g = n.saturating_sub(1) as f64 * UNIT_ROUNDOFF;
+    let gamma = g / (1.0 - g);
+    Ev {
+        v: r,
+        e: e + UNIT_ROUNDOFF * r.abs() * (1.0 + 2.0 * UNIT_ROUNDOFF) + gamma * gamma * abs,
+    }
+}
+
 /// `int_0^x exp(-lambda s) ds = (1 - exp(-lambda x)) / lambda`, `x` for `lambda = 0`.
-fn len_exp(lambda: f64, x: f64) -> f64 {
+fn len_exp(lambda: f64, x: Ev) -> Ev {
     if lambda == 0.0 {
         x
     } else {
-        -(-lambda * x).exp_m1() / lambda
+        -((ev(-lambda) * x).exp_m1()) / ev(lambda)
     }
 }
 
 /// `int_0^x len_exp(lambda, s) ds = (lambda x + expm1(-lambda x)) / lambda^2`; a series for
 /// small `lambda x` (cancellation), `x^2 / 2` for `lambda = 0`.
-fn len_exp_integral(lambda: f64, x: f64) -> f64 {
-    let z = lambda * x;
-    if z < 0.1 {
-        // x^2 sum_n (-z)^n / (n + 2)!, nine terms: the omitted term is below 1e-17 of the sum
-        let (mut term, mut sum) = (0.5, 0.5);
+fn len_exp_integral(lambda: f64, x: Ev) -> Ev {
+    let z = ev(lambda) * x;
+    if z.v < 0.1 {
+        // x^2 sum_n (-z)^n / (n + 2)!, nine terms: the omitted term is below 3e-17 x^2, which
+        // is added to the error bound
+        let (mut term, mut sum) = (ev(0.5), ev(0.5));
         for n in 1..9 {
-            term *= -z / (n as f64 + 2.0);
-            sum += term;
+            term = term * (-z) / ev(n as f64 + 2.0);
+            sum = sum + term;
         }
-        x * x * sum
+        let mut r = x * x * sum;
+        r.e += 3.0e-17 * x.v * x.v;
+        r
     } else {
-        (z + (-z).exp_m1()) / (lambda * lambda)
+        (z + (-z).exp_m1()) / (ev(lambda) * ev(lambda))
     }
 }
 
 /// The held modes with the factors `exp(-a_mu t_v)`: the building blocks of the evaluation.
+/// Every function takes a time `th` with its rounding error and returns the value with a
+/// running bound on its rounding error.
 struct Kernel<'a> {
     alpha: &'a [f64],
     weight: &'a [f64],
     /// `a_mu = alpha_mu + lambda`.
-    a: Vec<f64>,
+    a: Vec<Ev>,
     /// `c_mu = w_mu exp(-a_mu t_v)`.
-    c: Vec<f64>,
+    c: Vec<Ev>,
     lambda: f64,
     t_v: f64,
     /// `int_0^{t_v} exp(-lambda s) ds`.
-    e_v: f64,
+    e_v: Ev,
     /// `int_0^{t_v} E(s) ds`.
-    q_v: f64,
+    q_v: Ev,
 }
 
 impl<'a> Kernel<'a> {
     fn new(alpha: &'a [f64], weight: &'a [f64], lambda: f64, t_v: f64) -> Self {
-        let a: Vec<f64> = alpha.iter().map(|x| x + lambda).collect();
-        let c: Vec<f64> = weight
+        let a: Vec<Ev> = alpha.iter().map(|&x| ev(x) + ev(lambda)).collect();
+        let c: Vec<Ev> = weight
             .iter()
             .zip(&a)
-            .map(|(w, a)| w * (-a * t_v).exp())
+            .map(|(&w, &a)| ev(w) * (-(a * ev(t_v))).exp())
             .collect();
         Self {
             alpha,
@@ -516,97 +683,100 @@ impl<'a> Kernel<'a> {
             c,
             lambda,
             t_v,
-            e_v: len_exp(lambda, t_v),
-            q_v: len_exp_integral(lambda, t_v),
+            e_v: len_exp(lambda, ev(t_v)),
+            q_v: len_exp_integral(lambda, ev(t_v)),
         }
     }
 
     /// `exp(-lambda theta) R^(theta)`: the model remaining fraction with decay.
-    fn remaining(&self, theta: f64) -> f64 {
-        if theta < self.t_v {
-            (-self.lambda * theta).exp()
+    fn remaining(&self, th: Ev) -> Ev {
+        if th.v < self.t_v {
+            (ev(-self.lambda) * th).exp()
         } else {
-            self.weight
-                .iter()
-                .zip(self.alpha)
-                .map(|(w, al)| w * (-(al + self.lambda) * theta).exp())
-                .sum()
+            sum_terms(
+                self.weight
+                    .iter()
+                    .zip(&self.a)
+                    .map(|(&w, &a)| ev(w) * (-(a * th)).exp()),
+            )
         }
     }
 
     /// `E(theta) = int_0^theta exp(-lambda s) R^(s) ds`.
-    fn e0(&self, theta: f64) -> f64 {
-        if theta < self.t_v {
-            len_exp(self.lambda, theta)
+    fn e0(&self, th: Ev) -> Ev {
+        if th.v < self.t_v {
+            len_exp(self.lambda, th)
         } else {
-            let l = theta - self.t_v;
+            let l = th - ev(self.t_v);
             self.e_v
-                + self
-                    .c
-                    .iter()
-                    .zip(&self.a)
-                    .map(|(c, a)| c * (-(-a * l).exp_m1()) / a)
-                    .sum::<f64>()
+                + sum_terms(
+                    self.c
+                        .iter()
+                        .zip(&self.a)
+                        .map(|(&c, &a)| c * (-((-(a * l)).exp_m1())) / a),
+                )
         }
     }
 
     /// `Q(theta) = int_0^theta E(s) ds`.
-    fn q0(&self, theta: f64) -> f64 {
-        if theta < self.t_v {
-            len_exp_integral(self.lambda, theta)
+    fn q0(&self, th: Ev) -> Ev {
+        if th.v < self.t_v {
+            len_exp_integral(self.lambda, th)
         } else {
-            let l = theta - self.t_v;
+            let l = th - ev(self.t_v);
             self.q_v
                 + self.e_v * l
-                + self
-                    .c
-                    .iter()
-                    .zip(&self.a)
-                    .map(|(c, a)| c / a * (l + (-a * l).exp_m1() / a))
-                    .sum::<f64>()
+                + sum_terms(
+                    self.c
+                        .iter()
+                        .zip(&self.a)
+                        .map(|(&c, &a)| c / a * (l + (-(a * l)).exp_m1() / a)),
+                )
         }
     }
 
     /// `F^_lambda(theta) = 1 - exp(-lambda theta) R^(theta) - lambda E(theta)`: the released
     /// fraction of a unit kernel-step inventory (0 before `t_v`).
-    fn release(&self, theta: f64) -> f64 {
-        if theta < self.t_v {
-            0.0
+    fn release(&self, th: Ev) -> Ev {
+        if th.v < self.t_v {
+            ev(0.0)
         } else {
-            let s: f64 = self
-                .weight
-                .iter()
-                .zip(self.alpha)
-                .map(|(w, al)| w * (-al * theta).exp())
-                .sum();
+            let s = sum_terms(
+                self.weight
+                    .iter()
+                    .zip(self.alpha)
+                    .map(|(&w, &al)| ev(w) * (-(ev(al) * th)).exp()),
+            );
             // 1 - exp(-lambda theta) s = (1 - exp(-lambda theta)) + exp(-lambda theta) (1 - s)
-            -(-self.lambda * theta).exp_m1() + (-self.lambda * theta).exp() * (1.0 - s)
-                - self.lambda * self.e0(theta)
+            let lt = ev(-self.lambda) * th;
+            -(lt.exp_m1()) + lt.exp() * (ev(1.0) - s) - ev(self.lambda) * self.e0(th)
         }
     }
 
     /// `int_0^theta F^_lambda(s) ds`.
-    fn release_integral(&self, theta: f64) -> f64 {
-        if theta < self.t_v {
-            0.0
+    fn release_integral(&self, th: Ev) -> Ev {
+        if th.v < self.t_v {
+            ev(0.0)
         } else {
-            (theta - self.t_v)
-                - (self.e0(theta) - self.e_v)
-                - self.lambda * (self.q0(theta) - self.q_v)
+            (th - ev(self.t_v))
+                - (self.e0(th) - self.e_v)
+                - ev(self.lambda) * (self.q0(th) - self.q_v)
         }
     }
 
     /// `dF^_lambda/dtheta = exp(-lambda theta) sum_mu w_mu alpha_mu exp(-alpha_mu theta)`
     /// (0 before `t_v`).
-    fn release_rate(&self, theta: f64) -> f64 {
-        if theta < self.t_v {
-            0.0
+    fn release_rate(&self, th: Ev) -> Ev {
+        if th.v < self.t_v {
+            ev(0.0)
         } else {
-            self.weight
-                .iter()
-                .zip(self.alpha)
-                .map(|(w, al)| w * al * (-(al + self.lambda) * theta).exp())
-                .sum()
+            sum_terms(
+                self.weight
+                    .iter()
+                    .zip(self.alpha)
+                    .zip(&self.a)
+                    .map(|((&w, &al), &a)| ev(w) * ev(al) * (-(a * th)).exp()),
+            )
         }
     }
 }
@@ -620,6 +790,8 @@ pub struct KernelRun<'a> {
     v_k: f64,
     source: PiecewiseSource,
     lambda: f64,
+    /// Kernel radius and outer radius (m), when declared.
+    geometry: Option<(f64, f64)>,
 }
 
 impl<'a> KernelRun<'a> {
@@ -647,7 +819,17 @@ impl<'a> KernelRun<'a> {
             v_k,
             source,
             lambda,
+            geometry: None,
         })
+    }
+
+    /// Declare the geometry of the series: the kernel radius and the outer radius (m). The
+    /// extension mask draws a value only for a declared geometry inside the measured range
+    /// ([`REGIME_OUTER_RADIUS`], [`REGIME_KERNEL_FRACTION`]); the error estimate was measured
+    /// on those geometries only (Document 6, Section 8.6).
+    pub fn with_geometry(mut self, kernel_radius: f64, outer_radius: f64) -> Self {
+        self.geometry = Some((kernel_radius, outer_radius));
+        self
     }
 
     /// The decay constant in use (s^-1).
@@ -703,10 +885,11 @@ impl<'a> KernelRun<'a> {
 
         let m0 = self.m0;
         let v = self.v_k;
-        let mut inventory = m0 * k.remaining(t);
-        let mut decay_integral = m0 * k.e0(t);
-        let mut released = m0 * k.release(t);
-        let mut flux = m0 * k.release_rate(t);
+        let t_ev = ev(t);
+        let mut inventory = ev(m0) * k.remaining(t_ev);
+        let mut decay_integral = ev(m0) * k.e0(t_ev);
+        let mut released = ev(m0) * k.release(t_ev);
+        let mut flux = ev(m0) * k.release_rate(t_ev);
         let mut sum_g = 0.0; // sum of G_k over the pieces started before t
         let mut age_input = m0;
         let mut flux_b = 0.0;
@@ -729,10 +912,13 @@ impl<'a> KernelRun<'a> {
             }
             let ej = t.min(self.source.breaks[j + 1]);
             let (th_hi, th_lo) = (t - sj, t - ej);
-            inventory += v * g * (k.e0(th_hi) - k.e0(th_lo));
-            decay_integral += v * g * (k.q0(th_hi) - k.q0(th_lo));
-            released += v * g * (k.release_integral(th_hi) - k.release_integral(th_lo));
-            flux += v * g * (k.release(th_hi) - k.release(th_lo));
+            // the times since the start and the end of the piece, rounded differences
+            let (eh, el) = (Ev::rounded(th_hi), Ev::rounded(th_lo));
+            let vg = ev(v) * ev(g);
+            inventory = inventory + vg * (k.e0(eh) - k.e0(el));
+            decay_integral = decay_integral + vg * (k.q0(eh) - k.q0(el));
+            released = released + vg * (k.release_integral(eh) - k.release_integral(el));
+            flux = flux + vg * (k.release(eh) - k.release(el));
             if g > 0.0 {
                 sum_g += g;
                 age_input += v * g * (t - sj);
@@ -745,8 +931,12 @@ impl<'a> KernelRun<'a> {
         }
         let generated = v * self.source.generated_per_volume(t);
         // The decay loss: lambda int_0^t M ds, from the same remaining fraction.
-        let mut decayed = lam * decay_integral;
-        let mut released_out = released;
+        let mut decayed = lam * decay_integral.v;
+        let mut released_out = released.v;
+        let mut inventory_out = inventory.v;
+        // The rounding bounds belong to the evaluation of the extension formulas; the existing
+        // series (below) is judged by the floor test of item 3 and carries none.
+        let mut rounding = [inventory.e, released.e, flux.e];
         if self.no_source_no_decay() {
             // The existing series term by term: F = 1 - sum w exp(-alpha t).
             let remaining: f64 = alpha
@@ -757,17 +947,18 @@ impl<'a> KernelRun<'a> {
             released_out = m0 * (1.0 - remaining);
             // The same remaining fraction in the inventory, so that the balance closes also
             // for `t < t_v`, where `R^` of the evaluation is replaced by 1.
-            inventory = m0 * remaining;
+            inventory_out = m0 * remaining;
             decayed = 0.0;
+            rounding = [0.0; 3];
         }
         Ok(ModalState {
             time: t,
-            inventory,
+            inventory: inventory_out,
             released: released_out,
             decayed,
             generated,
             initial_inventory: m0,
-            flux,
+            flux: flux.v,
             source_rate: self.source.rate_at(t),
             weight_sum,
             modes: n,
@@ -776,6 +967,9 @@ impl<'a> KernelRun<'a> {
             inventory_error_bound: inv_b,
             release_error_bound: rel_b,
             flux_error_bound: (t >= t_v).then_some(flux_b),
+            inventory_rounding_bound: rounding[0],
+            release_rounding_bound: rounding[1],
+            flux_rounding_bound: rounding[2],
             age_input,
             flux_scale: v * sum_g + if t > 0.0 { m0 / t } else { 0.0 },
         })
@@ -870,6 +1064,22 @@ impl<'a> KernelRun<'a> {
         if self.source.rates().len() > REGIME_PIECES_MAX {
             return Some("more source pieces than measured");
         }
+        match self.geometry {
+            None => return Some("geometry not declared"),
+            Some((r_k, r_o)) => {
+                // a relative slack of 1e-9 so that the end points themselves (0.4 = 160 / 400)
+                // are inside whatever the rounding of the division
+                let in_range = |x: f64, (lo, hi): (f64, f64)| {
+                    x >= lo * (1.0 - 1.0e-9) && x <= hi * (1.0 + 1.0e-9)
+                };
+                if !(r_k > 0.0 && r_o.is_finite() && in_range(r_o, REGIME_OUTER_RADIUS)) {
+                    return Some("outer radius outside the measured range");
+                }
+                if !in_range(r_k / r_o, REGIME_KERNEL_FRACTION) {
+                    return Some("kernel radius fraction outside the measured range");
+                }
+            }
+        }
         None
     }
 
@@ -943,11 +1153,8 @@ impl<'a> KernelRun<'a> {
             if let Some(why) = self.outside_regime(t) {
                 return Ok(Drawn::Withheld(Withheld::OutsideEstimatedRegime(why)));
             }
-            if let Quantity::PostEventRelease { t_event } = q {
-                if let Some(why) = self.outside_regime(t_event) {
-                    return Ok(Drawn::Withheld(Withheld::OutsideEstimatedRegime(why)));
-                }
-            }
+            // For `F_post` the event time `t_e <= t` needs no regime check of its own: the
+            // limits depend on the time only through `alpha_1 t`, which is largest at `t`.
             return match self.estimated_relative_error(q, t)? {
                 Some(r) if r <= MASK_RELATIVE_TOLERANCE => Ok(Drawn::Value(full)),
                 Some(r) => Ok(Drawn::Withheld(Withheld::ExtensionErrorTooLarge {
@@ -1786,7 +1993,8 @@ mod tests {
             PiecewiseSource::none(),
             &Decay::Uniform(1.0e-3),
         )
-        .unwrap();
+        .unwrap()
+        .with_geometry(R1, RADII[4]);
         // with the gate closed (`EXTENSION_FLOOR_REESTIMATED = false`) this run is withheld
         // altogether; the mask logic of items 1 to 3 is tested through `mask`.
         assert_eq!(
@@ -1933,10 +2141,14 @@ mod tests {
         let s = ModalRelease::new(&layers(D_FIVE), 45.0 / 5.0e3, 64).unwrap();
         assert!(s.eigenvalues.len() >= REGIME_MODES.0 && s.eigenvalues.len() <= REGIME_MODES.1);
         let src = PiecewiseSource::constant(1.0e-3, 1.0e9).unwrap();
-        let run = KernelRun::new(&s, 1.0, VK, src.clone(), &Decay::Uniform(1.0e-6)).unwrap();
+        let run = KernelRun::new(&s, 1.0, VK, src.clone(), &Decay::Uniform(1.0e-6))
+            .unwrap()
+            .with_geometry(R1, RADII[4]);
         let t = 1.0e6;
         // late: drawn, and the estimated relative error is far below 5 %
-        let drawn = run.drawn(Quantity::ReleaseFractionGenerated, t).unwrap();
+        let drawn = run
+            .drawn_gated(Quantity::ReleaseFractionGenerated, t, true)
+            .unwrap();
         let raw = run
             .value(Quantity::ReleaseFractionGenerated, t)
             .unwrap()
@@ -1950,7 +2162,8 @@ mod tests {
         // a time above the measured multiple of the slowest relaxation time
         let far = REGIME_ALPHA1_T_MAX * 1.01 / s.eigenvalues[0];
         assert!(matches!(
-            run.drawn(Quantity::ReleaseFraction, far).unwrap(),
+            run.drawn_gated(Quantity::ReleaseFraction, far, true)
+                .unwrap(),
             Drawn::Withheld(Withheld::OutsideEstimatedRegime(_))
         ));
         // a decay constant above the measured multiple of the slowest mode rate
@@ -1961,20 +2174,49 @@ mod tests {
             src.clone(),
             &Decay::Uniform(2.0 * REGIME_LAMBDA_OVER_ALPHA1_MAX * s.eigenvalues[0]),
         )
-        .unwrap();
+        .unwrap()
+        .with_geometry(R1, RADII[4]);
         assert!(matches!(
-            fast.drawn(Quantity::ReleaseFraction, t).unwrap(),
+            fast.drawn_gated(Quantity::ReleaseFraction, t, true)
+                .unwrap(),
             Drawn::Withheld(Withheld::OutsideEstimatedRegime(_))
         ));
         // fewer modes than measured
         let few = ModalRelease::new(&layers(D_FIVE), 45.0 / 5.0e3, 8).unwrap();
-        let run_few = KernelRun::new(&few, 1.0, VK, src, &Decay::Uniform(1.0e-6)).unwrap();
+        let run_few = KernelRun::new(&few, 1.0, VK, src.clone(), &Decay::Uniform(1.0e-6))
+            .unwrap()
+            .with_geometry(R1, RADII[4]);
         assert!(matches!(
             run_few
-                .drawn(Quantity::ReleaseFraction, 10.0 * few.min_valid_time())
+                .drawn_gated(Quantity::ReleaseFraction, 10.0 * few.min_valid_time(), true)
                 .unwrap(),
             Drawn::Withheld(Withheld::OutsideEstimatedRegime(_))
         ));
+        // the geometry: undeclared, outer radius out of range, kernel fraction out of range
+        // (Document 6, Section 8.6: geometries outside the measured set are withheld)
+        let why = |r: KernelRun| match r.drawn_gated(Quantity::ReleaseFraction, t, true).unwrap() {
+            Drawn::Withheld(Withheld::OutsideEstimatedRegime(w)) => w,
+            other => panic!("{other:?}"),
+        };
+        let fresh = || KernelRun::new(&s, 1.0, VK, src.clone(), &Decay::Uniform(1.0e-6)).unwrap();
+        assert_eq!(why(fresh()), "geometry not declared");
+        assert!(
+            why(fresh().with_geometry(R1, 1.2 * REGIME_OUTER_RADIUS.1)).contains("outer radius")
+        );
+        assert!(why(
+            fresh().with_geometry(0.5 * REGIME_OUTER_RADIUS.0, 0.5 * REGIME_OUTER_RADIUS.0)
+        )
+        .contains("outer radius"));
+        assert!(why(fresh().with_geometry(0.3 * RADII[4], RADII[4])).contains("kernel radius"));
+        // the end points themselves are inside
+        assert!(fresh()
+            .with_geometry(R1, RADII[4])
+            .outside_regime(t)
+            .is_none());
+        assert!(fresh()
+            .with_geometry(0.4 * REGIME_OUTER_RADIUS.1, REGIME_OUTER_RADIUS.1)
+            .outside_regime(t)
+            .is_none());
         // a value below its own error estimate: the floor term (16 floors times the input)
         // exceeds 5 % of a release of 1e-12 (synthetic series with 16 modes)
         let mut eigenvalues = vec![1.0e-14];
@@ -1994,11 +2236,252 @@ mod tests {
             PiecewiseSource::none(),
             &Decay::Uniform(1.0e-20),
         )
-        .unwrap();
-        let w = run_s.drawn(Quantity::ReleaseFraction, 100.0).unwrap();
+        .unwrap()
+        .with_geometry(R1, RADII[4]);
+        let w = run_s
+            .drawn_gated(Quantity::ReleaseFraction, 100.0, true)
+            .unwrap();
         assert!(
             matches!(w, Drawn::Withheld(Withheld::ExtensionErrorTooLarge { .. })),
             "{w:?}"
+        );
+    }
+
+    /// A series of 16 modes (one slow mode with almost all the weight, fifteen fast modes with
+    /// weights of 1e-20) whose accuracy floor is `2.2e-16 / ratio` (`ratio <= 1`).
+    fn floor_series(ratio: f64) -> ModalRelease {
+        let mut eigenvalues = vec![1.0e-14];
+        eigenvalues.extend((0..15).map(|k| 1.0 + 0.1 * k as f64));
+        let mut weights = vec![1.0 - 15.0e-20];
+        weights.extend(std::iter::repeat_n(1.0e-20, 15));
+        ModalRelease {
+            eigenvalues,
+            weights,
+            lambda_covered: 2.4,
+            min_flux_ratio: ratio,
+        }
+    }
+
+    /// Minor 1 of the third verification round: the drawing threshold of item 3 for a run with
+    /// decay or a source is 5 % of the value. A value whose estimated relative error is just
+    /// below 5 % is drawn; one just above is withheld with `ExtensionErrorTooLarge`.
+    #[test]
+    fn extension_threshold_is_five_percent_of_the_value() {
+        let estimated = |ratio: f64| {
+            let s = floor_series(ratio);
+            KernelRun::new(
+                &s,
+                1.0,
+                1.0,
+                PiecewiseSource::none(),
+                &Decay::Uniform(1.0e-20),
+            )
+            .unwrap()
+            .with_geometry(R1, RADII[4])
+            .estimated_relative_error(Quantity::ReleaseFraction, 1.0e4)
+            .unwrap()
+            .unwrap()
+        };
+        // the estimated relative error grows with the floor, that is falls with the ratio:
+        // find the ratio at which it crosses 5 % by bisection on a logarithmic scale
+        let (mut lo, mut hi) = (1.0e-4_f64, 1.0_f64);
+        assert!(estimated(lo) > 0.1 && estimated(hi) < 0.01);
+        for _ in 0..80 {
+            let mid = (lo * hi).sqrt();
+            if estimated(mid) > MASK_RELATIVE_TOLERANCE {
+                lo = mid;
+            } else {
+                hi = mid;
+            }
+        }
+        let verdict = |ratio: f64| {
+            let s = floor_series(ratio);
+            KernelRun::new(
+                &s,
+                1.0,
+                1.0,
+                PiecewiseSource::none(),
+                &Decay::Uniform(1.0e-20),
+            )
+            .unwrap()
+            .with_geometry(R1, RADII[4])
+            .drawn_gated(Quantity::ReleaseFraction, 1.0e4, true)
+            .unwrap()
+        };
+        let below = verdict(hi * 1.02); // relative error about 4.9 %
+        let above = verdict(lo * 0.98); // relative error about 5.1 %
+        assert!(
+            matches!(below, Drawn::Value(_)),
+            "{below:?}, r = {}",
+            estimated(hi * 1.02)
+        );
+        match above {
+            Drawn::Withheld(Withheld::ExtensionErrorTooLarge { relative_error }) => {
+                assert!(relative_error > MASK_RELATIVE_TOLERANCE && relative_error < 0.06);
+            }
+            other => panic!("{other:?}"),
+        }
+        let r_below = estimated(hi * 1.02);
+        assert!(
+            r_below > 0.045 && r_below <= MASK_RELATIVE_TOLERANCE,
+            "{r_below}"
+        );
+    }
+
+    /// Major 1 of the third verification round: the estimate (54) is the sum of the computed
+    /// model bound, the computed rounding bound of the evaluation and the floor term, for each
+    /// of the three quantities, and the rounding bound is positive and grows with the number of
+    /// terms summed (a mutant that drops a part changes the sum exactly).
+    #[test]
+    fn estimate_is_model_bound_plus_rounding_bound_plus_floor_term() {
+        let src = PiecewiseSource::constant(1.0e-3, 1.0e9).unwrap();
+        let state = |n: usize| {
+            // the number of modes below a bound grows with the square root of the bound
+            let bound = 45.0 / 5.0e3 * (n as f64 / 64.0).powi(2);
+            let s = ModalRelease::new(&layers(D_FIVE), bound, n).unwrap();
+            let run = KernelRun::new(&s, 1.0, VK, src.clone(), &Decay::Uniform(1.0e-6)).unwrap();
+            (run.state(1.0e6).unwrap(), s.accuracy_floor())
+        };
+        let (st, floor) = state(64);
+        let e = st.estimated_errors(floor);
+        assert!(st.inventory_rounding_bound > 0.0);
+        assert!(st.release_rounding_bound > 0.0);
+        assert!(st.flux_rounding_bound > 0.0);
+        assert_eq!(
+            e.inventory,
+            st.inventory_error_bound
+                + st.inventory_rounding_bound
+                + EXT_FACTOR_INVENTORY * floor * st.age_input
+        );
+        assert_eq!(
+            e.released,
+            st.release_error_bound
+                + st.release_rounding_bound
+                + EXT_FACTOR_RELEASE * floor * st.age_input
+        );
+        assert_eq!(
+            e.flux.unwrap(),
+            st.flux_error_bound.unwrap()
+                + st.flux_rounding_bound
+                + EXT_FACTOR_FLUX * floor * st.flux_scale
+        );
+        // more modes, more terms in each sum: a larger rounding bound
+        let (more, _) = state(256);
+        assert!(more.inventory_rounding_bound > st.inventory_rounding_bound);
+        // the existing series (no source, no decay) carries no rounding bound
+        let s = ModalRelease::new(&layers(D_FIVE), 45.0 / 5.0e3, 64).unwrap();
+        let plain = KernelRun::new(&s, 1.0, VK, PiecewiseSource::none(), &Decay::None)
+            .unwrap()
+            .state(1.0e6)
+            .unwrap();
+        assert_eq!(plain.inventory_rounding_bound, 0.0);
+    }
+
+    /// Minor 2 of the third verification round: the estimate of `F_post` is the sum of the
+    /// release terms at `t` and at `t_e` over the gained release, plus the relative error of
+    /// the inventory at `t_e`; each of the three terms is positive, and the regime limits of the
+    /// floor, of the number of pieces and of the time withhold the value.
+    #[test]
+    fn post_event_estimate_has_its_three_terms_and_the_regime_limits() {
+        let s = ModalRelease::new(&layers(D_FIVE), 45.0 / 5.0e3, 64).unwrap();
+        let src = PiecewiseSource::constant(1.0e-3, 1.0e9).unwrap();
+        let run = KernelRun::new(&s, 1.0, VK, src.clone(), &Decay::Uniform(1.0e-6))
+            .unwrap()
+            .with_geometry(R1, RADII[4]);
+        let (t_e, t) = (2.0e5, 1.0e6);
+        let q = Quantity::PostEventRelease { t_event: t_e };
+        let floor = s.accuracy_floor();
+        let (st, ev_) = (run.state(t).unwrap(), run.state(t_e).unwrap());
+        let (e, ee) = (st.estimated_errors(floor), ev_.estimated_errors(floor));
+        let gained = st.released - ev_.released;
+        let term_release = (e.released + ee.released) / gained;
+        let term_inventory = ee.inventory / ev_.inventory;
+        assert!(term_release > 0.0 && term_inventory > 0.0);
+        // the two release errors enter, and the inventory error at the event enters
+        assert!(e.released > 0.0 && ee.released > 0.0);
+        let got = run.estimated_relative_error(q, t).unwrap().unwrap();
+        assert_eq!(got, term_release + term_inventory);
+        // not the release terms of one time only, and not without the inventory term
+        assert!(got > (e.released) / gained + term_inventory);
+        assert!(got > term_release);
+
+        // the floor limit
+        let high_floor = floor_series(1.0e-8);
+        assert!(high_floor.accuracy_floor() > REGIME_FLOOR_MAX);
+        let run_f = KernelRun::new(
+            &high_floor,
+            1.0,
+            1.0,
+            PiecewiseSource::none(),
+            &Decay::Uniform(1.0e-20),
+        )
+        .unwrap()
+        .with_geometry(R1, RADII[4]);
+        match run_f
+            .drawn_gated(Quantity::ReleaseFraction, 100.0, true)
+            .unwrap()
+        {
+            Drawn::Withheld(Withheld::OutsideEstimatedRegime(w)) => assert!(w.contains("floor")),
+            other => panic!("{other:?}"),
+        }
+        // the limit on the number of source pieces
+        let breaks: Vec<f64> = (0..=REGIME_PIECES_MAX + 1)
+            .map(|k| 1.0e4 * k as f64)
+            .collect();
+        let rates = vec![1.0e-3; REGIME_PIECES_MAX + 1];
+        let many = PiecewiseSource::new(breaks, rates).unwrap();
+        let run_p = KernelRun::new(&s, 1.0, VK, many, &Decay::Uniform(1.0e-6))
+            .unwrap()
+            .with_geometry(R1, RADII[4]);
+        match run_p
+            .drawn_gated(Quantity::ReleaseFraction, 1.0e6, true)
+            .unwrap()
+        {
+            Drawn::Withheld(Withheld::OutsideEstimatedRegime(w)) => assert!(w.contains("pieces")),
+            other => panic!("{other:?}"),
+        }
+        // F_post is withheld when its time lies beyond the measured multiple of 1 / alpha_1
+        // (the time of the event, never later than t, needs no check of its own)
+        let far = REGIME_ALPHA1_T_MAX * 1.01 / s.eigenvalues[0];
+        assert!(matches!(
+            run.drawn_gated(q, far, true).unwrap(),
+            Drawn::Withheld(Withheld::OutsideEstimatedRegime(_))
+        ));
+        // and F_post is drawn where the estimate allows it
+        assert!(run.drawn_gated(q, t, true).unwrap().value().is_some());
+    }
+
+    /// The compensated sum with its a-posteriori bound: against the exact sum of terms that
+    /// are all integer multiples of 2^-93 (so that the exact sum is an integer of `i128`), for
+    /// 2048 terms with alternating signs and a large cancellation. The plain sum is off by
+    /// several times more, and the bound holds for the compensated one.
+    #[test]
+    fn compensated_sum_stays_within_its_bound_where_the_plain_sum_does_not() {
+        let scale = 2.0_f64.powi(93);
+        let n = 2048;
+        let terms: Vec<f64> = (0..n)
+            .map(|k| {
+                let x = 0.5 + 0.4 * ((k as f64) * 0.7123).sin() + 1.0 / (3.0 + k as f64);
+                (if k % 2 == 0 { x } else { -x }) * (1.0 + 1.0e-9 * k as f64)
+            })
+            .collect();
+        let exact: i128 = terms.iter().map(|&t| (t * scale) as i128).sum();
+        // every term is an exact multiple of 2^-93 (it has at most 53 significant bits and a
+        // magnitude of at least 2^-41)
+        assert!(terms
+            .iter()
+            .all(|&t| ((t * scale) as i128) as f64 == t * scale));
+        let err = |r: f64| ((r * scale) as i128 - exact).abs() as f64 / scale;
+        let comp = sum_terms(terms.iter().map(|&t| ev(t)));
+        let plain: f64 = terms.iter().sum();
+        assert!(err(comp.v) <= comp.e, "{} vs bound {}", err(comp.v), comp.e);
+        // far below the worst case n u sum|x| of the plain sum
+        let abs_sum: f64 = terms.iter().map(|t| t.abs()).sum();
+        assert!(
+            comp.e < 1.0e-3 * n as f64 * UNIT_ROUNDOFF * abs_sum,
+            "{} {}",
+            comp.e,
+            err(plain)
         );
     }
 
@@ -2026,7 +2509,9 @@ mod tests {
         let d = 1.0e-10;
         let s = five_equal_series(d, 45.0 / 20.0);
         let src = PiecewiseSource::constant(1.0e-3, 1.0e7).unwrap();
-        let run = KernelRun::new(&s, 0.0, VK, src, &Decay::None).unwrap();
+        let run = KernelRun::new(&s, 0.0, VK, src, &Decay::None)
+            .unwrap()
+            .with_geometry(R1, RADII[4]);
         assert_eq!(
             run.drawn_gated(Quantity::Beta, 1.0e5, false).unwrap(),
             Drawn::Withheld(Withheld::FloorNotReestimated)
@@ -2180,18 +2665,18 @@ mod tests {
             (2.0, 7.0),
             (1.0e-3, 40.0),
         ] {
-            let le = len_exp(lam, x);
+            let le = len_exp(lam, ev(x)).v;
             let numeric = simpson(0.0, x, 2000, |s| (-lam * s).exp());
             // the reference is a Simpson rule: its own error is about 1e-10 here
             assert!(rel(le, numeric) < 1e-9, "len_exp {lam} {x}");
-            let lei = len_exp_integral(lam, x);
-            let numeric = simpson(0.0, x, 2000, |s| len_exp(lam, s));
+            let lei = len_exp_integral(lam, ev(x)).v;
+            let numeric = simpson(0.0, x, 2000, |s| len_exp(lam, ev(s)).v);
             assert!(rel(lei, numeric) < 1e-9, "len_exp_integral {lam} {x}");
         }
         // continuity of the series branch of len_exp_integral
         let (lam, x) = (1.0, 0.0499999999);
-        let a = len_exp_integral(lam, x);
-        let b = len_exp_integral(lam, x * (1.0 + 1e-6));
+        let a = len_exp_integral(lam, ev(x)).v;
+        let b = len_exp_integral(lam, ev(x * (1.0 + 1e-6))).v;
         assert!(rel(a, b) < 1e-5);
     }
 }
