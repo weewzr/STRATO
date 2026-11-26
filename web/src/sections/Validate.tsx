@@ -25,8 +25,8 @@ function ValidationLayer() {
         Model predictions against measurements
       </button>
       <span id="validation-layer-why" className="muted">
-        Not available: no model prediction exists until the Phase 2 physics is implemented and verified (web phase 6), and the measurements
-        are plotted in web phase 7.
+        Not available: no model prediction exists until generation, decay and temperature-dependent diffusion are implemented and verified,
+        and the measurements are plotted when the comparison step is built. This is a labelled placeholder: no comparison is shown.
       </span>
     </div>
   );
@@ -40,9 +40,10 @@ export function Validate() {
       </SectionHeading>
       <Note tone="warn">
         <p>
-          <strong>Model predictions require Phase 2 physics.</strong> Heating tests change the temperature over time and the measured
-          nuclides decay, so a comparison needs temperature-dependent diffusivity, temperature histories and radioactive decay. These are
-          derived in the Phase 2 documents and not implemented. A v1.0 constant-temperature result is never compared with heating-test data.
+          <strong>Model predictions require generation, decay and temperature-dependent diffusion.</strong> Heating tests change the
+          temperature over time and the measured nuclides decay, so a comparison needs temperature-dependent diffusivity, temperature histories
+          and radioactive decay. These are shown in the equation builder as labelled previews and are not solved. A constant-temperature result
+          of Method 1: Finite Difference BTCS is never compared with heating-test data.
         </p>
       </Note>
       <ValidationLayer />
@@ -53,13 +54,13 @@ export function Validate() {
           <a href={repoFile('data/experimental/release_measurements.csv')}>
             <code>data/experimental/release_measurements.csv</code>
           </a>
-          , with uncertainty or digitising uncertainty and a reference for each series (web phase 7).
+          , with uncertainty or digitising uncertainty and a reference for each series.
         </li>
-        <li>Model predictions only from reviewed Phase 2 runs with the matching nuclide, particle geometry and temperature history.</li>
-        <li>Error metrics computed by a documented script or in Rust, never typed in.</li>
+        <li>Model predictions only from reviewed runs with the matching nuclide, particle geometry and temperature history.</li>
+        <li>Error metrics computed in Rust, never typed in.</li>
       </ul>
       <p>
-        The agreement of the two v1.0 solution methods on the synthetic case is verification and appears under{' '}
+        The agreement of the two solution methods on the synthetic case is verification and appears under{' '}
         <a href={hrefFor('verify')}>Verify</a>.
       </p>
     </article>

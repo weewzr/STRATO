@@ -278,10 +278,10 @@ const code = (label: string, path: string, line: number, symbol: string) => ({ l
 const CODE = {
   fromRadii: code('Grid::from_radii, nodes, radii and weights', 'src/numerical/grid.rs', 136, 'pub fn from_radii'),
   coefficients: code('Coefficients::new, conductances and Fourier numbers', 'src/numerical/coefficients.rs', 31, 'pub fn new'),
-  assemble: code('assemble, the rows of the matrix', 'src/numerical/btcs.rs', 151, 'pub fn assemble'),
-  tridiagonal: code('Tridiagonal, the three diagonals', 'src/numerical/btcs.rs', 123, 'pub struct Tridiagonal'),
-  step: code('Stepper::step, one implicit step', 'src/numerical/btcs.rs', 231, 'pub fn step'),
-  run: code('run, the time loop', 'src/numerical/btcs.rs', 278, 'pub fn run'),
+  assemble: code('assemble, the rows of the matrix', 'src/numerical/btcs.rs', 153, 'pub fn assemble'),
+  tridiagonal: code('Tridiagonal, the three diagonals', 'src/numerical/btcs.rs', 125, 'pub struct Tridiagonal'),
+  step: code('Stepper::step, one implicit step', 'src/numerical/btcs.rs', 240, 'pub fn step'),
+  run: code('run_input, the time loop', 'src/numerical/btcs.rs', 309, 'pub fn run_input'),
   thomas: code('ThomasFactors, the F24 factors', 'src/numerical/tridiagonal.rs', 152, 'pub struct ThomasFactors'),
   thomasNew: code('ThomasFactors::new, the forward sweep', 'src/numerical/tridiagonal.rs', 169, 'pub fn new'),
   thomasSolve: code('ThomasFactors::solve, the back substitution', 'src/numerical/tridiagonal.rs', 230, 'pub fn solve'),
@@ -298,8 +298,8 @@ const CODE = {
   accumulator: code('Accumulator, the cumulative release', 'src/numerical/inventory.rs', 72, 'pub struct Accumulator'),
   fraction: code('release_fraction', 'src/numerical/inventory.rs', 98, 'pub fn release_fraction'),
   residual: code('balance_residual', 'src/numerical/inventory.rs', 104, 'pub fn balance_residual'),
-  series: code('check_series, the checks on a whole run', 'src/numerical/diagnostics.rs', 140, 'pub fn check_series'),
-  balanceTest: code('balance identity, every step, to rounding', 'tests/btcs_verification.rs', 856, 'fn balance_identity_to_rounding_every_step'),
+  series: code('check_series, the checks on a whole run', 'src/numerical/diagnostics.rs', 285, 'pub fn check_series'),
+  balanceTest: code('balance identity, every step, to rounding', 'tests/btcs_verification.rs', 860, 'fn balance_identity_to_rounding_every_step'),
 };
 const PS = (n: string, label: string): DocRef & { label: string } => ({ doc: 'd3', section: n, label });
 const PSEUDO = {
@@ -556,7 +556,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       derivation: [doc1(D1_32), doc2(D2_3), doc2(D2_4)],
       note: 'Inside a material the central differences equal a difference of flows through the intervals between nodes. The solver uses this flux form at every node, so that it conserves the amount exactly and needs no special stencil at an interface.',
     },
-    live: 'The grid of the current run is set by the number of intervals per material in the controls; the solver reports the nodes it used.',
+    live: 'The grid of the current run is set by the number of grid intervals per layer in the controls; the solver reports the nodes it used. The numbers of the current run are listed below, as the wrapper returns them.',
   },
   6: {
     stage: 6,
@@ -846,7 +846,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       derivation: [doc2('6.3 Solution of the linear system'), TRACE],
       note: 'The links point at the solver branch. The routine that solves each step is ThomasFactors, coded in the form of the equation above. solve_in_place is the general Thomas solve, kept only as a cross-check utility.',
     },
-    live: 'The solver of the current run is this algorithm once the website runs the BTCS solver; the engine and version are listed in the diagnostics under the live simulation.',
+    live: 'The solver of the current run is this algorithm; its version, commit and verification status are listed in the numbers below and in the diagnostics under the live simulation.',
   },
   12: {
     stage: 12,
@@ -945,7 +945,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       derivation: [doc2(D2_8), TRACE],
       note: 'Document 2, Section 8 lists each property with its hypotheses and its label: proved, proof outline, observed or not proven. The tests of the solver branch check them. Nothing on this page claims an accuracy against experimental data.',
     },
-    live: 'Until the website switch, the Verify section of the site still reports the verification of the previous finite-volume solver, not of the BTCS solver. The checks of the BTCS solver are the tests in tests/btcs_verification.rs on the solver branch. Both verify the numerical method and are not experimental validation.',
+    live: 'The Verify section reports the verification of the BTCS solver: its release fraction against the analytical solution, the observed orders and the balance. These checks verify the numerical method and are not experimental validation.',
   },
   14: {
     stage: 14,

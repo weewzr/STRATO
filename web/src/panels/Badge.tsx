@@ -3,7 +3,6 @@ import { sciParts } from '../format';
 import type { ResultLabel } from '../solver/types';
 
 const CLASS: Record<ResultLabel, string> = {
-  'COMPUTED v1.0': 'badge badge--computed',
   'COMPUTED v2.0': 'badge badge--computed',
   PRECOMPUTED: 'badge badge--precomputed',
   MEASURED: 'badge badge--measured',

@@ -31,7 +31,7 @@ async function simulationSnapshot(page: Page) {
 test.describe('progressive equation builder at 1440 x 900', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('every step leaves the simulation unchanged and sends no request; no BTCS equation is called live before the switch', async ({ page, problems }) => {
+  test('every step leaves the simulation unchanged and sends no request; steps one to twelve are live and the others are labelled', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     // The solver has run before the steps are changed; selecting a step must leave the inputs, the
@@ -45,14 +45,14 @@ test.describe('progressive equation builder at 1440 x 900', () => {
     page.on('request', (r) => {
       if (!['font', 'image'].includes(r.resourceType())) requests.push(`${r.resourceType()} ${r.url()}`);
     });
-    // The wrapper of this build still runs the previous solver: the page says so for steps one to twelve.
-    await expect(page.getByTestId('live-note')).toContainText('does not run the BTCS solver yet');
+    // The wrapper of this build runs the BTCS solver: the page says so for steps one to twelve.
+    await expect(page.getByTestId('live-note')).toContainText('Live: the simulation below solves these equations with Method 1');
     for (const s of STAGES.filter((n) => n !== 1)) {
       await pickStage(page, s);
       if (s === 14 || PREVIEWS.includes(s)) await expect(page.getByTestId('preview-banner')).toBeVisible();
       else if (s === 13) await expect(page.getByTestId('live-note')).toContainText('not experimental validation');
-      else await expect(page.getByTestId('live-note')).toContainText('does not run the BTCS solver yet');
-      await expect(page.getByTestId('strip-stage')).toHaveText(`Step ${s} shown; simulation: previous solver, not BTCS`);
+      else await expect(page.getByTestId('live-note')).toContainText('Live: the simulation below solves these equations with Method 1');
+      await expect(page.getByTestId('strip-stage')).toHaveText(`Step ${s} shown; simulation: Method 1: Finite Difference BTCS`);
       expect(await simulationSnapshot(page)).toEqual(before);
     }
     await page.waitForTimeout(400);

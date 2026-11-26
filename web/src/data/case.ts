@@ -2,7 +2,7 @@
 // strato-webtools case from the TOML inputs in inputs/; none is typed here.
 import syntheticCase from '../generated/synthetic_five_layer.case.json';
 
-/** Mirrors strato::config::RegionConfig (src/config.rs at v1.0.1). */
+/** Mirrors strato::config::RegionConfig: cells is the number of grid intervals of the layer. */
 export interface RegionConfig {
   name: string;
   outer_radius_m: number;
@@ -10,8 +10,8 @@ export interface RegionConfig {
   cells: number;
 }
 
-/** Mirrors strato::config::Config (src/config.rs at v1.0.1). Every field is required by serde. */
-export interface V1Config {
+/** Mirrors strato::config::Config. The BTCS interface of the wrapper accepts it as it is. */
+export interface CaseConfig {
   case_name: string;
   species: string;
   temperature_k: number;
@@ -39,7 +39,7 @@ export interface CaseEntry {
   /** Path of the downloadable CSV copy, relative to the site base. */
   csvPath: string;
   provenance: CaseProvenance;
-  config: V1Config;
+  config: CaseConfig;
 }
 
 function entry(id: string, title: string, doc: typeof syntheticCase): CaseEntry {
@@ -74,6 +74,6 @@ export function findCase(id: string): CaseEntry | undefined {
 }
 
 /** Deep copy of a configuration (plain data, so structuredClone is exact). */
-export function cloneConfig(cfg: V1Config): V1Config {
+export function cloneConfig(cfg: CaseConfig): CaseConfig {
   return structuredClone(cfg);
 }

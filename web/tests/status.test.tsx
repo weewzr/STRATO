@@ -66,15 +66,17 @@ describe('isAvailable(): live only for VERIFIED with the capability present', ()
     expect(isAvailable('not_a_mechanism', ['not_a_mechanism'])).toBe(false);
   });
 
-  it('with the generated catalogue and the v1.0 capabilities only diffusion_layered is live', () => {
-    const caps = ['diffusion_layered'];
-    expect(CATALOGUE.mechanisms.filter((m) => isAvailable(m.mechanism_id, caps)).map((m) => m.mechanism_id)).toEqual(['diffusion_layered']);
+  it('with the generated catalogue and the BTCS capabilities only diffusion_btcs_layered is live', () => {
+    const caps = ['diffusion_btcs_layered'];
+    expect(CATALOGUE.mechanisms.filter((m) => isAvailable(m.mechanism_id, caps)).map((m) => m.mechanism_id)).toEqual(['diffusion_btcs_layered']);
+    // the retired capability is not a capability of any row
+    expect(CATALOGUE.mechanisms.filter((m) => isAvailable(m.mechanism_id, ['diffusion_layered']))).toEqual([]);
     expect(CATALOGUE.mechanisms.filter((m) => isAvailable(m.mechanism_id, [])).length).toBe(0);
   });
 });
 
 describe('solved stage and the solver request filter', () => {
-  it('is 0 before the wasm module reports capabilities and for the previous solver, and 12 with the BTCS capability', () => {
+  it('is 0 before the wasm module reports capabilities and without the BTCS capability, and 12 with it', () => {
     expect(solvedStage([])).toBe(0);
     expect(solvedStage(['diffusion_layered'])).toBe(0);
     expect(solvedStage([BTCS_CAPABILITY])).toBe(12);
@@ -84,10 +86,10 @@ describe('solved stage and the solver request filter', () => {
 
   it('names the solver that runs the simulation', () => {
     expect(simulationMethod([])).toBe('loading');
-    expect(simulationMethod(['diffusion_layered'])).toBe('previous');
+    expect(simulationMethod(['diffusion_layered'])).toBe('unavailable');
     expect(simulationMethod([BTCS_CAPABILITY])).toBe('btcs');
     // The BTCS capability alone is not enough when the catalogue row is not at the live status.
-    expect(simulationMethod([BTCS_CAPABILITY], fixtureCatalogue({ diffusion_layered: 'IMPLEMENTED' }))).toBe('previous');
+    expect(simulationMethod([BTCS_CAPABILITY], fixtureCatalogue({ diffusion_btcs_layered: 'IMPLEMENTED' }))).toBe('unavailable');
   });
 
   it('advances through the previews only in order', () => {
@@ -97,8 +99,8 @@ describe('solved stage and the solver request filter', () => {
   });
 
   it('drops every mechanism for which isAvailable() is false and reports it', () => {
-    const r = filterRequestedMechanisms(['diffusion_layered', 'generation', 'decay', 'diffusivity_temperature'], ['diffusion_layered']);
-    expect(r.send).toEqual(['diffusion_layered']);
+    const r = filterRequestedMechanisms(['diffusion_btcs_layered', 'generation', 'decay', 'diffusivity_temperature'], ['diffusion_btcs_layered']);
+    expect(r.send).toEqual(['diffusion_btcs_layered']);
     expect(r.dropped).toEqual(['generation', 'decay', 'diffusivity_temperature']);
     const none = filterRequestedMechanisms(['generation'], ['generation'], fixtureCatalogue({ generation: 'IMPLEMENTED' }));
     expect(none.send).toEqual([]);
@@ -108,7 +110,7 @@ describe('solved stage and the solver request filter', () => {
 describe('builder mechanism statuses on 2026-11-24', () => {
   // The status table of owner decision M7 in prompt/PROGRESS.md, by mechanism name there.
   const NAME_TO_ID: Record<string, string> = {
-    'Five-layer diffusion, constant diffusivity per layer': 'diffusion_layered',
+    'Five-layer diffusion, constant diffusivity per layer': 'diffusion_btcs_layered',
     'Fission-product generation': 'generation',
     'Radioactive decay': 'decay',
     'Inventory accounting with decay and source': 'inventory_accounting',
@@ -141,7 +143,7 @@ describe('builder mechanism statuses on 2026-11-24', () => {
     expect(catalogueJson.generator).toMatch(/^scripts\/web\/generate_data\.py v\d+$/);
     for (const i of catalogueJson.inputs) expect(i.sha256).toMatch(/^[0-9a-f]{64}$/);
     const ids = CATALOGUE.mechanisms.map((m) => m.mechanism_id);
-    for (const id of ['diffusion_layered', 'generation', 'decay', 'inventory_accounting', 'diffusivity_temperature', 'diffusivity_layer_laws', 'interface_partition']) {
+    for (const id of ['diffusion_btcs_layered', 'generation', 'decay', 'inventory_accounting', 'diffusivity_temperature', 'diffusivity_layer_laws', 'interface_partition']) {
       expect(ids).toContain(id);
     }
   });

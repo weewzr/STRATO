@@ -2,32 +2,32 @@ import { useEffect, useId, useRef } from 'react';
 import { layerColour } from '../design/layers';
 import type { RunOk } from '../solver/types';
 import { useStrato, type ColormapName } from '../state/store';
-import { cellColours, css, type ColourScale } from './colormap';
+import { css, nodeColours, type ColourScale } from './colormap';
 import { annulusPath, CANVAS_PX, CX, CY, leaders, MAX_R, VIEW_H, VIEW_W, type Ring } from './geometry';
 
 // 2D cross-section of the particle (prompt/DESIGN_SPECIFICATION.md Section 4.1; the default view,
-// directly under the equation). With a run, a canvas paints every cell of the solver's mesh in the
-// colour of the concentration the wrapper returned for the output row being played; the layer
+// directly under the equation). With a run, a canvas paints the colour band of every node of the solver's
+// grid in the colour of the nodal concentration the wrapper returned for the output row being played; the layer
 // boundaries and their labels are drawn over it in the layer colours. The canvas is redrawn from a
 // store subscription, so playback does not re-render React. Without a run the drawing is the
 // schematic of the input radii (ILLUSTRATIVE), hatched and without concentration data.
 
-/** Paints the concentration of output row `index` of `run`, one filled circle per cell, outside in. */
-export function paintCells(canvas: HTMLCanvasElement, run: RunOk, index: number, map: ColormapName, scale: ColourScale): boolean {
+/** Paints the concentration of output row `index` of `run`, one filled circle per node band, outside in. */
+export function paintNodes(canvas: HTMLCanvasElement, run: RunOk, index: number, map: ColormapName, scale: ColourScale): boolean {
   const ctx = canvas.getContext('2d');
   if (!ctx) return false;
-  const faces = run.mesh.cell_faces_m;
-  const outer = faces[faces.length - 1] ?? 0;
-  const colours = cellColours(run, index, map, scale);
+  const edges = run.grid.ring_edges_m;
+  const outer = edges[edges.length - 1] ?? 0;
+  const colours = nodeColours(run, index, map, scale);
   const c = CANVAS_PX / 2;
   ctx.clearRect(0, 0, CANVAS_PX, CANVAS_PX);
   if (!(outer > 0)) return false;
   for (let i = colours.length - 1; i >= 0; i--) {
     const rgb = colours[i];
-    const face = faces[i + 1];
-    if (!rgb || face === undefined) continue;
+    const edge = edges[i + 1];
+    if (!rgb || edge === undefined) continue;
     ctx.beginPath();
-    ctx.arc(c, c, (face / outer) * c, 0, 2 * Math.PI);
+    ctx.arc(c, c, (edge / outer) * c, 0, 2 * Math.PI);
     ctx.fillStyle = css(rgb);
     ctx.fill();
   }
@@ -43,7 +43,7 @@ function ConcentrationCanvas({ run }: { run: RunOk }) {
     if (!canvas) return;
     const draw = () => {
       const s = useStrato.getState();
-      paintCells(canvas, run, s.playback.tIndex, s.view.colormap, s.view.logColour ? 'log' : 'linear');
+      paintNodes(canvas, run, s.playback.tIndex, s.view.colormap, s.view.logColour ? 'log' : 'linear');
     };
     draw();
     return useStrato.subscribe((s, p) => {

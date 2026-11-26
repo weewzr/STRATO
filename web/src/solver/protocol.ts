@@ -2,7 +2,8 @@
 // "Worker protocol"). Types only.
 import type { BuildInfo } from './types';
 
-export type RequestKind = 'run_v1' | 'analytical' | 'validate' | 'compare' | 'build_info';
+/** The requests the worker answers, one per function of the BTCS interface (method-neutral names). */
+export type RequestKind = 'run' | 'validate' | 'compare' | 'export_run' | 'build_info';
 
 export interface WorkerRequest {
   id: number;

@@ -1,16 +1,21 @@
 import type { ReactNode } from 'react';
 import { BUILD } from '../build';
+import { BTCS_CAPABILITY } from '../equation/availability';
 import { layerColour } from '../design/layers';
 import { count, sciText } from '../format';
+import { METHOD_1, METHOD_2 } from '../methods';
+import { statusOf, useCatalogue } from '../research/catalogue';
+import { StatusChip } from '../research/StatusChip';
 import type { RunResponse } from '../solver/types';
 import { inputKey, useStrato } from '../state/store';
 import { Badge, Sci } from './Badge';
 
-// Block B results of the verified v1.0 solver (web phase 3): the release readout, the inventory
-// balance with its residual and the layer inventories, and the numerical diagnostics. Every
-// number is a field of the wrapper's RunResponse, shown as returned (owner decision M4); the
-// only operations here are choosing a field and formatting it. Each value carries its result
-// label and, for the tests, the exact returned number in data-value.
+// Block B results of the BTCS solver: the release readout, the inventory balance with its residual
+// and the layer inventories, the numerical diagnostics, and the solver version with its verification
+// status. Every number is a field of the wrapper's reply, shown as returned (owner decision M4); the
+// only operations here are choosing a field and formatting it. Each value carries its result label
+// and, for the tests, the exact returned number in data-value. Quantities are named in full with
+// their unit (coordinator decisions 30 and 52).
 
 /** A returned number, formatted to `digits` significant digits, with the exact value attached. */
 function V({ v, unit, digits = 6, id }: { v: number | null | undefined; unit?: ReactNode; digits?: number; id: string }) {
@@ -22,7 +27,7 @@ function V({ v, unit, digits = 6, id }: { v: number | null | undefined; unit?: R
     );
   }
   return (
-    <span data-testid={id} data-value={String(v)} data-label="COMPUTED v1.0" title={`${sciText(v)} (value as returned)`}>
+    <span data-testid={id} data-value={String(v)} data-label="COMPUTED v2.0" title={`${sciText(v)} (value as returned)`}>
       <Sci value={v} unit={unit} digits={digits} />
     </span>
   );
@@ -45,7 +50,44 @@ function Updating({ stale }: { stale: boolean }) {
   ) : null;
 }
 
-/** Release fraction at the end time: Code B, with Code C at the same time when the series resolves it. */
+/**
+ * The solver that runs the simulation: its method name, version and build, the result label and the
+ * verification status read from the research catalogue (never typed here). Shown whenever the
+ * module has loaded, with or without a run, so that no result appears without it.
+ */
+export function SolverStatus() {
+  const build = useStrato((s) => s.solver.build);
+  const state = useStrato((s) => s.solver.state);
+  const error = useStrato((s) => s.solver.error);
+  const run = useStrato((s) => s.run);
+  const catalogue = useCatalogue();
+  if (state === 'failed') {
+    return (
+      <p className="solver-status solver-status--failed" role="alert" data-testid="solver-status" data-state="failed">
+        Solver: not available. {METHOD_1} did not load, so the page shows no result ({error ?? 'no reason given'}).
+      </p>
+    );
+  }
+  if (state !== 'ready' || !build) {
+    return (
+      <p className="solver-status" role="status" data-testid="solver-status" data-state="loading">
+        Solver: loading {METHOD_1}.
+      </p>
+    );
+  }
+  const solver = run?.solver ?? build.btcs.solver;
+  const status = statusOf(catalogue, BTCS_CAPABILITY);
+  return (
+    <p className="solver-status" data-testid="solver-status" data-state="ready">
+      <strong>{METHOD_1}</strong>: solver version <span data-testid="solver-version">{solver.version}</span>, built from commit{' '}
+      <code data-testid="solver-commit">{solver.commit}</code>, results labelled <Badge label={solver.label} />. Verification status in the
+      research catalogue: {status ? <StatusChip status={status} mechanism={BTCS_CAPABILITY} compact /> : 'unknown'}, numerical verification of the
+      stated model, not experimental validation. Scope: {solver.scope}.
+    </p>
+  );
+}
+
+/** Release fraction at the end time: Method 1, with Method 2 at the same time when the series resolves it. */
 export function ReleaseReadout() {
   const { run, stale } = useCurrentRun();
   const status = useStrato((s) => s.status);
@@ -60,10 +102,7 @@ export function ReleaseReadout() {
     else if (problem?.kind === 'error') text = 'Run failed';
     return (
       <div className="readout readout--wide" data-testid="release-readout" data-state={problem?.kind ?? solver}>
-        <p className="readout__label">
-          Release fraction <i>F</i>(<i>t</i>
-          <sub>end</sub>)
-        </p>
+        <p className="readout__label">Release fraction at the end of the simulation (dimensionless)</p>
         <p className="readout__value readout__value--none">{text}</p>
         <p className="readout__meta">
           <span className="readout__nolabel">Label: none</span>
@@ -77,30 +116,26 @@ export function ReleaseReadout() {
   const tEnd = run.balance.final.t_s;
   const last = a ? a.times_s.length - 1 : -1;
   // The series value at the last output time, when the series resolves that time.
-  const seriesAtEnd = a && last >= 0 && a.times_s[last] === tEnd ? (a.release_fraction[last] ?? null) : null;
+  const seriesAtEnd = a && a.applicable && last >= 0 && a.times_s[last] === tEnd ? (a.release_fraction[last] ?? null) : null;
   return (
     <div className={`readout readout--wide${stale ? ' is-stale' : ''}`} data-testid="release-readout" data-state="ok">
-      <p className="readout__label">
-        Release fraction <i>F</i>(<i>t</i>
-        <sub>end</sub>)
-      </p>
+      <p className="readout__label">Release fraction at the end of the simulation (dimensionless)</p>
       <p className="readout__value" data-testid="release-value" data-value={String(d.final_release_fraction)}>
         {d.final_release_fraction.toPrecision(6)}
       </p>
       <Badge label={run.label} />
       <p className="readout__meta">
-        Finite volume (Code B) at <i>t</i>
-        <sub>end</sub> = <Sci value={tEnd} unit="s" digits={4} />.{' '}
+        {METHOD_1} at the time <Sci value={tEnd} unit="s" digits={4} />.{' '}
         {seriesAtEnd !== null ? (
           <>
-            Eigenfunction series (Code C) at the same time:{' '}
+            {METHOD_2} at the same time:{' '}
             <span data-testid="release-series" data-value={String(seriesAtEnd)}>
               {seriesAtEnd.toPrecision(6)}
             </span>
             .
           </>
         ) : (
-          'Series (Code C) not available for this run.'
+          `${METHOD_2} is not available for this run.`
         )}{' '}
         <Updating stale={stale} />
       </p>
@@ -108,7 +143,7 @@ export function ReleaseReadout() {
   );
 }
 
-/** Rejected inputs or a solver failure, with the wrapper's messages and a retry. */
+/** Rejected inputs or a solver failure, with the wrapper's own messages and a retry. */
 export function RunProblemNote() {
   const problem = useStrato((s) => s.problem);
   const solver = useStrato((s) => s.solver);
@@ -116,7 +151,7 @@ export function RunProblemNote() {
   if (solver.state === 'failed') {
     return (
       <div className="sim-alert" role="alert" data-testid="solver-failed">
-        <p className="sim-alert__title">The WebAssembly solver could not be loaded.</p>
+        <p className="sim-alert__title">The WebAssembly solver could not be loaded, so there is no result.</p>
         <p className="sim-alert__text">{solver.error}</p>
       </div>
     );
@@ -142,7 +177,7 @@ export function RunProblemNote() {
   );
 }
 
-/** The v1.0 balance: inventory plus released minus start inventory, with its residual. */
+/** The inventory balance of the run: start, remaining, released and the residual with its bound. */
 export function BalancePanel() {
   const { run, stale } = useCurrentRun();
   if (!run) return <EmptyPanel title="Inventory balance" testId="balance-panel" />;
@@ -157,59 +192,53 @@ export function BalancePanel() {
         <Badge label={run.label} />
       </header>
       <p className="result-panel__note">
-        At the end time <i>t</i>
-        <sub>end</sub>; the residual is zero in exact arithmetic. <Updating stale={stale} />
+        At the end of the simulation; the residual is zero in exact arithmetic, and the solver reports the derived rounding bound beside
+        it. <Updating stale={stale} />
       </p>
       <table className="table table--compact">
         <tbody>
           <tr>
-            <th scope="row">
-              Start inventory <i>M</i>
-              <sup>0</sup>
-            </th>
+            <th scope="row">Initial inventory (mol)</th>
             <td className="num-col">
               <V id="bal-start" v={b.start_inventory_mol} unit="mol" />
             </td>
           </tr>
           <tr>
-            <th scope="row">
-              In the particle <i>M</i>
-            </th>
+            <th scope="row">Remaining inventory in the particle (mol)</th>
             <td className="num-col">
-              <V id="bal-inventory" v={b.final.inventory_mol} unit="mol" />
+              <V id="bal-inventory" v={b.final.remaining_mol} unit="mol" />
             </td>
           </tr>
           <tr>
-            <th scope="row">
-              Released <i>M</i>
-              <sub>rel</sub>
-            </th>
+            <th scope="row">Cumulative release through the outer surface (mol)</th>
             <td className="num-col">
               <V id="bal-released" v={b.final.released_mol} unit="mol" />
             </td>
           </tr>
           <tr className="is-residual">
-            <th scope="row">
-              Residual <i>M</i> + <i>M</i>
-              <sub>rel</sub> − <i>M</i>
-              <sup>0</sup>
-            </th>
+            <th scope="row">Mass-balance residual (mol)</th>
             <td className="num-col">
               <V id="bal-residual" v={b.final.residual_mol} unit="mol" digits={3} />
             </td>
           </tr>
           <tr>
-            <th scope="row">
-              Largest |residual| over the run, relative to <i>M</i>
-              <sup>0</sup>
-            </th>
+            <th scope="row">Derived rounding bound of the residual (mol)</th>
+            <td className="num-col">
+              <V id="bal-bound" v={b.final.residual_bound_mol} unit="mol" digits={3} />
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">Largest relative mass-balance residual over the run (dimensionless)</th>
             <td className="num-col">
               <V id="bal-max-rel" v={b.max_abs_residual_relative} digits={3} />
             </td>
           </tr>
         </tbody>
       </table>
-      {last ? <LayerTable profile={last} names={run.mesh.region_names} /> : null}
+      <p className="result-panel__note" data-testid="bal-statement">
+        {b.statement} {b.generated_and_decayed_note}
+      </p>
+      {last ? <LayerTable profile={last} names={run.grid.layer_names} /> : null}
     </section>
   );
 }
@@ -217,18 +246,15 @@ export function BalancePanel() {
 function LayerTable({ profile, names }: { profile: RunResponse['profiles'][number]; names: string[] }) {
   return (
     <table className="table table--compact layer-table" data-testid="layer-table">
-      <caption className="table__caption">
-        By layer at <i>t</i>
-        <sub>end</sub> (sums over the cells of each layer, from the wrapper)
-      </caption>
+      <caption className="table__caption">By layer at the end of the simulation (sums over the grid intervals of each layer, from the wrapper)</caption>
       <thead>
         <tr>
           <th scope="col">Layer</th>
           <th scope="col" className="num-col">
-            Inventory
+            Inventory (mol)
           </th>
           <th scope="col" className="num-col">
-            Share of <i>M</i>
+            Share of the inventory in the particle (dimensionless)
           </th>
         </tr>
       </thead>
@@ -270,7 +296,7 @@ export function DiagnosticsPanel() {
   const info = useStrato((s) => s.runInfo);
   if (!run) return <EmptyPanel title="Numerical diagnostics" testId="diagnostics-panel" />;
   const d = run.diagnostics;
-  const c = d.code_c;
+  const c = d.analytical_comparison;
   return (
     <section className={`result-panel${stale ? ' is-stale' : ''}`} data-testid="diagnostics-panel" aria-labelledby="diag-title">
       <header className="result-panel__head">
@@ -281,23 +307,25 @@ export function DiagnosticsPanel() {
       </header>
       <dl className="diag">
         <div className="diag__row">
-          <dt>Cells</dt>
-          <dd data-testid="diag-cells" data-value={String(d.cells)}>
-            {count(d.cells)}
+          <dt>Grid intervals (dimensionless)</dt>
+          <dd data-testid="diag-intervals" data-value={String(d.intervals_total)}>
+            {count(d.intervals_total)}
           </dd>
         </div>
         <div className="diag__row">
-          <dt>Backward Euler steps</dt>
+          <dt>Grid nodes (dimensionless)</dt>
+          <dd data-testid="diag-nodes" data-value={String(d.nodes)}>
+            {count(d.nodes)}
+          </dd>
+        </div>
+        <div className="diag__row">
+          <dt>Backward Euler time steps (dimensionless)</dt>
           <dd data-testid="diag-steps" data-value={String(d.steps)}>
             {count(d.steps)}
           </dd>
         </div>
         <div className="diag__row">
-          <dt>
-            Time step used, <i>t</i>
-            <sub>end</sub> / ⌈<i>t</i>
-            <sub>end</sub> / Δ<i>t</i>⌉
-          </dt>
+          <dt>Time step used (s)</dt>
           <dd>
             <V id="diag-dt" v={d.dt_used_s} unit="s" />
             {d.dt_used_s !== d.dt_requested_s ? (
@@ -308,48 +336,56 @@ export function DiagnosticsPanel() {
             ) : null}
           </dd>
         </div>
+        {d.fourier_numbers.map((f, i) => (
+          <div className="diag__row" key={`fo-${i}`}>
+            <dt>Mesh Fourier number of the {run.grid.layer_names[i] ?? `layer ${i + 1}`} layer (dimensionless)</dt>
+            <dd>
+              <V id={`diag-fo-${i}`} v={f} digits={4} />
+            </dd>
+          </div>
+        ))}
         <div className="diag__row">
-          <dt>
-            Largest |residual| / <i>M</i>
-            <sup>0</sup>
-          </dt>
+          <dt>Largest relative mass-balance residual (dimensionless)</dt>
           <dd>
             <V id="diag-residual" v={d.max_abs_balance_residual_relative} digits={3} />
           </dd>
         </div>
         <div className="diag__row">
-          <dt>
-            Largest |<i>F</i>
-            <sub>B</sub> − <i>F</i>
-            <sub>C</sub>|, finite volume against series
-          </dt>
-          <dd>{c ? <V id="diag-bc-max" v={c.max_abs_difference} digits={4} /> : <span className="muted">series not available</span>}</dd>
+          <dt>Residual within its derived rounding bound at every output time</dt>
+          <dd data-testid="diag-within-bound" data-value={String(run.balance.tolerance.within_bound)}>
+            {run.balance.tolerance.within_bound ? 'yes' : 'no'}
+          </dd>
         </div>
         <div className="diag__row">
-          <dt>
-            |<i>F</i>
-            <sub>B</sub> − <i>F</i>
-            <sub>C</sub>| at <i>t</i>
-            <sub>end</sub>
-          </dt>
+          <dt>Smallest concentration over all nodes and times (mol/m³)</dt>
+          <dd>
+            <V id="diag-min" v={d.min_concentration_mol_m3} unit="mol/m³" digits={3} />
+          </dd>
+        </div>
+        <div className="diag__row">
+          <dt>Largest absolute difference between {METHOD_1} and {METHOD_2} in the release fraction (dimensionless)</dt>
+          <dd>{c ? <V id="diag-bc-max" v={c.max_abs_difference} digits={4} /> : <span className="muted">{METHOD_2} not available</span>}</dd>
+        </div>
+        <div className="diag__row">
+          <dt>Absolute difference between {METHOD_1} and {METHOD_2} at the end of the simulation (dimensionless)</dt>
           <dd>{c ? <V id="diag-bc-final" v={c.final_abs_difference} digits={4} /> : <span className="muted">not available</span>}</dd>
         </div>
         {c ? (
           <>
             <div className="diag__row">
-              <dt>Series eigenmodes</dt>
+              <dt>Eigenmodes of {METHOD_2} (dimensionless)</dt>
               <dd data-testid="diag-modes" data-value={String(c.modes)}>
                 {count(c.modes)}
               </dd>
             </div>
             <div className="diag__row">
-              <dt>Series accuracy floor</dt>
+              <dt>Accuracy floor of {METHOD_2} (dimensionless)</dt>
               <dd>
                 <V id="diag-floor" v={c.accuracy_floor} digits={4} />
               </dd>
             </div>
             <div className="diag__row">
-              <dt>Series valid from</dt>
+              <dt>{METHOD_2} valid from the time (s)</dt>
               <dd>
                 <V id="diag-valid" v={c.valid_from_s} unit="s" digits={4} />
               </dd>
@@ -359,14 +395,13 @@ export function DiagnosticsPanel() {
         <div className="diag__row diag__row--timing">
           <dt>Solver time</dt>
           <dd data-testid="diag-time">
-            {info ? `${info.elapsedMs.toFixed(1)} ms` : '–'}{' '}
-            <span className="muted">wall time in this browser, not a result</span>
+            {info ? `${info.elapsedMs.toFixed(1)} ms` : '–'} <span className="muted">wall time in this browser, not a result</span>
           </dd>
         </div>
       </dl>
       {c && !c.resolved ? (
         <p className="result-panel__note" data-testid="diag-unresolved">
-          The finite-volume and series results differ by less than three times the series accuracy floor; the difference is not resolved.
+          {METHOD_1} and {METHOD_2} differ by less than three times the accuracy floor of {METHOD_2}; the difference is not resolved.
         </p>
       ) : null}
       {run.messages.length > 0 ? (
@@ -378,8 +413,8 @@ export function DiagnosticsPanel() {
       ) : null}
       <p className="result-panel__note">
         <Updating stale={stale} />
-        Solver STRATO v{run.engine.strato_version}, WebAssembly build <code>{run.engine.commit}</code>
-        {run.engine.commit !== BUILD.commit ? <strong> (differs from the page build {BUILD.commit})</strong> : null}.
+        {METHOD_1}, solver version {run.solver.version}, WebAssembly build <code>{run.engine.commit}</code>
+        {run.engine.commit !== BUILD.commit ? <strong> (differs from the page build {BUILD.commit})</strong> : null}. {run.solver.nature}.
       </p>
     </section>
   );

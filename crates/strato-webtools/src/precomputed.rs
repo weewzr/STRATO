@@ -38,6 +38,8 @@ pub struct RawRun {
     pub run_json: Value,
     /// The wrapper's reply.
     pub native: Value,
+    /// The cases of the parity battery: name to {function, input, reply}.
+    pub battery: Value,
     /// The independent-check CSV file of the regression suite.
     pub check_csv: String,
 }
@@ -317,6 +319,13 @@ pub fn build_files(ctx: &Context, raw: &RawRun) -> Result<Vec<(String, String)>>
         ),
     );
     put(
+        "wrapper_native_battery.json",
+        &with_data(
+            header(ctx, "wrapper_native_battery", s::BATTERY_TEXT, None, s::NOTE_BATTERY),
+            raw.battery.clone(),
+        ),
+    );
+    put(
         "wrapper_native_synthetic.json",
         &with_data(
             header(ctx, "wrapper_native_run", s::NATIVE_TEXT, None, s::NOTE_WRAPPER),
@@ -347,15 +356,28 @@ pub fn build_files(ctx: &Context, raw: &RawRun) -> Result<Vec<(String, String)>>
     Ok(files)
 }
 
-/// Paths (inside a JSON file) of the objects whose `commit` field records where the file was
-/// written and is not data: the header itself, the wrapper's `engine` and `solver` blocks and the
-/// provenance block of the command line's JSON.
-const COMMIT_PATHS: [&[&str]; 4] = [
-    &[],
-    &["data", "engine"],
-    &["data", "solver"],
-    &["data", "run", "provenance"],
-];
+/// Removes, at every depth, the `commit` field of an object (it records where the file was written, not
+/// data: the header, the wrapper's `engine` and `solver` blocks, the provenance block of the command
+/// line's JSON), and the `# commit:` line of a text that carries a provenance header.
+fn strip_commits(v: &mut Value) {
+    match v {
+        Value::Object(m) => {
+            m.shift_remove("commit");
+            for x in m.values_mut() {
+                strip_commits(x);
+            }
+        }
+        Value::Array(a) => a.iter_mut().for_each(strip_commits),
+        Value::String(s) if s.contains("# commit:") => {
+            *s = s
+                .lines()
+                .filter(|l| !l.starts_with("# commit:"))
+                .collect::<Vec<_>>()
+                .join("\n");
+        }
+        _ => {}
+    }
+}
 
 /// A file is the same data as another when this form is equal.
 pub fn comparable(name: &str, text: &str) -> Result<String> {
@@ -366,20 +388,11 @@ pub fn comparable(name: &str, text: &str) -> Result<String> {
                 m.shift_remove(k);
             }
         }
-        for path in COMMIT_PATHS {
-            let mut cur = Some(&mut v);
-            for k in path {
-                cur = cur.and_then(|c| c.get_mut(*k));
-            }
-            if let Some(Value::Object(m)) = cur {
-                m.shift_remove("commit");
-            }
-        }
+        strip_commits(&mut v);
         return Ok(json_canonical(&v));
     }
     Ok(crate::comparable_text(text, &PRECOMPUTED_VOLATILE))
 }
-
 fn run_command(root: &Path, cmd: &[String], env: &[(&str, String)]) -> Result<String> {
     let mut c = Command::new(&cmd[0]);
     c.args(&cmd[1..]).current_dir(root);
@@ -453,16 +466,38 @@ pub fn collect(root: &Path) -> Result<RawRun> {
     ];
     let native_text = run_command(root, &s::native_command(), &env)?;
     let native: Value = serde_json::from_str(&native_text)?;
+    let battery = collect_battery(root, &env)?;
     let raw = RawRun {
         stdout,
         timeseries_csv,
         profiles_csv,
         run_json,
         native,
+        battery,
         check_csv: read_check(root)?.0,
     };
     cross_check(&raw)?;
     Ok(raw)
+}
+
+/// The small cases of the parity battery with their requests and the native replies.
+fn collect_battery(root: &Path, env: &[(&str, String)]) -> Result<Value> {
+    let requests: Value = serde_json::from_str(&run_command(root, &s::battery_command("requests"), env)?)?;
+    let replies: Value = serde_json::from_str(&run_command(root, &s::battery_command("native"), env)?)?;
+    let (Some(req), Some(rep)) = (requests.as_object(), replies.as_object()) else {
+        bail!("the battery output is not a JSON object");
+    };
+    let mut out = Map::new();
+    for name in s::BATTERY_CASES {
+        let (Some(r), Some(p)) = (req.get(name), rep.get(name)) else {
+            bail!("battery case {name} is missing");
+        };
+        out.insert(
+            name.to_string(),
+            json!({"function": r["function"], "input": r["input"], "reply": p}),
+        );
+    }
+    Ok(Value::Object(out))
 }
 
 /// The independent-check file: its text and the SHA-256 of its bytes.

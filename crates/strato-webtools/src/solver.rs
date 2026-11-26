@@ -75,6 +75,39 @@ pub fn native_command() -> Vec<String> {
     .to_vec()
 }
 
+/// Command line of the battery of the parity test (tcs_parity example of the wrapper): `requests`
+/// prints the requests of the named cases, `native` the native replies. The cases are the small ones of the
+/// battery (the others are compared by the Rust example against the WebAssembly module run in Node).
+pub fn battery_command(what: &str) -> Vec<String> {
+    let mut v: Vec<String> = [
+        "cargo",
+        "run",
+        "--locked",
+        "--release",
+        "--quiet",
+        "--manifest-path",
+        "crates/strato-wasm/Cargo.toml",
+        "--example",
+        "btcs_parity",
+        "--",
+    ]
+    .map(String::from)
+    .to_vec();
+    v.push(what.to_string());
+    v.extend(BATTERY_CASES.map(String::from));
+    v
+}
+
+pub const BATTERY_CASES: [&str; 5] = [
+    "validate_toml",
+    "validate_rejected_dt",
+    "run_single_step",
+    "export_timeseries_csv",
+    "build_info",
+];
+
+pub const BATTERY_TEXT: &str = "cargo run --locked --release --manifest-path crates/strato-wasm/Cargo.toml --example btcs_parity -- native <cases>";
+
 pub const NATIVE_TEXT: &str = "cargo run --locked --release --manifest-path crates/strato-wasm/Cargo.toml --example native_btcs_run -- inputs/synthetic/synthetic_five_layer.toml";
 
 /// The three files the command line writes into [`CLI_OUT_DIR`].
@@ -115,11 +148,12 @@ pub const CHECK_KEYS: [&str; 17] = [
 pub const PATH_KEYS: [&str; 3] = ["timeseries", "profiles", "run_json"];
 
 /// Names written to web/public/data/, in the order of the files written and checked.
-pub const PRECOMPUTED_FILES: [&str; 8] = [
+pub const PRECOMPUTED_FILES: [&str; 9] = [
     "btcs_run.json",
     "btcs_vs_analytical.json",
     "btcs_independent_check.json",
     "wrapper_native_synthetic.json",
+    "wrapper_native_battery.json",
     "btcs_run.timeseries.csv",
     "btcs_run.profiles.csv",
     "btcs_vs_analytical.csv",
@@ -144,6 +178,7 @@ pub const RETIRED_FILES: [&str; 10] = [
 pub const NOTE_RUN: &str = "Time series, profiles and diagnostics of the native BTCS run of the synthetic five-layer case, as the solver's command line wrote them (numerical solution of the stated model; not experimental validation).";
 pub const NOTE_COMPARISON: &str = "Release fraction of the BTCS run and of the analytical (Sturm-Liouville series) solution at every output time; the absolute difference is computed in Rust from the two columns; empty cells are null where the series is not valid.";
 pub const NOTE_CHECK: &str = "Independent check of the BTCS release fraction against a reference that contains no BTCS code, with the observed orders in time and in space, copied from the regression suite; a regression reference, not truth.";
+pub const NOTE_BATTERY: &str = "Requests of the small cases of the parity battery of the BTCS functions (validate, run, export, build info) and the replies of the native wrapper (x86_64), the reference of the browser parity test of the functions beyond the default run.";
 pub const NOTE_WRAPPER: &str =
     "run reply of the native wrapper (x86_64), the reference of the browser parity test.";
 

@@ -72,8 +72,8 @@ for (const colorScheme of ['light', 'dark'] as const) {
         }
         // Each of the two simulation elements carries its result label, inside the measured box.
         // Web phase 4: with the run in place the particle is coloured by the solver's concentration.
-        await expect(page.getByTestId('particle').locator('.badge')).toHaveText('COMPUTED v1.0');
-        await expect(page.getByTestId('release-readout').locator('.badge')).toHaveText('COMPUTED v1.0');
+        await expect(page.getByTestId('particle').locator('.badge')).toHaveText('COMPUTED v2.0');
+        await expect(page.getByTestId('release-readout').locator('.badge')).toHaveText('COMPUTED v2.0');
         await expectOrder(page);
       });
     });
@@ -123,7 +123,7 @@ test.describe('placeholders', () => {
     await page.getByTestId('strip-run').click();
     await expect.poll(() => solverRequests(page)).toBe(before + 1);
     await waitForRun(page);
-    await expect(page.getByTestId('status-result')).toHaveText('Result COMPUTED v1.0');
+    await expect(page.getByTestId('status-result')).toHaveText('Result COMPUTED v2.0');
     expect(requests).toEqual([]);
   });
 });

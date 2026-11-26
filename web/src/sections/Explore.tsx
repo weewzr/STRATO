@@ -3,7 +3,8 @@ import { repoFile } from '../build';
 import { findCase } from '../data/case';
 import { simulationMethod } from '../equation/availability';
 import { EquationBuilder } from '../equation/EquationBuilder';
-import { BalancePanel, DiagnosticsPanel, ReleaseReadout, RunProblemNote } from '../panels/SimResults';
+import { BalancePanel, DiagnosticsPanel, ReleaseReadout, RunProblemNote, SolverStatus } from '../panels/SimResults';
+import { METHOD_1 } from '../methods';
 import { TermExplanations } from '../equation/TermExplanations';
 import { ControlPanel } from '../panels/ControlPanel';
 import { Playback } from '../panels/Playback';
@@ -13,7 +14,6 @@ import { FutureResearch } from '../research/FutureResearch';
 import { SimPlots } from '../plots/SimPlots';
 import { hrefFor } from '../route';
 import { configDifferences, inputKey, useStrato } from '../state/store';
-import { validateInputs } from '../state/validation';
 import { useHeadingFocus } from './common';
 
 /**
@@ -39,7 +39,8 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
   const entry = findCase(caseId);
   const h1 = useHeadingFocus();
   const ids = { b: useId(), c: useId(), d: useId(), e: useId() };
-  const issues = validateInputs(config).length;
+  const validation = useStrato((s) => s.validation);
+  const issues = validation.state === 'rejected' || validation.state === 'error' ? validation.errors.length : 0;
   const changed = configDifferences(baseline, config).length;
 
   return (
@@ -94,7 +95,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
                 : 'Solver: loading'}
           </span>
           <span className="strip__item" data-testid="strip-stage">
-            Step {stage} shown; simulation: {method === 'btcs' ? 'BTCS solver' : method === 'loading' ? 'solver loading' : 'previous solver, not BTCS'}
+            Step {stage} shown; simulation: {method === 'btcs' ? METHOD_1 : method === 'loading' ? 'solver loading' : 'solver not available'}
           </span>
           <Playback />
           {compact ? (
@@ -103,6 +104,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
             </button>
           ) : null}
         </div>
+        <SolverStatus />
         <div className="sim">
           <div className="sim__particle">{entry ? <ParticleView config={config} provenance={entry.provenance} /> : null}</div>
           <div className="sim__side">
@@ -124,7 +126,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           <h2 id={ids.c} className="block__title">
             Controls
           </h2>
-          <p className="block__context">Inputs of the STRATO v1.0 format; a change reruns the solver after a short pause.</p>
+          <p className="block__context">Inputs of the solver, each checked by the solver itself; a change reruns {METHOD_1} after a short pause.</p>
         </div>
         {compact ? (
           <div className="controls-summary" data-testid="controls-summary">
@@ -171,8 +173,9 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           <h3>Verification is not validation</h3>
           <p>
             Verification shows that STRATO solves its own equations correctly; it is reported under <a href={hrefFor('verify')}>Verify</a>.
-            Validation asks whether the model matches measured release from real particles; it needs the Phase 2 physics and is described
-            under <a href={hrefFor('validate')}>Validate</a>.
+            Validation asks whether the model matches measured release from real particles; it needs the generation, decay and
+            temperature-dependent physics and the comparison with measurements, and is described under{' '}
+            <a href={hrefFor('validate')}>Validate</a>.
           </p>
         </div>
       </section>

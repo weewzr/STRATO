@@ -2,7 +2,7 @@
 
 Live: https://weewzr.github.io/STRATO/
 
-An equation-first page for the verified STRATO v1.0 solver: the governing equation with a staged builder at the top, the live simulation directly under it (particle cross-section and 3D cutaway, radial profile, release fraction, inventory balance, numerical diagnostics), then the controls, an explanation of each active term and the research catalogue. Every number the page shows comes from the Rust solver compiled to WebAssembly (`crates/strato-wasm`, run in a worker) or from verified precomputed native output with a provenance header; no scientific equation is written in TypeScript.
+An equation-first page for the verified STRATO BTCS solver (Method 1: Finite Difference BTCS, with Method 2: Analytical Solution beside it): the governing equation with a staged builder at the top, the live simulation directly under it (particle cross-section and 3D cutaway, radial profile, release fraction, inventory balance, numerical diagnostics), then the controls, an explanation of each active term and the research catalogue. Every number the page shows comes from the Rust solver compiled to WebAssembly (`crates/strato-wasm`, run in a worker) or from verified precomputed native output with a provenance header; no scientific equation is written in TypeScript.
 
 What the demonstration can and cannot do today:
 
@@ -46,11 +46,10 @@ $TOOL colormaps --check
 $TOOL geometry --check
 $TOOL check-catalogue
 
-# WebAssembly wrapper: native parity with tests/golden/v1.0, then the module with its export and size check
+# WebAssembly wrapper: native tests of the BTCS interface, then the module with its export and size check
 cargo test --locked --manifest-path crates/strato-wasm/Cargo.toml
 $TOOL build-wasm
 $TOOL precomputed --check
-$TOOL figures --check
 
 # Interface
 cd web
@@ -75,7 +74,7 @@ EXPECT_COMMIT=$(git rev-parse HEAD) npx playwright test --project=chromium
 npx playwright test --project=performance   # frame-rate tests, on their own with one worker
 ```
 
-On Windows the tool is `crates\target\release\strato-webtools.exe`. Without `--check` each generator subcommand writes its files instead (`case <input.toml>`, `catalogue`, `colormaps`, `geometry`, `figures`, `precomputed`); `build-wasm --check` checks an existing wasm build without rebuilding it. `--root <folder>` names the repository when the tool is not run inside it, and `SOURCE_DATE_EPOCH` fixes the `created_utc` field for a repeatable run. `npm run dev` serves the interface with hot reload at http://localhost:5173/STRATO/ (the documents are not served there; build them into `web/dist` and use `npm run preview`).
+On Windows the tool is `crates\target\release\strato-webtools.exe`. Without `--check` each generator subcommand writes its files instead (`case <input.toml>`, `catalogue`, `colormaps`, `geometry`, `precomputed`); `build-wasm --check` checks an existing wasm build without rebuilding it. `--root <folder>` names the repository when the tool is not run inside it, and `SOURCE_DATE_EPOCH` fixes the `created_utc` field for a repeatable run. `npm run dev` serves the interface with hot reload at http://localhost:5173/STRATO/ (the documents are not served there; build them into `web/dist` and use `npm run preview`).
 
 Environment variables of the browser tests: `EXPECT_COMMIT` (the build stamp the self-test and the document pages must show), `PW_CHANNEL` (`msedge` for an installed Edge), `SHOTS_DIR` (write screenshots), `LIMITS_OUT` and `PARITY_OUT` (write the timing and parity records as JSON).
 

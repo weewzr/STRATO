@@ -2,9 +2,10 @@
 //!
 //! Three subcommands, run from the repository root:
 //!
-//!     btcs_parity requests            prints the battery of requests as JSON:
+//!     btcs_parity requests [NAME...]  prints the battery of requests as JSON:
 //!                                     {name: {"function": "run" | ..., "input": "<text>"}}
-//!     btcs_parity native              runs the battery natively and prints {name: reply}
+//!     btcs_parity native [NAME...]    runs the battery natively and prints {name: reply}
+//!                                     (with names, only those cases of the battery)
 //!     btcs_parity compare N.json W.json
 //!                                     compares a native reply file with a reply file produced
 //!                                     by the WebAssembly module for the same requests
@@ -113,7 +114,7 @@ fn battery() -> Vec<(&'static str, &'static str, String)> {
     out.push((
         "run_rejected_steps",
         "run",
-        req(with(base, "/time/dt_s", json!(1.0))).to_string(),
+        req(with(base.clone(), "/time/dt_s", json!(1.0))).to_string(),
     ));
     for (name, format) in [
         ("export_timeseries_csv", "timeseries_csv"),
@@ -131,6 +132,18 @@ fn battery() -> Vec<(&'static str, &'static str, String)> {
     }
     out.push(("build_info", "build_info", String::new()));
     out
+}
+
+/// The battery, or only the cases named on the command line.
+fn selected(names: &[String]) -> Vec<(&'static str, &'static str, String)> {
+    let all = battery();
+    if names.is_empty() {
+        return all;
+    }
+    for n in names {
+        assert!(all.iter().any(|c| c.0 == n), "no case named {n}");
+    }
+    all.into_iter().filter(|c| names.iter().any(|n| n == c.0)).collect()
 }
 
 fn call(function: &str, input: &str) -> String {
@@ -265,7 +278,7 @@ fn main() -> ExitCode {
     match args.first().map(String::as_str) {
         Some("requests") => {
             let mut m = Map::new();
-            for (name, function, input) in battery() {
+            for (name, function, input) in selected(&args[1..]) {
                 m.insert(name.into(), json!({"function": function, "input": input}));
             }
             println!("{}", Value::Object(m));
@@ -273,7 +286,7 @@ fn main() -> ExitCode {
         }
         Some("native") => {
             let mut m = Map::new();
-            for (name, function, input) in battery() {
+            for (name, function, input) in selected(&args[1..]) {
                 let text = call(function, &input);
                 m.insert(
                     name.into(),
@@ -345,7 +358,7 @@ fn main() -> ExitCode {
             }
         }
         _ => {
-            eprintln!("usage: btcs_parity requests | native | compare NATIVE.json WASM.json");
+            eprintln!("usage: btcs_parity requests [NAME...] | native [NAME...] | compare NATIVE.json WASM.json");
             ExitCode::FAILURE
         }
     }

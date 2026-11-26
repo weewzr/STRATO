@@ -2,7 +2,7 @@
   "name": "strato-web",
   "private": true,
   "version": "0.1.0",
-  "description": "Interactive web demonstration of STRATO (web phase 5: verified v1.0 solver in WebAssembly, particle visualisation, scientific graphs)",
+  "description": "Interactive web demonstration of STRATO (BTCS switch: verified BTCS solver in WebAssembly, particle visualisation, scientific graphs)",
   "license": "AGPL-3.0-only",
   "type": "module",
   "engines": {

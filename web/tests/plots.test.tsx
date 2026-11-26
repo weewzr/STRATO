@@ -1,65 +1,69 @@
 // Web phase 5: the scientific graphs. Every plotted array is the array the Rust wrapper (or a
 // precomputed native file) returned, the same object and unchanged; the difference curve is the series
-// compare_v1 returned, never subtracted here (owner decision M4); downloads reproduce the plotted values
-// exactly; the comparison and validation layers are independent. The run fixture is the native wrapper
-// response written by scripts/web/generate_data.py precomputed.
+// compare returned, never subtracted here (owner decision M4); every axis and legend entry names its
+// quantity in full with its unit (decisions 30 and 52); the data files of a run are written by Rust and
+// saved unchanged; the comparison and validation layers are independent. The run fixture is the native
+// wrapper response (the BTCS run) written by strato-webtools precomputed.
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { beforeEach, describe, expect, it } from 'vitest';
-import {
-  comparisonColumns,
-  csvText,
-  exportMeta,
-  numberText,
-  parseCsv,
-  runProfileColumns,
-  runTimeseriesColumns,
-  seriesAtRunTimes,
-} from '../src/downloads/serialise';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { parseCsv } from '../src/downloads/serialise';
+import { METHOD_1, METHOD_2 } from '../src/methods';
 import { LOG_DECADES } from '../src/particle/colormap';
-import { LiveDownloads } from '../src/panels/Downloads';
+import { LiveDownloads, parameterProvenance } from '../src/panels/Downloads';
 import { filterRows, parameterRows } from '../src/panels/Provenance';
 import {
-  codeBCDifferenceFigure,
+  checkFigure,
   compareFigure,
-  convergenceFigure,
   layerBands,
+  methodDifferenceFigure,
+  methodReleaseFigure,
   profileFigure,
   releaseFigure,
   residualFigure,
+  type CheckDoc,
   type ComparisonDoc,
-  type ConvergenceDoc,
-  type GuidesDoc,
-  type SyntheticRunDoc,
+  type RunDoc,
 } from '../src/plots/figures';
 import type { GraphDiv } from '../src/plots/plotly';
 import { RadialProfile, ReleaseCurves, SimPlots } from '../src/plots/SimPlots';
 import { readPlotTheme } from '../src/plots/theme';
 import { Validate } from '../src/sections/Validate';
-import { DEFAULT_CASE } from '../src/data/case';
+import { cloneConfig, DEFAULT_CASE } from '../src/data/case';
+import * as session from '../src/solver/session';
 import type { CompareOk, RunOk } from '../src/solver/types';
 import { initialState, inputKey, useStrato } from '../src/state/store';
 
 const data = (f: string) => JSON.parse(readFileSync(join(process.cwd(), 'public', 'data', f), 'utf8')) as unknown;
+const text = (f: string) => readFileSync(join(process.cwd(), 'public', 'data', f), 'utf8');
 const RUN = (data('wrapper_native_synthetic.json') as { data: RunOk }).data;
-const COMPARISON = data('comparison_fv_vs_analytical.json') as ComparisonDoc;
-const CONVERGENCE = data('convergence_study.json') as ConvergenceDoc;
-const GUIDES = data('convergence_guides.json') as GuidesDoc;
-const SYNTHETIC = data('synthetic_run.json') as SyntheticRunDoc;
+const COMPARISON = data('btcs_vs_analytical.json') as ComparisonDoc;
+const CHECK = data('btcs_independent_check.json') as CheckDoc;
+const NATIVE_RUN = data('btcs_run.json') as RunDoc;
 const THEME = readPlotTheme();
 
-/** A compare_v1 reply shaped as the wrapper returns it; the difference array is a stand-in object whose identity is checked. */
+/** A compare reply shaped as the wrapper returns it; the difference array is a stand-in object whose identity is checked. */
 function fakeCompare(): CompareOk {
   const modified = structuredClone(RUN);
   return {
-    schema: 1,
+    schema: 2,
     status: 'ok',
-    label: 'COMPUTED v1.0',
+    label: 'COMPUTED v2.0',
     engine: RUN.engine,
+    solver: RUN.solver,
     baseline: RUN,
     modified,
-    difference: { times_s: RUN.times_s, release_fraction: RUN.times_s.map((_, i) => (i % 2 === 0 ? 0 : -0)) },
+    difference: {
+      times_s: RUN.times_s,
+      release_fraction: RUN.times_s.map((_, i) => (i % 2 === 0 ? 0 : -0)),
+      release_rate_mol_s: RUN.release_rate_mol_s,
+      inventory_mol: RUN.inventory_mol,
+      cumulative_release_mol: RUN.cumulative_release_mol,
+    },
+    difference_definition: 'modified minus baseline',
+    summary: { max_abs_release_fraction_difference: 0, final_release_fraction_difference: 0 },
+    changes: [],
   };
 }
 
@@ -76,12 +80,12 @@ beforeEach(() => {
 });
 
 describe('radial profile figure', () => {
-  it('plots the returned cell concentrations at the returned centroids, the same arrays', () => {
+  it('plots the returned nodal concentrations at the returned node radii, the same arrays', () => {
     const row = 37;
     const fig = profileFigure(RUN, row, { log: true, showStart: true }, THEME);
     const now = fig.data.find((t) => t.meta?.id === 'profile');
     const start = fig.data.find((t) => t.meta?.id === 'profile-start');
-    expect(now?.x).toBe(RUN.mesh.cell_centroids_m);
+    expect(now?.x).toBe(RUN.grid.node_radii_m);
     expect(now?.y).toBe(RUN.profiles[row]?.c_mol_per_m3);
     expect(start?.y).toBe(RUN.profiles[0]?.c_mol_per_m3);
     expect(fig.data).toHaveLength(2);
@@ -98,14 +102,14 @@ describe('radial profile figure', () => {
     expect(rects.map((r) => r.fillcolor)).toEqual(THEME.layers);
     expect(rects.map((r) => r.x1)).toEqual(RUN.inputs.regions.map((r) => r.outer_radius_m));
     const labels = (fig.layout.annotations as { text: string }[]).map((a) => a.text);
-    expect(labels).toEqual(RUN.mesh.region_names);
+    expect(labels).toEqual(RUN.grid.layer_names);
   });
 
-  it('fixes the concentration axis: six decades up to c0 (log) or 0 to c0 (linear), the particle scale', () => {
-    const c0 = RUN.inputs.initial.kernel_concentration_mol_m3;
+  it('fixes the concentration axis: six decades up to the largest nodal concentration (log) or 0 to it (linear)', () => {
+    const top = Math.max(...RUN.max_concentration_mol_m3);
     const log = profileFigure(RUN, 5, { log: true, showStart: false }, THEME).layout.yaxis as { type: string; range: number[] };
     expect(log.type).toBe('log');
-    expect(log.range[0]).toBe(Math.log10(c0) - LOG_DECADES);
+    expect(log.range[0]).toBe(Math.log10(top) - LOG_DECADES);
     const lin = profileFigure(RUN, 5, { log: false, showStart: false }, THEME).layout.yaxis as { type: string; range: number[] };
     expect(lin.type).toBe('linear');
     expect(lin.range[0]).toBe(0);
@@ -115,12 +119,16 @@ describe('radial profile figure', () => {
 });
 
 describe('release figure', () => {
-  it('plots Code B and Code C as returned, with a cursor at the playback row', () => {
+  const both = { log: false, showMethod1: true, showMethod2: true };
+
+  it('plots Method 1 and Method 2 as returned, with a cursor at the playback row', () => {
     const row = 42;
-    const fig = releaseFigure(RUN, row, { log: false }, THEME);
+    const fig = releaseFigure(RUN, row, both, THEME);
     const b = fig.data.find((t) => t.meta?.id === 'release-b');
     const c = fig.data.find((t) => t.meta?.id === 'release-c');
     const cursor = fig.data.find((t) => t.meta?.id === 'release-cursor');
+    expect(b?.name).toBe(METHOD_1);
+    expect(c?.name).toBe(METHOD_2);
     expect(b?.x).toBe(RUN.times_s);
     expect(b?.y).toBe(RUN.release_fraction);
     expect(c?.x).toBe(RUN.analytical?.times_s);
@@ -130,24 +138,40 @@ describe('release figure', () => {
     expect(b?.line?.dash ?? 'solid').not.toBe(c?.line?.dash);
   });
 
-  it('marks the series validity start, and the accuracy floor on the log axis', () => {
+  it('draws only the methods that are switched on', () => {
+    const ids = (m1: boolean, m2: boolean) => releaseFigure(RUN, 3, { log: false, showMethod1: m1, showMethod2: m2 }, THEME).data.map((t) => t.meta?.id);
+    expect(ids(true, false)).toEqual(['release-b', 'release-cursor']);
+    expect(ids(false, true)).toEqual(['release-c']);
+    expect(ids(false, false)).toEqual([]);
+  });
+
+  it('names every axis in full with its unit', () => {
+    const fig = releaseFigure(RUN, 3, both, THEME);
+    const title = (a: unknown) => ((a as { title: { text: string } }).title.text);
+    expect(title(fig.layout.xaxis)).toBe('Time (s)');
+    expect(title(fig.layout.yaxis)).toBe('Release fraction (dimensionless)');
+    expect(title(profileFigure(RUN, 3, { log: true, showStart: false }, THEME).layout.xaxis)).toBe('Radius (m)');
+    expect(title(profileFigure(RUN, 3, { log: true, showStart: false }, THEME).layout.yaxis)).toBe('Concentration (mol/m³)');
+  });
+
+  it('marks the validity start of Method 2, and its accuracy floor on the log axis', () => {
     const a = RUN.analytical!;
-    const lin = releaseFigure(RUN, 3, { log: false }, THEME);
+    const lin = releaseFigure(RUN, 3, both, THEME);
     const shapes = lin.layout.shapes as { type: string; x1?: number; y0?: number }[];
     expect(shapes.some((s) => s.type === 'rect' && s.x1 === a.valid_from_s)).toBe(true);
     expect(shapes.some((s) => s.type === 'line' && s.y0 === a.accuracy_floor)).toBe(false);
-    const log = releaseFigure(RUN, 3, { log: true }, THEME);
+    const log = releaseFigure(RUN, 3, { ...both, log: true }, THEME);
     expect((log.layout.shapes as { y0?: number }[]).some((s) => s.y0 === a.accuracy_floor)).toBe(true);
   });
 
-  it('returns no pointwise difference of Code B and Code C for a live run', () => {
-    const fig = releaseFigure(RUN, 10, { log: true }, THEME);
+  it('returns no pointwise difference of the two methods for a live run', () => {
+    const fig = releaseFigure(RUN, 10, { ...both, log: true }, THEME);
     expect(fig.data.map((t) => t.meta?.id)).toEqual(['release-b', 'release-c', 'release-cursor']);
   });
 });
 
 describe('comparison figure', () => {
-  it('plots the difference series compare_v1 returned, on the secondary axis', () => {
+  it('plots the difference series compare returned, on the secondary axis', () => {
     const reply = fakeCompare();
     const fig = compareFigure(reply, { showBaseline: true, showDifference: true }, THEME);
     const d = fig.data.find((t) => t.meta?.id === 'compare-difference');
@@ -170,96 +194,108 @@ describe('comparison figure', () => {
 
 describe('verification figures from precomputed native output', () => {
   it('plots the pointwise difference only from the native file, as written', () => {
-    const fig = codeBCDifferenceFigure(COMPARISON, Number(SYNTHETIC.data.summary.analytical_accuracy_floor_abs), THEME);
+    const fig = methodDifferenceFigure(COMPARISON, COMPARISON.data.analytical.accuracy_floor, THEME);
     expect(COMPARISON.label).toBe('PRECOMPUTED');
-    expect(fig.data[0]?.y).toBe(COMPARISON.data.abs_error);
-    expect(fig.data[0]?.x).toBe(COMPARISON.data.time_s);
+    expect(COMPARISON.solver).toBe('STRATO BTCS five-layer spherical finite difference');
+    expect(fig.data[0]?.y).toBe(COMPARISON.data.abs_difference);
+    expect(fig.data[0]?.x).toBe(COMPARISON.data.t_s);
+    const rel = methodReleaseFigure(COMPARISON, THEME);
+    expect(rel.data.map((t) => t.name)).toEqual([METHOD_1, METHOD_2]);
+    expect(rel.data[0]?.y).toBe(COMPARISON.data.release_fraction_btcs);
   });
 
-  it('plots each refinement study and its guide line', () => {
-    const p = CONVERGENCE.data.points;
-    for (const study of ['spatial', 'temporal'] as const) {
-      const fig = convergenceFigure(CONVERGENCE, GUIDES, study, THEME);
-      const idx = p.study.flatMap((s, i) => (s === study ? [i] : []));
-      expect(fig.data[0]?.y).toEqual(idx.map((i) => p.abs_error_vs_exact[i]));
-      expect(fig.data[0]?.x).toEqual(idx.map((i) => (study === 'spatial' ? p.total_cells[i] : p.dt_s[i])));
-      expect(fig.data[1]?.y).toBe(GUIDES.data[study].guide_abs_error);
-      expect(GUIDES.data[study].slope).toBe(study === 'spatial' ? 2 : 1);
+  it('carries the solver version in every precomputed header and the full names in the column headers', () => {
+    for (const doc of [COMPARISON, CHECK, NATIVE_RUN]) {
+      expect(doc.strato_version).toMatch(/^\d+\.\d+\.\d+$/);
+      expect(doc.solver).toContain('BTCS');
+      expect(doc.commit).toMatch(/^[0-9a-f]{40}$/);
     }
-    expect(CONVERGENCE.data.spatial_observed_orders).toBe('2.00,2.00,2.00,2.00');
+    for (const h of Object.values(COMPARISON.data.column_headers)) expect(h).toMatch(/\((s|dimensionless)\)$/);
+    for (const h of Object.values(CHECK.data.column_headers)) expect(h).toMatch(/\((s|dimensionless|true or false)\)$/);
   });
 
-  it('keeps the guide-line file in step with the convergence study it was written from', () => {
-    for (const study of ['spatial', 'temporal'] as const) {
-      const g = GUIDES.data[study];
-      const first = CONVERGENCE.data.points.study.indexOf(study);
-      expect(g.anchor_abs_error).toBe(CONVERGENCE.data.points.abs_error_vs_exact[first]);
-      expect(g.guide_abs_error[0]).toBe(g.anchor_abs_error);
-    }
-    expect(GUIDES.label).toBe('DISPLAY');
+  it('plots the independent check as written, with the observed orders about 1 in time and 2 in space', () => {
+    const fig = checkFigure(CHECK, THEME);
+    expect(fig.data[0]?.x).toBe(CHECK.data.t_s);
+    expect(fig.data[0]?.y).toBe(CHECK.data.abs_difference);
+    expect(fig.data[1]?.y).toBe(CHECK.data.limit_difference);
+    for (const o of CHECK.data.time_order) expect(Math.abs(o - 1)).toBeLessThan(0.5);
+    for (const o of CHECK.data.space_order) expect(Math.abs(o - 2)).toBeLessThan(0.5);
+    expect(CHECK.data.passed.every(Boolean)).toBe(true);
   });
 
-  it('plots the native balance residual as written', () => {
-    const fig = residualFigure(SYNTHETIC, THEME);
-    expect(fig.data[0]?.y).toBe(SYNTHETIC.data.timeseries.balance_residual_mol);
+  it('plots the native balance residual and its derived bound as written', () => {
+    const fig = residualFigure(NATIVE_RUN, THEME);
+    expect(fig.data[0]?.y).toBe(NATIVE_RUN.data.run.series.balance_residual_mol);
+    expect(fig.data[1]?.y).toBe(NATIVE_RUN.data.run.series.balance_residual_bound_mol);
   });
 });
 
-describe('download serialisation', () => {
-  const meta = exportMeta('run_timeseries', 'COMPUTED v1.0', RUN.engine, 'abc1234', 'inputs/synthetic/synthetic_five_layer.toml', RUN.inputs, 'test', new Date('2026-11-25T00:00:00Z'));
+describe('data files of a run are written by Rust and saved unchanged', () => {
+  const blobs: Blob[] = [];
+  const requests: unknown[] = [];
 
-  it('writes every number so that it reads back to the same double, negative zero and gaps included', () => {
-    const values = [0, -0, 1e-300, 5e-324, -2.5e-14, RUN.release_fraction[50] ?? NaN, 1 / 3, null, 2e5];
-    const text = csvText(meta, [{ name: 'v', unit: '1', values }]);
-    const back = parseCsv(text).columns.v!;
-    expect(back).toHaveLength(values.length);
-    back.forEach((v, i) => {
-      if (values[i] === null) expect(v).toBeNull();
-      else expect(Object.is(v, values[i])).toBe(true);
+  beforeEach(() => {
+    blobs.length = 0;
+    requests.length = 0;
+    URL.createObjectURL = (b: Blob | MediaSource) => {
+      blobs.push(b as Blob);
+      return 'blob:test';
+    };
+    URL.revokeObjectURL = () => undefined;
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+    const csv = text('btcs_run.timeseries.csv');
+    vi.spyOn(session, 'solverClient').mockReturnValue({
+      exportRun: (config: unknown, format: string, provenance: unknown) => {
+        requests.push({ config, format, provenance });
+        return Promise.resolve({ body: { status: 'ok', media_type: 'text/csv', text: csv }, elapsedMs: 1, requestId: 1 });
+      },
+    } as unknown as ReturnType<typeof session.solverClient>);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('asks the wrapper for the file with the source row and class of the parameters, and saves its text as it is', async () => {
+    withRun();
+    render(<LiveDownloads />);
+    fireEvent.click(screen.getByTestId('dl-run-time-series-csv'));
+    await waitFor(() => expect(blobs).toHaveLength(1));
+    expect(await blobs[0]!.text()).toBe(text('btcs_run.timeseries.csv'));
+    expect(requests[0]).toMatchObject({
+      format: 'timeseries_csv',
+      provenance: { inputFile: DEFAULT_CASE.provenance.input_file, parameterSource: 'synthetic benchmark, not literature data', parameterClass: 'synthetic benchmark' },
     });
-    expect(numberText(-0)).toBe('-0');
   });
 
-  it('carries the metadata header: label, version, both commits, case file, time, inputs and units', () => {
-    const cols = runTimeseriesColumns(RUN);
-    const parsed = parseCsv(csvText(meta, cols));
-    expect(parsed.meta.label).toBe('COMPUTED v1.0');
-    expect(parsed.meta.strato_version).toBe(RUN.engine.strato_version);
-    expect(parsed.meta.solver_commit).toBe(RUN.engine.commit);
-    expect(parsed.meta.page_commit).toBe('abc1234');
-    expect(parsed.meta.case_file).toBe('inputs/synthetic/synthetic_five_layer.toml');
-    expect(parsed.meta.created_utc).toBe('2026-11-25T00:00:00Z');
-    expect(JSON.parse(parsed.meta.inputs ?? 'null')).toEqual(RUN.inputs);
-    expect(parsed.meta.units).toContain('release_fraction_fv=1');
-    expect(parsed.meta.units).toContain('inventory_mol=mol');
+  it('says that changed values are user-supplied and carry no source class', () => {
+    const changed = cloneConfig(DEFAULT_CASE.config);
+    changed.regions[3]!.diffusivity_m2_s *= 2;
+    expect(parameterProvenance(DEFAULT_CASE.config, DEFAULT_CASE.config).parameterClass).toBe('synthetic benchmark');
+    const p = parameterProvenance(DEFAULT_CASE.config, changed);
+    expect(p.parameterClass).toBe('user-supplied value, no source class recorded');
+    expect(p.source).toContain('changed by the user');
   });
 
-  it('reproduces the plotted release curves of the run exactly', () => {
-    const parsed = parseCsv(csvText(meta, runTimeseriesColumns(RUN)));
-    const fig = releaseFigure(RUN, 0, { log: false }, THEME);
-    const b = fig.data.find((t) => t.meta?.id === 'release-b')!;
-    expect(parsed.columns.time_s).toEqual([...b.x]);
-    expect(parsed.columns.release_fraction_fv).toEqual([...b.y]);
-    // The series column holds Code C at the times it returned, empty elsewhere.
-    const a = RUN.analytical!;
-    const series = parsed.columns.release_fraction_series!;
-    a.times_s.forEach((t, i) => expect(series[RUN.times_s.indexOf(t)]).toBe(a.release_fraction[i]));
-    expect(series.filter((v) => v !== null)).toHaveLength(a.times_s.length);
-    expect(seriesAtRunTimes(RUN)[0]).toBeNull();
+  it('shows a failure of the export as a message and writes no file', async () => {
+    vi.spyOn(session, 'solverClient').mockReturnValue({
+      exportRun: () => Promise.resolve({ body: { status: 'rejected', errors: ['the export refused this input'] }, elapsedMs: 1, requestId: 1 }),
+    } as unknown as ReturnType<typeof session.solverClient>);
+    withRun();
+    render(<LiveDownloads />);
+    fireEvent.click(screen.getByTestId('dl-run-run-json'));
+    await waitFor(() => expect(screen.getByTestId('download-error').textContent).toContain('the export refused this input'));
+    expect(blobs).toHaveLength(0);
   });
 
-  it('reproduces the plotted profile at every output time', () => {
-    const parsed = parseCsv(csvText(meta, runProfileColumns(RUN)));
-    expect(parsed.columns.centroid_m).toEqual(RUN.mesh.cell_centroids_m);
-    RUN.profiles.forEach((p) => expect(parsed.columns[`c_mol_m3_at_t_s=${numberText(p.t_s)}`]).toEqual(p.c_mol_per_m3));
-  });
-
-  it('writes the comparison with the difference compare_v1 returned', () => {
-    const reply = fakeCompare();
-    const parsed = parseCsv(csvText(meta, comparisonColumns(reply)));
-    const back = parsed.columns.difference_current_minus_baseline!;
-    back.forEach((v, i) => expect(Object.is(v, reply.difference.release_fraction[i])).toBe(true));
-    expect(parsed.columns.release_fraction_baseline).toEqual(reply.baseline.release_fraction);
+  it('reads back a file of the library export: provenance header, full column names, gaps', () => {
+    const parsed = parseCsv(text('btcs_run.timeseries.csv'));
+    expect(parsed.meta.solver_package_version).toBe(NATIVE_RUN.strato_version);
+    expect(parsed.meta.parameter_class).toBe('synthetic benchmark');
+    expect(parsed.names).toContain('Release fraction (dimensionless)');
+    expect(parsed.names).toContain('Release rate (mol/s)');
+    expect(parsed.columns['Release rate (mol/s)']![0]).toBeNull();
   });
 });
 
@@ -276,14 +312,18 @@ describe('plots in block B', () => {
     expect(screen.getByTestId('profile-time').dataset.value).toBe(String(RUN.profiles[12]?.t_s));
   });
 
-  it('show the release fraction at the playback time as returned, with its label', async () => {
+  it('show the release fraction at the playback time as returned, with its label and the two method switches', async () => {
     withRun();
     render(<ReleaseCurves />);
     act(() => useStrato.getState().setPlayback({ tIndex: 20 }));
     const v = screen.getByTestId('release-cursor-value');
     expect(v.dataset.value).toBe(String(RUN.release_fraction[20]));
-    expect(v.dataset.label).toBe('COMPUTED v1.0');
+    expect(v.dataset.label).toBe('COMPUTED v2.0');
     expect(screen.getByTestId('release-figure').textContent).toContain('not drawn here');
+    expect(screen.getByLabelText(METHOD_1)).toBeTruthy();
+    expect(screen.getByLabelText(METHOD_2)).toBeTruthy();
+    fireEvent.click(screen.getByTestId('release-method-2'));
+    expect(useStrato.getState().view.showMethod2).toBe(false);
   });
 
   it('show no plot and no label before a run', () => {
@@ -315,7 +355,6 @@ describe('plots in block B', () => {
     expect(useStrato.getState().view.releaseLog).toBe(true);
   });
 });
-
 describe('comparison and validation layers are independent', () => {
   it('changes neither layer when the other changes', () => {
     const s = useStrato.getState();
@@ -345,7 +384,7 @@ describe('downloads panel', () => {
     expect(screen.getByTestId('dl-comparison').dataset.available).toBe('false');
     withRun();
     expect(screen.getByTestId('dl-run').dataset.available).toBe('true');
-    expect(screen.getByTestId('dl-run').textContent).toContain('COMPUTED v1.0');
+    expect(screen.getByTestId('dl-run').textContent).toContain('COMPUTED v2.0');
     act(() => useStrato.getState().setComparison({ status: 'ok', reply: fakeCompare(), key: 'x' }));
     expect(screen.getByTestId('dl-comparison').dataset.available).toBe('true');
     expect(screen.getByTestId('dl-baseline').dataset.available).toBe('true');
@@ -354,10 +393,13 @@ describe('downloads panel', () => {
 
 describe('parameter provenance', () => {
   it('lists every input with status and filters by text', () => {
-    const rows = parameterRows(DEFAULT_CASE.config, DEFAULT_CASE.config, DEFAULT_CASE.provenance.notes.join(' '));
+    const rows = parameterRows(DEFAULT_CASE.config, DEFAULT_CASE.config, DEFAULT_CASE.provenance.input_file);
     expect(rows).toHaveLength(2 + DEFAULT_CASE.config.regions.length * 3 + 1 + 3);
     expect(rows.find((r) => r.key === 'regions[3].diffusivity_m2_s')?.file).toBe(DEFAULT_CASE.config.regions[3]?.diffusivity_m2_s);
     expect(rows.find((r) => r.key === 'regions[3].diffusivity_m2_s')?.status).toContain('not literature TRISO data');
+    expect(rows.find((r) => r.key === 'regions[3].diffusivity_m2_s')?.source).toBe(DEFAULT_CASE.provenance.input_file);
+    // every parameter row has a full name and a unit: no bare symbol
+    for (const r of rows) expect(r.parameter, r.key).toMatch(/[a-z]{4,}/);
     expect(filterRows(rows, 'sic diffusivity').map((r) => r.key)).toEqual(['regions[3].diffusivity_m2_s']);
     expect(filterRows(rows, '')).toHaveLength(rows.length);
   });

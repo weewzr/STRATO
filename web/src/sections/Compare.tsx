@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { BUILD } from '../build';
 import { findCase } from '../data/case';
 import { plain } from '../format';
+import { METHOD_1 } from '../methods';
 import { Badge, Sci } from '../panels/Badge';
 import { compareFigure } from '../plots/figures';
 import { Plot } from '../plots/Plot';
@@ -11,7 +12,7 @@ import { comparisonKey, configDifferences, useStrato } from '../state/store';
 import { Note, SectionHeading, TableBox } from './common';
 
 // The Compare section (web phase 5; prompt/DESIGN_SPECIFICATION.md Section 8.1): the baseline and the
-// current release curves from compare_v1, and the optional difference curve that compare_v1 computes
+// current release curves from compare, and the optional difference curve that compare computes
 // in Rust (current minus baseline on the shared output times). The browser subtracts nothing. The
 // comparison runs only while this section is open.
 
@@ -34,7 +35,7 @@ function ComparisonFigure() {
       <div className="figure__head">
         {reply ? <Badge label={reply.label} /> : <span className="readout__nolabel">Label: none</span>}
         <span className="figure__kind">
-          Release fraction <i>F</i>(<i>t</i>) of the baseline and of the current inputs
+          Release fraction (dimensionless) of the baseline and of the current inputs
           {stale ? <span className="sim-note"> updating for the changed inputs</span> : null}
         </span>
       </div>
@@ -53,10 +54,10 @@ function ComparisonFigure() {
           figure={figure}
           testId="compare-plot"
           height={320}
-          label={`Release fraction against time for the baseline${showBaseline ? ' (dashed)' : ' (hidden)'} and the current inputs (solid)${showDifference ? ', with the difference current minus baseline on the right axis (dotted), as compare_v1 returned it' : ''}.`}
+          label={`Release fraction against time for the baseline${showBaseline ? ' (dashed)' : ' (hidden)'} and the current inputs (solid)${showDifference ? ', with the difference current minus baseline on the right axis (dotted), as compare returned it' : ''}.`}
           exportInfo={{
             name: `strato-comparison-${reply.engine.commit}`,
-            source: `STRATO v${reply.engine.strato_version}, Rust solver in WebAssembly (build ${reply.engine.commit}), compare_v1; ${reply.label}; synthetic five-layer verification case, not physical data; page build ${BUILD.commit}.`,
+            source: `STRATO ${METHOD_1}, solver version ${reply.solver.version}, Rust solver in WebAssembly (build ${reply.engine.commit}), compare; ${reply.label}; synthetic five-layer verification case, not physical data; page build ${BUILD.commit}.`,
           }}
         />
       ) : comparison.status === 'rejected' || comparison.status === 'error' ? (
@@ -83,8 +84,7 @@ function ComparisonFigure() {
           <span data-testid="compare-final-current" data-value={String(reply.modified.diagnostics.final_release_fraction)}>
             {reply.modified.diagnostics.final_release_fraction.toPrecision(6)}
           </span>
-          ; difference at <i>t</i>
-          <sub>end</sub>{' '}
+          ; difference at the end of the simulation{' '}
           {(() => {
             const d = reply.difference.release_fraction[reply.difference.release_fraction.length - 1];
             return d === undefined ? '–' : (
@@ -93,18 +93,18 @@ function ComparisonFigure() {
               </span>
             );
           })()}{' '}
-          (from compare_v1). Solver time {comparison.elapsedMs !== null ? `${comparison.elapsedMs.toFixed(1)} ms` : '–'}, not a result.
+          (from compare). Solver time {comparison.elapsedMs !== null ? `${comparison.elapsedMs.toFixed(1)} ms` : '–'}, not a result.
         </p>
       ) : null}
       <figcaption className="figure__caption">
-        <strong>Figure 1.</strong> Fraction of the start inventory released, for the baseline (dashed) and the current inputs (solid), both
-        run by the verified v1.0 solver; before the Phase 2 physics, a comparison shows the effect of changed inputs, not of new physics.
-        The dotted difference curve is the series that <code>compare_v1</code> returns: the current minus the baseline release fraction,
+        <strong>Figure 1.</strong> Fraction of the initial inventory released, for the baseline (dashed) and the current inputs (solid), both
+        run by {METHOD_1}; until generation, decay and temperature dependence are solved, a comparison shows the effect of changed inputs, not of new physics.
+        The dotted difference curve is the series that <code>compare</code> returns: the current minus the baseline release fraction,
         computed in Rust at each output time both runs share. Runs with different output times are not compared, because the difference is
         never interpolated. The parameters that differ are listed above.
         {reply ? (
           <span className="figure__source">
-            Source: STRATO v{reply.engine.strato_version} Rust solver in WebAssembly, build <code>{reply.engine.commit}</code>, both runs
+            Source: {METHOD_1}, solver version {reply.solver.version}, Rust solver in WebAssembly, build <code>{reply.engine.commit}</code>, both runs
             starting from <code>{caseFile}</code> (synthetic verification case, not physical data). Page build <code>{BUILD.commit}</code>.
             The CSV and JSON of the comparison are under <a href={hrefFor('data')}>Data</a>.
           </span>
@@ -130,7 +130,7 @@ export function Compare() {
 
   return (
     <article className="section" data-section="compare">
-      <SectionHeading lede="Compare the current inputs with a baseline. Both runs use the verified v1.0 solver, so the comparison shows the effect of the inputs, not of new physics.">
+      <SectionHeading lede="Compare the current inputs with a baseline. Both runs use the verified solver of Method 1: Finite Difference BTCS, so the comparison shows the effect of the inputs, not of new physics.">
         Compare with the baseline
       </SectionHeading>
 

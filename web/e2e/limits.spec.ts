@@ -4,7 +4,7 @@ import type { Page } from '@playwright/test';
 import { REQUEST_TIMEOUT_MS } from '../src/solver/tolerances';
 import { expect, gotoSection, test, waitForRun } from './fixtures';
 
-// Web phase 3: measured browser run times at the wrapper limits MAX_TOTAL_CELLS, MAX_STEPS,
+// Measured browser run times of the BTCS solver at the wrapper limits MAX_TOTAL_INTERVALS, MAX_STEPS,
 // MAX_PROFILE_VALUES and MAX_SERIES_MODES (prompt/TECHNICAL_ARCHITECTURE.md Section 3, defence 2,
 // and Section 6). The configurations are those of crates/strato-wasm/examples/limits_timing.rs.
 // Each run must finish inside the worker time-out; the times are recorded (LIMITS_OUT, if set) for
@@ -35,17 +35,17 @@ async function timeRun(page: Page, url: string, config: Cfg) {
           const m = ev.data;
           if (m.kind === 'hello') {
             t0 = performance.now();
-            w.postMessage({ id: 1, kind: 'run_v1', payload: JSON.stringify({ schema: 1, config }) });
+            w.postMessage({ id: 1, kind: 'run', payload: JSON.stringify({ schema: 2, config }) });
           } else if (m.kind === 'response') {
             const wall = performance.now() - t0;
             w.terminate();
             if (!m.ok || !m.body) return reject(new Error(m.error));
-            const b = m.body as { status: string; diagnostics?: { output_rows: number; code_c: { modes: number } | null } };
+            const b = m.body as { status: string; diagnostics?: { output_rows: number }; analytical?: { modes: number } | null };
             resolve({
               status: b.status,
               elapsed_ms: m.elapsed_ms ?? NaN,
               wall_ms: wall,
-              modes: b.diagnostics?.code_c?.modes ?? null,
+              modes: b.analytical?.modes ?? null,
               rows: b.diagnostics?.output_rows ?? null,
               bytes: JSON.stringify(m.body).length,
             });

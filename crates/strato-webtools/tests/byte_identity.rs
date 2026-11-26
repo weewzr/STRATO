@@ -140,6 +140,7 @@ fn precomputed_files_are_reproduced_from_their_sources() {
         profiles_csv: body_from(&read("btcs_run.profiles.csv"), "# STRATO BTCS"),
         run_json: committed_json(&root, "btcs_run.json")["data"]["run"].clone(),
         native: committed_json(&root, "wrapper_native_synthetic.json")["data"].clone(),
+        battery: committed_json(&root, "wrapper_native_battery.json")["data"].clone(),
         check_csv,
     };
     precomputed::cross_check(&raw).unwrap();

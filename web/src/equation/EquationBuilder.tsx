@@ -7,6 +7,7 @@ import { hrefFor } from '../route';
 import { useStrato } from '../state/store';
 import { simulationMethod, type SimulationMethod } from './availability';
 import { codeHref, docHref, DOCS, type DocRef } from './links';
+import { LiveValues } from './LiveValues';
 import {
   balanceFor,
   conditionsFor,
@@ -454,8 +455,8 @@ function useWide(query: string): boolean {
 
 /**
  * What the simulation below has to do with the equations of the step. A step of the BTCS solver is
- * live only when the wrapper reports the BTCS capability; until the website switch it is not, and
- * the page says so instead of calling the equation live.
+ * live only when the wrapper reports the BTCS capability at the live status; otherwise the page says
+ * so instead of calling the equation live.
  */
 function Banner({ stage, method, catalogue }: { stage: Stage; method: SimulationMethod; catalogue: Catalogue }) {
   const def = STEP_DEFS[stage];
@@ -492,14 +493,14 @@ function Banner({ stage, method, catalogue }: { stage: Stage; method: Simulation
   if (stage === 13) {
     return (
       <p className="live-note" data-testid="live-note">
-        Numerical verification checks that the code solves its own equations. It is not experimental validation. The website switch is pending: the Verify section still reports the previous solver; the BTCS checks are in tests/btcs_verification.rs.
+        Numerical verification checks that the code solves its own equations. It is not experimental validation. The checks of the solver and their results are under Verify; the tests are in tests/btcs_verification.rs.
       </p>
     );
   }
   if (method === 'btcs') {
     return (
       <p className="live-note" data-testid="live-note">
-        Live: the simulation below solves these equations with the verified BTCS Rust solver.
+        Live: the simulation below solves these equations with Method 1, the verified finite-difference BTCS Rust solver.
       </p>
     );
   }
@@ -507,7 +508,7 @@ function Banner({ stage, method, catalogue }: { stage: Stage; method: Simulation
     <p className="live-note live-note--pending" data-testid="live-note">
       {method === 'loading'
         ? 'These are BTCS equations. The solver that runs the simulation below is loading.'
-        : 'These are BTCS equations. The simulation below does not run the BTCS solver yet; the website switch is pending.'}
+        : 'These are the equations of Method 1. The solver reported by this page does not offer the BTCS capability at the live status, so the simulation below shows no result.'}
     </p>
   );
 }
@@ -686,6 +687,7 @@ export function EquationBuilder({ compact }: { compact: boolean }) {
                 <p className="more__note" data-testid="live-values">
                   {def.live}
                 </p>
+                <LiveValues stage={stage} />
                 {stage === 13 ? (
                   <p className="more__note">
                     <a href={hrefFor('verify')}>Verification results</a>

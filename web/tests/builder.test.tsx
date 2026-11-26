@@ -86,12 +86,12 @@ describe('selecting a step changes the display only', () => {
     expect(screen.getByTestId('live-note').textContent).toMatch(/solver that runs the simulation below is loading/);
   });
 
-  it('does not call a BTCS equation live while the wrapper still runs the previous solver', () => {
-    act(() => useStrato.getState().setCapabilities(['diffusion_layered']));
+  it('does not call a BTCS equation live when the wrapper does not report the BTCS capability', () => {
+    act(() => useStrato.getState().setCapabilities(['generation']));
     render(<EquationBuilder compact={false} />);
     for (const s of [1, 6, 12]) {
       act(() => screen.getByTestId(`stage-${s}`).click());
-      expect(screen.getByTestId('live-note').textContent).toMatch(/does not run the BTCS solver yet; the website switch is pending/);
+      expect(screen.getByTestId('live-note').textContent).toMatch(/does not offer the BTCS capability at the live status/);
       expect(screen.getByTestId('live-note').textContent).not.toMatch(/^Live:/);
     }
   });
@@ -99,7 +99,7 @@ describe('selecting a step changes the display only', () => {
   it('with the BTCS capability, steps one to twelve are live; the previews are not', () => {
     act(() => useStrato.getState().setCapabilities([BTCS_CAPABILITY]));
     render(<EquationBuilder compact={false} />);
-    expect(screen.getByTestId('live-note').textContent).toBe('Live: the simulation below solves these equations with the verified BTCS Rust solver.');
+    expect(screen.getByTestId('live-note').textContent).toBe('Live: the simulation below solves these equations with Method 1, the verified finite-difference BTCS Rust solver.');
     act(() => screen.getByTestId('stage-15').click());
     expect(screen.getByTestId('preview-banner').textContent).toMatch(/^Preview only: this mechanism is not solved\./);
   });
@@ -215,8 +215,8 @@ describe('no active toggle without solver support', () => {
     await user.keyboard(' ');
   };
 
-  it('with the v1.0 capabilities every mechanism switch is disabled, stays off and says why', async () => {
-    act(() => useStrato.getState().setCapabilities(['diffusion_layered']));
+  it('with only the BTCS capability every mechanism switch is disabled, stays off and says why', async () => {
+    act(() => useStrato.getState().setCapabilities(['diffusion_btcs_layered']));
     render(<ControlPanel layout="inline" />);
     for (const id of ['source', 'decay', 'arrhenius']) {
       const sw = screen.getByTestId(`mech-${id}`);
@@ -232,7 +232,7 @@ describe('no active toggle without solver support', () => {
 
   it('a VERIFIED mechanism absent from the capabilities stays disabled', async () => {
     const cat = fixtureCatalogue({ generation: 'VERIFIED', decay: 'VERIFIED', diffusivity_temperature: 'VERIFIED' });
-    act(() => useStrato.getState().setCapabilities(['diffusion_layered']));
+    act(() => useStrato.getState().setCapabilities(['diffusion_btcs_layered']));
     render(withCatalogue(cat, <ControlPanel layout="inline" />));
     for (const id of ['source', 'decay', 'arrhenius']) {
       const sw = screen.getByTestId(`mech-${id}`);
@@ -244,7 +244,7 @@ describe('no active toggle without solver support', () => {
 
   it('a mechanism reported by the wrapper but only IMPLEMENTED stays disabled', async () => {
     const cat = fixtureCatalogue({ generation: 'IMPLEMENTED', decay: 'IMPLEMENTED', diffusivity_temperature: 'IMPLEMENTED' });
-    act(() => useStrato.getState().setCapabilities(['diffusion_layered', 'generation', 'decay', 'diffusivity_temperature']));
+    act(() => useStrato.getState().setCapabilities(['diffusion_btcs_layered', 'generation', 'decay', 'diffusivity_temperature']));
     render(withCatalogue(cat, <ControlPanel layout="inline" />));
     for (const id of ['source', 'decay', 'arrhenius']) {
       const sw = screen.getByTestId(`mech-${id}`);
@@ -256,7 +256,7 @@ describe('no active toggle without solver support', () => {
   });
 
   it('setMechanism refuses a mechanism that isAvailable() rejects', () => {
-    act(() => useStrato.getState().setCapabilities(['diffusion_layered', 'generation']));
+    act(() => useStrato.getState().setCapabilities(['diffusion_btcs_layered', 'generation']));
     useStrato.getState().setMechanism('source', true);
     expect(useStrato.getState().mechanisms.source).toEqual({ enabled: false, available: false });
   });

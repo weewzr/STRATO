@@ -1,24 +1,17 @@
-import type { ReactNode } from 'react';
-import { BUILD } from '../build';
-import { findCase } from '../data/case';
-import {
-  comparisonColumns,
-  csvText,
-  exportMeta,
-  jsonText,
-  runProfileColumns,
-  runTimeseriesColumns,
-  TIMESERIES_UNITS,
-  type Column,
-} from '../downloads/serialise';
+import { useState, type ReactNode } from 'react';
+import { findCase, type CaseConfig } from '../data/case';
+import { METHOD_1 } from '../methods';
 import { hrefFor } from '../route';
-import type { CompareOk, RunOk } from '../solver/types';
-import { comparisonKey, inputKey, useStrato } from '../state/store';
+import { solverClient } from '../solver/session';
+import type { CompareOk, ExportFormat, RunOk } from '../solver/types';
+import { comparisonKey, configDifferences, inputKey, useStrato } from '../state/store';
 import { Badge } from './Badge';
 
 // Downloads of the live results (web phase 5; prompt/DESIGN_SPECIFICATION.md Section 8.5): the current
-// run, the baseline run and the comparison, each as CSV and JSON with a metadata header. The files are
-// written in the browser from the wrapper's reply as it is (downloads/serialise.ts).
+// run and the baseline run as CSV and JSON, and the comparison. The data files of a run are written by
+// the library's export in Rust (the wrapper's export_run): each starts with a provenance header with
+// the solver version and commit, the digest of the input, and the source and class of the parameters,
+// and its columns carry the full physical name with the unit. The page saves the text unchanged.
 
 function save(name: string, text: string, type: string): void {
   const blob = new Blob([text], { type });
@@ -32,8 +25,24 @@ function save(name: string, text: string, type: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
-function columnUnits(cols: Column[]): Record<string, string> {
-  return Object.fromEntries(cols.map((c) => [c.name, c.unit]));
+const FORMATS: { format: ExportFormat; label: string; stem: string; ext: string }[] = [
+  { format: 'timeseries_csv', label: 'Time series CSV', stem: 'timeseries', ext: 'csv' },
+  { format: 'profiles_csv', label: 'Profiles CSV', stem: 'profiles', ext: 'csv' },
+  { format: 'run_json', label: 'Run JSON', stem: 'run', ext: 'json' },
+];
+
+/** Source row and class of the parameters of an export (decision 31): the synthetic benchmark, or the user's changes to it. */
+export function parameterProvenance(caseConfig: CaseConfig | undefined, config: CaseConfig): { source: string; parameterClass: string } {
+  const same = caseConfig !== undefined && configDifferences(caseConfig, config).length === 0;
+  return same
+    ? { source: 'synthetic benchmark, not literature data', parameterClass: 'synthetic benchmark' }
+    : { source: 'synthetic benchmark input with values changed by the user in the web controls', parameterClass: 'user-supplied value, no source class recorded' };
+}
+
+interface FileSpec {
+  label: string;
+  name: string;
+  build: () => Promise<{ text: string; type: string }>;
 }
 
 interface Item {
@@ -41,12 +50,12 @@ interface Item {
   title: string;
   text: ReactNode;
   run: RunOk | null;
-  files: { label: string; name: string; build: () => { text: string; type: string } }[];
+  files: FileSpec[];
   missing: ReactNode;
   stale?: boolean;
 }
 
-function DownloadItem({ item }: { item: Item }) {
+function DownloadItem({ item, onError }: { item: Item; onError: (message: string | null) => void }) {
   return (
     <li className="downloads__item" data-testid={`dl-${item.id}`} data-available={item.run ? 'true' : 'false'}>
       <p className="downloads__title">
@@ -62,8 +71,11 @@ function DownloadItem({ item }: { item: Item }) {
               className="btn btn--small"
               data-testid={`dl-${item.id}-${f.label.toLowerCase().replace(/[^a-z]+/g, '-')}`}
               onClick={() => {
-                const { text, type } = f.build();
-                save(f.name, text, type);
+                onError(null);
+                f.build().then(
+                  ({ text, type }) => save(f.name, text, type),
+                  (e: unknown) => onError(e instanceof Error ? e.message : String(e)),
+                );
               }}
             >
               {f.label}
@@ -87,37 +99,28 @@ export function LiveDownloads() {
   const baselineConfig = useStrato((s) => s.baselineConfig);
   const comparison = useStrato((s) => s.comparison);
   const caseId = useStrato((s) => s.caseId);
-  const caseFile = findCase(caseId)?.provenance.input_file ?? '';
+  const entry = findCase(caseId);
+  const caseFile = entry?.provenance.input_file ?? '';
+  const [error, setError] = useState<string | null>(null);
   const reply: CompareOk | null = comparison.reply;
   const compareStale = reply !== null && comparison.key !== comparisonKey(baselineConfig, config);
-  const commit = (r: RunOk) => r.engine.commit;
 
-  const runFiles = (r: RunOk, kind: string, stem: string, note: string) => [
-    {
-      label: 'Time series CSV',
-      name: `${stem}-timeseries-${commit(r)}.csv`,
-      build: () => {
-        const cols = runTimeseriesColumns(r);
-        return { text: csvText(exportMeta(`${kind}_timeseries`, r.label, r.engine, BUILD.commit, caseFile, r.inputs, note), cols), type: 'text/csv' };
-      },
-    },
-    {
-      label: 'Profiles CSV',
-      name: `${stem}-profiles-${commit(r)}.csv`,
-      build: () => {
-        const cols = runProfileColumns(r);
-        return { text: csvText(exportMeta(`${kind}_profiles`, r.label, r.engine, BUILD.commit, caseFile, r.inputs, note), cols), type: 'text/csv' };
-      },
-    },
-    {
-      label: 'Full reply JSON',
-      name: `${stem}-${commit(r)}.json`,
-      build: () => ({
-        text: jsonText(exportMeta(kind, r.label, r.engine, BUILD.commit, caseFile, r.inputs, note), { ...TIMESERIES_UNITS, c_mol_per_m3: 'mol m^-3', cell_centroids_m: 'm', cell_faces_m: 'm', layer_inventory_mol: 'mol', layer_share: '1' }, r),
-        type: 'application/json',
-      }),
-    },
-  ];
+  /** One data file of a run, written by the library's export in Rust and saved unchanged. */
+  const exportFile = async (cfg: CaseConfig, format: ExportFormat): Promise<{ text: string; type: string }> => {
+    const client = solverClient();
+    if (!client) throw new Error('The solver is not available, so no file can be written.');
+    const prov = parameterProvenance(entry?.config, cfg);
+    const out = await client.exportRun(cfg, format, { inputFile: caseFile, parameterSource: prov.source, parameterClass: prov.parameterClass });
+    if (out.body.status !== 'ok') throw new Error(out.body.errors.join('; '));
+    return { text: out.body.text, type: out.body.media_type };
+  };
+
+  const runFiles = (r: RunOk, cfg: CaseConfig, stem: string): FileSpec[] =>
+    FORMATS.map((f) => ({
+      label: f.label,
+      name: `${stem}-${f.stem}-${r.engine.commit}.${f.ext}`,
+      build: () => exportFile(cfg, f.format),
+    }));
 
   const items: Item[] = [
     {
@@ -125,33 +128,33 @@ export function LiveDownloads() {
       title: 'Current run',
       run,
       stale: run !== null && info?.inputKey !== inputKey(config),
-      text: 'The run shown on Explore: time series of the finite-volume solution with the series (Code C) where it exists, the concentration in every cell at every output time, and the full reply of the solver.',
+      text: `The run shown on Explore, written by the solver in Rust: the time series (inventory, release, mass-balance residual with its derived bound), the concentration at every node at every output time, and the JSON of the whole run, each file with the provenance header of ${METHOD_1}.`,
       missing: (
         <>
           No run yet. The solver runs the inputs on <a href={hrefFor('explore')}>Explore</a> as soon as it has loaded.
         </>
       ),
-      files: run ? runFiles(run, 'run', 'strato-run', 'Current run of the synthetic verification case; not physical data.') : [],
+      files: run ? runFiles(run, config, 'strato-run') : [],
     },
     {
       id: 'baseline',
       title: 'Baseline run',
       run: reply?.baseline ?? null,
       stale: compareStale,
-      text: 'The baseline run of the last comparison, as compare_v1 returned it.',
+      text: 'The baseline run of the last comparison, written by the solver in the same three files.',
       missing: (
         <>
           Appears when a comparison has run: open <a href={hrefFor('compare')}>Compare</a>.
         </>
       ),
-      files: reply ? runFiles(reply.baseline, 'baseline_run', 'strato-baseline', 'Baseline run of the last comparison (compare_v1).') : [],
+      files: reply ? runFiles(reply.baseline, baselineConfig, 'strato-baseline') : [],
     },
     {
       id: 'comparison',
       title: 'Comparison',
       run: reply?.modified ?? null,
       stale: compareStale,
-      text: 'Release fraction of the baseline and of the current inputs on their shared output times, and the difference current minus baseline as compare_v1 computed it in Rust.',
+      text: 'Both runs and the difference of the release fraction, current minus baseline, as the solver returned them (the difference is computed in Rust on the output times both runs share).',
       missing: (
         <>
           Appears when a comparison has run: open <a href={hrefFor('compare')}>Compare</a>.
@@ -160,30 +163,9 @@ export function LiveDownloads() {
       files: reply
         ? [
             {
-              label: 'Curves CSV',
-              name: `strato-comparison-${reply.engine.commit}.csv`,
-              build: () => {
-                const cols = comparisonColumns(reply);
-                return {
-                  text: csvText(
-                    exportMeta('comparison', reply.label, reply.engine, BUILD.commit, caseFile, { baseline: reply.baseline.inputs, current: reply.modified.inputs }, 'difference = current minus baseline, computed by compare_v1 in Rust.'),
-                    cols,
-                  ),
-                  type: 'text/csv',
-                };
-              },
-            },
-            {
-              label: 'Full reply JSON',
+              label: 'Comparison reply JSON',
               name: `strato-comparison-${reply.engine.commit}.json`,
-              build: () => ({
-                text: jsonText(
-                  exportMeta('comparison', reply.label, reply.engine, BUILD.commit, caseFile, { baseline: reply.baseline.inputs, current: reply.modified.inputs }, 'difference = current minus baseline, computed by compare_v1 in Rust.'),
-                  columnUnits(comparisonColumns(reply)),
-                  reply,
-                ),
-                type: 'application/json',
-              }),
+              build: () => Promise.resolve({ text: `${JSON.stringify(reply, null, 1)}\n`, type: 'application/json' }),
             },
           ]
         : [],
@@ -191,10 +173,17 @@ export function LiveDownloads() {
   ];
 
   return (
-    <ul className="downloads" data-testid="live-downloads">
-      {items.map((it) => (
-        <DownloadItem key={it.id} item={it} />
-      ))}
-    </ul>
+    <>
+      <ul className="downloads" data-testid="live-downloads">
+        {items.map((it) => (
+          <DownloadItem key={it.id} item={it} onError={setError} />
+        ))}
+      </ul>
+      {error ? (
+        <p className="sim-alert" role="alert" data-testid="download-error">
+          The file could not be written: {error}
+        </p>
+      ) : null}
+    </>
   );
 }

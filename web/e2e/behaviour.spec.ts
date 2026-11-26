@@ -99,7 +99,7 @@ test.describe('content and data', () => {
     const build = (await (await page.request.get('/STRATO/build.json')).json()) as { commit: string };
     await expect(page.getByTestId('status-commit')).toContainText(build.commit);
     await waitForRun(page);
-    await expect(page.getByTestId('status-result')).toHaveText('Result COMPUTED v1.0');
+    await expect(page.getByTestId('status-result')).toHaveText('Result COMPUTED v2.0');
     await expect(page.getByTestId('status-solver')).toContainText(/ms in this browser/);
     await expect(page.getByTestId('diagnostics-panel')).toContainText(`WebAssembly build ${build.commit}`);
     expect(await page.locator('meta[name="strato-build"]').getAttribute('content')).toBe(build.commit);
