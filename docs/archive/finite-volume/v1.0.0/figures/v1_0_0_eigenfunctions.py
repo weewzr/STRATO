@@ -10,11 +10,10 @@ Panel (a): concentration shape phi_n = u_n / r, scaled so that max |phi_n| = 1 a
 phi_n(0) > 0 (dimensionless). Panel (b): u_n / sqrt(N_n), N_n = int_0^R u_n^2 dr,
 which makes int_0^R (u_n / sqrt(N_n))^2 dr = 1 (unit m^-1/2).
 
-Output (150 dpi): docs/mathematics/v1.0.0/figures/eigenfunctions.png
+Output (150 dpi): eigenfunctions.png, beside this script
 
 Run:
-    C:/Y3S1/Nuclear/STRATO/.venv/Scripts/python.exe -I -X utf8 \
-        scripts/figures/v1_0_0_eigenfunctions.py
+    python -I -X utf8 v1_0_0_eigenfunctions.py   (needs matplotlib, numpy, scipy)
 """
 
 import math
@@ -28,8 +27,7 @@ import numpy as np  # noqa: E402
 from scipy.integrate import quad  # noqa: E402
 from scipy.optimize import brentq  # noqa: E402
 
-REPO = Path(__file__).resolve().parents[2]
-OUT = REPO / "docs" / "mathematics" / "v1.0.0" / "figures" / "eigenfunctions.png"
+OUT = Path(__file__).resolve().parent / "eigenfunctions.png"
 
 RAD = [2.0e-4, 3.0e-4, 3.5e-4, 4.0e-4, 4.5e-4]
 DIF = [1.0e-12, 4.0e-10, 8.0e-13, 2.0e-14, 7.0e-13]

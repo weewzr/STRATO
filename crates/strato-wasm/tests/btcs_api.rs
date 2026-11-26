@@ -805,10 +805,10 @@ fn compare_returns_modified_minus_baseline() {
 }
 
 #[test]
-fn build_info_reports_abi_2_and_the_btcs_capability() {
+fn build_info_reports_abi_3_and_the_btcs_capability() {
     let v: Value = serde_json::from_str(&strato_wasm::build_info()).unwrap();
-    assert_eq!(v["abi"], 2);
-    assert_eq!(strato_wasm::abi_version(), 2);
+    assert_eq!(v["abi"], 3);
+    assert_eq!(strato_wasm::abi_version(), 3);
     let b = &v["btcs"];
     assert_eq!(b["capabilities"], json!(["diffusion_btcs_layered"]));
     assert_eq!(b["label"], "COMPUTED v2.0");
@@ -817,13 +817,9 @@ fn build_info_reports_abi_2_and_the_btcs_capability() {
     assert_eq!(b["solver"]["id"], "btcs_five_layer");
     assert_eq!(b["solver"]["version"], v["strato_version"]);
     assert_eq!(b["limits"]["max_total_intervals"], 2000);
-    // The finite-volume functions stay, and say they are the legacy ones.
-    assert_eq!(v["capabilities"], json!(["diffusion_layered"]));
-    assert!(v["legacy_finite_volume"]["functions"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .any(|f| f == "run_v1"));
+    // The finite-volume functions of version 1.x are gone: no legacy block, no old capability.
+    assert!(v.get("legacy_finite_volume").is_none());
+    assert!(v.get("capabilities").is_none());
 }
 
 // ---------------------------------------------------------------------------------------

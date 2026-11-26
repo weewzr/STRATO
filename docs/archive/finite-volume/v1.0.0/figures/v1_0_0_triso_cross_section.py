@@ -12,13 +12,12 @@ Source of dimensions (measured values, AGR-1 Baseline fuel, average values):
     OPyC 41.0 um. AGR-1 kernels are UCO; the label "UCO/UO2" names both common
     TRISO kernel types.
 
-Outputs (200 dpi, white background, sized for 15 cm print width):
-    docs/mathematics/v1.0.0/figures/triso_cross_section.png
-    docs/mathematics/v1.0.0/figures/radial_domains.png
+Outputs (200 dpi, white background, sized for 15 cm print width), beside this script:
+    triso_cross_section.png
+    radial_domains.png
 
 Run:
-    C:/Y3S1/Nuclear/STRATO/.venv/Scripts/python.exe -I -X utf8 \
-        scripts/figures/v1_0_0_triso_cross_section.py
+    python -I -X utf8 v1_0_0_triso_cross_section.py   (needs matplotlib)
 """
 
 from pathlib import Path
@@ -29,8 +28,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.patches import Circle, Rectangle  # noqa: E402
 
-REPO = Path(__file__).resolve().parents[2]
-OUT_DIR = REPO / "docs" / "mathematics" / "v1.0.0" / "figures"
+OUT_DIR = Path(__file__).resolve().parent
 
 # --- Data (Morris et al. 2016, Table 2), micrometres -------------------------
 KERNEL_DIAMETER_UM = 350.0

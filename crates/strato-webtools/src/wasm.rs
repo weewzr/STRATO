@@ -26,7 +26,7 @@ const OUT: &str = "web/src/solver/pkg";
 const WASM_NAME: &str = "strato_wasm";
 const TARGET: &str = "wasm32-unknown-unknown";
 
-/// The functions the web worker calls (BTCS interface, ABI 2) and the module's own status
+/// The functions the web worker calls (BTCS interface, ABI 3) and the module's own status
 /// functions. The page calls no other export.
 pub const WEB_EXPORTS: [&str; 6] = [
     "abi_version",
@@ -36,23 +36,13 @@ pub const WEB_EXPORTS: [&str; 6] = [
     "compare",
     "export_run",
 ];
-/// The finite-volume functions that the module still carries until the retirement task removes
-/// them. The page never calls them (web/tests/btcs_only.test.ts); the export check lists them so
-/// that no other export can slip in beside them.
-pub const LEGACY_EXPORTS: [&str; 4] = [
-    "validate_config",
-    "run_v1",
-    "analytical_release",
-    "compare_v1",
-];
-/// Every export the module may have: the web contract and the legacy functions.
-pub const REQUIRED_EXPORTS: [&str; 10] = [
-    "abi_version",
-    "build_info",
-    "validate",
-    "run",
-    "compare",
-    "export_run",
+/// Every export the module may have: the web contract. The finite-volume functions of ABI 1 and 2
+/// (`validate_config`, `run_v1`, `analytical_release`, `compare_v1`) are retired; one of them in
+/// the module fails the check "no unexpected exports".
+pub const REQUIRED_EXPORTS: [&str; 6] = WEB_EXPORTS;
+/// The names of the retired finite-volume exports, which the tests keep out of the contract.
+#[cfg(test)]
+const RETIRED_EXPORTS: [&str; 4] = [
     "validate_config",
     "run_v1",
     "analytical_release",
@@ -307,10 +297,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn the_allowed_exports_are_the_web_functions_and_the_legacy_ones() {
-        let mut want: Vec<&str> = WEB_EXPORTS.to_vec();
-        want.extend(LEGACY_EXPORTS);
-        assert_eq!(REQUIRED_EXPORTS.to_vec(), want);
+    fn the_allowed_exports_are_the_web_functions_only() {
+        assert_eq!(REQUIRED_EXPORTS.to_vec(), WEB_EXPORTS.to_vec());
+        for n in RETIRED_EXPORTS {
+            assert!(!REQUIRED_EXPORTS.contains(&n), "{n}");
+        }
         // The web contract is the BTCS interface and the data export, by method-neutral names.
         for n in WEB_EXPORTS {
             assert!(!n.ends_with("_v1") && !n.contains("config"), "{n}");

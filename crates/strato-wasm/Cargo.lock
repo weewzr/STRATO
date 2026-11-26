@@ -9,12 +9,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2cb931c189b85683d69a5cfad41d4d418671e1ac413dd209f3f2fc31e3cfd902"
 
 [[package]]
-name = "autocfg"
-version = "1.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53"
-
-[[package]]
 name = "bumpalo"
 version = "3.20.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -54,30 +48,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "00d174d5400e5e8fd687ad1049e2f578285fa914201b1af7e8b112a4546bd826"
 
 [[package]]
-name = "futures-core"
-version = "0.3.34"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92d699e522242e69e3003b94ecc1f960f3a5e015aa7c5d7486e65ad01dd94f5e"
-
-[[package]]
-name = "futures-task"
-version = "0.3.34"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd417de3d1d015fc3bfd2b1ea46dfc7bab72ef86f1cc7cc9c78e728b34a6d1fd"
-
-[[package]]
-name = "futures-util"
-version = "0.3.34"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d50a92467f8ba5dd6e3ee5d4bd04d73ab2e4e1c44474a0674821dfce14b79bc"
-dependencies = [
- "futures-core",
- "futures-task",
- "pin-project-lite",
- "slab",
-]
-
-[[package]]
 name = "hashbrown"
 version = "0.17.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -100,64 +70,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3bd1574e617a9a6c1f8f8181bd7e841e1f20e4277607ef28945765188d6284d4"
 
 [[package]]
-name = "js-sys"
-version = "0.3.107"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8dc09d2154098bbf4ef54eab6b117a3c24cbbffe94046b16ee6d6d4510584d3a"
-dependencies = [
- "cfg-if",
- "futures-util",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "memchr"
 version = "2.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
-
-[[package]]
-name = "num-traits"
-version = "0.2.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
-dependencies = [
- "autocfg",
-]
-
-[[package]]
-name = "pin-project-lite"
-version = "0.2.18"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c938015719552d665fd0553b90d96cd7ff58e83e4c061ca99e6bb78865a72752"
-
-[[package]]
-name = "plotters"
-version = "0.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5aeb6f403d7a4911efb1e33402027fc44f29b5bf6def3effcc22d7bb75f2b747"
-dependencies = [
- "num-traits",
- "plotters-backend",
- "plotters-svg",
- "wasm-bindgen",
- "web-sys",
-]
-
-[[package]]
-name = "plotters-backend"
-version = "0.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df42e13c12958a16b3f7f4386b9ab1f3e7933914ecea48da7139435263a4172a"
-
-[[package]]
-name = "plotters-svg"
-version = "0.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51bae2ac328883f7acdfea3d66a7c35751187f870bc81f94563733a154d7a670"
-dependencies = [
- "plotters-backend",
-]
 
 [[package]]
 name = "proc-macro2"
@@ -242,25 +158,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "slab"
-version = "0.4.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c790de23124f9ab44544d7ac05d60440adc586479ce501c1d6d7da3cd8c9cf5"
-
-[[package]]
 name = "strato"
-version = "1.0.1"
+version = "2.0.0"
 dependencies = [
  "anyhow",
- "csv",
- "plotters",
  "serde",
  "toml",
 ]
 
 [[package]]
 name = "strato-wasm"
-version = "0.1.0"
+version = "2.0.0"
 dependencies = [
  "anyhow",
  "csv",
@@ -371,16 +279,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3b1f9c3798725016c6ee5f2f57869ec0831e8bbc0ab0310a86e787e97f41389e"
 dependencies = [
  "unicode-ident",
-]
-
-[[package]]
-name = "web-sys"
-version = "0.3.107"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7d179596ff5ec0f6de4db64d54011bde6289cc49603d3a6e4ce3f329207ab88"
-dependencies = [
- "js-sys",
- "wasm-bindgen",
 ]
 
 [[package]]

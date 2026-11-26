@@ -12,10 +12,10 @@ face flows of the cell balance.
 The radii are illustrative (dimensionless faces at 1, 2, 3, 4), chosen so that the
 outward shift of the centroid is visible; they are not STRATO input values.
 
-Output (150 dpi): docs/mathematics/v1.0.0/figures/control_volume.png
+Output (150 dpi): control_volume.png, beside this script
 
 Run:
-    C:/Y3S1/Nuclear/STRATO/.venv/Scripts/python.exe -I -X utf8 scripts/figures/v1_0_0_control_volume.py
+    python -I -X utf8 v1_0_0_control_volume.py   (needs matplotlib)
 """
 
 import math
@@ -27,8 +27,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.patches import Circle, FancyArrowPatch, Rectangle, Wedge  # noqa: E402
 
-REPO = Path(__file__).resolve().parents[2]
-OUT = REPO / "docs" / "mathematics" / "v1.0.0" / "figures" / "control_volume.png"
+OUT = Path(__file__).resolve().parent / "control_volume.png"
 
 
 def centroid(a, b):
