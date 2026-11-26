@@ -788,6 +788,57 @@ Time at temperature (h)
 <line opacity="1" stroke="#787878" stroke-width="2" x1="574" y1="238" x2="582" y2="230"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="574" y1="188" x2="582" y2="196"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="574" y1="196" x2="582" y2="188"/>
+<polyline fill="none" opacity="1" stroke="#AAAAAA" stroke-width="1" points="128,199 128,196 "/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="124" y1="193" x2="132" y2="201"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="124" y1="201" x2="132" y2="193"/>
+<polyline fill="none" opacity="1" stroke="#AAAAAA" stroke-width="1" points="168,199 168,196 "/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="164" y1="193" x2="172" y2="201"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="164" y1="201" x2="172" y2="193"/>
+<polyline fill="none" opacity="1" stroke="#AAAAAA" stroke-width="1" points="222,199 222,196 "/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="218" y1="193" x2="226" y2="201"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="218" y1="201" x2="226" y2="193"/>
+<polyline fill="none" opacity="1" stroke="#AAAAAA" stroke-width="1" points="242,199 242,196 "/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="238" y1="193" x2="246" y2="201"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="238" y1="201" x2="246" y2="193"/>
+<polyline fill="none" opacity="1" stroke="#AAAAAA" stroke-width="1" points="255,199 255,196 "/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="251" y1="193" x2="259" y2="201"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="251" y1="201" x2="259" y2="193"/>
+<polyline fill="none" opacity="1" stroke="#AAAAAA" stroke-width="1" points="322,199 322,196 "/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="318" y1="193" x2="326" y2="201"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="318" y1="201" x2="326" y2="193"/>
+<polyline fill="none" opacity="1" stroke="#AAAAAA" stroke-width="1" points="360,199 360,196 "/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="356" y1="193" x2="364" y2="201"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="356" y1="201" x2="364" y2="193"/>
+<polyline fill="none" opacity="1" stroke="#AAAAAA" stroke-width="1" points="392,199 392,196 "/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="388" y1="193" x2="396" y2="201"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="388" y1="201" x2="396" y2="193"/>
+<polyline fill="none" opacity="1" stroke="#AAAAAA" stroke-width="1" points="436,199 436,196 "/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="432" y1="193" x2="440" y2="201"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="432" y1="201" x2="440" y2="193"/>
+<polyline fill="none" opacity="1" stroke="#AAAAAA" stroke-width="1" points="472,199 472,196 "/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="468" y1="193" x2="476" y2="201"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="468" y1="201" x2="476" y2="193"/>
+<polyline fill="none" opacity="1" stroke="#AAAAAA" stroke-width="1" points="511,199 511,196 "/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="507" y1="193" x2="515" y2="201"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="507" y1="201" x2="515" y2="193"/>
+<polyline fill="none" opacity="1" stroke="#AAAAAA" stroke-width="1" points="551,199 551,196 "/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="547" y1="193" x2="555" y2="201"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="547" y1="201" x2="555" y2="193"/>
+<polyline fill="none" opacity="1" stroke="#AAAAAA" stroke-width="1" points="591,198 591,195 "/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="587" y1="192" x2="595" y2="200"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="587" y1="200" x2="595" y2="192"/>
+<polyline fill="none" opacity="1" stroke="#AAAAAA" stroke-width="1" points="628,198 628,195 "/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="624" y1="192" x2="632" y2="200"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="624" y1="200" x2="632" y2="192"/>
+<polyline fill="none" opacity="1" stroke="#AAAAAA" stroke-width="1" points="663,198 663,195 "/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="659" y1="192" x2="667" y2="200"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="659" y1="200" x2="667" y2="192"/>
+<polyline fill="none" opacity="1" stroke="#AAAAAA" stroke-width="1" points="706,198 706,195 "/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="702" y1="192" x2="710" y2="200"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="702" y1="200" x2="710" y2="192"/>
+<polyline fill="none" opacity="1" stroke="#AAAAAA" stroke-width="1" points="746,197 746,194 "/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="742" y1="192" x2="750" y2="200"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="742" y1="200" x2="750" y2="192"/>
 <polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="2" points="328,190 335,197 328,204 321,197 328,190 "/>
 <polyline fill="none" opacity="1" stroke="#CC79A7" stroke-width="2" points="106,210 113,217 106,224 99,217 106,210 "/>
 <polyline fill="none" opacity="1" stroke="#CC79A7" stroke-width="2" points="174,143 181,150 174,157 167,150 174,143 "/>
@@ -808,10 +859,10 @@ Time at temperature (h)
 <rect x="573" y="123" width="10" height="10" opacity="1" fill="none" stroke="#0072B2"/>
 <rect x="573" y="118" width="10" height="10" opacity="1" fill="none" stroke="#E69F00"/>
 <text x="764" y="555" dy="-0.5ex" text-anchor="end" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-105 registered values drawn: 96 NOT DIRECTLY COMPARABLE (grey context), 4 DATA INCOMPLETE
+122 registered values drawn: 113 NOT DIRECTLY COMPARABLE (grey context), 4 DATA INCOMPLETE
 </text>
 <text x="764" y="578" dy="-0.5ex" text-anchor="end" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-5 upper bounds, 0 point comparisons; 75 of the drawn values digitised, 30 tabulated or printed
+5 upper bounds, 0 point comparisons; 92 of the drawn values digitised, 30 tabulated or printed
 </text>
 <text x="1165" y="83" dy="0.76em" text-anchor="middle" font-family="sans-serif" font-size="15.32258064516129" opacity="1" fill="#191919">
 Deviation of the model from the measurements, Ag-110m: not defined
@@ -1047,25 +1098,25 @@ Marker colour: test temperature, as the line of the same colour
 Numerical deviations of the model from the measurements of Ag-110m
 </text>
 <text x="24" y="818" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-Register rows of Ag-110m (including rows labelled with the element only): 175; 119 digitised from published figures (labelled digitised, with their reading uncertainty), 56 tabulated or
+Register rows of Ag-110m (including rows labelled with the element only): 196; 140 digitised from published figures (labelled digitised, with their reading uncertainty), 56 tabulated or
 </text>
 <text x="24" y="837" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 printed and exact as printed.
 </text>
 <text x="24" y="856" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-Comparison status of these rows: DATA INCOMPLETE 5; NOT DIRECTLY COMPARABLE 165; EXCEEDS REPORTED UPPER BOUND 5.
+Comparison status of these rows: DATA INCOMPLETE 5; NOT DIRECTLY COMPARABLE 186; EXCEEDS REPORTED UPPER BOUND 5.
 </text>
 <text x="24" y="875" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 NOT DIRECTLY COMPARABLE because the measured quantity is not the model quantity: 29 x deposition_cup_history (deposition-cup collection); 52 x failed_or_released_particles (failed SiC or
 </text>
 <text x="24" y="894" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-releasing particle); 1 x fuel_sphere (fuel sphere of a benchmark); 32 x includes_in_pile_inventory (total includes in-pile inventory); 22 x irradiation_phase_quantity (irradiation-phase
+releasing particle); 1 x fuel_sphere (fuel sphere of a benchmark); 21 x fuel_sphere_curve (point of a release-versus-time curve of a fuel sphere (plotted as a curve)); 32 x
 </text>
 <text x="24" y="913" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-inventory location); 16 x loose_particles_with_failures (loose particles including failed ones); 2 x mixed_particles (mixture of failed and intact particles); 11 x other_fuel_batch (AGR-2
+includes_in_pile_inventory (total includes in-pile inventory); 22 x irradiation_phase_quantity (irradiation-phase inventory location); 16 x loose_particles_with_failures (loose particles
 </text>
 <text x="24" y="932" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-fuel).
+including failed ones); 2 x mixed_particles (mixture of failed and intact particles); 11 x other_fuel_batch (AGR-2 fuel).
 </text>
 <text x="24" y="951" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 E-033 | 1600 °C | window 24-300 h at temperature | bound 1.800e-3 (digitised, matrix-corrected fraction of the as-run calculated compact inventory) | model over the same window 5.919e-1 |
@@ -1116,24 +1167,24 @@ reading uncertainty of the register (the error of reading the point off the publ
 general 5 percent systematic gamma-measurement error stated for the Stempien 2023 values is not a per-value uncertainty and changes no status), so no other error bar is drawn. Compact values are not single-particle
 </text>
 <text x="24" y="1265" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-values; rows at a temperature outside 1600 to 1800 °C or whose value is not a fraction are not drawn. Analytical-series values are drawn only where the criterion holds: a value of the independent analytical series
+values; rows at a temperature outside 1600 to 1800 °C or whose value is not a fraction are not drawn. Not drawn because the time at temperature lies beyond the 420 h axis (the value is never moved onto the edge):
 </text>
 <text x="24" y="1283" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-is exported only where (1) the time is not earlier than the series&apos; own minimum valid time (omitted modes below exp(-40) of their weight) and (2) the value exceeds the series&apos; estimated absolute accuracy (about
+E-613 (428 h), E-614 (452 h), E-615 (475 h). Analytical-series values are drawn only where the criterion holds: a value of the independent analytical series is exported only where (1) the time is not earlier than
 </text>
 <text x="24" y="1301" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-2.2e-16 over the smallest flux ratio of the shooting solution), and is positive; otherwise it is left empty. The early part of every BTCS curve is not converged in time: where the release is still rising steeply
+the series&apos; own minimum valid time (omitted modes below exp(-40) of their weight) and (2) the value exceeds the series&apos; estimated absolute accuracy (about 2.2e-16 over the smallest flux ratio of the shooting
 </text>
 <text x="24" y="1319" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-from zero, the base run and the run with half the step differ by a large factor, and the report states for each curve the time after which they agree within 10 percent (a reading aid, not a tolerance). Model: STRATO
+solution), and is positive; otherwise it is left empty. The early part of every BTCS curve is not converged in time: where the release is still rising steeply from zero, the base run and the run with half the step
 </text>
 <text x="24" y="1337" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-BTCS five-layer spherical finite difference, package version 1.0.1, commit b6331621ca70dc453e6856bdd1263bf61c15260b; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the
+differ by a large factor, and the report states for each curve the time after which they agree within 10 percent (a reading aid, not a tolerance). Model: STRATO BTCS five-layer spherical finite difference, package
 </text>
 <text x="24" y="1355" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at the test temperature; kernel-only start; constant temperature; decay and generation are not in the solver. This is a numerical
+version 1.0.1, commit 4f2e176a8a32e8032625942fe5a4017712252753; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and
 </text>
 <text x="24" y="1373" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-comparison, not an experimental validation.
+C16-BUF), evaluated at the test temperature; kernel-only start; constant temperature; decay and generation are not in the solver. This is a numerical comparison, not an experimental validation.
 </text>
 </svg>
