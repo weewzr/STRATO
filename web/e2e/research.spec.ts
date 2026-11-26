@@ -83,7 +83,8 @@ for (const vp of [
       await expect(e.getByTestId('future-pending')).toBeVisible();
       await expect(e.getByTestId('future-species').locator('[data-species]')).toHaveCount(9);
       await expect(e.getByTestId('future-regimes').locator('> section')).toHaveCount(3);
-      await expect(e.getByTestId('status-legend').locator('dd')).toHaveCount(5);
+      // The definitions moved to Scientific Documentation: the legend is the five statuses in one row.
+      await expect(e.getByTestId('status-legend').locator('.status-chip')).toHaveCount(5);
       expect(await checkStatuses(page, '[data-testid="block-e"]')).toBeGreaterThan(0);
       expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
       if (dir) {

@@ -1,40 +1,40 @@
 import { useId } from 'react';
 import { isRowAvailable } from '../equation/availability';
-import { hrefFor } from '../route';
+import { hrefDocumentation, hrefFor } from '../route';
 import { useStrato } from '../state/store';
 import { TableBox } from '../sections/common';
 import { Cite } from './Blocks';
 import { referenceRow, type Catalogue, type GalleryRow, type MechanismRow } from './catalogue';
 import { entryHref, gallerySpecies, linkCheckedDate, rowKey } from './entries';
-import { STATUS_INFO, STATUSES, isImplementedStatus } from './status';
+import { NoteText } from './PathLink';
+import { STATUSES, isImplementedStatus } from './status';
 import { StatusChip } from './StatusChip';
 
 // Building blocks of the research catalogue interface (web phase 5.5). Every value shown comes
 // from the generated catalogue; these components only arrange it.
 
-/** The five statuses with their definitions (prompt/DESIGN_SPECIFICATION.md Section 7.1). */
-export function StatusLegend({ id, title = 'Research status of a mechanism', row = false }: { id?: string; title?: string; row?: boolean }) {
+/**
+ * The five statuses in one row, each a word and a shape (the definition is the hover title of the chip). The
+ * definitions are printed once, in Scientific Documentation, which the link leads to.
+ */
+export function StatusLegend({ id, title = 'Research status' }: { id?: string; title?: string }) {
   const own = useId();
   const head = id ?? own;
   return (
-    <section className={`status-legend${row ? ' status-legend--row' : ''}`} aria-labelledby={head} data-testid="status-legend">
+    <section className="status-legend" aria-labelledby={head} data-testid="status-legend">
       <p className="status-legend__title" id={head}>
         {title}
       </p>
-      <dl className="status-legend__list">
+      <ul className="status-legend__list" aria-label="The five research statuses">
         {STATUSES.map((s) => (
-          <div className="status-legend__item" key={s}>
-            <dt>
-              <StatusChip status={s} legend />
-            </dt>
-            <dd>{STATUS_INFO[s].definition}</dd>
-          </div>
+          <li key={s}>
+            <StatusChip status={s} legend />
+          </li>
         ))}
-      </dl>
-      <p className="status-legend__note">
-        Shown as a word and a shape, never by colour alone. A research status describes a mechanism; the labels on numbers and figures
-        (for example COMPUTED v2.0 or PRECOMPUTED) describe a result.
-      </p>
+      </ul>
+      <a className="status-legend__more" href={hrefDocumentation('research-status-scale')}>
+        Definitions
+      </a>
     </section>
   );
 }
@@ -207,7 +207,11 @@ export function ReferenceList({ ids, catalogue, label = 'References' }: { ids: r
             <span className={`ref-list__checked${checked ? '' : ' ref-list__checked--no'}`} data-link-checked={checked ? 'date' : 'no'}>
               {checked ? `Link opened on ${checked}.` : `Link: ${r.link_checked}.`}
             </span>
-            {r.notes ? <span className="ref-list__notes">{r.notes}</span> : null}
+            {r.notes ? (
+              <span className="ref-list__notes">
+                <NoteText text={r.notes} />
+              </span>
+            ) : null}
           </li>
         );
       })}

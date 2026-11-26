@@ -24,7 +24,8 @@ import {
 } from '../src/research/entries';
 import { FutureResearch } from '../src/research/FutureResearch';
 import { GalleryItem } from '../src/research/parts';
-import { STATUSES, type ResearchStatus } from '../src/research/status';
+import { STATUS_INFO, STATUSES, type ResearchStatus } from '../src/research/status';
+import { Documentation } from '../src/sections/Documentation';
 import { Research } from '../src/sections/Research';
 import { useStrato } from '../src/state/store';
 
@@ -259,13 +260,38 @@ describe('statuses shown equal the catalogue, as word and shape', () => {
     }
   });
 
-  it('shows a legend that defines all five statuses', () => {
+  // The definitions of the five statuses moved from the legend to Scientific Documentation (minimal-text
+  // rules): the legend is one row of the five words, the definitions are printed once, in the documentation.
+  it('shows a legend of the five statuses as one row, with a link to their definitions', () => {
     renderPage('');
     const legend = screen.getByTestId('status-legend');
     const words = Array.from(legend.querySelectorAll('.status-chip__word')).map((w) => w.textContent);
     expect(words).toEqual([...STATUSES]);
-    expect(legend.querySelectorAll('dd')).toHaveLength(5);
-    for (const dd of Array.from(legend.querySelectorAll('dd'))) expect((dd.textContent ?? '').length).toBeGreaterThan(20);
+    expect(legend.querySelectorAll('dd')).toHaveLength(0);
+    expect(within(legend).getByRole('link', { name: 'Definitions' }).getAttribute('href')).toBe('#/documentation/research-status-scale');
+  });
+
+  it('defines all five statuses once, in Scientific Documentation', () => {
+    render(<Documentation />);
+    const rows = Array.from(screen.getByTestId('research-status-scale').querySelectorAll('tbody tr'));
+    expect(rows.map((r) => r.querySelector('.status-chip__word')?.textContent)).toEqual([...STATUSES]);
+    for (const [i, s] of STATUSES.entries()) {
+      expect(rows[i]?.querySelectorAll('td')[1]?.textContent).toBe(STATUS_INFO[s].definition);
+      expect((document.body.textContent ?? '').split(STATUS_INFO[s].definition).length - 1, s).toBe(1);
+    }
+  });
+
+  it('keeps the statements of what the catalogue does not do in Scientific Documentation, and off the pages', () => {
+    const doc = render(<Documentation />);
+    const text = doc.container.textContent ?? '';
+    const statements = ['Nothing in this section is simulated.', 'a research concept that STRATO does not solve', 'No mechanism is switched on for a species automatically'];
+    for (const s of statements) expect(text, s).toContain(s);
+    doc.unmount();
+    for (const page of ['', 'gallery', 'references', 'roadmap', 'species-ag', 'ag_trapping_detrapping']) {
+      const view = renderPage(page);
+      for (const s of statements) expect(view.container.textContent ?? '', `${page}: ${s}`).not.toContain(s);
+      view.unmount();
+    }
   });
 
   it('keeps the roadmap text in step with the catalogue rows of each brick', () => {

@@ -69,17 +69,14 @@ export const DISCLAIMERS = [
 ];
 
 /**
- * TEMPORARY, NAMED EXCEPTIONS: the pages that are still to be cleaned, and the rules each still breaks.
- * The page tasks of the clean-up remove their entries one by one. The final task of the clean-up leaves
- * only "explore" (rebuilt by the other workstream, cleaned in the integration task). "shell" is the header
- * and the footer (status line), cleaned with the shared components.
+ * TEMPORARY, NAMED EXCEPTION: "explore" is the only page not yet cleaned. It is rebuilt by the other
+ * workstream (Workstream A) and cleaned in the integration task, which REMOVES THIS EXCEPTION (and the
+ * whole table) once the rebuilt Explore page passes every rule. Every other page and the shell (header and
+ * footer) pass all rules.
  * The check prints a NOTE for an exception that is no longer needed, so it can be removed.
  */
 export const TEMPORARY_EXCEPTIONS = {
-  shell: ['build-hash'],
   explore: ['build-hash', 'path', 'caption', 'prose', 'disclaimer'],
-  research: ['path', 'prose'],
-  about: ['build-hash', 'path', 'disclaimer'],
 };
 
 const norm = (s) => s.replace(/[‘’]/g, "'").replace(/\s+/g, ' ').trim();

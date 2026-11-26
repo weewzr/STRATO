@@ -109,8 +109,8 @@ describe('temporary exceptions', () => {
     expect(notes.join(' ')).toContain('compare / prose');
   });
 
-  it('names every page still to be cleaned, and the documentation page is never among them', () => {
-    expect(Object.keys(TEMPORARY_EXCEPTIONS).sort()).toEqual(['about', 'explore', 'research', 'shell']);
+  it('names only the Explore page (removed by the integration task), and the documentation page is never among them', () => {
+    expect(Object.keys(TEMPORARY_EXCEPTIONS).sort()).toEqual(['explore']);
     expect(TEMPORARY_EXCEPTIONS[DOCUMENTATION_PAGE]).toBeUndefined();
   });
 });

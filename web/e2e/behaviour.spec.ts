@@ -93,16 +93,21 @@ test.describe('content and data', () => {
 
   // Web phase 3: once the solver has run, the status line carries the result label of the run and
   // the solver time; the WebAssembly module reports the same commit as the page.
-  test('the status line names the build commit, the result label and the solver time', async ({ page, problems }) => {
+  // The build hash left the footer (minimal-text rules): the footer links to the build details, and the commit
+  // is asserted where it now lives, in the build table of Scientific Documentation.
+  test('the status line shows the result label and the solver time, and links to the build commit in Scientific Documentation', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     const build = (await (await page.request.get('/STRATO/build.json')).json()) as { commit: string };
-    await expect(page.getByTestId('status-commit')).toContainText(build.commit);
+    await expect(page.getByTestId('status-build')).not.toContainText(build.commit);
     await waitForRun(page);
     await expect(page.getByTestId('status-result')).toHaveText('Result COMPUTED v2.0');
     await expect(page.getByTestId('status-solver')).toContainText(/ms in this browser/);
     await expect(page.getByTestId('diagnostics-panel')).toContainText(`WebAssembly build ${build.commit}`);
     expect(await page.locator('meta[name="strato-build"]').getAttribute('content')).toBe(build.commit);
+    await page.getByTestId('status-build').getByRole('link', { name: 'Build details' }).click();
+    await expect(page).toHaveURL(/#\/documentation\/build$/);
+    await expect(page.getByTestId('documentation-build')).toContainText(build.commit);
   });
 
   test('the site does not link the prompt folder', async ({ page, problems }) => {

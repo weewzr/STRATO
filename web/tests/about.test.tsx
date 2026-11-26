@@ -1,11 +1,15 @@
-// The "This build" table of the About page (Table 2) against the record of the web phases in
-// prompt/PROGRESS.md: a phase recorded as done shows "Yes", any other phase shows "Not yet". The table
-// had fallen behind twice (phases 4, 5 and 5.5 still read "Not yet" after they were delivered).
+// The "Contents of this build" table (Table 2; it moved from the About page to Scientific Documentation, section
+// "Technical implementation and build") against the record of the web phases in prompt/PROGRESS.md: a phase
+// recorded as done shows "Yes", any other phase shows "Not yet". The table had fallen behind twice (phases 4,
+// 5 and 5.5 still read "Not yet" after they were delivered). The About page itself is checked at the end.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { allItemIds } from '../src/documentation';
+import { BuildContentsTable } from '../src/documentation/about';
 import { About } from '../src/sections/About';
+import { Documentation } from '../src/sections/Documentation';
 
 /** Phase id (such as "4", "5.5", "6.1") to its status cell, read from the "Web demo phases" table. */
 function recordedPhases(): Map<string, string> {
@@ -30,7 +34,7 @@ function isDone(phases: Map<string, string>, id: string): boolean | undefined {
   return matching.every(([, status]) => status.startsWith('done'));
 }
 
-describe('About page, contents of this build', () => {
+describe('Scientific Documentation, contents of this build', () => {
   const phases = recordedPhases();
 
   it('reads the web phases from PROGRESS.md', () => {
@@ -38,7 +42,7 @@ describe('About page, contents of this build', () => {
   });
 
   it('shows "Yes" exactly for the phases recorded as done', () => {
-    render(<About />);
+    render(<BuildContentsTable />);
     const rows = within(screen.getByTestId('build-table')).getAllByRole('row').slice(1);
     expect(rows.length).toBeGreaterThan(0);
     for (const row of rows) {
@@ -53,25 +57,35 @@ describe('About page, contents of this build', () => {
   });
 });
 
-describe('About page, documents', () => {
-  it('links only rendered pages that crates/strato-docsite publishes, each beside its source', () => {
-    // The published set is the DOCS list of the Rust tool; a page link here must name one of them.
-    const site = readFileSync(join(process.cwd(), '..', 'crates', 'strato-docsite', 'src', 'site.rs'), 'utf8');
-    const published = [...site.matchAll(/src: "([^"]+\.md)"/g)].map((m) => m[1]);
-    expect(published.length).toBeGreaterThan(0);
+// The document links of the former About page ("Documents") are the derivation links of Scientific
+// Documentation (same six documents, same index link); documentation.test.tsx asserts them against the
+// published set of crates/strato-docsite.
+
+describe('About page', () => {
+  it('is a short introduction with the links to Scientific Documentation, the repository and the citation metadata', () => {
     render(<About />);
-    const hrefs = within(screen.getByTestId('about-documents'))
-      .getAllByRole('link')
-      .map((a) => a.getAttribute('href') ?? '');
-    const pages = hrefs.filter((h) => h.endsWith('.html'));
-    expect(pages.length).toBeGreaterThan(0);
-    for (const h of pages) {
-      expect(h.startsWith(import.meta.env.BASE_URL), h).toBe(true);
-      const src = h.slice(import.meta.env.BASE_URL.length).replace(/\.html$/, '.md');
-      expect(published, h).toContain(src);
-      expect(hrefs.some((x) => x.endsWith(`/${src}`)), `${src} is linked on GitHub too`).toBe(true);
+    const page = screen.getByRole('article');
+    expect(within(page).getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(within(page).getByRole('link', { name: 'Scientific Documentation' }).getAttribute('href')).toBe('#/documentation');
+    expect(within(page).getByRole('link', { name: 'Repository' }).getAttribute('href')).toMatch(/github\.com\/weewzr\/STRATO$/);
+    expect(within(page).getByRole('link', { name: 'Citation metadata' }).getAttribute('href')).toMatch(/CITATION\.cff$/);
+    // The four result labels stay as a legend; the page has no table and no build table.
+    for (const label of ['COMPUTED v2.0', 'PRECOMPUTED', 'ILLUSTRATIVE', 'MEASURED']) expect(within(page).getByText(label)).toBeTruthy();
+    expect(within(page).queryByRole('table')).toBeNull();
+    expect((page.textContent ?? '').split(/\s+/).length).toBeLessThan(220);
+  });
+
+  it('has its scientific statements in Scientific Documentation, once each', () => {
+    for (const id of ['about-model', 'about-implemented', 'about-method-b-scope', 'about-methods', 'about-labels', 'about-build-contents']) {
+      expect(allItemIds(), id).toContain(id);
     }
-    const list = screen.getByRole('link', { name: 'all documents rendered on this site' });
-    expect(list.getAttribute('href')).toBe(`${import.meta.env.BASE_URL}docs/index.html`);
+    render(<Documentation />);
+    const text = document.body.textContent ?? '';
+    const once = (s: string) => expect(text.split(s).length - 1, s).toBe(1);
+    once('the outer surface is a perfect sink and the initial inventory is uniform in the kernel');
+    once('The release fraction is the share of the initial inventory that has left through the outer surface.');
+    once('Produced earlier by the native STRATO binary');
+    once('multilayer Sturm-Liouville eigenfunction series');
+    expect(screen.getByTestId('build-table')).toBeTruthy();
   });
 });
