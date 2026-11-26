@@ -1,6 +1,6 @@
 # STRATO: Final Five-Layer BTCS Formulation
 
-**Status.** This is Document 2 of directive Section 9: the complete five-layer BTCS system, with nothing left to choose. It states the grid, every matrix row, the right-hand side, the initial vector, the solution of the linear system, the discrete inventory, the release rate, the cumulative release, the balance identity and its residual, and each proven property with its hypotheses. It marks the places where generation, decay and temperature-dependent diffusivity (directive Section 17) will enter, without deriving them.
+**Status.** This is Document 2 of directive Section 9: the complete five-layer BTCS system, with nothing left to choose. It states the grid, every matrix row, the right-hand side, the initial vector, the solution of the linear system, the discrete inventory, the release rate, the cumulative release, the balance identity and its residual, and each proven property with its hypotheses. Section 11 adds generation, decay and temperature-dependent diffusivity (directive Section 17) as (F32) to (F42), and Section 11.7 the rigorous rounding bounds (F43) to (F46) of the balance residual; their derivations and proofs are in [Document 5](05_generation_decay_temperature.md), cited as "D5".
 
 Every equation is numbered (F1), (F2), and so on. The pseudocode (Document 3) and the Rust code cite these numbers. The derivation of every equation is in [Document 1](01_from_ftcs_to_five_layer_btcs.md), cited as "D1" with its equation or section number. The comparison of the two independent derivations that led to this formulation is [reconciliation.md](reconciliation.md).
 
@@ -17,7 +17,7 @@ This document states mathematics. It contains no numerical results except where 
 - Perfect contact at the four interfaces: concentration and diffusive flux are continuous.
 - Absorbing outer surface: $C(R_5, t) = 0$.
 - Kernel-only start: $C(r, 0) = C_{\mathrm{init}}$ for $0 \le r < R_1$ and $0$ for $R_1 < r < R_5$.
-- No source, no decay, constant temperature. Section 9 marks where these enter later.
+- Sections 3 to 8 and 10: no source, no decay, constant temperature (the baseline). Section 11 adds the three approved mechanisms.
 
 The continuous equation is $\partial C/\partial t = \left(r\right)^{-2}\,\partial_r\left[\left(r\right)^2 D(r)\,\partial_r C\right]$ (D1, Eq. (4)).
 
@@ -62,6 +62,8 @@ $C_{\mathrm{init}}$ is not written $C_0$, because $C_0^j$ is the concentration a
 | $M_{\mathrm{rel}}^j$ | cumulative release | $\mathrm{mol}$ |
 | $F^j$ | release fraction | dimensionless |
 | $\varepsilon^j$ | balance residual | $\mathrm{mol}$ |
+
+The symbols of the additional physics (Section 11) are defined with their units where they first appear there and in D5, Section 0.2.
 
 ---
 
@@ -138,7 +140,7 @@ $$
 
 ## 5. The matrix rows
 
-The unknowns of the step from $t^j$ to $t^{j+1}$ are $C_0^{j+1}, C_1^{j+1}, \dots, C_{N-1}^{j+1}$: $N$ unknowns, $N$ rows. $C_N^{j+1}$ is not an unknown (F15). Row $i$ reads
+The unknowns of the step from $t^j$ to $t^{j+1}$ are $C_0^{j+1}, C_1^{j+1}, \dots, C_{N-1}^{j+1}$: $N$ unknowns, $N$ rows. $C_N^{j+1}$ is not an unknown (F18). Row $i$ reads
 
 $$
 L_i\,C_{i-1}^{j+1} + B_i\,C_i^{j+1} + U_i\,C_{i+1}^{j+1} = b_i^j, \tag{F9}
@@ -283,7 +285,7 @@ $$
 b_i^j = C_i^j, \qquad 0 \le i \le N-1. \tag{F20}
 $$
 
-(Section 9 marks where a source term will be added.)
+(With a source, (F38) of Section 11.3 replaces (F20).)
 
 ### 6.2 Initial vector
 
@@ -371,7 +373,7 @@ $$
 \varepsilon^j = M^j + M_{\mathrm{rel}}^j - M^0, \qquad \frac{\varepsilon^j}{M^0} = F^j - \left(1 - \frac{M^j}{M^0}\right). \tag{F30}
 $$
 
-The tolerance that a test applies to $\left|\varepsilon^j\right|/M^0$ is not fixed here. It must come from a rounding analysis of the Rust implementation, in which the largest $\mathrm{Fo}$ and the number of steps enter (D1, Section 9.4).
+The tolerance that a test applies to $\left|\varepsilon^j\right|$ is a derived rounding bound evaluated at every step: for the baseline, the a-posteriori bound of the Rust tolerance task (per-step constant $c_{\mathrm{step}}$, about $7u$) or the rigorous bound (F44), which has the same constant to first order and also covers its own evaluation; the a-priori form is (F45); for a run with source, decay or $T(t)$ it is (F46) (Section 11.7; derivation in D5, Section 5). All contain the largest mesh Fourier number and the number of steps.
 
 ### 7.5 Diagnostics at the interfaces and the centre
 
@@ -404,7 +406,7 @@ The two expressions are equal in exact arithmetic (Property P8). Their differenc
 | P7 One-way centre coupling | $L_1 = 0$; rows $1$ to $N-1$, the inventory, the release and (F29) do not depend on row 0 or on $C_0^j$; $\left\lvert e_0^j\right\rvert  \le \max\left(\left\lvert e_0^0\right\rvert , \max_{k\le j}\left\lvert e_1^k\right\rvert \right) + t^j\max\left\lvert \tau_0\right\rvert$ | (H) | PROVED | D1, Section 4.3 |
 | P8 Interface continuity | one shared value per interface node (concentration continuity exact); the two expressions of (F31) are equal | (H) | PROVED | D1, Section 5.4 |
 | P8a Interface flux formula (consistency) | (F31) evaluated on the exact solution equals the exact interface flow $\Phi(R, t^{j+1})$ to $O\left(\left(\Delta r\right)^2 + \Delta r\,\Delta t\right)$ | (H); solution three times continuously differentiable in $r$ on each closed layer and twice continuously differentiable in $t$ | PROVED | D1, Section 5.4 |
-| P8b Computed interface flux | (F31) evaluated on the computed solution converges to the exact interface flow at second order in space | as P8a | OBSERVED (orders $1.98$ to $2.00$, self-convergence, synthetic case); NOT PROVEN: no order is proved, because the proved nodal error bounds, divided by $\Delta r$, give none | D1, Section 5.4 |
+| P8b Computed interface flux | (F31) evaluated on the computed solution: the differences between successive grids fall at second order in space (self-convergence) | as P8a | OBSERVED (orders $1.98$ to $2.00$, synthetic case). Convergence to the exact interface flow is not shown: no exact five-layer interface flow was computed, so the limit of the sequence was not compared with a reference. NOT PROVEN: no order is proved, because the proved nodal error bounds, divided by $\Delta r$, give none | D1, Section 5.4 |
 | P9 Conservation | (F29) holds exactly in exact arithmetic | (H); the same stored $K$ in rows $i$, $i+1$ and in (F26), in particular the stored $K_{N-1,\mathrm{outer}}$ of (F6) with (F5) in row $N-1$ and in (F26); $V_i$ the weight by which row $i$ was divided; $V_0 = 0$ with $K_{0,\mathrm{outer}} = 0$; release at level $j+1$ | PROVED | D1, Eqs. (21), (35), (37) |
 | P10 Exact initial inventory | $M^0 = \frac{4\pi}{3}\left(R_1\right)^3C_{\mathrm{init}}$ | (F21), (F22) | PROVED | D1, Section 7 |
 | P11 Consistency | every row residual tends to zero; local spatial order 2 at the centre, node 1, interior nodes and row $N-1$; order 1 at the four interface nodes; first order in time | solution four times continuously differentiable in $r$ on each closed layer, twice continuously differentiable in $t$ | PROVED | D1, Section 9.5 |
@@ -414,30 +416,26 @@ The two expressions are equal in exact arithmetic (Property P8). Their differenc
 | P15 Five-layer, maximum norm | $\max_j\left\lVert \mathbf{e}^j\right\rVert _\infty = O\left(\Delta t + \Delta r\right)$ on $[t_*, T]$ | (H); solution four times continuously differentiable in $r$ on each closed layer and twice continuously differentiable in $t$ on $[t_*,T]$; $\left\lVert \mathbf{e}(t_*)\right\rVert _\infty = O(\Delta r)$ | PROVED (pessimistic) | D1, Section 9.5 |
 | P16 Discontinuous start | second order in space for $F^j$ and the profile at fixed $t > 0$; first order in time | (F21), (F22) | OBSERVED; NOT PROVEN | D1, Sections 7 and 9.5 |
 | P17 Computed release rate | second order in space | as P12 | OBSERVED; NOT PROVEN | D1, Section 6 |
-| P18 Conservation in floating point | relative residual $\left\lvert \varepsilon^j\right\rvert /M^0$ of $10^{-13}$ to $10^{-10}$ in scratch runs | none | OBSERVED | D1, Section 9.4 |
+| P18 Conservation in floating point | $\left\lvert \hat\varepsilon^J\right\rvert$ is bounded by (F44) a posteriori and by (F45) a priori | IEEE double, rounding to nearest, no overflow, no subnormal products or quotients, no fused multiply-add, positive computed pivots; (F24) or the textbook elimination order | PROVED (the constant of compensated summation is quoted, and $s_J = J$ covers it). The residual is not confined to a fixed range: by (F44) and (F45) it scales with the number of steps $J$ times $1 + 2\Lambda_{\max}$, about $J$ times four times the largest mesh Fourier number. Observed: relative residuals $6.9\times10^{-12}$ to $1.19\times10^{-9}$ on the synthetic case with $\Delta t = 200\ \mathrm{s}$ and 1000 steps (20 to 320 intervals per layer, both elimination orders), at most $1.3\times10^{-2}$ of (F44) at any step; up to $2.3\times10^{-9}$ in the Rust measurement at very large mesh Fourier numbers recorded by coordinator decision 36; and $1.0\times10^{-8}$ to $5.0\times10^{-8}$ in a synthetic scratch case with largest $\mathrm{Fo}$ from $2.8\times10^6$ to $1.1\times10^7$ over 3000 steps, at most $3.1\times10^{-2}$ of (F44) at any step (D5, Section 5.7) | D5, Section 5 |
 
 Nothing in this table claims exact conservation in floating point, positivity for a solver other than (F24), or any accuracy for experimental data.
 
 ---
 
-## 9. Placeholders for the approved additional physics (directive Section 17)
+## 9. Where the approved additional physics enters (directive Section 17)
 
-The terms below are **not derived** here. Each needs its own derivation, review and verification (directive Phase G) before it is implemented. This section only marks where each one enters the formulation above, so that the pseudocode and the Rust structure leave room for it. Until then each placeholder is zero, and the formulation above is complete without it.
+The placeholders of the first version of this section are now derived (D5) and stated in Section 11. The map from each earlier placeholder to its equation:
 
-**G1, generation.** A volumetric source $G$ (in $\mathrm{mol\ m^{-3}\ s^{-1}}$) enters
+| Placeholder | Now | Derivation |
+|---|---|---|
+| G1 source term in the right-hand side (F20) | (F38) with (F32) to (F34) | D5, Sections 1.2, 1.3, 1.5 |
+| G1 weighting at interface nodes and at the centre | (F33), (F34) | D5, Section 1.3 |
+| G1 release when the source is non-zero at $R_5$ | (F39) | D5, Section 1.4 |
+| G2 decay term in the diagonal | (F35), (F37) | D5, Section 2.1 |
+| G1 and G2 amounts in the balance | (F40), (F41) | D5, Section 4.2 |
+| G3 time level of $T$ and reassembly | (F36), (F37) | D5, Sections 3.1, 3.2 |
 
-- the right-hand side (F20): $b_i^j = C_i^j + \left[\text{G1 source term}\right]$;
-- the balance (F29) and residual (F30), through a generated amount $M_{\mathrm{gen}}^j$ (in $\mathrm{mol}$), so that the identity becomes $M^0 + M_{\mathrm{gen}}^j = M^j + M_{\mathrm{rel}}^j + \left[\text{G2 decayed amount}\right]$;
-- possibly the release (F26): derivation B found that a source that is non-zero at $R_5$ breaks the cancellation behind P12, so the G1 derivation must decide the release formula in that case (D1, Section 11, item 5).
-
-The G1 derivation must also fix the time level of the source, its weighting at interface nodes where the source differs between materials, and at the centre node, where $V_0 = 0$.
-
-**G2, radioactive decay.** A decay constant $\lambda$ (in $\mathrm{s^{-1}}$) enters
-
-- the diagonal (F11), (F12), (F17): $B_i = 1 + \left|L_i\right| + \left|U_i\right| + \left[\text{G2 decay term}\right]$;
-- the balance (F29), through a decayed amount $M_{\mathrm{dec}}^j$ (in $\mathrm{mol}$), booked separately from the physical release $M_{\mathrm{rel}}^j$.
-
-**G3, temperature-dependent diffusivity.** The diffusivities in (F4) become $D_{\mathrm{material}}(T)$ (in $\mathrm{m^2\ s^{-1}}$). Every quantity that depends on them, (F6), (F8), (F11), (F12), (F14), (F16) and (F26), is evaluated with the same values, and $\mathbf{A}$ is reassembled whenever $T$ changes (Section 5.8). The G3 derivation must fix the time level at which $T$ is evaluated in a step.
+With every source zero, $\lambda = 0$ and constant temperature, Section 11 reduces to Sections 3 to 7 bit for bit (P19, P29 and the $\lambda = 0$ limit of P25).
 
 ---
 
@@ -456,3 +454,172 @@ The G1 derivation must also fix the time level of the source, its weighting at i
 | Row scaling | rows divided by $V_i$, (F11) | rows multiplied by $V_i$: equal in exact arithmetic; no rounding advantage was shown (D1, Section 9.4) | reconciliation |
 | Linear solver | Thomas algorithm (F24) | marching for $C_{i+1}$: unstable | D1, Section 9.3 |
 | Interface flux diagnostic | (F31) | raw one-sided flows: only first-order consistent | D1, Section 5.4 |
+
+---
+
+## 11. Generation, decay and temperature-dependent diffusivity (directive Section 17)
+
+This section states the three approved mechanisms and their combination, with nothing left to choose. The derivations, proofs and scratch checks are in D5. The model is Eq. (1) of D5: $\partial C/\partial t = \left(r\right)^{-2}\partial_r\left[\left(r\right)^2D(r, T)\,\partial_rC\right] + G - \lambda C$, with the boundary and interface conditions of Section 1.
+
+**Assumptions.** The source is constant in space inside each material, $G = G_{\mathrm{material}}(t) \ge 0$ (in $\mathrm{mol\ m^{-3}\ s^{-1}}$); for a direct fission product $G_{\mathrm{kernel}} = y\,\dot F/N_{\mathrm{A}}$ and the coating sources are zero (D5, Eq. (2); $y$ the yield, dimensionless; $\dot F$ the fission-rate density in $\mathrm{m^{-3}\ s^{-1}}$; $N_{\mathrm{A}} = 6.02214076\times10^{23}\ \mathrm{mol^{-1}}$). The decay constant $\lambda \ge 0$ (in $\mathrm{s^{-1}}$) is the same everywhere. The temperature $T(t)$ (in $\mathrm{K}$) is uniform in the particle. Ag-110m, Cs-134 and Eu-154 have $G = 0$ (decision 15).
+
+### 11.1 Source (G1)
+
+**Step average** of each material's source, for the step from $t^j$ to $t^{j+1}$, evaluated exactly for piecewise-constant or piecewise-linear histories:
+
+$$
+\bar G_{\mathrm{material}}^j = \frac{1}{\Delta t}\int_{t^j}^{t^{j+1}}G_{\mathrm{material}}(t)\,dt. \tag{F32}
+$$
+
+**Source weights** (in $\mathrm{mol\ s^{-1}}$, the generation rate of the dual region of node $i$ divided by $4\pi$). $\bar G_{i,\mathrm{inner}}^j$ and $\bar G_{i,\mathrm{outer}}^j$ are the values (F32) of the materials on the inner and outer side of node $i$, assigned as in (F4), and $\omega = 1 - 1/\left(3\,n_{\mathrm{kernel}}\right)$ (dimensionless):
+
+$$
+\begin{aligned}
+\bar Q_i^j &= \frac{\left(r_i\right)^2}{2}\left[\Delta r_{i,\mathrm{inner}}\,\bar G_{i,\mathrm{inner}}^j + \Delta r_{i,\mathrm{outer}}\,\bar G_{i,\mathrm{outer}}^j\right], \qquad 1 \le i \le N-1,\ i \ne N_{\mathrm{kernel}},\\
+\bar Q_{N_{\mathrm{kernel}}}^j &= \frac{\left(R_1\right)^2}{2}\left[\Delta r_{\mathrm{kernel}}\left(\omega\,\bar G_{\mathrm{kernel}}^j + \left(1 - \omega\right)\bar G_{\mathrm{buffer}}^j\right) + \Delta r_{\mathrm{buffer}}\,\bar G_{\mathrm{buffer}}^j\right],\\
+\bar Q_N^j &= \frac{\left(R_5\right)^2}{2}\,\Delta r_{N-1,\mathrm{outer}}\,\bar G_{\mathrm{OPyC}}^j.
+\end{aligned} \tag{F33}
+$$
+
+The factor $\omega$ gives the kernel part of the source the inventory-matched shape of (F21) and (F22): for a kernel-only source $\bar Q_{N_{\mathrm{kernel}}}^j = \theta\,V_{N_{\mathrm{kernel}}}\bar G_{\mathrm{kernel}}^j$, and $\sum_{i=1}^{N}\bar Q_i^j = \frac{1}{3}\left(R_1\right)^3\bar G_{\mathrm{kernel}}^j$ exactly (D5, Section 1.3). Node 0 has no weight.
+
+**Nodal source densities** (in $\mathrm{mol\ m^{-3}\ s^{-1}}$):
+
+$$
+g_0^j = \bar G_{\mathrm{kernel}}^j, \qquad g_i^j = \frac{\bar Q_i^j}{V_i} \quad \left(1 \le i \le N-1\right). \tag{F34}
+$$
+
+### 11.2 Decay (G2) and temperature (G3)
+
+**Decay number** of a step and its place in the matrix:
+
+$$
+\kappa = \lambda\,\Delta t \quad \text{(dimensionless)}, \qquad \text{added to every diagonal entry } B_0, \dots, B_{N-1}. \tag{F35}
+$$
+
+The implementation stores $\kappa$ once per step length and uses the same stored number in the diagonal and in (F40).
+
+**Diffusivity laws and the step value.** $D_{\mathrm{material}}(T) = D_{0,\mathrm{material}}\exp\left(-E_{a,\mathrm{material}}/\left(R_{\mathrm{gas}}T\right)\right)$, or the sum of two such terms where the register documents a row so (decision 13); $D_0$ in $\mathrm{m^2\ s^{-1}}$, $E_a$ in $\mathrm{J\ mol^{-1}}$, $T$ in $\mathrm{K}$ ($T = T_{\mathrm{C}} + 273.15$), $R_{\mathrm{gas}}$ in $\mathrm{J\ mol^{-1}\ K^{-1}}$, the value documented with the row where the register gives one, otherwise $R_{\mathrm{gas}} = N_{\mathrm{A}}k_{\mathrm{B}} = 8.31446261815324\ \mathrm{J\ mol^{-1}\ K^{-1}}$, the exact product of the SI values $N_{\mathrm{A}} = 6.02214076\times10^{23}\ \mathrm{mol^{-1}}$ and $k_{\mathrm{B}} = 1.380649\times10^{-23}\ \mathrm{J\ K^{-1}}$. A temperature outside the documented range of a correlation is reported. The step uses the value at the middle of the step:
+
+$$
+\bar D_{\mathrm{material}}^j = D_{\mathrm{material}}\left(T\left(t^j + \tfrac{1}{2}\Delta t\right)\right) \quad \left(\mathrm{m^2\ s^{-1}}\right). \tag{F36}
+$$
+
+$K_{i,\mathrm{outer}}^j$ and $\mathrm{Fo}_{\mathrm{material}}^j$ are (F6) and (F8) with $\bar D^j$. The matrix and its Thomas factors are reassembled from (F37) whenever $\bar D^j$ or $\Delta t$ differs from the previous step. $V_i$, (F21), (F22) and (F33) do not depend on $D$.
+
+### 11.3 The combined rows (G4)
+
+For the step from $t^j$ to $t^{j+1}$:
+
+$$
+\begin{aligned}
+&L_i^j = -\frac{\Delta t\,K_{i,\mathrm{inner}}^j}{V_i}, \qquad U_i^j = -\frac{\Delta t\,K_{i,\mathrm{outer}}^j}{V_i}, \qquad B_i^j = 1 + \left|L_i^j\right| + \left|U_i^j\right| + \kappa, \qquad 1 \le i \le N-1,\\
+&B_0^j = 1 + 6\,\mathrm{Fo}_{\mathrm{kernel}}^j + \kappa, \qquad U_0^j = -6\,\mathrm{Fo}_{\mathrm{kernel}}^j, \qquad L_1^j = 0,
+\end{aligned} \tag{F37}
+$$
+
+with $U_{N-1}^j$ in $B_{N-1}^j$ but not in the matrix, as in (F17). The right-hand side is
+
+$$
+b_i^j = C_i^j + \Delta t\,g_i^j, \qquad 0 \le i \le N-1, \tag{F38}
+$$
+
+and the system $\mathbf{A}^j\mathbf{C}^{j+1} = \mathbf{b}^j$ is solved by (F24) with the coefficients of step $j$. $C_N^{j+1} = 0$ (F18). With $G = 0$, $\lambda = 0$ and constant $T$, (F37) and (F38) are (F11), (F12), (F17) and (F20).
+
+### 11.4 Release, generated and decayed amounts, balance
+
+$$
+\Phi^{j+1} = 4\pi K_{N-1,\mathrm{outer}}^j\,C_{N-1}^{j+1} + 4\pi\bar Q_N^j \quad \left(\mathrm{mol\ s^{-1}}\right), \tag{F39}
+$$
+
+with the stored $K_{N-1,\mathrm{outer}}^j$ of row $N-1$ of the same step. The second term is zero for the approved kernel-only source; when the OPyC source is not zero, it restores second-order consistency of the release (D5, Section 1.4). $M_{\mathrm{rel}}^j$ is (F27) with this $\Phi$.
+
+$$
+M_{\mathrm{gen}}^0 = 0, \quad M_{\mathrm{gen}}^{j+1} = M_{\mathrm{gen}}^j + 4\pi\,\Delta t\sum_{i=1}^{N}\bar Q_i^j; \qquad M_{\mathrm{dec}}^0 = 0, \quad M_{\mathrm{dec}}^{j+1} = M_{\mathrm{dec}}^j + \kappa\,M^{j+1} \qquad \left(\mathrm{mol}\right). \tag{F40}
+$$
+
+The sum for $M_{\mathrm{gen}}$ includes node $N$; $M^{j+1}$ is (F25). $M_{\mathrm{dec}}$ is never added to $M_{\mathrm{rel}}$.
+
+$$
+M^0 + M_{\mathrm{gen}}^j = M^j + M_{\mathrm{rel}}^j + M_{\mathrm{dec}}^j \ \ \text{(exact arithmetic)}, \qquad \varepsilon^j = M^j + M_{\mathrm{rel}}^j + M_{\mathrm{dec}}^j - M^0 - M_{\mathrm{gen}}^j. \tag{F41}
+$$
+
+(F41) replaces (F29) and (F30); it reduces to them when $G = 0$ and $\lambda = 0$. The residual is reported relative to $M^0 + M_{\mathrm{gen}}^j$.
+
+### 11.5 Release fractions
+
+$$
+F^j = \frac{M_{\mathrm{rel}}^j}{M^0}\ \ \left(C_{\mathrm{init}} > 0\right), \qquad F_{\mathrm{gen}}^j = \frac{M_{\mathrm{rel}}^j}{M^0 + M_{\mathrm{gen}}^j}\ \ \left(M^0 + M_{\mathrm{gen}}^j > 0\right), \qquad \beta^{j+1} = \frac{\Phi^{j+1}}{4\pi\sum_{i=1}^{N}\bar Q_i^j}\ \ \left(\text{denominator} > 0\right). \tag{F42}
+$$
+
+All three are dimensionless. $F$ is (F28); with a source it can exceed $1$. $0 \le F_{\mathrm{gen}}^j \le 1$ always (P31); it equals $F^j$ when $G = 0$. $\beta$ is the ratio of release rate to generation rate. **Proposed rule for $C_{\mathrm{init}} = 0$ (decision 8, for the coordinator to confirm):** such a run is accepted when some $\bar G^j > 0$; $F_{\mathrm{gen}}^j$ is then reported from the first step with $M_{\mathrm{gen}}^j > 0$ and is absent before it; $F^j$ is not reported. A run with $C_{\mathrm{init}} = 0$ and no source remains rejected. Which normalisation is compared with a measured fraction is decided by the experimental comparison.
+
+### 11.6 Properties of the extended scheme
+
+Standing hypotheses (H) of Section 8, plus: $G \ge 0$, $\lambda \ge 0$, every $\bar D_{\mathrm{material}}^j > 0$ and finite.
+
+| Property | Statement | Hypotheses | Status | Source |
+|---|---|---|---|---|
+| P19 Zero-source limit | $G = 0$ reproduces the baseline bit for bit | (F38) coded as $C + \Delta t\,g$ | PROVED | D5, Section 1.6 |
+| P20 Generated amount | $M_{\mathrm{gen}}^j$ is the exact time integral of the discrete source; for a kernel-only source $M_{\mathrm{gen}}^j = \frac{4\pi}{3}\left(R_1\right)^3\int_0^{t^j}G_{\mathrm{kernel}}\,dt$ | (F32), (F33) | PROVED | D5, Sections 1.3, 1.5 |
+| P21 No-diffusion limit of the source | the kernel field keeps the shape (F21) | kernel-only source | PROVED | D5, Section 1.3 |
+| P22 Steady state, kernel-only source | the discrete steady state equals the exact steady profile at every node, for any grid and any diffusivities; the steady release equals $\frac{4\pi}{3}\left(R_1\right)^3G_{\mathrm{kernel}}$ | constant $G_{\mathrm{kernel}}$, $\lambda = 0$, constant $D$ | PROVED (observed in 50-digit arithmetic: nodal error $\le 3.6\times10^{-46}$ of $C(0)$, release error $\le 4.1\times10^{-46}$) | D5, Section 1.6 |
+| P22a Steady state, uniform source, one material | exact on a grid with one spacing; on unequal spacings a local first-order row residual at the nodes where the spacing changes; global second order on unequal spacings | equal $G$ and equal $D$ in all materials | exact on one spacing: PROVED; local first-order residual: PROVED; global second order on unequal spacings: OBSERVED (orders $2.00$), NOT PROVEN | D5, Section 1.6 |
+| P23 Release with an OPyC source | (F39) is second-order consistent; (F26) alone is first order | smooth solution near $R_5$ | PROVED; OBSERVED orders $2.00$ and $1.00$ | D5, Section 1.4 |
+| P24 Decay matrix | non-singular M-matrix; margin $1 + \kappa$; $\left\lVert \left(\mathbf{A}^j\right)^{-1}\right\rVert _\infty \le 1/\left(1 + \kappa\right)$; pivots $m_i \ge 1 + \kappa + \left\lvert U_i^j\right\rvert$; P6 unchanged | (H) | PROVED | D5, Section 2.1 |
+| P25 Decay relation | without source, $\mathbf{C}_\lambda^j = \left(1 + \kappa\right)^{-j}\mathbf{C}_{\mathrm{base}}^j$ computed with step $\Delta t/\left(1 + \kappa\right)$; $\lambda = 0$ gives the baseline bit for bit | constant $D$ | PROVED | D5, Section 2.3 |
+| P26 Stability with $T(t)$ | the maximum norm and the weighted norm of P3 are non-increasing (no source, no decay) for every history $T(t)$ and every $\Delta t$ | (H) per step | PROVED | D5, Section 3.4 |
+| P27 Time accuracy with $T(t)$ | first order with (F36); the change of $D$ within a step adds only second-order terms to the local residual; end-of-step values would add a first-order term proportional to $\mathrm{d}D/\mathrm{d}t$ | each $D_{\mathrm{material}}(T)$ twice continuously differentiable in $T$, and $T(t)$ twice continuously differentiable on each step | PROVED for a fixed grid; PROOF OUTLINE with grid-independent constants; OBSERVED | D5, Section 3.2 |
+| P28 Homogeneous sphere with $T(t)$ | the scheme is constant-coefficient Backward Euler in $\tau = \int D\,dt$ with steps $\Delta t\,\bar D^j$; the exact solution is $C_{\mathrm{unit}}\left(r, \tau(t)\right)$, with $C_{\mathrm{unit}}$ the solution for unit diffusivity | equal $D$ in all materials at every time | PROVED | D5, Section 3.3 |
+| P29 Constant temperature | identical to the constant-$D$ run, bit for bit | same double-precision $D(T)$ and the same assembly code | PROVED | D5, Section 3.5 |
+| P30 Combined balance | (F41) holds exactly in exact arithmetic | the P9 hypotheses per step; the same stored $\kappa$ in the diagonal and (F40); the same $\bar Q$ in (F38), (F39) and (F40) | PROVED | D5, Section 4.2 |
+| P31 Combined solution | $\mathbf{A}^j$ is a non-singular M-matrix for every $j$; $\mathbf{C}^j \ge \mathbf{0}$ (also in floating point with (F24)); $\left\lVert \mathbf{C}^{j+1}\right\rVert _\infty \le \left(\left\lVert \mathbf{C}^j\right\rVert _\infty + \Delta t\max_ig_i^j\right)/\left(1 + \kappa\right)$, hence $\left\lVert \mathbf{C}^j\right\rVert _\infty \le \max\left(C_{\mathrm{init}}, g_*/\lambda\right)$ for $g_i^j \le g_*$ and $\lambda > 0$; the same bound in the weighted norm; $M_{\mathrm{rel}}$ non-decreasing; $0 \le F_{\mathrm{gen}}^j \le 1$ | (H), $G \ge 0$ | PROVED | D5, Sections 4.3, 4.4 |
+| Convergence with $G$, $\lambda$, $T(t)$ | second order in space, first order in time for release fraction, inventory and decayed amount | synthetic cases | OBSERVED; NOT PROVEN beyond P13 to P15 | D5, Sections 1.6, 2.3, 3.2 |
+
+### 11.7 Rounding bounds of the balance residual
+
+**Rounding bounds (D5, Section 5).** The tolerance that a test applies to $\left|\varepsilon^j\right|$ is the rigorous bound below, derived for IEEE double precision with rounding to nearest ($u = 2^{-53}$, dimensionless), no overflow and no subnormal products or quotients, no fused multiply-add, and positive computed Thomas pivots (checked by the code). Hats denote computed numbers, $\gamma_\nu = \nu u/\left(1 - \nu u\right)$, $\hat p = 4\,\mathrm{fl}(\pi)$, and, for the computed vector $\hat{\mathbf{C}}^j \ge \mathbf{0}$ and the stored matrix $\hat{\mathbf{A}}$,
+
+$$
+S^j = \sum_{i=1}^{N-1}V_i\left(\left|\hat{\mathbf{A}}\right|\hat{\mathbf{C}}^j\right)_i \quad \left(\mathrm{mol}\right), \qquad c_{\mathbf{A}} = \frac{\gamma_3}{1 - \gamma_3} + \frac{\gamma_4}{1 - \gamma_1}, \qquad \eta = 4\left(3N + J + 10\right)u. \tag{F43}
+$$
+
+A posteriori, for every $J \ge 1$ (with $s_J = J$, which covers recursive and compensated summation of the release increments):
+
+$$
+\left|\hat\varepsilon^J\right| \le \left(1 + \eta\right)\left[\hat p\,c_{\mathbf{A}}\sum_{k=1}^{J}S^k + \gamma_N\left(\hat M^J + \hat M^0\right) + \left(\gamma_4 + \left(s_J + 1\right)u\right)\hat M_{\mathrm{rel}}^J + u\,\hat M^J\right]. \tag{F44}
+$$
+
+A priori, with $\Lambda_{\max} = \max_{1 \le i \le N-1}\left(\left|L_i\right| + \left|U_i\right|\right)$ (dimensionless; $U_{N-1}$ included), $\kappa_R = c_{\mathbf{A}}\left(1 + \gamma_2\right)\left(1 + 2\Lambda_{\max}\right) < 1$ and $\rho_J = \left(1 - \kappa_R\right)^{-J}$ (both dimensionless):
+
+$$
+\frac{\left|\hat\varepsilon^J\right|}{\hat M^0} \le \frac{1 + \eta}{1 - \gamma_N}\left[\rho_J - 1 + b_J\,\rho_J\right], \quad b_J = 2\gamma_N\left(1 + \gamma_N\right) + \left(\gamma_4 + \left(s_J + 1\right)u\right)\left(1 + \gamma_4\right)\left(1 + s_Ju\right) + u\left(1 + \gamma_N\right), \tag{F45}
+$$
+
+which is about $7\,u\,J\left(1 + 2\Lambda_{\max}\right)$ when $J\kappa_R \ll 1$ and $\Lambda_{\max} \gg N + J$.
+
+$\Lambda_{\max}$ is about $2\max\mathrm{Fo}$. The per-step rounding is proportional to the gross exchange $\Delta t\,K\left(C_i + C_{i+1}\right)$ of every interval, not to the net flow, which is why the residual grows with $\mathrm{Fo}$ (D5, Section 5.4). The per-step constant $c_{\mathbf{A}} = 7u\left(1 + O(u)\right)$ uses the reference matrix built from the stored products $\mathrm{fl}\left(-\Delta t\,K_{i,\mathrm{outer}}\right)$, which are shared by rows $i$ and $i+1$ (D5, Section 5.2). It equals the constant $c_{\mathrm{step}} = \kappa_t + 3u/\left(1 - 3u\right)$ of the a-posteriori bound that the Rust tests and the production time loop compute, to first order ($c_{\mathbf{A}} - c_{\mathrm{step}} = 17\left(u\right)^2$; the difference is slack in two steps of the derivation of $c_{\mathbf{A}}$, so $c_{\mathrm{step}}$ is rigorous by itself, D5, Section 5.3), and the final values of the two bounds agree to the printed digits on the synthetic cases (D5, Section 5.7). The Rust bound stays the baseline test tolerance (coordinator decision 6; a derived tolerance is not replaced by a looser one without a stated reason); (F44) is the form that also covers the floating-point evaluation of the bound; (F45) is the bound known before a run. The first version of (F43) to (F45) had $c_{\mathbf{A}} = \gamma_{10}/\left(1 - \gamma_4\right)$, about $10u$: valid, but $1.43$ times looser. The second version of (F45) had $\gamma_N\left(2 + \gamma_N\right)$ as the first term of $b_J$; the proof (D5, Section 5.6, R-prior) yields $2\gamma_N\left(1 + \gamma_N\right)$, which (F45) now carries. The printed values of D5, Section 5.7, do not change (relative change at most $1.3\times10^{-20}$).
+
+**Combined scheme.** For a run with a source, decay or $T(t)$ (Section 11), the test tolerance at every step is (F46), derived in D5, Section 5.8 (Eq. (41) there), under the same hypotheses and for the operation orders stated there: the diagonal $\mathrm{fl}\left(\mathrm{fl}\left(\mathrm{fl}\left(1 - L_i\right) - U_i\right) + \kappa\right)$; the right-hand side $\mathrm{fl}\left(C_i^j + \mathrm{fl}\left(\Delta t\,g_i^j\right)\right)$; the release increment $\mathrm{fl}\left(\Delta t\,\mathrm{fl}\left(\mathrm{fl}\left(\mathrm{fl}\left(\hat p\,K_{N-1,\mathrm{outer}}^j\right)C_{N-1}^{j+1}\right) + \mathrm{fl}\left(\hat p\,\bar Q_N^j\right)\right)\right)$; the generation increment $\mathrm{fl}\left(\Delta t\,\mathrm{fl}\left(\hat p\,\mathrm{fl}\left(\sum_{i=1}^{N}\bar Q_i^j\right)\right)\right)$; the decay increment $\mathrm{fl}\left(\kappa\,\hat M^{j+1}\right)$; and $\hat\varepsilon^J = \mathrm{fl}\left(\mathrm{fl}\left(\mathrm{fl}\left(\hat M^J + \hat M_{\mathrm{rel}}^J\right) - \mathrm{fl}\left(\hat M^0 + \hat M_{\mathrm{gen}}^J\right)\right) + \hat M_{\mathrm{dec}}^J\right)$. $S^k$ is (F43) with the stored matrix $\hat{\mathbf{A}}^{k-1}$ of the step that produced $\hat{\mathbf{C}}^k$, and $\chi^k = 1$ if some $g_i^k > 0$ in step $k$, otherwise $0$ (dimensionless). With the same $\eta$ as in (F43) and $s_J = J$:
+
+$$
+\begin{aligned}
+\left|\hat\varepsilon^J\right| \le \left(1 + \eta\right)\Big[\,&\hat p\left(\frac{\gamma_4}{1 - \gamma_4} + \frac{\gamma_4}{1 - \gamma_1}\right)\sum_{k=1}^{J}S^k + u\sum_{k=0}^{J-1}\chi^k\hat M^k + \gamma_N\left(\hat M^J + \hat M^0\right) + \left(\gamma_5 + s_Ju\right)\hat M_{\mathrm{rel}}^J\\
+&+ \left(\gamma_{N+1} + \gamma_3 + s_Ju\right)\hat M_{\mathrm{gen}}^J + \left(\gamma_{N+1} + s_Ju\right)\hat M_{\mathrm{dec}}^J + \gamma_2\left(\hat M^J + \hat M_{\mathrm{rel}}^J + \hat M^0 + \hat M_{\mathrm{gen}}^J\right)\Big] \quad \left(\mathrm{mol}\right).
+\end{aligned} \tag{F46}
+$$
+
+The terms are, in order: the backward error of the solves; the rounding of the right-hand side at steps with a source; the two inventories; the release increments and their accumulator; the generation increments, the source part of the right-hand side and their accumulator; the decay increments and their accumulator; the evaluation of $\hat\varepsilon^J$. The computed value of the right side of (F46) is itself a rigorous bound (D5, Section 5.8). The residual is reported relative to $M^0 + M_{\mathrm{gen}}^j$. With $G = 0$ and $\lambda = 0$, (F46) is valid but weaker than (F44), and the baseline bound is used.
+
+### 11.8 Decisions fixed by Section 11
+
+| Item | Fixed choice | Alternatives rejected, and why | Where |
+|---|---|---|---|
+| Time level of the source | step average (F32) | value at $t^{j+1}$: same order, but the generated amount would not be the exact integral of the history | D5, Section 1.5 |
+| Source weight at $N_{\mathrm{kernel}}$ | $\omega$-split (F33) | plain half-interval weight: second order, but the generated amount, the no-diffusion limit and the steady state are then not exact | D5, Sections 1.3, 1.6 |
+| Source at the centre | pointwise $g_0 = \bar G_{\mathrm{kernel}}$ in row 0; no inventory weight | a weight at node 0: contradicts $V_0 = 0$ (F7) | D5, Section 1.3 |
+| Source next to $R_5$ | released at once, added to $\Phi$ and $M_{\mathrm{gen}}$ (F39), (F40) | dropping it: first-order release when the OPyC source is not zero | D5, Section 1.4 |
+| Decay | implicit, $\kappa$ on the diagonal (F35), booked separately (F40) | explicit decay: loses the M-matrix margin argument and positivity for large $\lambda\,\Delta t$; exponential factor per step: not the approved Backward Euler form | D5, Section 2 |
+| Time level of $D$ | middle of the step (F36) | end of the step: an additional first-order coefficient term $\propto \mathrm{d}D/\mathrm{d}t$ in the local residual (the reason for rejecting it); its total error was $0.45$ to about $22$ times that of (F36) in the synthetic ramps of D5, Section 3.2, so the size comparison is case-dependent; exact step average: same order, not elementary for a temperature ramp | D5, Section 3.2 |
+| Normalisation with a source | $F_{\mathrm{gen}}$ and $\beta$ (F42) beside $F$ | $F$ alone: exceeds 1 with a source, undefined for $C_{\mathrm{init}} = 0$ | D5, Section 4.4 |
+| Balance tolerance | the derived Rust bound or (F44) (same constant to first order) at every step of a baseline run, (F46) at every step with source, decay or $T(t)$, (F45) a priori | a constant chosen from observed residuals: excluded by decision 6; a looser derived bound in place of a tighter one: excluded without a stated reason | D5, Section 5 |
