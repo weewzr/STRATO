@@ -1561,11 +1561,15 @@ select.field__input {
   .builder {
     grid-template-columns: minmax(0, 1fr) 20rem;
     grid-template-areas:
+      'title title'
       'eq side'
       'add add'
       'more more';
     column-gap: var(--space-4);
     align-items: start;
+  }
+  .builder > .builder__step-title {
+    grid-area: title;
   }
   .builder > .step-additions {
     grid-area: add;

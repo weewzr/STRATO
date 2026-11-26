@@ -89,12 +89,22 @@ export function useSideScroll(ref: { current: HTMLElement | null }, dep: unknown
     };
     measure();
     box.addEventListener('scroll', measure, { passive: true });
-    if (typeof ResizeObserver === 'undefined') return () => box.removeEventListener('scroll', measure);
+    // The equation is wider once the maths fonts have loaded, and the box itself does not change size then: measure again.
+    const fonts = typeof document !== 'undefined' ? document.fonts : undefined;
+    fonts?.addEventListener?.('loadingdone', measure);
+    void fonts?.ready.then(measure);
+    if (typeof ResizeObserver === 'undefined') {
+      return () => {
+        box.removeEventListener('scroll', measure);
+        fonts?.removeEventListener?.('loadingdone', measure);
+      };
+    }
     const ro = new ResizeObserver(measure);
     ro.observe(box);
     for (const child of Array.from(box.children)) ro.observe(child);
     return () => {
       box.removeEventListener('scroll', measure);
+      fonts?.removeEventListener?.('loadingdone', measure);
       ro.disconnect();
     };
   }, [ref, dep]);

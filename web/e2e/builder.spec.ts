@@ -48,10 +48,11 @@ test.describe('Numerical Interpretation at 1440 x 900', () => {
     const before = await simulationSnapshot(page);
     const sentBefore = await solverRequests(page);
     const keyBefore = await page.getByTestId('block-d').getAttribute('data-input-key');
-    // Fonts and images the new equation needs may load; nothing else (no worker, data or solver request).
+    // Fonts and images the new equation needs may load, and the browser asks again for the tab icon when the address
+    // is rewritten; nothing else (no worker, data or solver request).
     const requests: string[] = [];
     page.on('request', (r) => {
-      if (!['font', 'image'].includes(r.resourceType())) requests.push(`${r.resourceType()} ${r.url()}`);
+      if (!['font', 'image'].includes(r.resourceType()) && !r.url().endsWith('/favicon.svg')) requests.push(`${r.resourceType()} ${r.url()}`);
     });
     await expect(page.getByTestId('numerical-status')).toContainText('The simulation solves these equations with the verified finite-difference BTCS Rust solver');
     for (const id of BASELINE_ITEMS) {
