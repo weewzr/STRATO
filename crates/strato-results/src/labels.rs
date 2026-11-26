@@ -96,9 +96,9 @@ pub fn labels_json(prov: &Prov, records: &[NrmseRecord]) -> String {
             "\\text{not resolved on the grid}",
         ),
         text(
-            "method_b_pending",
-            "not available: extension pending",
-            "\\text{not available: extension pending}",
+            "method_b_withheld",
+            "not available: the drawing mask withholds the value",
+            "\\text{not available: the drawing mask withholds the value}",
         ),
         text(
             "method_b_time_varying",

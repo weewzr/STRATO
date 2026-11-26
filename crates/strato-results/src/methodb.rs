@@ -1,14 +1,21 @@
 //! Method B: the Sturm-Liouville analytical solution, behind one function.
 //!
-//! The applicability follows the decision table of science design Section 4.3 and the drawing
-//! mask of Section 4.2. The extensions for decay (B2) and for a piecewise-constant kernel source
-//! (B3 to B5) are implemented by the task `analytical-extensions` on another branch. Until that
-//! branch is merged, [`method_b`] answers "not available: extension pending" for every
-//! configuration that needs them. **Merging the extensions changes this file only**: the arm
-//! marked `EXTENSION POINT` calls the new functions, and nothing else in the pipeline asks which
-//! configurations Method B can do.
+//! [`method_b`] is the only place that asks which configurations Method B can do and that draws
+//! a value. The applicability is the function of `strato::analytical::applicability` (the
+//! decision table of science design Section 4.3, with the extensions for decay (B2) and for a
+//! piecewise-constant kernel source (B3) to (B5)); the values and the drawing mask are those of
+//! `strato::analytical::extensions` (`KernelRun::drawn`, science design Section 4.2 and
+//! Document 6 Section 8). A value the mask withholds stays absent and carries its reason.
 
+use strato::analytical::applicability::{
+    applicability as table, Applicability, Extension, Reason, SourceHistory, Stage,
+    TemperatureHistory,
+};
+use strato::analytical::extensions::{
+    Decay, Drawn, KernelRun, PiecewiseSource, Quantity, Withheld,
+};
 use strato::analytical::sturm_liouville::{Layer, ModalRelease};
+use strato::numerical::physics_run::{Interpolation, TimeFunction};
 
 /// Seconds per hour.
 const HOUR_S: f64 = 3600.0;
@@ -16,17 +23,86 @@ const HOUR_S: f64 = 3600.0;
 const MAX_MODES: usize = 1_000;
 
 /// What a configuration needs from the analytical solution.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Needs {
-    /// A source in the kernel (stage 2, 5).
-    pub generation: bool,
-    /// Radioactive decay (stage 3, 5).
-    pub decay: bool,
-    /// A temperature that changes in time (stage 4 with a history, scenarios 2 to 5).
-    pub temperature_varies: bool,
-    /// The run starts from the kernel-step state (true) or from a fresh particle or another state
-    /// (false).
+    /// The equation stage of the configuration.
+    pub stage: Stage,
+    /// The source history of the run.
+    pub source: SourceHistory,
+    /// The decay constant in s^-1 (0 for no decay).
+    pub decay_per_s: f64,
+    /// The temperature history of the run.
+    pub temperature: TemperatureHistory,
+    /// The run starts from the kernel-step state (true) or from another state (false). A fresh
+    /// particle (no inventory) is the kernel step with zero inventory.
     pub kernel_step_start: bool,
+}
+
+impl Needs {
+    /// Stage 1: baseline diffusion at a constant temperature, kernel-step start.
+    pub fn baseline(t_c: f64) -> Self {
+        Needs {
+            stage: Stage::Baseline,
+            source: SourceHistory::None,
+            decay_per_s: 0.0,
+            temperature: TemperatureHistory::Constant(t_c),
+            kernel_step_start: true,
+        }
+    }
+}
+
+/// The temperature history of a scenario definition, from its own table.
+pub fn temperature_of(f: &TimeFunction) -> TemperatureHistory {
+    match f {
+        TimeFunction::Constant(c) => TemperatureHistory::Constant(*c),
+        TimeFunction::Table { times, values, .. } => {
+            TemperatureHistory::Series(times.iter().copied().zip(values.iter().copied()).collect())
+        }
+    }
+}
+
+/// The kernel source of a run from its generation-factor history: `rate_mol_m3_s` times the
+/// factor, piecewise constant on `[0, end_s]` and zero after. A factor that changes linearly in
+/// time is not piecewise constant ([`SourceHistory::KernelTimeVarying`]); a zero source is
+/// [`SourceHistory::None`].
+pub fn source_of(factor: &TimeFunction, rate_mol_m3_s: f64, end_s: f64) -> SourceHistory {
+    let pieces: Option<(Vec<f64>, Vec<f64>)> = match factor {
+        TimeFunction::Constant(f) => Some((vec![0.0, end_s], vec![*f])),
+        TimeFunction::Table {
+            times,
+            values,
+            mode: Interpolation::Step,
+        } => {
+            let mut breaks = Vec::new();
+            let mut rates = Vec::new();
+            for (&t, &v) in times.iter().zip(values) {
+                if t >= end_s {
+                    break;
+                }
+                breaks.push(t);
+                rates.push(v);
+            }
+            breaks.push(end_s);
+            Some((breaks, rates))
+        }
+        TimeFunction::Table {
+            values,
+            mode: Interpolation::Linear,
+            ..
+        } => values
+            .windows(2)
+            .all(|w| w[0] == w[1])
+            .then(|| (vec![0.0, end_s], vec![values[0]])),
+    };
+    let Some((breaks, rates)) = pieces else {
+        return SourceHistory::KernelTimeVarying;
+    };
+    let rates: Vec<f64> = rates.iter().map(|f| f * rate_mol_m3_s).collect();
+    match PiecewiseSource::new(breaks, rates) {
+        Ok(s) if s.is_zero() => SourceHistory::None,
+        Ok(s) => SourceHistory::KernelPiecewiseConstant(s),
+        Err(_) => SourceHistory::NotKernelUniform,
+    }
 }
 
 /// Why Method B is not shown.
@@ -43,8 +119,12 @@ pub struct NotAvailable {
 pub struct Available {
     /// Requested times, s.
     pub times_s: Vec<f64>,
-    /// `F(t)`, `None` where the drawing mask of Section 4.2 does not accept the value.
+    /// The value, `None` where the drawing mask does not accept it.
     pub values: Vec<Option<f64>>,
+    /// The code of the reason a value is withheld, `None` where it is drawn.
+    pub withheld: Vec<Option<&'static str>>,
+    /// The extension through which the series is computed, `None` for the existing series.
+    pub extension: Option<Extension>,
     /// Estimated absolute accuracy of the series (`accuracy_floor`).
     pub accuracy_floor: f64,
     /// Smallest time at which the omitted modes are negligible (`min_valid_time`), s.
@@ -66,38 +146,61 @@ pub enum MethodB {
     NotAvailable(NotAvailable),
 }
 
-/// The label of a curve that needs an extension that is not merged.
-pub const EXTENSION_PENDING: &str = "not available: extension pending";
+/// The code and the text of a refusal of the decision table.
+fn refusal(r: &Reason) -> NotAvailable {
+    let (code, reason) = match r {
+        Reason::TemperatureVaries => (
+            "TIME_VARYING_TEMPERATURE",
+            "the temperature changes in time, so the eigenfunctions change in time; the analytical solution is not defined for this case (science design Section 4.2)".to_string(),
+        ),
+        Reason::SourceNotPiecewiseConstant => (
+            "SOURCE_NOT_PIECEWISE_CONSTANT",
+            r.to_string(),
+        ),
+        Reason::SourceNotKernelUniform => ("SOURCE_NOT_KERNEL_UNIFORM", r.to_string()),
+        Reason::DecayConstantsDiffer => ("DECAY_CONSTANTS_DIFFER", r.to_string()),
+        Reason::MechanismNotInStage(_) => ("MECHANISM_NOT_IN_STAGE", r.to_string()),
+        Reason::InvalidInput(_) => ("INVALID_INPUT", r.to_string()),
+    };
+    NotAvailable { code, reason }
+}
 
-/// The applicability of Method B (decision table of Section 4.3), without computing anything.
+/// The code of a withheld value.
+fn withheld_code(w: &Withheld) -> &'static str {
+    match w {
+        Withheld::BeforeMinValidTime => "BEFORE_MIN_VALID_TIME",
+        Withheld::CoverSensitivity { .. } => "COVER_SENSITIVITY",
+        Withheld::BelowAccuracyFloor { .. } => "BELOW_ACCURACY_FLOOR",
+        Withheld::ExtensionErrorTooLarge { .. } => "EXTENSION_ERROR_TOO_LARGE",
+        Withheld::OutsideEstimatedRegime(_) => "OUTSIDE_ESTIMATED_REGIME",
+        Withheld::Undefined(_) => "QUANTITY_UNDEFINED",
+        Withheld::FloorNotReestimated => "FLOOR_NOT_REESTIMATED",
+    }
+}
+
+/// The applicability of Method B for a configuration, without computing anything: `Ok(None)` for
+/// the existing series, `Ok(Some(e))` through the extension `e`.
 ///
 /// # Errors
 ///
 /// [`NotAvailable`] with the code and the reason.
-pub fn applicability(needs: Needs) -> Result<(), NotAvailable> {
-    if needs.temperature_varies {
-        return Err(NotAvailable {
-            code: "TIME_VARYING_TEMPERATURE",
-            reason: "the temperature changes in time, so the eigenfunctions change in time; the analytical solution is not defined for this case (science design Section 4.2)".into(),
-        });
-    }
+pub fn applicability(needs: &Needs) -> Result<Option<Extension>, NotAvailable> {
     if !needs.kernel_step_start {
         return Err(NotAvailable {
             code: "START_STATE_NOT_KERNEL_STEP",
             reason: "the analytical solution is derived for the kernel-step initial state; this run starts from another state".into(),
         });
     }
-    // EXTENSION POINT: when `feat/analytical-extensions` is merged, the two arms below become
-    // `Ok(())` for the configurations the extensions cover (E-decay for decay without a source
-    // at constant temperature, E-source for a piecewise-constant kernel source at constant
-    // temperature) and `method_b` calls the new functions for them.
-    if needs.generation || needs.decay {
-        return Err(NotAvailable {
-            code: "EXTENSION_PENDING",
-            reason: EXTENSION_PENDING.into(),
-        });
+    let decay = if needs.decay_per_s > 0.0 {
+        Decay::Uniform(needs.decay_per_s)
+    } else {
+        Decay::None
+    };
+    match table(needs.stage, &needs.source, &decay, &needs.temperature) {
+        Applicability::Exact => Ok(None),
+        Applicability::Extension(e) => Ok(Some(e)),
+        Applicability::NotApplicable(r) => Err(refusal(&r)),
     }
-    Ok(())
 }
 
 fn layers(radii_m: &[f64; 5], d: &[f64; 5]) -> Vec<Layer> {
@@ -109,17 +212,29 @@ fn layers(radii_m: &[f64; 5], d: &[f64; 5]) -> Vec<Layer> {
         .collect()
 }
 
-/// Method B for a configuration at times in s. Exact for the baseline (and for a constant
-/// temperature, with the diffusivities evaluated at it).
+/// Method B for a configuration at times in s: the quantity `q` of a kernel-step start with the
+/// initial kernel inventory `m0_mol` (1 for a fraction of the initial inventory, 0 for a fresh
+/// particle), at constant temperature with the diffusivities `d` evaluated at it. The kernel
+/// volume of the source is that of the first layer of `radii_m`.
 ///
-/// A value is drawn only if (1) `t >= min_valid_time()`, (2) the series with the full
-/// eigenvalue cover and with the cover reduced by a factor 4 differ by at most 5 % of the full
-/// value (the labelled 5 % convention of decision 49, not a derived bound), and (3) the
-/// module's `accuracy_floor()` is at most 5 % of the value.
-pub fn method_b(needs: Needs, radii_m: &[f64; 5], d: &[f64; 5], times_s: &[f64]) -> MethodB {
-    if let Err(n) = applicability(needs) {
-        return MethodB::NotAvailable(n);
-    }
+/// A value is drawn only where the drawing mask of science design Section 4.2 accepts it:
+/// `t >= min_valid_time`, the series with the eigenvalue cover reduced by a factor 4 differs by at
+/// most 5 % (the labelled 5 % convention of decision 49, not a derived bound), and the estimated
+/// error is at most 5 % of the value (the floor test for the existing series, the rule of
+/// Document 6 Section 8 for decay and a source, inside the measured regime). The other values stay
+/// absent with their reason in [`Available::withheld`].
+pub fn method_b(
+    needs: &Needs,
+    q: Quantity,
+    m0_mol: f64,
+    radii_m: &[f64; 5],
+    d: &[f64; 5],
+    times_s: &[f64],
+) -> MethodB {
+    let extension = match applicability(needs) {
+        Ok(e) => e,
+        Err(n) => return MethodB::NotAvailable(n),
+    };
     let ls = layers(radii_m, d);
     let t_min = times_s
         .iter()
@@ -156,48 +271,75 @@ pub fn method_b(needs: Needs, radii_m: &[f64; 5], d: &[f64; 5], times_s: &[f64])
             })
         }
     };
-    // The series with the cover reduced by 4 is the same series truncated: the eigenvalues and
-    // the weights of the modes do not depend on the cover.
-    let cut = full.lambda_covered / 4.0;
-    let quarter_value = |t: f64| -> f64 {
-        1.0 - full
-            .eigenvalues
-            .iter()
-            .zip(&full.weights)
-            .filter(|(l, _)| **l <= cut)
-            .map(|(l, w)| w * (-l * t).exp())
-            .sum::<f64>()
+    let source = match &needs.source {
+        SourceHistory::KernelPiecewiseConstant(s) => s.clone(),
+        _ => PiecewiseSource::none(),
     };
-    let valid = full.min_valid_time();
-    let floor = full.accuracy_floor();
-    let values = times_s
-        .iter()
-        .map(|&t| {
-            if t < valid {
-                return None;
+    let decay = if needs.decay_per_s > 0.0 {
+        Decay::Uniform(needs.decay_per_s)
+    } else {
+        Decay::None
+    };
+    let kernel_volume = 4.0 / 3.0 * std::f64::consts::PI * radii_m[0].powi(3);
+    let run = match KernelRun::new(&full, m0_mol, kernel_volume, source, &decay) {
+        Ok(r) => r.with_geometry(radii_m[0], radii_m[4]),
+        Err(e) => {
+            return MethodB::NotAvailable(NotAvailable {
+                code: "RUN_REFUSED",
+                reason: format!("the extension refuses the input: {e:?}"),
+            })
+        }
+    };
+    let mut values = Vec::with_capacity(times_s.len());
+    let mut withheld = Vec::with_capacity(times_s.len());
+    for &t in times_s {
+        match run.drawn(q, t) {
+            Ok(Drawn::Value(v)) if v.is_finite() => {
+                values.push(Some(v));
+                withheld.push(None);
             }
-            let v = full.release_fraction(t);
-            if !(v.is_finite() && v > 0.0) || floor > 0.05 * v {
-                return None;
+            Ok(Drawn::Value(_)) => {
+                values.push(None);
+                withheld.push(Some("QUANTITY_UNDEFINED"));
             }
-            let q = quarter_value(t);
-            ((v - q).abs() <= 0.05 * v).then_some(v)
-        })
-        .collect::<Vec<Option<f64>>>();
+            Ok(Drawn::Withheld(w)) => {
+                values.push(None);
+                withheld.push(Some(withheld_code(&w)));
+            }
+            Err(_) => {
+                values.push(None);
+                withheld.push(Some("RUN_REFUSED"));
+            }
+        }
+    }
     if values.iter().all(Option::is_none) {
+        // The most common reason, for the text.
+        let mut counts: Vec<(&'static str, usize)> = Vec::new();
+        for c in withheld.iter().flatten() {
+            match counts.iter_mut().find(|(k, _)| k == c) {
+                Some(e) => e.1 += 1,
+                None => counts.push((c, 1)),
+            }
+        }
+        counts.sort_by_key(|a| std::cmp::Reverse(a.1));
+        let list: Vec<String> = counts.iter().map(|(c, n)| format!("{c} x {n}")).collect();
         return MethodB::NotAvailable(NotAvailable {
             code: "NOT_DRAWN_AT_ANY_TIME",
             reason: format!(
-                "the drawing mask of science design Section 4.2 accepts no value of this curve (first valid time {:.3e} s, accuracy floor {:.1e})",
-                valid, floor
+                "the drawing mask of science design Section 4.2 accepts no value of this curve ({}; first valid time {:.3e} s, accuracy floor {:.1e})",
+                list.join(", "),
+                full.min_valid_time(),
+                full.accuracy_floor()
             ),
         });
     }
     MethodB::Available(Available {
         times_s: times_s.to_vec(),
         values,
-        accuracy_floor: floor,
-        valid_from_s: valid,
+        withheld,
+        extension,
+        accuracy_floor: full.accuracy_floor(),
+        valid_from_s: full.min_valid_time(),
         modes: full.eigenvalues.len(),
         alpha_max_per_s: full.lambda_covered,
         missing_weight: 1.0 - full.weights.iter().sum::<f64>(),
@@ -213,68 +355,151 @@ pub fn hours(t_s: f64) -> f64 {
 mod tests {
     use super::*;
 
-    const BASE: Needs = Needs {
-        generation: false,
-        decay: false,
-        temperature_varies: false,
-        kernel_step_start: true,
-    };
+    const RADII: [f64; 5] = [175.0e-6, 278.5e-6, 317.9e-6, 353.2e-6, 394.2e-6];
+    const D: [f64; 5] = [1.0e-13, 1.0e-12, 1.0e-14, 1.0e-15, 1.0e-14];
+
+    fn base() -> Needs {
+        Needs::baseline(1600.0)
+    }
 
     #[test]
     fn the_decision_table_of_section_4_3() {
-        assert!(applicability(BASE).is_ok());
-        let e = applicability(Needs {
-            temperature_varies: true,
-            ..BASE
+        assert_eq!(applicability(&base()), Ok(None));
+        let e = applicability(&Needs {
+            temperature: TemperatureHistory::Series(vec![(0.0, 30.0), (1.0e5, 1028.0)]),
+            ..base()
         })
         .unwrap_err();
         assert_eq!(e.code, "TIME_VARYING_TEMPERATURE");
-        // Until the extensions are merged: decay and generation are pending.
-        for needs in [
-            Needs {
-                decay: true,
-                ..BASE
-            },
-            Needs {
-                generation: true,
-                ..BASE
-            },
-        ] {
-            let e = applicability(needs).unwrap_err();
-            assert_eq!(e.code, "EXTENSION_PENDING");
-            assert_eq!(e.reason, "not available: extension pending");
-        }
-        // Temperature variation wins over a pending extension.
-        let e = applicability(Needs {
-            generation: true,
-            temperature_varies: true,
-            ..BASE
+        // Decay and a source apply through their extensions at a constant temperature.
+        let decay = Needs {
+            stage: Stage::Decay,
+            decay_per_s: 1.0e-9,
+            ..base()
+        };
+        assert_eq!(applicability(&decay), Ok(Some(Extension::Decay)));
+        let src = Needs {
+            stage: Stage::Generation,
+            source: SourceHistory::KernelPiecewiseConstant(
+                PiecewiseSource::constant(1.0e-6, 1.0e7).unwrap(),
+            ),
+            ..base()
+        };
+        assert_eq!(applicability(&src), Ok(Some(Extension::Source)));
+        let both = Needs {
+            stage: Stage::Combined,
+            decay_per_s: 1.0e-9,
+            ..src.clone()
+        };
+        assert_eq!(applicability(&both), Ok(Some(Extension::SourceWithDecay)));
+        // A varying temperature wins over an extension.
+        let e = applicability(&Needs {
+            temperature: TemperatureHistory::Series(vec![(0.0, 30.0), (1.0e5, 1028.0)]),
+            ..both
         })
         .unwrap_err();
         assert_eq!(e.code, "TIME_VARYING_TEMPERATURE");
         assert_eq!(
-            applicability(Needs {
+            applicability(&Needs {
                 kernel_step_start: false,
-                ..BASE
+                ..base()
             })
             .unwrap_err()
             .code,
             "START_STATE_NOT_KERNEL_STEP"
         );
+        // A ramp in the source is not piecewise constant.
+        let ramp =
+            TimeFunction::table(vec![0.0, 10.0], vec![0.0, 1.0], Interpolation::Linear).unwrap();
+        assert_eq!(
+            source_of(&ramp, 1.0, 10.0),
+            SourceHistory::KernelTimeVarying
+        );
+    }
+
+    #[test]
+    fn the_source_of_a_step_history_has_one_piece_per_step_and_ends_at_the_run_end() {
+        let f = TimeFunction::table(
+            vec![0.0, 100.0, 200.0],
+            vec![1.0, 2.0, 0.5],
+            Interpolation::Step,
+        )
+        .unwrap();
+        let SourceHistory::KernelPiecewiseConstant(s) = source_of(&f, 3.0, 300.0) else {
+            panic!("a piecewise source")
+        };
+        assert_eq!(s.breaks(), &[0.0, 100.0, 200.0, 300.0]);
+        assert_eq!(s.rates(), &[3.0, 6.0, 1.5]);
+        assert_eq!(
+            source_of(&TimeFunction::constant(0.0).unwrap(), 3.0, 300.0),
+            SourceHistory::None
+        );
     }
 
     #[test]
     fn the_mask_hides_early_values_and_keeps_late_ones() {
-        let radii = [175.0e-6, 278.5e-6, 317.9e-6, 353.2e-6, 394.2e-6];
-        let d = [1.0e-13, 1.0e-12, 1.0e-14, 1.0e-15, 1.0e-14];
         let times: Vec<f64> = vec![60.0, 3600.0, 36000.0, 360000.0, 1.0e6];
-        match method_b(BASE, &radii, &d, &times) {
+        match method_b(&base(), Quantity::ReleaseFraction, 1.0, &RADII, &D, &times) {
             MethodB::Available(a) => {
                 assert_eq!(a.values.len(), 5);
                 assert!(a.values[4].is_some_and(|v| v > 0.0 && v < 1.0));
                 assert!(a.accuracy_floor > 0.0 && a.valid_from_s > 0.0);
+                assert!(a.extension.is_none());
+                // Every absent value carries its reason, every drawn value none.
+                for (v, w) in a.values.iter().zip(&a.withheld) {
+                    assert_eq!(v.is_some(), w.is_none());
+                }
             }
             MethodB::NotAvailable(n) => panic!("{n:?}"),
+        }
+    }
+
+    #[test]
+    fn decay_goes_through_the_extension_and_lowers_the_release() {
+        // A long half-life barely changes the release of the kernel step; a short one lowers it.
+        // The first time sets the eigenvalue cover (and with it the number of modes).
+        let times: Vec<f64> = vec![60.0, 3.6e5, 1.0e6, 3.0e6];
+        let plain = method_b(&base(), Quantity::ReleaseFraction, 1.0, &RADII, &D, &times);
+        let decaying = Needs {
+            stage: Stage::Decay,
+            decay_per_s: 1.0e-7,
+            ..base()
+        };
+        let with = method_b(
+            &decaying,
+            Quantity::ReleaseFraction,
+            1.0,
+            &RADII,
+            &D,
+            &times,
+        );
+        let (MethodB::Available(p), MethodB::Available(w)) = (&plain, &with) else {
+            panic!("both series are available: {plain:?} {with:?}")
+        };
+        assert_eq!(w.extension, Some(Extension::Decay));
+        let mut compared = 0;
+        for k in 0..times.len() {
+            if let (Some(a), Some(b)) = (p.values[k], w.values[k]) {
+                assert!(b < a && b > 0.0, "decay lowers the release: {a} {b}");
+                compared += 1;
+            }
+        }
+        assert!(compared >= 1, "no decay value was drawn: {:?}", w.withheld);
+        // Whether each value is drawn is decided by the mask; a withheld value has a reason.
+        for (v, r) in w.values.iter().zip(&w.withheld) {
+            assert_eq!(v.is_some(), r.is_none());
+        }
+    }
+
+    #[test]
+    fn a_varying_temperature_is_refused_before_anything_is_computed() {
+        let n = Needs {
+            temperature: TemperatureHistory::Series(vec![(0.0, 30.0), (1.0e5, 1028.0)]),
+            ..base()
+        };
+        match method_b(&n, Quantity::ReleaseFraction, 1.0, &RADII, &D, &[3600.0]) {
+            MethodB::NotAvailable(r) => assert_eq!(r.code, "TIME_VARYING_TEMPERATURE"),
+            MethodB::Available(_) => panic!("must be refused"),
         }
     }
 }

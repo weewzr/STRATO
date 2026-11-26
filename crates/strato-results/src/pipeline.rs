@@ -26,6 +26,7 @@ use crate::output::{json_file, masked, Files, Prov, SCHEMA_VERSION};
 use crate::params::{generation_nuclides, rate_density, reference_generation, Laws};
 use crate::scen;
 use crate::verification::{agreement, conservation, convergence, Conservation};
+use strato::analytical::applicability::{SourceHistory, Stage};
 
 /// What to run.
 #[derive(Debug, Clone)]
@@ -187,19 +188,12 @@ pub fn generate(opts: &Options) -> Result<Files, String> {
                     relative_residual: ec.max_relative_residual,
                     steps: ec.steps,
                 });
-                let needs = Needs {
-                    generation: false,
-                    decay: stage == 3,
-                    temperature_varies: stage == 4,
-                    kernel_step_start: true,
-                };
-                let b = match applicability(needs) {
-                    Ok(()) => J::obj(vec![("available", J::Bool(true))]),
-                    Err(n) => J::obj(vec![
-                        ("available", J::Bool(false)),
-                        ("reason_code", J::s(n.code)),
-                        ("reason", J::s(n.reason)),
-                    ]),
+                // Method B of the cell as the curve file says it: available where at least one
+                // value passes the drawing mask, otherwise the code and the reason.
+                let b = if ec.b_available {
+                    J::obj(vec![("available", J::Bool(true))])
+                } else {
+                    ec.method_b.clone()
                 };
                 cells.push(cell_json(
                     &ec.key,
@@ -270,12 +264,14 @@ pub fn generate(opts: &Options) -> Result<Files, String> {
                 temperature_c: t_c,
                 model_config_id: format!("s4.exp.{}.{}c", nuc.id, fmt_c(t_c)),
             };
-            let na = applicability(Needs {
-                generation: false,
-                decay: false,
-                temperature_varies: true,
+            let na = applicability(&Needs {
+                stage: Stage::TemperatureDependentDiffusivity,
+                source: SourceHistory::None,
+                decay_per_s: 0.0,
+                temperature: ramp.temperature.clone(),
                 kernel_step_start: true,
-            });
+            })
+            .map(|_| ());
             for r in records(&m4, &cands4, &na) {
                 nrmse_records.push(r);
             }
@@ -870,7 +866,7 @@ fn support_json(prov: &Prov, reg: &Register, cells: Vec<J>) -> Result<String, St
             ("exploration", J::Arr(exploration)),
             (
                 "method_b_note",
-                J::s("Method B is exact for the baseline and for a constant temperature; the extensions for decay and for a kernel source are pending (not available: extension pending); it is never shown when the temperature changes in time"),
+                J::s("Method B is exact for the baseline and for a constant temperature; the extensions for decay (B2) and for a piecewise-constant kernel source (B3) to (B5) apply at a constant temperature and a value is drawn only where the drawing mask accepts it (a withheld value carries its reason code in the curve file); it is never shown when the temperature changes in time"),
             ),
         ],
     ))

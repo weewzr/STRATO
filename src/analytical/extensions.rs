@@ -59,9 +59,12 @@ pub const EARLY_RELEASE_FLOOR_FACTOR: f64 = 4.0;
 /// design Section 4.2, item 3, decision 68(c)): the estimate of Document 6, Section 8 exists
 /// AND the independent verification of it passed (decision 68(c) allows `true` only then).
 /// With `false`, [`KernelRun::drawn`] returns [`Withheld::FloorNotReestimated`] for every
-/// quantity of a run with decay or a non-zero source. The verification of the present estimate
-/// has not passed yet, so this stays `false`; the coordinator sets it after the verifier.
-pub const EXTENSION_FLOOR_REESTIMATED: bool = false;
+/// quantity of a run with decay or a non-zero source. The independent verification of the
+/// estimate of Document 6, Section 8 passed (log `analytical-extensions-verify`, round 4, 0
+/// blockers, 0 majors) and decision 68(c) authorises setting this constant once it has, so it
+/// is `true`; the mask then draws an extension value only where the estimated relative error is
+/// at most 5 % inside the measured regime.
+pub const EXTENSION_FLOOR_REESTIMATED: bool = true;
 
 /// Factor of `floor * A(t)` (mol) added to the computed bounds of the inventory `M` for the
 /// error of the series (Document 6, Equation (54)). It covers the error of the series only:
@@ -461,7 +464,8 @@ pub enum Withheld {
     /// The quantity is not defined here (for example `F` with `M^0 = 0`).
     Undefined(&'static str),
     /// The run has decay or a source, and the accuracy floor has not been re-estimated for
-    /// (B2) to (B5) ([`EXTENSION_FLOOR_REESTIMATED`] is `false`).
+    /// (B2) to (B5) ([`EXTENSION_FLOOR_REESTIMATED`] is `false`; the gate is kept and tested
+    /// through `drawn_gated`).
     FloorNotReestimated,
 }
 

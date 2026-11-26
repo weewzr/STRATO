@@ -22,6 +22,7 @@ use strato_data::Register;
 use crate::curves::{lin, EngineCurve, Nuc, NUCS};
 use crate::methodb::{method_b, MethodB, Needs, NotAvailable};
 use crate::nrmse::{self, EmptyReason, Point, FSCALE_DEFINITION_ID};
+use strato::analytical::extensions::Quantity;
 
 /// A Method B series at the measurement times: time in h and the value where it is drawn.
 type BSeries = Vec<(f64, Option<f64>)>;
@@ -58,26 +59,18 @@ const DESIGN_BOUND_RANGES: [(&str, u32, u32); 18] = [
     ("ag110m", 462, 471),
 ];
 
-/// The matrix-corrected rows of intact compacts (decision 67): fractions of the as-run calculated
-/// compact inventory over a window from about 24 h at temperature to the end of the 300 h plateau.
-/// They are window upper bounds under premise BP1 and never point comparisons: the source calls
-/// the correction an attempt that cannot separate particle release from matrix release.
-const MATRIX_CORRECTED_RANGES: [(&str, u32, u32); 2] = [("cs134", 10, 14), ("ag110m", 33, 37)];
-
-/// Length of the plateau that ends the window of a matrix-corrected row, hours.
-const PLATEAU_H: f64 = 300.0;
-/// The start of the window of a matrix-corrected row ("about 24 h" in the source), hours.
-const WINDOW_START_H: f64 = 24.0;
-
-/// The note that goes with BP1 for the matrix-corrected rows (decision 67).
-pub const BP1_SOURCE_NOTE: &str = "For the matrix-corrected rows BP1 is the source's own assumption, not an established fact: the authors call the correction an attempt that cannot separate particle release from matrix release. The window runs from about 24 h at temperature to the end of the 300 h plateau, or to the end of the test if shorter.";
-
-/// True if the row is a matrix-corrected row of an intact compact (decision 67).
-pub fn is_matrix_corrected(nuc_id: &str, id: &str) -> bool {
-    let Some(n) = id_number(id) else { return false };
-    MATRIX_CORRECTED_RANGES
-        .iter()
-        .any(|(nu, a, b)| *nu == nuc_id && (*a..=*b).contains(&n))
+/// The note that goes with BP1 for the matrix-corrected rows (decision 67). The window numbers
+/// are those of the comparison program, which applies decision 68: the matrix-corrected rows of
+/// intact compacts are window upper bounds under premise BP1 and never point comparisons, because
+/// the source calls the correction an attempt that cannot separate particle release from matrix
+/// release. Which rows they are is the comparison program's decision (`RowRecord::is_window_bound`),
+/// not a list kept here.
+pub fn bp1_source_note() -> String {
+    format!(
+        "For the matrix-corrected rows BP1 is the source's own assumption, not an established fact: the authors call the correction an attempt that cannot separate particle release from matrix release. The window runs from about {} h at temperature to the end of the {} h plateau, or to the end of the test if shorter.",
+        strato_compare::status::WINDOW_START_H,
+        strato_compare::status::PLATEAU_H
+    )
 }
 
 fn id_number(id: &str) -> Option<u32> {
@@ -188,8 +181,18 @@ pub struct BoundRec {
     pub source: String,
     /// Source location.
     pub source_location: String,
-    /// Denominator text.
+    /// Denominator text, as the comparison program states it.
     pub denominator: String,
+    /// The class of the comparison, as the comparison program states it.
+    pub comparison_class: String,
+    /// The register's time label of the row (`time_basis`).
+    pub time_window: String,
+    /// The register's statement of what the value means for one particle.
+    pub particle_applicability: String,
+    /// For a window bound: the premise as the comparison program states it.
+    pub premise_source: Option<&'static str>,
+    /// For a window bound: where the end of the window comes from.
+    pub window_end_origin: Option<String>,
     /// Reading uncertainty text.
     pub reading: String,
     /// Draw the marker (false for a digitised duplicate of a printed value).
@@ -241,11 +244,13 @@ pub fn bounds(
     // Candidates: (row, nuclide, temperature, hold time, window start, kind).
     struct Cand<'a> {
         row: &'a ReleaseRow,
+        rec: &'a RowRecord,
         nuc: &'static Nuc,
         t_c: f64,
         t_h: f64,
         t_start_h: f64,
         kind: &'static str,
+        window_end_origin: Option<String>,
     }
     let mut cands: Vec<Cand<'_>> = Vec::new();
     for rec in records {
@@ -256,22 +261,20 @@ pub fn bounds(
         if !super::curves::exp_temperatures(nuc.id).contains(&t_c) {
             continue;
         }
-        if is_matrix_corrected(nuc.id, &row.id) {
-            // Decision 67: a window upper bound under BP1, never a point.
-            // The comparison program plans these rows as a point or as a provisional model value
-            // (before the register fixes the denominator); the window is the same.
-            if let Plan::Point { spec, .. } | Plan::Provisional { spec, .. } = &rec.verdict.plan {
+        if rec.is_window_bound() {
+            // Decisions 67 and 68(a): a window upper bound under BP1, never a point. The comparison
+            // program decides which rows these are and gives the window (about 24 h at temperature
+            // to the end of the 300 h plateau or the shorter test end) in its plan.
+            if let Plan::Inequality { spec, .. } = &rec.verdict.plan {
                 cands.push(Cand {
                     row,
+                    rec,
                     nuc,
                     t_c,
-                    t_h: spec.t_end_h.min(PLATEAU_H),
-                    t_start_h: if spec.window_start_h > 0.0 {
-                        spec.window_start_h
-                    } else {
-                        WINDOW_START_H
-                    },
+                    t_h: spec.t_end_h,
+                    t_start_h: spec.window_start_h,
                     kind: "window_bound",
+                    window_end_origin: Some(spec.time_source.clone()),
                 });
             }
             continue;
@@ -300,11 +303,13 @@ pub fn bounds(
         };
         cands.push(Cand {
             row,
+            rec,
             nuc,
             t_c,
             t_h,
             t_start_h: t_start,
             kind,
+            window_end_origin: None,
         });
     }
     // Window bounds from the three series.
@@ -372,12 +377,6 @@ pub fn bounds(
         e.push(w.b.time_h.as_ref().map_or(0.0, |t| t.value) * 3600.0);
         e.push(w.a.time_h.as_ref().map_or(0.0, |t| t.value) * 3600.0);
     }
-    let needs = Needs {
-        generation: false,
-        decay: false,
-        temperature_varies: false,
-        kernel_step_start: true,
-    };
     let mut b_series: BTreeMap<(&'static str, i64), BSeries> = BTreeMap::new();
     for ((nid, t), times) in &b_times {
         let nuc = nuc_by_id(nid).ok_or("nuclide")?;
@@ -386,7 +385,15 @@ pub fn bounds(
         let mut ts = times.clone();
         ts.sort_by(|a, b| a.partial_cmp(b).expect("finite"));
         ts.dedup();
-        if let MethodB::Available(a) = method_b(needs, &radii.outer_m, &d, &ts) {
+        let needs = Needs::baseline(*t as f64);
+        if let MethodB::Available(a) = method_b(
+            &needs,
+            Quantity::ReleaseFraction,
+            1.0,
+            &radii.outer_m,
+            &d,
+            &ts,
+        ) {
             b_series.insert(
                 (*nid, *t),
                 a.times_s
@@ -500,7 +507,15 @@ pub fn bounds(
             value_class: row.value_class.as_str().to_string(),
             source: row.source.clone(),
             source_location: row.source_location.clone(),
-            denominator: row.denominator.as_str().to_string(),
+            denominator: c.rec.comparison_denominator(),
+            comparison_class: c.rec.comparison_class().to_string(),
+            time_window: row.time_basis.clone(),
+            particle_applicability: row.particle_applicability.clone(),
+            premise_source: match &c.rec.verdict.plan {
+                Plan::Inequality { source, .. } => Some(source.text()),
+                _ => None,
+            },
+            window_end_origin: c.window_end_origin.clone(),
             reading: reading_text(row),
             drawn: true,
             duplicate_of: None,
@@ -582,6 +597,11 @@ pub fn bounds(
             source: w.b.source.clone(),
             source_location: w.b.source_location.clone(),
             denominator: w.b.denominator.as_str().to_string(),
+            comparison_class: "window upper bound from two time-series points".to_string(),
+            time_window: w.b.time_basis.clone(),
+            particle_applicability: w.b.particle_applicability.clone(),
+            premise_source: None,
+            window_end_origin: None,
             reading: "the sum of the two absolute reading uncertainties, no independence assumed"
                 .to_string(),
             drawn: false,
@@ -686,7 +706,7 @@ pub fn bound_json(b: &BoundRec) -> J {
                     ("label", J::s("prescribed input (assumed)")),
                     (
                         "reason",
-                        J::s("the source gives no exact start of the window (\"about 24 h\"); the registered value used above is 24 h"),
+                        J::s(format!("the source gives no exact start of the window (\"about {0} h\"); the value used above is {0} h", strato_compare::status::WINDOW_START_H)),
                     ),
                     (
                         "starts",
@@ -717,12 +737,23 @@ pub fn bound_json(b: &BoundRec) -> J {
         ("source", J::s(b.source.clone())),
         ("source_location", J::s(b.source_location.clone())),
         ("denominator", J::s(b.denominator.clone())),
+        ("comparison_class", J::s(b.comparison_class.clone())),
+        ("time_window", J::s(b.time_window.clone())),
+        (
+            "particle_applicability",
+            J::s(b.particle_applicability.clone()),
+        ),
+        ("premise_source", b.premise_source.map_or(J::Null, J::s)),
+        (
+            "window_end_origin",
+            b.window_end_origin.clone().map_or(J::Null, J::s),
+        ),
         ("reading_uncertainty", J::s(b.reading.clone())),
         ("systematic_uncertainty", J::s(SYSTEMATIC_AGR1)),
         (
             "premises",
             J::Arr(if b.kind == "window_bound" && b.ends.is_none() {
-                vec![J::s(BP1), J::s(BP1_SOURCE_NOTE), J::s(BP2), J::s(A1)]
+                vec![J::s(BP1), J::s(bp1_source_note()), J::s(BP2), J::s(A1)]
             } else {
                 vec![J::s(BP1), J::s(BP2), J::s(A1)]
             }),
@@ -762,10 +793,10 @@ pub enum Candidate {
         u_value: Option<f64>,
         /// Reading uncertainty of the time, hours.
         u_time_h: Option<f64>,
-        /// Slope of Method A per hour.
-        slope_a_per_h: f64,
-        /// Slope of Method B per hour.
-        slope_b_per_h: f64,
+        /// Slope of Method A per hour; `None` where no difference is possible.
+        slope_a_per_h: Option<f64>,
+        /// Slope of Method B per hour; `None` where no difference is possible.
+        slope_b_per_h: Option<f64>,
     },
 }
 
@@ -954,7 +985,7 @@ pub fn candidates(
         if matches!(row.value, ReleaseValue::UpperBound(_))
             || matches!(rec.eval, Eval::Bound { .. })
             || is_design_bound(nuc.id, &row.id)
-            || is_matrix_corrected(nuc.id, &row.id)
+            || rec.is_window_bound()
         {
             out.push(excluded("upper_bound"));
             continue;
@@ -988,7 +1019,9 @@ pub fn candidates(
         // hold times from the end of the last ramp).
         let (f_a, resolved_a, slope_a, f_b, slope_b) = match &source {
             ModelSource::Isothermal { radii } => {
-                let curve = runner.get(nuc.species, t_c, t_end)?.clone();
+                // The curve is requested to t_end + dt, whatever rows came before, so that the
+                // central difference at t_end always exists (R4-m1).
+                let curve = runner.get(nuc.species, t_c, t_end + dt)?.clone();
                 let at = |t: f64| curve.at(t);
                 let (Some(f_end), Some(r_end)) = (at(t_end), curve.at_refined(t_end)) else {
                     out.push(excluded("beyond_model_end_time"));
@@ -1006,12 +1039,7 @@ pub fn candidates(
                 let r = r_end - r_start;
                 let slope_a = model_slope(&at, t_end, dt);
                 // Method B at the same times, where it applies and the drawing mask accepts it.
-                let needs = Needs {
-                    generation: false,
-                    decay: false,
-                    temperature_varies: false,
-                    kernel_step_start: true,
-                };
+                let needs = Needs::baseline(t_c);
                 let mut ts = vec![
                     t_end * 3600.0,
                     (t_end + dt) * 3600.0,
@@ -1022,7 +1050,14 @@ pub fn candidates(
                 }
                 ts.sort_by(|a, b| a.partial_cmp(b).expect("finite"));
                 ts.dedup();
-                let (f_b, slope_b) = match method_b(needs, &radii.outer_m, &curve.d_m2_s, &ts) {
+                let (f_b, slope_b) = match method_b(
+                    &needs,
+                    Quantity::ReleaseFraction,
+                    1.0,
+                    &radii.outer_m,
+                    &curve.d_m2_s,
+                    &ts,
+                ) {
                     MethodB::Available(a) => {
                         let get = |h: f64| {
                             a.times_s
@@ -1036,9 +1071,11 @@ pub fn candidates(
                             Some(0.0)
                         };
                         let f_b = get(t_end).zip(start).map(|(e, s)| e - s);
-                        (f_b, model_slope(&get, t_end, dt))
+                        // No slope without a value: a missing difference is "not available".
+                        let s_b = f_b.and_then(|_| model_slope(&get, t_end, dt));
+                        (f_b, s_b)
                     }
-                    MethodB::NotAvailable(_) => (None, 0.0),
+                    MethodB::NotAvailable(_) => (None, None),
                 };
                 (
                     f_a,
@@ -1068,7 +1105,7 @@ pub fn candidates(
                 let resolved = flag(t_end).unwrap_or(false)
                     && (t_start <= 0.0 || flag(t_start).unwrap_or(false));
                 let slope_a = model_slope(&at, t_end, dt);
-                (f_end - f_start, resolved, slope_a, None, 0.0)
+                (f_end - f_start, resolved, slope_a, None, None)
             }
         };
         out.push(Candidate::Compatible {
@@ -1091,18 +1128,18 @@ pub fn candidates(
 
 /// The model slope s_i of `metric-nrmse.md` Section 5 at `t_end` (per hour): the central difference
 /// over t_end - dt .. t_end + dt, and, where t_end + dt lies past the last model sample, the
-/// one-sided difference over t_end - dt .. t_end (so the time-reading term is never dropped
-/// silently). It is 0 only when the model has no sample at t_end or t_end - dt.
-fn model_slope(at: &dyn Fn(f64) -> Option<f64>, t_end: f64, dt: f64) -> f64 {
+/// one-sided difference over t_end - dt .. t_end. Each is divided by the actual spacing of its two
+/// samples (at t_end < dt the lower sample is the origin). `None` where no difference is possible,
+/// so that the record's reading uncertainty is "not available" and never computed with a zero
+/// slope.
+fn model_slope(at: &dyn Fn(f64) -> Option<f64>, t_end: f64, dt: f64) -> Option<f64> {
     let lo = (t_end - dt).max(0.0);
-    match (at(t_end + dt), at(lo)) {
-        (Some(p), Some(m)) => (p - m) / (2.0 * dt),
-        (None, Some(m)) => match at(t_end) {
-            Some(e) if t_end > lo => (e - m) / (t_end - lo),
-            _ => 0.0,
-        },
-        _ => 0.0,
-    }
+    let m = at(lo)?;
+    let (hi, p) = match at(t_end + dt) {
+        Some(p) => (t_end + dt, p),
+        None => (t_end, at(t_end)?),
+    };
+    (hi > lo).then(|| (p - m) / (hi - lo))
 }
 
 /// The JSON of a record (the fields of `metric-nrmse.md` Section 7).
@@ -1203,8 +1240,8 @@ mod tests {
             f_b,
             u_value: Some(0.005 * f_exp),
             u_time_h: Some(0.2),
-            slope_a_per_h: 0.0,
-            slope_b_per_h: 0.0,
+            slope_a_per_h: Some(0.0),
+            slope_b_per_h: Some(0.0),
         }
     }
 
@@ -1327,19 +1364,70 @@ mod tests {
 
     #[test]
     fn the_matrix_corrected_rows_are_window_bounds_and_never_points() {
-        // Decision 67: E-010..E-014 (Cs-134) and E-033..E-037 (Ag-110m).
-        for id in ["E-010", "E-014"] {
-            assert!(is_matrix_corrected("cs134", id));
-            assert!(!is_matrix_corrected("ag110m", id));
+        // Decisions 67 and 68: E-010..E-014 (Cs-134, 1600 degC) and E-033..E-037 (Ag-110m, 1600
+        // and 1700 degC) are window upper bounds under premise BP1. Which rows they are comes from
+        // the comparison program; class, denominator, premise and window are read from it and
+        // from the register row, not typed here.
+        let reg = fixture_register();
+        let radii = strato_compare::data::radii(&reg).expect("radii");
+        let settings = strato_compare::model::Settings {
+            intervals: [20, 15, 10, 20, 10],
+            dt_h: 5.0,
+        };
+        let mut runner = Runner::new(&reg, radii.clone(), settings).expect("runner");
+        let records = strato_compare::compare::run_rows(&reg, &mut runner).expect("rows");
+        let mut ids: Vec<String> = records
+            .iter()
+            .filter(|r| r.is_window_bound())
+            .map(|r| r.row.id.clone())
+            .collect();
+        ids.sort();
+        let want: Vec<String> = (10..=14)
+            .chain(33..=37)
+            .map(|n| format!("E-{n:03}"))
+            .collect();
+        assert_eq!(ids, want);
+        let recs = bounds(&reg, &records, &mut runner, &radii).expect("bounds");
+        let windows: Vec<&BoundRec> = recs
+            .iter()
+            .filter(|b| b.kind == "window_bound" && b.ends.is_none())
+            .collect();
+        assert_eq!(windows.len(), 10);
+        for b in windows {
+            let row = reg
+                .release
+                .rows
+                .iter()
+                .find(|r| r.id == b.id)
+                .expect("the register row");
+            assert_eq!(
+                b.comparison_class,
+                strato_compare::status::WINDOW_BOUND_CLASS
+            );
+            assert_eq!(
+                b.denominator,
+                strato_compare::status::WINDOW_BOUND_DENOMINATOR
+            );
+            assert_eq!(b.time_window, row.time_basis);
+            assert!(b.time_window.contains("plateau"), "{}", b.time_window);
+            assert_eq!(b.particle_applicability, row.particle_applicability);
+            assert!(b.particle_applicability.contains("BP1"));
+            assert_eq!(
+                b.premise_source,
+                Some(strato_compare::status::BoundSource::WindowUnderBp1.text())
+            );
+            assert_eq!(b.t_start_h, strato_compare::status::WINDOW_START_H);
+            assert!(b.t_h <= strato_compare::status::PLATEAU_H);
+            assert!(b.window_end_origin.is_some());
+            let j = bound_json(b).render();
+            assert!(
+                !j.contains("\"denominator\": \"not established\""),
+                "{}",
+                b.id
+            );
+            assert!(j.contains("\"denominator\": \"as-run calculated compact inventory\""));
         }
-        for id in ["E-033", "E-037"] {
-            assert!(is_matrix_corrected("ag110m", id));
-            assert!(!is_matrix_corrected("cs134", id));
-        }
-        for id in ["E-009", "E-015", "E-032", "E-038", "E-187"] {
-            assert!(!is_matrix_corrected("cs134", id) && !is_matrix_corrected("ag110m", id));
-        }
-        assert!(BP1_SOURCE_NOTE.contains("not an established fact"));
+        assert!(bp1_source_note().contains("not an established fact"));
     }
 
     // Fixtures for `candidates()`: no register row is a compatible point today (N = 0), so a
@@ -1352,7 +1440,7 @@ mod tests {
             .iter()
             .find(|r| {
                 row_nuclide(r).is_some_and(|n| {
-                    !is_matrix_corrected(n.id, &r.id) && !is_design_bound(n.id, &r.id)
+                    !r.time_basis.contains("matrix-corrected") && !is_design_bound(n.id, &r.id)
                 }) && row_temperature(r).is_some()
                     && !matches!(r.value_class, strato_data::release::ValueClass::NonDetect)
                     && !matches!(r.value, ReleaseValue::UpperBound(_))
@@ -1400,7 +1488,9 @@ mod tests {
             .expect("the registers load")
     }
 
-    fn compat_fields(c: &Candidate) -> (f64, bool, Option<f64>, f64, f64) {
+    type Fields = (f64, bool, Option<f64>, Option<f64>, Option<f64>);
+
+    fn compat_fields(c: &Candidate) -> Fields {
         match c {
             Candidate::Compatible {
                 f_a,
@@ -1427,9 +1517,8 @@ mod tests {
         // drawing mask accepts the values (Cs-134 at 1600 degC: about 0.007 at 500 h).
         let (t_end, t_start) = (1000.0, 500.0);
         let (rec, nuc, t_c) = fixture_record(&reg, t_end, t_start);
-        // Compute the curve past t_end first, so the central slope exists at t_end (the one-sided
-        // fallback at the end of the curve has its own test below).
-        runner.get(nuc.species, t_c, 1200.0).expect("curve");
+        // Production order (R4-m1): the runner is fresh and has computed nothing past t_end, so
+        // `candidates()` itself must request the curve to t_end + dt for the central slope.
         let got = candidates(
             &[rec],
             &mut runner,
@@ -1449,16 +1538,13 @@ mod tests {
             resolved,
             want_r > 0.0 && (want_a - want_r).abs() <= 0.05 * want_r
         );
+        // The central difference over the actual spacing of its two samples.
+        let spacing = (t_end + dt) - (t_end - dt);
         let want_slope =
-            (curve.at(t_end + dt).expect("p") - curve.at(t_end - dt).expect("m")) / (2.0 * dt);
-        assert_eq!(slope_a, want_slope);
+            (curve.at(t_end + dt).expect("p") - curve.at(t_end - dt).expect("m")) / spacing;
+        assert_eq!(slope_a, Some(want_slope));
         // Method B on the same times, on the same coefficients.
-        let needs = Needs {
-            generation: false,
-            decay: false,
-            temperature_varies: false,
-            kernel_step_start: true,
-        };
+        let needs = Needs::baseline(t_c);
         let ts = [
             t_start * 3600.0,
             (t_end - dt) * 3600.0,
@@ -1467,30 +1553,52 @@ mod tests {
         ];
         // Constant temperature, no generation, no decay, kernel-step start: Method B is exact
         // here (decision 66(d)), so it must be available with a value at every sample time.
-        let MethodB::Available(a) = method_b(needs, &radii.outer_m, &curve.d_m2_s, &ts) else {
+        let call = || {
+            method_b(
+                &needs,
+                Quantity::ReleaseFraction,
+                1.0,
+                &radii.outer_m,
+                &curve.d_m2_s,
+                &ts,
+            )
+        };
+        let MethodB::Available(a) = call() else {
             panic!(
                 "Method B must be available for the isothermal kernel-step fixture: {} at {} C {:?}",
                 nuc.id,
                 t_c,
-                method_b(needs, &radii.outer_m, &curve.d_m2_s, &ts)
+                call()
             );
         };
         let v = |k: usize| a.values[k].expect("a Method B value at the sample time");
         assert_eq!(f_b, Some(v(2) - v(0)));
         assert!(v(2) > v(0), "the release grows over the window");
-        assert_eq!(slope_b, (v(3) - v(1)) / (2.0 * dt));
-        assert!(slope_b > 0.0);
+        assert_eq!(slope_b, Some((v(3) - v(1)) / spacing));
+        assert!(slope_b.is_some_and(|s| s > 0.0));
     }
 
     #[test]
     fn the_model_slope_falls_back_to_a_one_sided_difference_past_the_last_sample() {
         // f = 0.01 t on 0..30 h: the slope is 0.01 everywhere, also at the last sample.
         let at = |t: f64| (0.0..=30.0).contains(&t).then_some(0.01 * t);
-        assert!((model_slope(&at, 10.0, 0.05) - 0.01).abs() < 1e-12);
-        assert!((model_slope(&at, 30.0, 0.05) - 0.01).abs() < 1e-12);
-        // No sample at t_end - dt: nothing to difference, the slope is reported as 0.
+        assert!(model_slope(&at, 10.0, 0.05).is_some_and(|s| (s - 0.01).abs() < 1e-12));
+        assert!(model_slope(&at, 30.0, 0.05).is_some_and(|s| (s - 0.01).abs() < 1e-12));
+        // No sample at t_end - dt: nothing to difference, the slope is not available (not 0).
         let none = |_t: f64| None;
-        assert_eq!(model_slope(&none, 10.0, 0.05), 0.0);
+        assert_eq!(model_slope(&none, 10.0, 0.05), None);
+        // R4-m2: a value at t_end but none at t_end - dt (the edge of a mask) has no slope.
+        let edge = |t: f64| (t >= 9.99).then_some(0.01 * t);
+        assert_eq!(model_slope(&edge, 10.0, 0.05), None);
+    }
+
+    #[test]
+    fn the_model_slope_divides_by_the_actual_spacing_when_t_end_is_below_dt() {
+        // R4-m2: at t_end = 0.02 h < dt the lower sample is the origin, so the spacing is
+        // 0.02 + 0.05 = 0.07 h, not 2 dt = 0.1 h.
+        let at = |t: f64| (t >= 0.0).then_some(0.01 * t);
+        let s = model_slope(&at, 0.02, 0.05).expect("a slope");
+        assert!((s - 0.01).abs() < 1e-12, "slope {s}");
     }
 
     #[test]
@@ -1512,6 +1620,9 @@ mod tests {
             steps: 0,
             assemblies: 0,
             csv_rows: vec![],
+            method_b: J::Null,
+            b_available: false,
+            temperature: strato::analytical::applicability::TemperatureHistory::Constant(1600.0),
         };
         let run = |runner: &mut Runner<'_>, t_end: f64, t_start: f64| {
             let (rec, nuc, t_c) = fixture_record(&reg, t_end, t_start);
@@ -1522,7 +1633,8 @@ mod tests {
         // Cumulative at a resolved sample: the piecewise-linear value and the central slope
         // (0.1 over 0..10, 0.2 over 10..20: (0.101 - 0.0995) / 0.1 = 0.015 per hour).
         let (f, r, f_b, slope, slope_b) = run(&mut runner, 10.0, 0.0);
-        assert!((f - 0.1).abs() < 1e-15 && r && f_b.is_none() && slope_b == 0.0);
+        assert!((f - 0.1).abs() < 1e-15 && r && f_b.is_none() && slope_b.is_none());
+        let slope = slope.expect("a central slope");
         assert!((slope - 0.015).abs() < 1e-12, "slope {slope}");
         // An unresolved end sample makes the point unresolved.
         let (f, r, _, _, _) = run(&mut runner, 20.0, 0.0);
@@ -1532,6 +1644,7 @@ mod tests {
         // 20..30 is 0.03 per hour), not zero.
         let (f, r, _, slope, _) = run(&mut runner, 30.0, 10.0);
         assert!((f - 0.5).abs() < 1e-15 && r);
+        let slope = slope.expect("a one-sided slope");
         assert!((slope - 0.03).abs() < 1e-9, "slope {slope}");
         let (_, r, _, _, _) = run(&mut runner, 30.0, 20.0);
         assert!(!r, "the window start sample is unresolved");

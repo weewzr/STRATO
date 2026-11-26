@@ -19,9 +19,11 @@ use strato_compare::model::{curve as model_curve, Curve, Runner, Settings};
 use strato_data::select::Phase;
 use strato_data::Register;
 
-use crate::methodb::{applicability, method_b, MethodB, Needs};
+use crate::methodb::{method_b, temperature_of, MethodB, Needs};
 use crate::output::{json_file, Prov};
 use crate::params::{decay_constant, Laws};
+use strato::analytical::applicability::{SourceHistory, Stage, TemperatureHistory};
+use strato::analytical::extensions::Quantity;
 
 /// A nuclide of the experimental comparison.
 #[derive(Debug, Clone, Copy)]
@@ -113,6 +115,58 @@ pub fn sample_times(first: f64, end: f64, extra: &[f64]) -> Vec<f64> {
     t
 }
 
+/// The JSON of the Method B part of a curve file, the drawn values, the accuracy floor and the
+/// first valid time in hours. A value the drawing mask withholds is `null` with its reason code at
+/// the same index of `withheld_reason_codes`.
+pub fn b_series_json(
+    b: &MethodB,
+    t_h: &[f64],
+    quantity: &str,
+) -> (Vec<Option<f64>>, Option<f64>, Option<f64>, J) {
+    match b {
+        MethodB::Available(a) => (
+            a.values.clone(),
+            Some(a.accuracy_floor),
+            Some(a.valid_from_s / H),
+            J::obj(vec![
+                ("available", J::Bool(true)),
+                ("label", J::s("Method B: Sturm\u{2013}Liouville")),
+                (
+                    "extension",
+                    a.extension.map_or(J::Null, |e| J::s(e.formulas())),
+                ),
+                ("plotted_quantity", J::s(quantity)),
+                ("time_h", J::Arr(t_h.iter().map(|t| J::Num(*t)).collect())),
+                ("release_fraction", J::Arr(a.values.iter().map(|v| J::opt(*v)).collect())),
+                (
+                    "withheld_reason_codes",
+                    J::Arr(a.withheld.iter().map(|c| c.map_or(J::Null, J::s)).collect()),
+                ),
+                ("valid_from_h", J::Num(a.valid_from_s / H)),
+                ("accuracy_floor", J::Num(a.accuracy_floor)),
+                ("modes", J::Int(a.modes as i64)),
+                ("alpha_max_per_s", J::Num(a.alpha_max_per_s)),
+                ("min_valid_time_s", J::Num(a.valid_from_s)),
+                ("truncation_missing_weight", J::Num(a.missing_weight)),
+                (
+                    "mask",
+                    J::s("drawn only where t >= min_valid_time, the series with the eigenvalue cover reduced by 4 differs by at most 5 % and the estimated error is at most 5 % of the value (science design Section 4.2; Document 6 Section 8 for decay and a source, inside its measured regime; the 5 % is a labelled convention)"),
+                ),
+            ]),
+        ),
+        MethodB::NotAvailable(n) => (
+            vec![None; t_h.len()],
+            None,
+            None,
+            J::obj(vec![
+                ("available", J::Bool(false)),
+                ("reason_code", J::s(n.code)),
+                ("reason", J::s(n.reason.clone())),
+            ]),
+        ),
+    }
+}
+
 /// A stage-1 curve with its Method A and Method B values at the sample times.
 #[derive(Debug, Clone)]
 pub struct Stage1 {
@@ -200,48 +254,21 @@ pub fn stage1(
         .zip(&f_r)
         .map(|(a, r)| resolved(*a, *r))
         .collect();
-    let needs = Needs {
-        generation: false,
-        decay: false,
-        temperature_varies: false,
-        kernel_step_start: true,
-    };
     let times_s: Vec<f64> = t_h.iter().map(|t| t * H).collect();
-    let b = method_b(needs, &radii.outer_m, &curve.d_m2_s, &times_s);
+    let b = method_b(
+        &Needs::baseline(t_c),
+        Quantity::ReleaseFraction,
+        1.0,
+        &radii.outer_m,
+        &curve.d_m2_s,
+        &times_s,
+    );
     let key = format!("s1.{}.{}.{}c", ctx.slug(), nuc.id, t_c.round() as i64);
-    let (f_b, floor, valid_h, b_json) = match &b {
-        MethodB::Available(a) => (
-            a.values.clone(),
-            Some(a.accuracy_floor),
-            Some(a.valid_from_s / H),
-            J::obj(vec![
-                ("available", J::Bool(true)),
-                ("label", J::s("Method B: Sturm\u{2013}Liouville")),
-                ("time_h", J::Arr(t_h.iter().map(|t| J::Num(*t)).collect())),
-                ("release_fraction", J::Arr(a.values.iter().map(|v| J::opt(*v)).collect())),
-                ("valid_from_h", J::Num(a.valid_from_s / H)),
-                ("accuracy_floor", J::Num(a.accuracy_floor)),
-                ("modes", J::Int(a.modes as i64)),
-                ("alpha_max_per_s", J::Num(a.alpha_max_per_s)),
-                ("min_valid_time_s", J::Num(a.valid_from_s)),
-                ("truncation_missing_weight", J::Num(a.missing_weight)),
-                (
-                    "mask",
-                    J::s("drawn only where t >= min_valid_time, the series with the eigenvalue cover reduced by 4 differs by at most 5 % and the accuracy floor is at most 5 % of the value (science design Section 4.2; the 5 % is a labelled convention)"),
-                ),
-            ]),
-        ),
-        MethodB::NotAvailable(n) => (
-            vec![None; t_h.len()],
-            None,
-            None,
-            J::obj(vec![
-                ("available", J::Bool(false)),
-                ("reason_code", J::s(n.code)),
-                ("reason", J::s(n.reason.clone())),
-            ]),
-        ),
-    };
+    let (f_b, floor, valid_h, b_json) = b_series_json(
+        &b,
+        &t_h,
+        "fraction of the initial inventory released (dimensionless)",
+    );
     let mut csv_rows = Vec::new();
     for k in 0..t_h.len() {
         csv_rows.push(vec![
@@ -530,6 +557,12 @@ pub struct EngineCurve {
     pub assemblies: usize,
     /// CSV rows.
     pub csv_rows: Vec<Vec<String>>,
+    /// The Method B JSON of the cell (`available`, the values or the reason).
+    pub method_b: J,
+    /// True if at least one Method B value is drawn.
+    pub b_available: bool,
+    /// The temperature history of the run, as Method B's applicability reads it.
+    pub temperature: TemperatureHistory,
 }
 
 /// Stage 3 (decay at constant temperature) or stage 4 (the registered ramp history) of an EXP
@@ -640,20 +673,36 @@ pub fn engine_cell(
         temp.push(lin(&ts, &tmp_b, t_s).unwrap_or(f64::NAN));
     }
     let key = format!("s{stage}.exp.{}.{}c", nuc.id, t_c.round() as i64);
+    // Method B through the one function: the registered temperature history decides whether it
+    // applies (a ramp never), and decay at a constant temperature goes through extension (B2).
     let needs = Needs {
-        generation: false,
-        decay: lambda > 0.0,
-        temperature_varies: stage == 4,
+        stage: if stage == 3 {
+            Stage::Decay
+        } else {
+            Stage::TemperatureDependentDiffusivity
+        },
+        source: SourceHistory::None,
+        decay_per_s: lambda,
+        temperature: temperature_of(&def.temperature_c),
         kernel_step_start: true,
     };
-    let b_json = match applicability(needs) {
-        Ok(()) => J::obj(vec![("available", J::Bool(true))]),
-        Err(n) => J::obj(vec![
-            ("available", J::Bool(false)),
-            ("reason_code", J::s(n.code)),
-            ("reason", J::s(n.reason)),
-        ]),
-    };
+    let laws = Laws::new(reg, nuc.species.label(), Phase::HeatingTest)?;
+    let (d_at_t, _) = laws.at(t_c).map_err(|e| e.to_string())?;
+    let sample_s: Vec<f64> = sample.iter().map(|x| x * H).collect();
+    let b = method_b(
+        &needs,
+        Quantity::ReleaseFraction,
+        1.0,
+        &radii.outer_m,
+        &d_at_t,
+        &sample_s,
+    );
+    let (f_b, _, _, b_json) = b_series_json(
+        &b,
+        &sample,
+        "fraction of the initial inventory released (dimensionless)",
+    );
+    let b_available = f_b.iter().any(Option::is_some);
     // The whole temperature history, in hours from the start of heating, for the replaced panel.
     let hist_t: Vec<f64> = if stage == 4 {
         pair.base.rows.iter().map(|r| r.t_s / H).collect()
@@ -677,7 +726,7 @@ pub fn engine_cell(
             csv_cell(sample[k]),
             csv_cell(f_a[k]),
             res[k].to_string(),
-            String::new(),
+            f_b[k].map_or(String::new(), csv_cell),
         ]);
     }
     let labels = [
@@ -734,7 +783,7 @@ pub fn engine_cell(
                     ("matrix_assemblies", J::Int(pair.base.assemblies as i64)),
                 ]),
             ),
-            ("method_b", b_json),
+            ("method_b", b_json.clone()),
             (
                 "quantities",
                 J::obj(vec![
@@ -798,6 +847,9 @@ pub fn engine_cell(
             steps: pair.base.steps,
             assemblies: pair.base.assemblies,
             csv_rows,
+            method_b: b_json,
+            b_available,
+            temperature: needs.temperature.clone(),
         },
     ))
 }

@@ -28,8 +28,10 @@ pub struct Point {
     pub u_value: Option<f64>,
     /// Reading uncertainty of the time in hours; `None` if none is recorded.
     pub u_time_h: Option<f64>,
-    /// Slope `dF_M/dt` of the model at the point, per hour, from the model's own output.
-    pub slope_per_h: f64,
+    /// Slope `dF_M/dt` of the model at the point, per hour, from the model's own output; `None`
+    /// where the model has no two samples to difference (the reading uncertainty is then not
+    /// available, never computed with a zero slope).
+    pub slope_per_h: Option<f64>,
 }
 
 /// The reason a record has no value.
@@ -132,10 +134,10 @@ fn reading_uncertainty(points: &[Point], k: usize, rmse: f64) -> Option<f64> {
     let f_scale = points[k].f_exp;
     let mut sum = 0.0;
     for (i, p) in points.iter().enumerate() {
-        let (ue, ut) = (p.u_value?, p.u_time_h?);
+        let (ue, ut, slope) = (p.u_value?, p.u_time_h?, p.slope_per_h?);
         let a = (p.f_model - p.f_exp) / (n * rmse * rmse);
         let scale_term = if i == k { 1.0 / f_scale } else { 0.0 };
-        sum += (a + scale_term).powi(2) * ue * ue + (a * p.slope_per_h * ut).powi(2);
+        sum += (a + scale_term).powi(2) * ue * ue + (a * slope * ut).powi(2);
     }
     Some(sum.sqrt())
 }
@@ -191,7 +193,7 @@ mod tests {
             f_model,
             u_value: Some(u_value),
             u_time_h: Some(u_t),
-            slope_per_h: slope,
+            slope_per_h: Some(slope),
         }
     }
 
@@ -293,6 +295,18 @@ mod tests {
         p.u_time_h = None;
         let v = compute(&[p]).unwrap();
         assert_eq!(v.reading_uncertainty_pp, None);
+    }
+
+    #[test]
+    fn a_missing_model_slope_makes_the_uncertainty_unavailable_not_zero() {
+        // The same point with a zero slope has an uncertainty; with no slope it has none.
+        let with_zero = compute(&[pt("E-1", 1.0, 1.5, 0.01, 0.1, 0.0)]).unwrap();
+        assert!(with_zero.reading_uncertainty_pp.is_some());
+        let mut p = pt("E-1", 1.0, 1.5, 0.01, 0.1, 0.0);
+        p.slope_per_h = None;
+        let v = compute(&[p]).unwrap();
+        assert_eq!(v.reading_uncertainty_pp, None);
+        assert!((v.nrmse_percent - with_zero.nrmse_percent).abs() < 1e-12);
     }
 
     #[test]

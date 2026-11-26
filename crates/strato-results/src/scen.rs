@@ -11,11 +11,16 @@ use strato_data::scenarios::{unit_seconds, Record, ScenarioFile, ScenarioRow, Sc
 use strato_data::select::Phase;
 use strato_data::Register;
 
-use crate::methodb::{applicability, Needs};
+use crate::curves::b_series_json;
+use crate::methodb::{
+    applicability, method_b, source_of, temperature_of, MethodB, Needs, NotAvailable,
+};
 use crate::output::{json_file, Files, Prov};
 use crate::params::{
     condition, generation_nuclides, rate_density, reference_generation, Laws, Nuclide, RateDensity,
 };
+use strato::analytical::applicability::Stage;
+use strato::analytical::extensions::Quantity;
 
 /// The scenario ids and their slugs for keys.
 pub const SLUGS: [(&str, &str); 5] = [
@@ -544,20 +549,48 @@ pub fn cell(
     let t_key = built.t_normal_c.round() as i64;
     let key = format!("s{stage}.{slug}{suffix}.{}.{t_key}c", nuclide.id);
 
+    // Method B through the one function. The run starts from a fresh particle (the kernel step
+    // with zero inventory); the source is the generation history, the plotted quantity of the
+    // scenarios with a post-event fraction is not defined for Method B.
     let needs = Needs {
-        generation: g_ref > 0.0,
-        decay: lambda > 0.0,
-        temperature_varies: !built.def.temperature_c.is_constant(),
+        stage: match stage {
+            2 => Stage::Generation,
+            3 => Stage::Decay,
+            _ => Stage::Combined,
+        },
+        source: source_of(&built.def.generation_factor, g_ref, built.def.end_s()),
+        decay_per_s: lambda,
+        temperature: temperature_of(&built.def.temperature_c),
         kernel_step_start: true,
     };
-    let b = match applicability(needs) {
-        Ok(()) => J::obj(vec![("available", J::Bool(true))]),
-        Err(n) => J::obj(vec![
-            ("available", J::Bool(false)),
-            ("reason_code", J::s(n.code)),
-            ("reason", J::s(n.reason)),
-        ]),
+    let times_s: Vec<f64> = sel.iter().map(|k| base.rows[*k].t_s).collect();
+    let b_res = match applicability(&needs) {
+        Err(n) => MethodB::NotAvailable(n),
+        Ok(_) if plotted_post => MethodB::NotAvailable(NotAvailable {
+            code: "POST_EVENT_NOT_DEFINED",
+            reason: "the post-event fraction is not defined for Method B".into(),
+        }),
+        Ok(_) => {
+            let irr = Laws::new(reg, nuclide.element, Phase::Irradiation)?;
+            let (d, _) = irr
+                .at(built.def.temperature_c.value_at(0.0))
+                .map_err(|e| e.to_string())?;
+            method_b(
+                &needs,
+                Quantity::ReleaseFractionGenerated,
+                0.0,
+                &radii_m,
+                &d,
+                &times_s,
+            )
+        }
     };
+    let t_h_sel: Vec<f64> = times_s.iter().map(|t| t / 3600.0).collect();
+    let (_, _, _, b) = b_series_json(
+        &b_res,
+        &t_h_sel,
+        "release fraction of the generated inventory F_gen (dimensionless)",
+    );
     let h = |t: f64| t / 3600.0;
     let d = |t: f64| t / 86_400.0;
     let col = |f: &dyn Fn(usize) -> f64| num_arr(sel.iter().map(|k| f(*k)));
