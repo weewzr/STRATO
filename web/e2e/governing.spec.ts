@@ -2,7 +2,7 @@ import { join } from 'node:path';
 import { blockTops, BLOCKS, expect, gotoSection, horizontalOverflow, solverRequests, test, waitForRun } from './fixtures';
 
 // The Explore page in the hierarchy of the owner's directive of 26 Nov 2026 (Sections 2, 6 and 9):
-// A governing equation, B scenario slot, C Numerical Interpretation (collapsed), D live simulation,
+// A governing equation, B operating scenarios, C Numerical Interpretation (collapsed), D live simulation,
 // E results; the progressive equation; the shared selection in the address; a selection that the build
 // does not implement is said so and shows no substituted result. Review screenshots are written only
 // when SHOTS_DIR is set.
@@ -13,14 +13,13 @@ const PHYSICS = ['baseline', 'generation', 'decay', 'temperature', 'combined'] a
 test.describe('hierarchy and selection at 1440 x 900', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('blocks A to E in order; the Numerical Interpretation is collapsed; the scenario slot shows nothing', async ({ page, problems }) => {
+  test('blocks A to E in order; the Numerical Interpretation is collapsed; block B holds the five scenario buttons', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     const tops = await blockTops(page);
     expect(tops.map((t) => t.letter)).toEqual([...BLOCKS]);
     for (let i = 1; i < tops.length; i++) expect(tops[i]?.top ?? 0).toBeGreaterThan(tops[i - 1]?.top ?? 0);
-    const box = await page.getByTestId('block-b').boundingBox();
-    expect(box?.height).toBe(0);
+    await expect(page.getByTestId('block-b').getByRole('radio')).toHaveCount(5);
     await expect(page.getByTestId('numerical-toggle')).toHaveAttribute('aria-expanded', 'false');
     await expect(page.getByTestId('equation-builder')).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Numerical Interpretation' })).toBeVisible();

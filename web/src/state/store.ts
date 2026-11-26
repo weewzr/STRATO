@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { cloneConfig, DEFAULT_CASE, findCase, type RegionConfig, type CaseConfig } from '../data/case';
 import { DEFAULT_PHYSICS, DEFAULT_SCENARIO, PHYSICS_IDS, SCENARIO_IDS, type PhysicsId, type ScenarioId } from '../equation/capability';
+import { requiresCombined } from '../equation/scenarios';
 import type { Stage } from '../equation/terms';
 import type { BtcsLimits, BuildInfo, CompareOk, Grid, RunResponse, ValidateReply } from '../solver/types';
 
@@ -183,7 +184,9 @@ export function normaliseSelection(sel: { physics?: string | undefined; scenario
   const physics = PHYSICS_IDS.includes(sel.physics as PhysicsId) ? (sel.physics as PhysicsId) : DEFAULT_SELECTION.physics;
   const scenario = SCENARIO_IDS.includes(sel.scenario as ScenarioId) ? (sel.scenario as ScenarioId) : DEFAULT_SELECTION.scenario;
   const expanded = EXPANDABLE_IDS.filter((id) => (sel.expanded ?? []).includes(id));
-  return { physics, scenario, expanded };
+  // The one rule that couples the controls (equation/scenarios.ts, SCENARIO_RULE): a scenario other than
+  // steady-state operation requires the combined model, so the scenario wins over the physics it is held with.
+  return { physics: requiresCombined(scenario) ? 'combined' : physics, scenario, expanded };
 }
 
 export const sameSelection = (a: Selection, b: Selection): boolean =>
@@ -287,7 +290,10 @@ export const useStrato = create<StratoState>()((set, get) => ({
   setStage: (stage) => set({ stage }),
 
   setSelection: (patch) => {
-    const next = normaliseSelection({ ...get().selection, ...patch });
+    // Choosing a physics that is not the combined model (without naming a scenario) returns to steady-state operation.
+    const merged = { ...get().selection, ...patch };
+    if (patch.physics !== undefined && patch.scenario === undefined && patch.physics !== 'combined') merged.scenario = DEFAULT_SCENARIO;
+    const next = normaliseSelection(merged);
     if (!sameSelection(next, get().selection)) set({ selection: next });
   },
 

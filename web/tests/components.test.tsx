@@ -154,9 +154,9 @@ describe('Explore page (owner decision M7)', () => {
     render(<App />);
     const blocks = Array.from(document.querySelectorAll<HTMLElement>('[data-section="explore"] [data-block]'));
     expect(blocks.map((b) => b.dataset.block)).toEqual(['A', 'B', 'C', 'D', 'E']);
-    // Block B is the empty slot of the scenario row, hidden from assistive technology until it holds the row.
-    for (const b of blocks.filter((x) => x.dataset.block !== 'B')) expect(b.getAttribute('aria-labelledby')).toBeTruthy();
-    expect(blocks[1]?.getAttribute('aria-hidden')).toBe('true');
+    // Block B holds the scenario row and is labelled like the others.
+    for (const b of blocks) expect(b.getAttribute('aria-labelledby')).toBeTruthy();
+    expect(blocks[1]?.getAttribute('aria-hidden')).toBeNull();
     expect(document.querySelector('[data-block="A"] h1')).toBeTruthy();
     expect(document.querySelectorAll('h1')).toHaveLength(1);
   });
@@ -170,9 +170,8 @@ describe('Explore page (owner decision M7)', () => {
     expect(within(e).getByTestId('release-readout').textContent).toContain('Waiting for the solver');
     expect(within(e).getByTestId('release-readout').querySelector('.badge')).toBeNull();
     expect(within(d).getByTestId('simulation-case').textContent).toContain('not AGR-1 data');
-    // The scenario slot (block B) holds nothing visible.
-    expect(screen.getByTestId('block-b').childElementCount).toBe(0);
-    expect(screen.getByTestId('block-b').textContent).toBe('');
+    // Block B holds the five scenario buttons.
+    expect(within(screen.getByTestId('block-b')).getAllByRole('radio')).toHaveLength(5);
   });
 
   it('marks every later-phase area as a placeholder with its phase and no result label', () => {

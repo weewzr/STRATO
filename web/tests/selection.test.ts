@@ -22,7 +22,8 @@ describe('selection state', () => {
         it(`holds ${physics} / ${scenario} / ${expanded.length ? 'expanded' : 'collapsed'} and survives a round trip through the address`, () => {
           useStrato.getState().setSelection({ physics, scenario, expanded });
           const sel = useStrato.getState().selection;
-          expect(sel).toEqual({ physics, scenario, expanded });
+          // The one coupling rule: a scenario other than steady-state operation requires the combined model.
+          expect(sel).toEqual({ physics: scenario === 'steady' ? physics : 'combined', scenario, expanded });
           expect(parseSelection(formatSelection(sel))).toEqual(sel);
           expect(parseSelection(exploreHash(sel).split('?')[1] ?? '')).toEqual(sel);
         });
@@ -35,9 +36,25 @@ describe('selection state', () => {
     s.setSelection({ physics: 'decay' });
     s.setSelection({ scenario: 'startup' });
     s.setExpanded('numerical', true);
-    expect(useStrato.getState().selection).toEqual({ physics: 'decay', scenario: 'startup', expanded: ['numerical'] });
+    // Choosing a scenario selects the combined model (the rule), and expanding keeps both.
+    expect(useStrato.getState().selection).toEqual({ physics: 'combined', scenario: 'startup', expanded: ['numerical'] });
     s.setExpanded('numerical', false);
     expect(useStrato.getState().selection.expanded).toEqual([]);
+  });
+
+  it('applies the coupling rule in both directions and for an address', () => {
+    const s = useStrato.getState();
+    s.setSelection({ scenario: 'shutdown' });
+    expect(useStrato.getState().selection).toMatchObject({ physics: 'combined', scenario: 'shutdown' });
+    // Another physics than the combined model returns to steady-state operation.
+    s.setSelection({ physics: 'decay' });
+    expect(useStrato.getState().selection).toMatchObject({ physics: 'decay', scenario: 'steady' });
+    // The combined model keeps the scenario; a scenario named with a different physics wins.
+    s.setSelection({ scenario: 'startup' });
+    s.setSelection({ physics: 'combined' });
+    expect(useStrato.getState().selection).toMatchObject({ physics: 'combined', scenario: 'startup' });
+    expect(parseSelection('physics=decay&scenario=control-rod')).toEqual({ physics: 'combined', scenario: 'control-rod', expanded: [] });
+    expect(normaliseSelection({ physics: 'temperature', scenario: 'refuelling' }).physics).toBe('combined');
   });
 
   it('replaces an invalid part by its default and an equal selection changes nothing', () => {

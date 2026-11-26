@@ -5,6 +5,8 @@ import { PHYSICS_LABEL } from '../equation/physics';
 import { unsupportedMessage } from '../equation/capability';
 import { GoverningEquation } from '../equation/GoverningEquation';
 import { NumericalInterpretation } from '../equation/NumericalInterpretation';
+import { ScenarioPicker } from '../equation/ScenarioPicker';
+import { SCENARIO_LABEL } from '../equation/scenarios';
 import { useSelectionSupport } from '../equation/useCapability';
 import { findCase } from '../data/case';
 import { BalancePanel, DiagnosticsPanel, ReleaseReadout, RunProblemNote, SolverStatus } from '../panels/SimResults';
@@ -19,8 +21,8 @@ import { useHeadingFocus } from './common';
 
 /**
  * The Explore page in the hierarchy of the owner's directive of 26 Nov 2026 (Section 9, decision 70):
- * A governing equation with its physics controls, B operating scenarios (the slot is empty until the
- * scenario row arrives), C Numerical Interpretation (one collapsed region), D live simulation (the
+ * A governing equation with its physics controls, B operating scenarios (the row of buttons with the
+ * explanation of the selected one), C Numerical Interpretation (one collapsed region), D live simulation (the
  * particle and the numerical controls), E results (model output only). One shared selection (state/store.ts)
  * drives them. Content that belongs to none of the five blocks lives on the technical pages: the
  * research catalogue summary under Research, the boundary conditions and the note on verification
@@ -36,6 +38,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
   const runInfo = useStrato((s) => s.runInfo);
   const capabilities = useStrato((s) => s.capabilities);
   const physics = useStrato((s) => s.selection.physics);
+  const scenario = useStrato((s) => s.selection.scenario);
   const method = simulationMethod(capabilities);
   const support = useSelectionSupport();
   const entry = findCase(caseId);
@@ -59,8 +62,8 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
         <GoverningEquation />
       </section>
 
-      {/* B: operating scenarios. The scenario row arrives with the next task; the slot holds nothing visible. */}
-      <div className="explore__slot-b" data-block="B" data-testid="block-b" aria-hidden="true" />
+      {/* B: operating scenarios, directly beneath the physics controls */}
+      <ScenarioPicker />
 
       {/* C: Numerical Interpretation, one collapsed region */}
       <NumericalInterpretation compact={compact} />
@@ -116,7 +119,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
                     : 'Solver: loading'}
               </span>
               <span className="strip__item" data-testid="strip-stage">
-                Physics: {PHYSICS_LABEL[physics]}; simulation: {method === 'btcs' ? METHOD_1 : method === 'loading' ? 'solver loading' : 'solver not available'}
+                Physics: {PHYSICS_LABEL[physics]}; scenario: {SCENARIO_LABEL[scenario]}; simulation: {method === 'btcs' ? METHOD_1 : method === 'loading' ? 'solver loading' : 'solver not available'}
               </span>
               <Playback />
               {compact ? (

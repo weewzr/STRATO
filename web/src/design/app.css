@@ -790,15 +790,6 @@ select.field__input {
   padding-top: var(--space-5);
   border-top: 1px solid var(--border);
 }
-/* The scenario slot (block B) holds nothing visible yet: it takes no room, and the block after it keeps the rule between blocks. */
-.explore__slot-b {
-  height: 0;
-  margin-top: calc(var(--space-6) * -1);
-}
-.explore__slot-b + .block {
-  padding-top: var(--space-5);
-  border-top: 1px solid var(--border);
-}
 .block--d > .block__head {
   margin-bottom: var(--space-2);
 }
@@ -2829,6 +2820,10 @@ select.field__input {
   padding: 0 0.15em;
   border-radius: 3px;
 }
+/* A symbol that the selected operating scenario changed (G to G(r,t), D(r,T) to D(r,T(t))). */
+.geq-hi--scenario {
+  --geq-colour: var(--accent);
+}
 .geq-new--source,
 .geq-hi--source {
   --geq-colour: var(--mech-source);
@@ -2952,6 +2947,47 @@ select.field__input {
 .bstatus--verified {
   color: var(--text);
   border-color: var(--text);
+}
+/* Block B: the scenario row uses the physics controls' look; below it the rule, the explanation and the symbols. */
+.scenario__rule {
+  margin: var(--space-2) 0 0;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+.scenario {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  min-width: 0;
+}
+.scenario__title {
+  margin: 0;
+  font-size: 1rem;
+}
+.scenario__kind {
+  display: inline-block;
+  margin-left: var(--space-2);
+  font-size: var(--fs-small);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.scenario__text {
+  margin: 0;
+  max-width: 70ch;
+}
+.scenario-numerics {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--accent);
+  background: var(--accent-bg);
+}
+.scenario-numerics__title,
+.scenario-numerics p {
+  margin: 0;
+}
+.scenario-numerics__title {
+  font-size: var(--fs-label);
 }
 .physics__legend {
   margin: 0;

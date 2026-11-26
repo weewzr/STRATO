@@ -3,10 +3,13 @@
 // notation follows the repository documents (a power encloses the whole variable in parentheses), so
 // the directive's r^2 is written (r)^2 and nothing else differs. The combined equation is also
 // equation (1) of Document 5 (docs/mathematics/btcs/05_generation_decay_temperature.md).
-import { MECHANISMS, type Mechanism, type PhysicsId } from './capability';
+import { MECHANISMS, type Mechanism, type PhysicsId, type ScenarioId } from './capability';
 
 export const D_CONSTANT = 'D';
 export const D_TEMPERATURE = 'D(r,T)';
+/** The symbols an operating scenario changes (directive Section 3): G becomes G(r,t), D(r,T) becomes D(r,T(t)). A scenario adds no term. */
+export const G_SCENARIO = 'G(r,t)';
+export const D_SCENARIO = 'D(r,T(t))';
 
 const LHS = String.raw`\frac{\partial C}{\partial t} =`;
 
@@ -26,29 +29,49 @@ export interface Piece {
   mechanism: Mechanism | null;
   /** The TeX shown on the page: the same as `tex`, with the introduced coefficient marked for the highlight. */
   shown: string;
+  /** True when the operating scenario changed a symbol of this piece (G or D); the changed symbol is marked in `shown`. */
+  scenario?: boolean;
 }
 
-/** The pieces of the equation for a physics selection, left to right; the baseline pieces come first and are always present. */
-export function equationPieces(physics: PhysicsId): Piece[] {
+const mark = (cls: string, tex: string) => String.raw`\htmlClass{${cls}}{${tex}}`;
+
+/**
+ * The pieces of the equation for a physics selection and an operating scenario, left to right; the baseline
+ * pieces come first and are always present. Steady-state operation (constant prescribed conditions) changes
+ * nothing: G and T are constants. Every other scenario changes existing symbols only, G to G(r,t) and D(r,T)
+ * to D(r,T(t)), and only where the mechanism is part of the selection; it never adds a term.
+ */
+export function equationPieces(physics: PhysicsId, scenario: ScenarioId = 'steady'): Piece[] {
   const on = (m: Mechanism) => physics === m || physics === 'combined';
-  const d = on('temperature') ? D_TEMPERATURE : D_CONSTANT;
+  const timed = scenario !== 'steady';
+  const dSymbol = !on('temperature') ? D_CONSTANT : timed ? D_SCENARIO : D_TEMPERATURE;
+  const dShown = !on('temperature') ? D_CONSTANT : mark(timed ? 'geq-hi geq-hi--scenario' : 'geq-hi geq-hi--temperature', dSymbol);
+  const gSymbol = timed ? G_SCENARIO : 'G';
   const pieces: Piece[] = [
     { id: 'lhs', tex: LHS, mechanism: null, shown: LHS },
     {
       id: 'operator',
-      tex: operatorTex(d),
+      tex: operatorTex(dSymbol),
       mechanism: on('temperature') ? 'temperature' : null,
-      shown: on('temperature') ? operatorTex(String.raw`\htmlClass{geq-hi geq-hi--temperature}{${D_TEMPERATURE}}`) : operatorTex(d),
+      shown: operatorTex(dShown),
+      ...(timed && on('temperature') ? { scenario: true } : {}),
     },
   ];
-  if (on('generation')) pieces.push({ id: 'generation', tex: '+G', mechanism: 'generation', shown: '+G' });
+  if (on('generation'))
+    pieces.push({
+      id: 'generation',
+      tex: `+${gSymbol}`,
+      mechanism: 'generation',
+      shown: timed ? `+${mark('geq-hi geq-hi--scenario', gSymbol)}` : '+G',
+      ...(timed ? { scenario: true } : {}),
+    });
   if (on('decay')) pieces.push({ id: 'decay', tex: String.raw`-\lambda C`, mechanism: 'decay', shown: String.raw`-\lambda C` });
   return pieces;
 }
 
 /** The whole equation as one TeX string (structural tests and the accessible name). */
-export function equationTex(physics: PhysicsId): string {
-  return equationPieces(physics)
+export function equationTex(physics: PhysicsId, scenario: ScenarioId = 'steady'): string {
+  return equationPieces(physics, scenario)
     .map((p) => p.tex)
     .join(' ');
 }

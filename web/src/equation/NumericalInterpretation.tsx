@@ -1,7 +1,19 @@
 import { useId } from 'react';
 import { useStrato } from '../state/store';
 import { EquationBuilder } from './EquationBuilder';
+import { SCENARIO_LABEL, SCENARIOS } from './scenarios';
 import { TermExplanations } from './TermExplanations';
+
+/** How the selected operating scenario enters the numerical scheme (directive Section 5); it follows the shared selection. */
+function ScenarioNumerics() {
+  const scenario = useStrato((s) => s.selection.scenario);
+  return (
+    <div className="scenario-numerics" data-testid="scenario-numerics" data-scenario={scenario}>
+      <h3 className="scenario-numerics__title">Selected scenario: {SCENARIO_LABEL[scenario]}</h3>
+      <p>{SCENARIOS[scenario].numerics.join(' ')}</p>
+    </div>
+  );
+}
 
 /** Id of this region in the shared selection (state/store.ts: `expanded`). */
 export const NUMERICAL_ID = 'numerical';
@@ -38,6 +50,7 @@ export function NumericalInterpretation({ compact }: { compact: boolean }) {
       <div id={ids.panel} className="numerical" data-testid="numerical-interpretation" hidden={!open}>
         {open ? (
           <>
+            <ScenarioNumerics />
             <EquationBuilder compact={compact} />
             <div className="prose">
               <TermExplanations />

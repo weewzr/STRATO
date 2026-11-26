@@ -34,14 +34,26 @@ export const STATUS_DEFINITION: Record<BuildStatus, string> = {
 /** The identifier under which the wrapper reports each mechanism (it is also the mechanism id of the research catalogue). */
 export const WRAPPER_ID: Record<Mechanism, string> = { generation: 'generation', decay: 'decay', temperature: 'diffusivity_temperature' };
 
+/**
+ * The identifier under which the wrapper reports each scenario of the scenario engine (it is also the id of
+ * the scenario's row in the research catalogue). Steady-state operation has none: constant prescribed
+ * conditions are what every run of the solver is, so it follows the physics selected.
+ */
+export const WRAPPER_SCENARIO_ID: Record<Exclude<ScenarioId, 'steady'>, string> = {
+  shutdown: 'scenario_shutdown_cooldown',
+  startup: 'scenario_startup',
+  'control-rod': 'scenario_control_rod_insertion',
+  refuelling: 'scenario_fuel_removal',
+};
+
 export interface BuildCapability {
   /** The constant-diffusivity BTCS model of the build. */
   baseline: BuildStatus;
   mechanisms: Record<Mechanism, BuildStatus>;
   /**
-   * Scenario support. Steady-state operation (constant prescribed conditions) follows the physics selected;
-   * every other scenario needs the scenario engine, which the wrapper of this build does not report, so it
-   * is planned. The scenario row (next task) extends this object when a wrapper reports the engine.
+   * Scenario support. Steady-state operation (constant prescribed conditions) follows the baseline; every
+   * other scenario needs the scenario engine, so its status is what the wrapper reports under
+   * WRAPPER_SCENARIO_ID (planned while it reports nothing, as the wrapper of this build does).
    */
   scenarios: Record<ScenarioId, BuildStatus>;
 }
@@ -56,11 +68,19 @@ export function buildCapability(reported: readonly string[], catalogue: Catalogu
   const baseline = statusOfReport(reported.includes(BTCS_CAPABILITY), isAvailable(BTCS_CAPABILITY, reported, catalogue));
   const mechanisms = {} as Record<Mechanism, BuildStatus>;
   for (const m of MECHANISMS) mechanisms[m] = statusOfReport(reported.includes(WRAPPER_ID[m]), isAvailable(WRAPPER_ID[m], reported, catalogue));
+  const scenario = (id: Exclude<ScenarioId, 'steady'>): BuildStatus => statusOfReport(reported.includes(WRAPPER_SCENARIO_ID[id]), isAvailable(WRAPPER_SCENARIO_ID[id], reported, catalogue));
   return {
     baseline,
     mechanisms,
-    scenarios: { steady: baseline, shutdown: 'planned', startup: 'planned', 'control-rod': 'planned', refuelling: 'planned' },
+    scenarios: { steady: baseline, shutdown: scenario('shutdown'), startup: scenario('startup'), 'control-rod': scenario('control-rod'), refuelling: scenario('refuelling') },
   };
+}
+
+/** The weakest of several statuses. */
+function weakest(all: BuildStatus[]): BuildStatus {
+  if (all.includes('planned')) return 'planned';
+  if (all.includes('implemented')) return 'implemented';
+  return 'verified';
 }
 
 /** The simulation may use a mechanism, the baseline or a scenario only at the verified status. */
@@ -75,10 +95,16 @@ export function mechanismsOf(physics: PhysicsId): Mechanism[] {
 
 /** The status of a physics selection: the weakest of the baseline and the mechanisms it contains. */
 export function physicsStatus(cap: BuildCapability, physics: PhysicsId): BuildStatus {
-  const all: BuildStatus[] = [cap.baseline, ...mechanismsOf(physics).map((m) => cap.mechanisms[m])];
-  if (all.includes('planned')) return 'planned';
-  if (all.includes('implemented')) return 'implemented';
-  return 'verified';
+  return weakest([cap.baseline, ...mechanismsOf(physics).map((m) => cap.mechanisms[m])]);
+}
+
+/**
+ * The status shown on a scenario button: the weakest of the scenario's own status and that of the physics
+ * selected. A scenario other than steady-state operation always runs with the combined model (see
+ * state/store.ts), so its status includes the three mechanisms.
+ */
+export function scenarioStatus(cap: BuildCapability, scenario: ScenarioId, physics: PhysicsId): BuildStatus {
+  return weakest([cap.scenarios[scenario], physicsStatus(cap, scenario === 'steady' ? physics : 'combined')]);
 }
 
 export interface SelectionSupport {
@@ -117,6 +143,6 @@ export function runMechanisms(physics: PhysicsId): string[] {
 
 /** One sentence for the simulation and results blocks when the selection cannot be run. */
 export function unsupportedMessage(support: SelectionSupport): string {
-  const list = support.missing.join(' and ');
+  const list = support.missing.length > 1 ? `${support.missing.slice(0, -1).join(', ')} and ${support.missing[support.missing.length - 1]}` : (support.missing[0] ?? '');
   return `The solver in this build does not implement ${list}, so no simulation is run and no result is shown for this selection. The equation and the explanations above remain available.`;
 }
