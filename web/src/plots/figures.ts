@@ -30,6 +30,8 @@ function axis(theme: PlotTheme, title: string, extra: Record<string, unknown> = 
     showline: true,
     mirror: false,
     automargin: true,
+    // Time axes show at most six labelled ticks, so that the labels do not crowd on a phone.
+    ...(title.startsWith('Time') ? { nticks: 6 } : {}),
     ...extra,
   };
 }
@@ -238,7 +240,7 @@ export function releaseFigure(run: RunOk, row: number, opts: ReleaseOptions, the
         y: Math.log10(a.accuracy_floor),
         xanchor: 'right',
         yanchor: 'bottom',
-        text: `${METHOD_2} accuracy floor (dimensionless) ${sciText(a.accuracy_floor, 4).replace(' × 10^', 'e')}`,
+        text: `${METHOD_2}<br>accuracy floor (dimensionless)<br>${sciText(a.accuracy_floor, 4).replace(' × 10^', 'e')}`,
         showarrow: false,
         font: { size: 10, color: theme.text },
       });
@@ -414,7 +416,7 @@ function floorLine(floor: number | null, theme: PlotTheme): { shapes: unknown[];
       y: Math.log10(floor),
       xanchor: 'right',
       yanchor: 'bottom',
-      text: `${METHOD_2} accuracy floor (dimensionless) ${sciText(floor, 4).replace(' × 10^', 'e')}`,
+      text: `${METHOD_2}<br>accuracy floor (dimensionless)<br>${sciText(floor, 4).replace(' × 10^', 'e')}`,
       showarrow: false,
       font: { size: 10, color: theme.text },
     });
@@ -510,7 +512,7 @@ export function checkFigure(doc: CheckDoc, theme: PlotTheme): Figure {
       trace('Absolute difference of the reference from the estimated numerical limit (dimensionless)', d.limit_difference, theme.seriesDiff, 'check-limit'),
     ],
     layout: baseLayout(theme, {
-      xaxis: axis(theme, 'Time (s)', { type: 'log', tickformat: '~s', hoverformat: '.4~s', exponentformat: 'power' }),
+      xaxis: axis(theme, 'Time (s)', { type: 'log', tickmode: 'array', tickvals: doc.data.t_s, tickformat: '~s', hoverformat: '.4~s', exponentformat: 'power' }),
       yaxis: axis(theme, 'Absolute difference of the<br>release fraction (dimensionless)', { type: 'log', exponentformat: 'power', dtick: 1 }),
       legend: { orientation: 'h', x: 0, xanchor: 'left', y: -0.35, yanchor: 'top', font: { size: 11, color: theme.text }, bgcolor: 'rgba(0,0,0,0)' },
       margin: { l: 56, r: 16, t: 8, b: 110, pad: 0 },

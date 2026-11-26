@@ -63,18 +63,7 @@ const docs: { path: string; title: string; page?: string }[] = [
     title: 'Document 4: equation to code traceability',
     page: 'docs/mathematics/btcs/04_equation_to_code_traceability.html',
   },
-  {
-    path: 'docs/mathematics/STRATO_Phase2_Derivations.md',
-    title: 'Phase 2 derivations (design only, not implemented)',
-    page: 'docs/mathematics/STRATO_Phase2_Derivations.html',
-  },
-  {
-    path: 'docs/mathematics/STRATO_Phase2_Pseudocode.md',
-    title: 'Phase 2 pseudocode (design only, not implemented)',
-    page: 'docs/mathematics/STRATO_Phase2_Pseudocode.html',
-  },
   { path: 'data/reference/STRATO_Parameter_Register.md', title: 'Parameter register', page: 'data/reference/STRATO_Parameter_Register.html' },
-  { path: 'docs/development/provenance.md', title: 'Provenance and verification evidence' },
 ];
 
 export function About() {

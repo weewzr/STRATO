@@ -248,7 +248,7 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
                 ) : (
                   <>
                     Not available: status {status ?? 'unknown'}; awaiting reviewed implementation (see the{' '}
-                    <a href={repoFile('docs/development/phase2_review_package.md')}>Phase 2 review package</a>). A labelled preview of its equation
+                    <a href={repoFile('docs/archive/finite-volume/development/phase2_review_package.md')}>Phase 2 review package</a>). A labelled preview of its equation
                     is shown in the equation builder.
                   </>
                 )}

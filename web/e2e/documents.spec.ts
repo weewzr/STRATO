@@ -10,8 +10,6 @@ const DOCUMENTS = [
   'docs/mathematics/btcs/02_final_formulation.html',
   'docs/mathematics/btcs/03_rust_pseudocode.html',
   'docs/mathematics/btcs/04_equation_to_code_traceability.html',
-  'docs/mathematics/STRATO_Phase2_Derivations.html',
-  'docs/mathematics/STRATO_Phase2_Pseudocode.html',
   'data/reference/index.html',
   'data/reference/STRATO_Parameter_Register.html',
   'data/reference/B6_audit_log.html',

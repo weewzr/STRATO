@@ -28,7 +28,7 @@ jobs:
         run: cargo fmt --all --check
       - name: Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
-      - name: Unit, integration and Phase 1 regression tests
+      - name: Unit, integration, analytical series and BTCS regression tests
         run: cargo test --all-targets
       - name: Documentation builds without warnings
         env:

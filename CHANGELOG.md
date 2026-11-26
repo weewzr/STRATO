@@ -4,7 +4,7 @@ All notable changes to STRATO are recorded here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
-Next: the second integration (experimental-data layer, generation, decay and temperature-dependent diffusivity in the BTCS scheme, final native and WebAssembly parity and regression verification). The list of v1.0 to v2.0 changes is kept in [docs/development/v1_to_v2_changes.md](docs/development/v1_to_v2_changes.md).
+Next: the second integration (experimental-data layer, generation, decay and temperature-dependent diffusivity in the BTCS scheme, final native and WebAssembly parity and regression verification). The plan written before the BTCS solver existed is archived in [docs/archive/finite-volume/development/v1_to_v2_changes.md](docs/archive/finite-volume/development/v1_to_v2_changes.md).
 
 ## [2.0.0] - 2026-11-26
 
@@ -36,6 +36,9 @@ The finite-volume solver of version 1.x is replaced by a spherical BTCS (backwar
 - The WebAssembly functions `validate_config`, `run_v1`, `analytical_release` and `compare_v1`, the capability `diffusion_layered` and the label `COMPUTED v1.0`.
 - The golden files `tests/golden/v1.0/` (test references of the finite-volume solver) and the web data files that were generated from them.
 - Every Python derivation check except `sec1_synthetic_case.py` (the analytical reference) and `D5_parameter_register.py` (kept until the Rust data checks replace it), including all SymPy proof scripts, and `scripts/data_register/b6_audit_patch.py` (its changes are in the register files). The finite-volume derivation documents and the figure scripts moved to `docs/archive/finite-volume/`.
+- The Phase 2 design documents (derivations, pseudocode and their PDFs), `docs/development/provenance.md`, `v1_to_v2_changes.md` and `phase2_review_package.md` moved to `docs/archive/finite-volume/` and are no longer rendered on the site. A short note stays at each old Markdown path so that the links of the research catalogue, the registers and the README keep working.
+- Public addresses of the former Jekyll site stop working after the deployment of this version: `/STRATO/docs/mathematics/v1.0.0/*.html`, `/STRATO/docs/mathematics/STRATO_Phase2_*.html` and `/STRATO/tests/golden/v1.0/` return 404. The documents are in the archive folder of the repository.
+
 ## [1.0.1] - 2026-11-06
 
 Documentation release. There is no change to the code or to any numerical result: the Rust sources, tests and golden outputs are identical to v1.0.0.

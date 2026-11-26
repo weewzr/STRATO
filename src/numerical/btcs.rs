@@ -8,7 +8,7 @@
 //!
 //! Scope: constant diffusivities, no source, no decay, constant temperature, kernel-only
 //! start, absorbing outer surface. It is a numerical solution of the stated model; it is not
-//! experimental validation. The finite-volume module is untouched and unused here.
+//! experimental validation. The finite-volume solver of 1.x was retired in 2.0.0.
 //!
 //! The module uses only `core`/`alloc`-level features of `std` (no threads, files, clocks or
 //! randomness), so it builds for `wasm32-unknown-unknown` unchanged.

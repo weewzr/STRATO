@@ -18,7 +18,6 @@ pub const LISTED_DIRS: &[&str] = &["docs", "docs/mathematics", "docs/mathematics
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Group {
     Btcs,
-    Phase2,
     Register,
 }
 
@@ -26,7 +25,6 @@ impl Group {
     pub fn heading(self) -> &'static str {
         match self {
             Group::Btcs => "BTCS mathematical documentation (version 2.0)",
-            Group::Phase2 => "Phase 2 design: derived, not implemented",
             Group::Register => "Parameter register",
         }
     }
@@ -34,7 +32,6 @@ impl Group {
     pub fn id(self) -> &'static str {
         match self {
             Group::Btcs => "btcs",
-            Group::Phase2 => "phase2",
             Group::Register => "register",
         }
     }
@@ -43,7 +40,6 @@ impl Group {
     pub fn status(self) -> &'static str {
         match self {
             Group::Btcs => "Documents 0 to 4 of the spherical BTCS finite-difference solver of version 2.0: the account of the original documents, the derivation, the final formulation (Document 2, normative), the Rust pseudocode and the equation-to-code traceability. The solver is verified numerically on synthetic cases (verification, not validation against measurements).",
-            Group::Phase2 => "Design documents written for the finite-volume form of the scheme before version 2.0. Fission-product generation, radioactive decay and temperature-dependent diffusivity are derived and specified here; the BTCS solver does not implement them yet (research status RESEARCHED in the web demonstration), and the BTCS documents supersede these as each mechanism is added.",
             Group::Register => "Literature parameters with the source, page and status of every value. The live simulation of the web demonstration uses the synthetic five-layer verification case, not these values.",
         }
     }
@@ -92,17 +88,6 @@ pub const DOCS: &[Doc] = &[
         title: "Document 4: equation-to-code traceability",
         group: Group::Btcs,
         summary: "Every numbered equation of Document 2 mapped to its pseudocode routine, the Rust item that holds it and the test that checks it.",
-    },    Doc {
-        src: "docs/mathematics/STRATO_Phase2_Derivations.md",
-        title: "Phase 2 derivations",
-        group: Group::Phase2,
-        summary: "Derivations of fission-product generation, radioactive decay, inventory accounting and temperature-dependent diffusivity with layer-specific laws.",
-    },
-    Doc {
-        src: "docs/mathematics/STRATO_Phase2_Pseudocode.md",
-        title: "Phase 2 pseudocode",
-        group: Group::Phase2,
-        summary: "Pseudocode of the Phase 2 solver steps specified by the derivations.",
     },
     Doc {
         src: "data/reference/README.md",
@@ -464,8 +449,8 @@ impl Site {
     fn list_page(&self, dir: &str) -> (String, String) {
         let out = format!("{dir}/index.html");
         let (title, groups, intro): (&str, Vec<Group>, &str) = match dir {
-            "docs" => ("Documents", vec![Group::Btcs, Group::Phase2, Group::Register], "The derivation and register documents of STRATO, rendered from the repository with the mathematics typeset. Each page links its Markdown source on GitHub and, where one exists, its PDF."),
-            "docs/mathematics" => ("Mathematical documentation", vec![Group::Btcs, Group::Phase2], "The derivations and pseudocode of STRATO, rendered from the repository with the mathematics typeset."),
+            "docs" => ("Documents", vec![Group::Btcs, Group::Register], "The derivation and register documents of STRATO, rendered from the repository with the mathematics typeset. Each page links its Markdown source on GitHub and, where one exists, its PDF."),
+            "docs/mathematics" => ("Mathematical documentation", vec![Group::Btcs], "The derivations and pseudocode of STRATO, rendered from the repository with the mathematics typeset."),
             _ => ("BTCS mathematical documentation (version 2.0)", vec![Group::Btcs], "Documents 0 to 4 of the spherical BTCS finite-difference solver, rendered from the repository with the mathematics typeset."),
         };
         let mut body = format!(
@@ -768,8 +753,8 @@ mod tests {
             Target::Keep("02_final_formulation.html#notes".into())
         );
         assert_eq!(
-            r("../STRATO_Phase2_Derivations.pdf"),
-            Target::Keep("../STRATO_Phase2_Derivations.pdf".into())
+            r("../../archive/finite-volume/phase2/STRATO_Phase2_Derivations.pdf"),
+            Target::Keep("../../archive/finite-volume/phase2/STRATO_Phase2_Derivations.pdf".into())
         );
         assert_eq!(
             r("../../../data/reference/"),
@@ -790,7 +775,7 @@ mod tests {
         assert_eq!(r("no_such_file.md"), Target::Text);
         assert_eq!(problems.len(), 1, "{problems:?}");
         assert_eq!(notes.len(), 1);
-        assert!(copied.contains("docs/mathematics/STRATO_Phase2_Derivations.pdf"));
+        assert!(copied.contains("docs/archive/finite-volume/phase2/STRATO_Phase2_Derivations.pdf"));
     }
 
     /// Every published document converts completely: each `$` is mathematics, each `\tag{` sits

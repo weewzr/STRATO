@@ -186,9 +186,9 @@ This is **verification**: it shows that the code solves its equations correctly.
 | `tests/`, `examples/` | Unit, property, verification and regression tests, the BTCS regression references (`tests/golden/btcs/`), the analytical series reference (`tests/golden/analytical/`) and the regression check program |
 | `inputs/` | Synthetic five-layer case, the regression cases and the literature input template |
 | `data/` | Literature parameter register and CSV tables |
-| `docs/mathematics/` | BTCS Documents 0 to 4 (`btcs/`), the Phase 2 design documents and the property functions |
-| `docs/archive/finite-volume/` | The finite-volume derivation documents and figures of version 1.x, with a note on where the removed code is |
-| `docs/development/` | Provenance, Phase 2 review package and the list of v1.0 to v2.0 changes |
+| `docs/mathematics/` | BTCS Documents 0 to 4 (`btcs/`), the property functions, and two short notes at the old paths of the archived Phase 2 documents |
+| `docs/archive/finite-volume/` | The derivation, design and provenance documents and figures of version 1.x, with a note on where the removed code is |
+| `docs/development/` | The frontend audit, the visualisation library comparison, and short notes at the old paths of the archived provenance, review-package and change-plan documents |
 | `scripts/` | The Python reference check of the analytical series, the parameter-register tool and the register helpers (versions pinned in `requirements.lock.txt`) |
 | `web/` | Web demonstration (React, TypeScript, KaTeX, Plotly, three.js); see [`web/README.md`](web/README.md) |
 | `crates/` | WebAssembly wrapper of the solver (`strato-wasm`) and the tools workspace (`Cargo.toml`, with `strato-docsite`, which renders the documents into the site, `strato-webtools`, which generates the web data files and runs the catalogue and wasm build checks, and `strato-data`, the checks of the register files) |
@@ -199,12 +199,7 @@ This is **verification**: it shows that the code solves its equations correctly.
 | Topic | Location |
 |---|---|
 | BTCS Documents 0 to 4 (derivation, final formulation, pseudocode, traceability) | [`docs/mathematics/btcs/`](docs/mathematics/btcs/) |
-| Phase 2 derivations (design only, not implemented) | [Markdown](docs/mathematics/STRATO_Phase2_Derivations.md), [PDF](docs/mathematics/STRATO_Phase2_Derivations.pdf) |
-| Phase 2 pseudocode (design only, not implemented) | [Markdown](docs/mathematics/STRATO_Phase2_Pseudocode.md), [PDF](docs/mathematics/STRATO_Phase2_Pseudocode.pdf) |
-| Finite-volume documents of version 1.x (archived) | [`docs/archive/finite-volume/`](docs/archive/finite-volume/README.md) |
-| Changes planned from v1.0 to v2.0 | [`docs/development/v1_to_v2_changes.md`](docs/development/v1_to_v2_changes.md) |
-| Phase 2 review package | [`docs/development/phase2_review_package.md`](docs/development/phase2_review_package.md) |
-| Where v1.0 came from, and verification evidence | [`docs/development/provenance.md`](docs/development/provenance.md) |
+| Documents of version 1.x, archived (derivations, Phase 2 design documents and their PDFs, provenance of the v1.0 results, review package, v1.0 to v2.0 change plan) | [`docs/archive/finite-volume/`](docs/archive/finite-volume/README.md) |
 | Contribution rules | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
 | Version history | [`CHANGELOG.md`](CHANGELOG.md) |
 
