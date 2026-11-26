@@ -112,6 +112,35 @@ fn a_confirmed_denominator_turns_a_provisional_row_into_a_point_comparison() {
 }
 
 #[test]
+fn a_jaeri_row_with_an_established_denominator_is_still_not_run_against_the_agr1_geometry() {
+    let text = std::fs::read_to_string(
+        repo()
+            .join("data")
+            .join("experimental")
+            .join("release_measurements.csv"),
+    )
+    .expect("read the register");
+    let mut changed = String::new();
+    let mut edited = false;
+    for line in text.lines() {
+        if line.starts_with("E-117,") && line.contains("not established") {
+            changed.push_str(&line.replacen("not established", "calculated compact inventory", 1));
+            edited = true;
+        } else {
+            changed.push_str(line);
+        }
+        changed.push('\n');
+    }
+    assert!(edited, "E-117 has the denominator `not established`");
+    let mut reg = register();
+    reg.release = Releases::parse(&changed).expect("the edited register parses");
+    let v = classify(&reg, reg.release.get("E-117").expect("row"));
+    assert_eq!(v.status, Status::NotDirectlyComparable);
+    assert_eq!(v.category, "other_particle_design");
+    assert!(matches!(v.plan, Plan::NoModel));
+}
+
+#[test]
 fn registered_geometry_and_holds_are_read_from_the_registers() {
     let reg = register();
     let r = radii(&reg).expect("radii");

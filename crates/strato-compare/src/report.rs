@@ -173,9 +173,18 @@ pub fn render(inp: &ReportInput<'_>) -> String {
         s,
         "STRATO simulates how a fission product moves through one ideal TRISO particle: a kernel and four coating layers (buffer, inner pyrocarbon, silicon carbide, outer pyrocarbon) in perfect contact, with every atom starting in the kernel. The AGR-1 experiments did not measure single particles. Almost every AGR-1 value is for a compact, a small cylinder that holds 4145 particles in a graphite matrix; one particle holds about 2.4 in 10,000 (2.4e-4) of a compact.\n"
     );
+    let n_read = rec
+        .iter()
+        .filter(|r| {
+            !matches!(
+                r.row.reading_uncertainty,
+                strato_data::release::ReadingUncertainty::NotDigitised
+            )
+        })
+        .count();
     let _ = writeln!(
         s,
-        "Some measurements are only upper bounds, written with \"<\". They say that the release was at most that large, and this report treats them as inequalities, never as measured values. Most values were read from published figures, so they carry the reading uncertainty of the register, and none of the rows that were compared carries a measurement uncertainty published by its source. This report does not make one up: where an uncertainty is missing, it says so, and no error bar is drawn.\n"
+        "Some measurements are only upper bounds, written with \"<\". They say that the release was at most that large, and this report treats them as inequalities, never as measured values. Many values ({n_read} of the {n} rows) were read from published figures, so they carry the reading uncertainty of the register; the others are printed in tables or in the text. None of the rows that were compared carries a per-value measurement uncertainty published by its source (the one general statement in the register, a 5 percent systematic gamma-measurement error plus counting statistics for the Stempien 2023 values, is not a per-value uncertainty and changes no status). This report does not make one up: where an uncertainty is missing, it says so, and no error bar is drawn.\n"
     );
     let _ = writeln!(
         s,
@@ -281,7 +290,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     let r = inp.geometry.outer_m;
     let _ = writeln!(
         s,
-        "Outer radii (µm) of kernel, buffer, IPyC, SiC and OPyC: {:.1}, {:.1}, {:.1}, {:.1}, {:.1} (register rows {}). The kernel diameter of the register is 350 µm (the measured value of the kernel batch is 349.7 µm; decision 41 uses a kernel radius of 174.9 µm for its scaling, the register's 175.0 µm gives the factor 0.490 instead of 0.489).\n",
+        "Outer radii (µm) of kernel, buffer, IPyC, SiC and OPyC: {:.1}, {:.1}, {:.1}, {:.1}, {:.1} (register rows {}). The kernel diameter of the register is 350 µm (the measured value of the kernel batch is 349.7 µm; the kernel-radius sensitivity case of decision 41 uses the kernel radius of 174.85 µm of the selection function, half the measured kernel diameter of 349.7 µm, so its factor is (174.85/250)^2 = 0.489; the mesh of every run uses the register's 175.0 µm).\n",
         r[0] * 1e6,
         r[1] * 1e6,
         r[2] * 1e6,
@@ -387,7 +396,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     );
     let _ = writeln!(
         s,
-        "| Row | Nuclide | Compact or sample | T (°C) | Time at T (h) | Bound read as | Bound | Model | Model / bound | Status | Numerical difference of the model | Same result also in rows |\n|---|---|---|---:|---:|---|---:|---:|---:|---|---:|---|"
+        "| Row | Nuclide | Compact or sample | Test temperature (°C) | Time at test temperature (h) | Bound read as | Bound | Model | Model / bound | Status | Numerical difference of the model | Same result also in rows |\n|---|---|---|---:|---:|---|---:|---:|---:|---|---:|---|"
     );
     for r in rec {
         if let (
@@ -458,7 +467,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     );
     let _ = writeln!(
         s,
-        "| Row | Nuclide | Compact | T (°C) | Window (h at T) | Measured (digitised) | Model over the same window | log10 (model / measured), for scale |\n|---|---|---|---:|---|---:|---:|---:|"
+        "| Row | Nuclide | Compact | Test temperature (°C) | Window (h at test temperature) | Measured (digitised) | Model over the same window | log10 (model / measured), for scale |\n|---|---|---|---:|---|---:|---:|---:|"
     );
     for r in rec {
         if let (Eval::Provisional { value, log10_ratio }, Some(m)) = (&r.eval, &r.model) {
@@ -519,7 +528,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     // ---- Figures -----------------------------------------------------------------------------
     let _ = writeln!(s, "## Figures\n");
     let figs = [
-        ("figure_A_release_vs_time.svg", "A. Fraction released versus time at temperature, for the three elements at 1600, 1700 and 1800 °C (the model has no decay, so each panel is the element; the nuclides measured are listed in the panel). Lines: BTCS. Plus signs: the independent analytical series of the five-layer problem (the eigenfunction expansion of the repository), only at the times where it meets its validity criterion (truncation valid, and the value above the series' own estimated accuracy; negative or unresolved values are not drawn). Hollow squares: the model's own value over the 24 h-to-end window of a matrix-corrected measurement, drawn beside it because that measurement is a window release, not cumulative from t = 0. Markers: registered measurements, by what they can support (downward triangle: upper bound, hollow when exceeded by the model; hollow diamond: DATA INCOMPLETE; grey cross: NOT DIRECTLY COMPARABLE context). Log scale; no error bars, because no source reports a measurement uncertainty for the plotted rows. Measurements whose time lies beyond the 420 h axis are not drawn and are listed in the footer. The early part of every curve is not converged in time (see the section on accuracy)."),
+        ("figure_A_release_vs_time.svg", "A. Fraction released versus time at temperature, for the three elements at 1600, 1700 and 1800 °C (the model has no decay, so each panel is the element; the nuclides measured are listed in the panel). Lines: BTCS. Plus signs: the independent analytical series of the five-layer problem (the eigenfunction expansion of the repository), only at the times where it meets its validity criterion (truncation valid, and the value above the series' own estimated accuracy; negative or unresolved values are not drawn). Hollow squares: the model's own value over the 24 h-to-end window of a matrix-corrected measurement, drawn beside it because that measurement is a window release, not cumulative from t = 0. Markers: registered measurements, by what they can support (downward triangle: upper bound, hollow when exceeded by the model; hollow diamond: DATA INCOMPLETE; grey cross: NOT DIRECTLY COMPARABLE context). Log scale; no error bars, because no source reports a per-value measurement uncertainty for the plotted rows. Measurements whose time lies beyond the 420 h axis are not drawn and are listed in the footer. The early part of every curve is not converged in time (see the section on accuracy)."),
         ("figure_B_absolute_deviation.svg", "B. Absolute deviation versus time of the point comparisons (none exist, so the panel is empty and says so; DATA INCOMPLETE rows have no deviation) and, beside it, the model over each upper bound (an inequality, not a deviation)."),
         ("figure_C_relative_deviation.svg", "C. Relative percentage deviation versus time of the point comparisons (none exist), with the policy for undefined values stated on the figure, and the model over each upper bound."),
         ("figure_D_radial_profiles.svg", "D. Radial concentration profiles through the five layers at selected times, 1600 °C."),
@@ -594,7 +603,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     );
     let _ = writeln!(
         s,
-        "| Nuclide | T (°C) | 10 h | 100 h | 300 h |\n|---|---:|---:|---:|---:|"
+        "| Nuclide | Test temperature (°C) | 10 h | 100 h | 300 h |\n|---|---:|---:|---:|---:|"
     );
     for (sp, t, c) in inp.curves {
         let an = inp.analytic.get(&(*sp, (*t * 10.0).round() as i64));
@@ -626,7 +635,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     );
     let _ = writeln!(
         s,
-        "| Nuclide | T (°C) | Largest relative difference of the drawn points (percent) | Last time with a difference above 10 percent (h) |\n|---|---:|---:|---:|"
+        "| Nuclide | Test temperature (°C) | Largest relative difference of the drawn points (percent) | Last time with a difference above 10 percent (h) |\n|---|---:|---:|---:|"
     );
     for (sp, t, c) in inp.curves {
         let diffs = c.drawn_time_differences();

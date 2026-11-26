@@ -259,7 +259,7 @@ pub fn rows_csv(prov: &Prov, records: &[RowRecord]) -> String {
                 .time_h
                 .as_ref()
                 .map_or(String::new(), |p| p.text.clone()),
-            r.row.time_basis.clone(),
+            crate::data::typography(&r.row.time_basis),
             r.row.quantity.as_str().to_string(),
             qual.to_string(),
             value,
