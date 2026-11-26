@@ -163,7 +163,7 @@ test.describe('learning sequence with the keyboard only', () => {
     await page.keyboard.press('ArrowRight');
     await expect(page.getByTestId('governing-equation')).toHaveAttribute('data-physics', 'combined');
     // Next to the scenario row, then a scenario.
-    await tabTo(page, (el) => el?.closest('[data-testid="scenario-picker"]') != null && el?.getAttribute('role') === 'radio', 'the scenario controls');
+    await tabTo(page, (el) => el?.closest('[data-testid="scenario-picker"]') !== null && el?.getAttribute('role') === 'radio', 'the scenario controls');
     // With no scenario selected the tab stop is the first button; Space selects it.
     await expect(page.getByTestId('scenario-steady')).toBeFocused();
     await page.keyboard.press('Space');
