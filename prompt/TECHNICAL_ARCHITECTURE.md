@@ -38,18 +38,19 @@ STRATO/
       particle/Particle3D.tsx, particle/CrossSection2D.tsx, particle/colormap.ts
       plots/RadialProfile.tsx, plots/ReleaseCurves.tsx, plots/ModelComparison.tsx, plots/Validation.tsx, plots/Convergence.tsx
       panels/Verification.tsx, panels/Provenance.tsx, panels/Downloads.tsx
-      generated/             JSON written by scripts/web/generate_data.py (case data, research catalogue)
+      generated/             JSON written by strato-webtools (case data, research catalogue)
       design/tokens.css
     public/data/             PRECOMPUTED JSON with provenance headers (generated, not hand edited)
     tests/                   unit and component tests (Vitest)
     e2e/                     browser tests (Playwright)
   data/research/             NEW research catalogue tables (Section 5.1): mechanisms.csv, species.csv, references.csv, gallery.csv
   docs/research/             NEW one Markdown file per catalogue entry (Section 5.1)
-  scripts/web/
-    build_wasm.sh            cargo build + wasm-bindgen CLI, version check against Cargo.lock
-    precompute.sh            runs the native CLI and converts outputs to web/public/data/*.json
-    generate_data.py         single generator of the web data files (case data; `catalogue` subcommand, Section 5.1)
-    check_catalogue.py       catalogue check that fails the build (Section 5.2)
+  crates/strato-webtools/    one Rust command-line tool of the tools workspace (stage R1 of the Rust migration; it replaced scripts/web/*.py and *.sh)
+    src/                     subcommands: build-wasm (cargo build + wasm-bindgen CLI, version check against Cargo.lock, export and size check),
+                             precomputed (runs the native CLI and converts outputs to web/public/data/*.json), case, catalogue, colormaps,
+                             geometry, figures (the generators of the web data files, Section 5.1), check-catalogue (fails the build, Section 5.2)
+    src/solver.rs            the one place that names the solver command lines and output files
+    tests/                   the catalogue check against its fixture folders, the entry-text conversion, and the byte-for-byte comparison with the committed data files
   .github/workflows/web.yml  NEW: wrapper tests, wasm build, catalogue check, web tests, e2e, Pages artefact
 ```
 
@@ -134,7 +135,7 @@ Facts about `strato` that the wrapper must respect (confirmed against `src/` at 
 
 The rejection rows of this table (serde parsing, `Config::validate`, `build_mesh`, `finite_volume::run`, `backward_euler_step` with the tridiagonal solve, and Code C), together with the `expect` calls of defence 1 and the placeholder rule of `Config::load` (`src/config.rs` line 66, which the wrapper copies, Section 3, step 1), cover every `bail!` and `expect(` found by a search of `src/` at `v1.0.1` for `bail!`, `expect(`, `unwrap(`, `panic!` and `assert!` (2026-11-24; the `unwrap` and `assert!` hits are all in `#[cfg(test)]` modules), except two that the wrapper never calls: `convergence_study` (`src/postprocessing/comparison.rs` line 188, shown only as precomputed output, option C of Section 1) and `src/main.rs` line 75 (CLI). The wrapper limits are the wrapper's own rejections, not `strato` ones. Index and arithmetic panics (slicing, out-of-range indexing, integer overflow) were not audited separately; they are guarded by the rules and caps and contained by the worker (defence 3).
 
-Build (pattern from Outram Park `crates/dhoby-ghaut/web/dispersion/build.sh` and NUS-H2 `scripts/build_wasm.py`):
+Build (pattern from Outram Park `crates/dhoby-ghaut/web/dispersion/build.sh` and NUS-H2 `scripts/build_wasm.py`; STRATO runs this as `strato-webtools build-wasm`):
 
 ```
 cargo build --release --manifest-path crates/strato-wasm/Cargo.toml --target wasm32-unknown-unknown
@@ -214,7 +215,7 @@ One function decides whether a mechanism is live: `isAvailable(id) = capabilitie
 
 ## 5 Precomputed data (`web/public/data/`)
 
-Produced only by `scripts/web/precompute.sh` from the native release binary. Each JSON file starts with
+Produced only by `strato-webtools precomputed` from the native release binary. Each JSON file starts with
 
 ```json
 {"label":"PRECOMPUTED","generator":"strato <version>","commit":"<sha>","input_file":"inputs/synthetic/synthetic_five_layer.toml","input_sha256":"...","command":"...","created_utc":"...","data":{}}
@@ -294,9 +295,9 @@ A species row holds no status: a species' implementation status is the set of st
 
 `docs/research/<entry>.md`: one Markdown file per catalogue entry, named `species-<symbol>.md` for the nine species (for example `species-ag.md`), `regime-a.md` to `regime-c.md` for the regimes, `materials_studio_gallery.md` for the gallery, `roadmap.md` for the brick-by-brick roadmap and `<mechanism_id>.md` for a mechanism with its own page. The regime, gallery and roadmap files are overview pages: no row names them in its `entry` column (rule 4 of Section 5.2). A species file has the headings of the brief, in this order: Why it matters; Relevant TRISO layers; Candidate release mechanisms; Current evidence; Proposed governing-equation extensions; Potential Materials Studio calculations; Experimental comparison opportunities; Research limitations; Implementation status. A mechanism file has: Proposed physics; Candidate governing equations (research concepts); Required parameters; Supporting literature; Missing calculations or experiments; Interactions with other regimes. Statuses are not written into these files (the CSV is the only place); every factual statement cites a `reference_id` in the form `[ref:morris2016]`, which the generator turns into a link. Equations are written in TeX between `$$` and are labelled "research concept".
 
-### 5.2 Catalogue check (`scripts/web/check_catalogue.py`)
+### 5.2 Catalogue check (`strato-webtools check-catalogue`)
 
-Python standard library only, run as `python -I -X utf8 scripts/web/check_catalogue.py` from the repository root. It reads the files of Section 5.1, writes nothing, prints one PASS or FAIL line per rule and exits 1 if any rule fails. `web.yml` runs it before `npm run build`, and the web build script runs it too, so a failure stops the build. Rules:
+A Rust subcommand of `crates/strato-webtools`, run as `cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-webtools -- check-catalogue` from the repository root (it replaced `scripts/web/check_catalogue.py`, same rules and messages). It reads the files of Section 5.1, writes nothing, prints one PASS or FAIL line per rule and exits 1 if any rule fails. `web.yml` runs it before `npm run build`, and the web build script runs it too, so a failure stops the build. Rules:
 
 1. Every table has exactly its header, in order; every row has as many cells as the header.
 2. Every `status` (in `mechanisms.csv` and `gallery.csv`) is exactly one of `PENDING`, `RESEARCHED`, `IMPLEMENTED`, `VERIFIED`, `VALIDATED`.
@@ -328,7 +329,7 @@ Keep `.github/workflows/ci.yml` and `docs-pdf.yml` unchanged. Add `.github/workf
 
 1. `cargo test --manifest-path crates/strato-wasm/Cargo.toml` (native parity tests).
 2. Build the wasm module, check exports and size.
-3. `python -I -X utf8 scripts/web/check_catalogue.py` (Section 5.2); then `npm ci`, `npm run lint`, `npm run typecheck`, `npm test` in `web/`.
+3. `strato-webtools check-catalogue` (Section 5.2); then `npm ci`, `npm run lint`, `npm run typecheck`, `npm test` in `web/`.
 4. `npm run build`, then `npx playwright test` against `vite preview` (viewports, keyboard, reduced motion, console errors, failed requests, wasm parity, self-test).
 5. On the work branch: upload the build as an artefact. Deployment to Pages follows `prompt/COMMIT_AND_DEPLOYMENT.md`.
 

@@ -1,5 +1,5 @@
 //! Native run of the wrapper: reads a STRATO TOML input case and prints the `run_v1`
-//! response for it as JSON on standard output. scripts/web/generate_data.py uses it to write
+//! response for it as JSON on standard output. `strato-webtools precomputed` uses it to write
 //! web/public/data/wrapper_native_synthetic.json, the native reference for the browser parity
 //! test (prompt/TESTING_AND_VALIDATION.md Section 2: browser wasm versus native, relative
 //! 1e-12 per value). The request is built from the TOML exactly as the browser builds it from

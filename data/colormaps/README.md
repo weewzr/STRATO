@@ -15,7 +15,7 @@ environment; the two lists were copied from `_cm_listed.py` (SHA-256 of that fil
 unchanged, one row per entry (`index,r,g,b`, components in 0 to 1). The copied values were compared
 with `matplotlib.colormaps[name](range(256))` and agree exactly (largest difference 0.0).
 
-`scripts/web/generate_data.py colormaps` reads these files and writes
+`strato-webtools colormaps` (crates/strato-webtools) reads these files and writes
 `web/src/generated/colormaps.json`, which adds the 8-bit form that matplotlib itself uses for
 `bytes=True` (`int(255 * value)`).
 

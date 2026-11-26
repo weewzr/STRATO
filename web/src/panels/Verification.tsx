@@ -154,7 +154,7 @@ export function ConvergencePanel() {
   const guideNote = guides.doc ? (
     <>
       {' '}
-      The dashed guide line (<code>convergence_guides.json</code>, label {guides.doc.label}, written by <code>generate_data.py figures</code>) has
+      The dashed guide line (<code>convergence_guides.json</code>, label {guides.doc.label}, written by <code>strato-webtools figures</code>) has
       the reference slope and passes through the coarsest point; it is a reading aid, not a result.
     </>
   ) : null;
