@@ -250,7 +250,7 @@ pub fn rows_csv(prov: &Prov, records: &[RowRecord]) -> String {
         let mut c = vec![
             r.row.id.clone(),
             r.row.program.as_str().to_string(),
-            r.row.compact_or_sample.clone(),
+            crate::data::typography(&r.row.compact_or_sample),
             r.row.fuel_type.as_str().to_string(),
             r.row.group.as_str().to_string(),
             measured_text(&r.row),
@@ -771,7 +771,10 @@ pub fn comparison_json(
             let mut o = vec![
                 ("id", J::s(&r.row.id)),
                 ("programme", J::s(r.row.program.as_str())),
-                ("compact_or_sample", J::s(&r.row.compact_or_sample)),
+                (
+                    "compact_or_sample",
+                    J::s(crate::data::typography(&r.row.compact_or_sample)),
+                ),
                 ("group", J::s(r.row.group.as_str())),
                 ("nuclide", J::s(measured_text(&r.row))),
                 ("temperature_text", J::s(temperature_text(r))),
