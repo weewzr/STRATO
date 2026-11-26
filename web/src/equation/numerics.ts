@@ -109,7 +109,7 @@ const SCENARIO_ITEM_NOTES: Record<ScenarioId, Partial<Record<ItemId, string>>> =
   steady: {
     9: 'The generation is constant, so its step average equals the prescribed value at every step.',
     11: 'The temperature is constant, so the diffusivity of each material is the same at every step: with one uniform time step the matrix is assembled and factorised once, and only the right-hand side changes from step to step.',
-    12: 'Constant operating conditions do not make the concentration field stationary. A stationary field would need the concentration to repeat from step to step; the run does not assume it, starts from the initial state of a fresh particle, and the concentration keeps changing.',
+    12: 'A stationary field would repeat from step to step. The run does not assume it: it starts from the initial state and advances through every step.',
   },
   shutdown: {
     9: 'From the shutdown time the step-averaged generation is zero, so the right-hand side of each step is the concentration of the previous step.',

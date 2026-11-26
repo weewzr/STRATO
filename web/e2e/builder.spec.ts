@@ -110,7 +110,7 @@ test.describe('Numerical Interpretation at 1440 x 900', () => {
     await expect(page.getByTestId('num-item-11').getByTestId('scenario-note-11')).toContainText('reassembled');
     await expect(page.getByTestId('scenario-note-status-11')).toHaveText('Planned');
     await page.getByTestId('scenario-steady').click();
-    await expect(page.getByTestId('num-item-12').getByTestId('scenario-note-12')).toContainText('do not make the concentration field stationary');
+    await expect(page.getByTestId('num-item-12').getByTestId('scenario-note-12')).toContainText('stationary field would repeat from step to step');
     await page.getByTestId('scenario-startup').click();
     await expect(page.getByTestId('scenario-note-9')).toContainText('step average of the generation');
     await expect(page.getByTestId('scenario-note-12')).toHaveCount(0);

@@ -592,7 +592,10 @@ describe('documentation and code anchors resolve', () => {
   it('the conditions are stated once, with the material model and with the assembly of the system', () => {
     expect(STAGES.filter((s) => conditionsFor(s) !== null)).toEqual([4, 10]);
     for (const s of [4, 10] as const) expect(conditionsFor(s)?.note.length, `step ${s}`).toBeGreaterThan(0);
-    expect(conditionsFor(10)?.equations.map((e) => e.source.tag)).toEqual(['F1', 'F2', 'F18', 'F21', 'F22']);
+    expect(conditionsFor(10)?.equations.map((e) => e.source.tag)).toEqual(['F1', 'F2']);
+    // F18, F21 and F22 are shown by the outer-boundary step and the assembly step themselves: no equation is repeated as a condition.
+    const keys = allEquations().filter(([n]) => !/addition/.test(n)).map(([, e]) => `${e.source.doc}:${e.source.tag ?? e.source.verbatim}`);
+    expect(keys.filter((k, i) => keys.indexOf(k) !== i)).toEqual([]);
     // The flux condition (27) is the main equation of step four and is not repeated; the outer surface has no tag in the document.
     expect(conditionsFor(4)?.equations.map((e) => e.source.tag)).toEqual(['26', null, '38']);
   });

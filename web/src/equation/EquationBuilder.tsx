@@ -426,7 +426,7 @@ function Additions({ stage, physics }: { stage: Stage; physics: PhysicsId }) {
     <div className="step-additions" data-testid="physics-additions" data-physics={physics}>
       <p className="step-additions__head">
         <StatusTag status={physicsStatus(cap, physics)} loading={loading} />
-        <span className="step-additions__note">{add.note}</span>
+        <span className="step-additions__note">{add.note === null ? null : <RichText text={add.note} />}</span>
       </p>
       {add.equations.map((e) => (
         <ShownEq key={e.id} eq={e} />

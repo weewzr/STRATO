@@ -172,7 +172,7 @@ describe('what the selected physics and scenario show', () => {
     expect(eqIds()).toEqual([]);
     expect(within(screen.getByTestId('num-item-8')).getByTestId('physics-additions').textContent).toMatch(/evaluated with the diffusivities of the step/);
     select({ physics: 'combined' });
-    expect(eqIds()).toEqual(['d5_combined_balance', 'd5_row']);
+    expect(eqIds()).toEqual(['d5_combined_balance', 'd5_row', 'd5_row0']);
     expect(within(screen.getByTestId('num-item-8')).getByTestId('physics-additions').textContent).toMatch(/complete formulation of the combined model/);
     select({ physics: 'baseline' });
     expect(within(screen.getByTestId('num-item-8')).queryByTestId('physics-additions')).toBeNull();
@@ -192,7 +192,7 @@ describe('what the selected physics and scenario show', () => {
     expect(screen.getByTestId('scenario-note-status-11').dataset.status).toBe('planned');
     select({ scenario: 'steady' });
     expect(Array.from(document.querySelectorAll('.scenario-note')).map((n) => (n as HTMLElement).dataset.testid)).toEqual(['scenario-note-9', 'scenario-note-11', 'scenario-note-12']);
-    expect(screen.getByTestId('scenario-note-12').textContent).toMatch(/do not make the concentration field stationary/);
+    expect(screen.getByTestId('scenario-note-12').textContent).toMatch(/stationary field would repeat from step to step/);
     // The scenario text is not repeated outside the items.
     expect(document.querySelectorAll('[data-testid="scenario-numerics"]')).toHaveLength(0);
   });
@@ -219,13 +219,31 @@ describe('what the selected physics and scenario show', () => {
     expect(document.querySelectorAll('[data-testid="numerical-notation"]')).toHaveLength(1);
   });
 
+  it('shows every equation of the region once, for every physics, and refers to no item by an old step number or as a preview', () => {
+    render(<NumericalInterpretation />);
+    openRegion();
+    for (const id of ITEM_IDS) act(() => useStrato.getState().setExpanded(itemExpandId(id), true));
+    for (const physics of ['baseline', 'generation', 'decay', 'temperature', 'combined'] as const) {
+      select({ physics });
+      const region = screen.getByTestId('numerical-interpretation');
+      const ids = Array.from(region.querySelectorAll<HTMLElement>('[data-eq]')).map((e) => e.dataset.eq);
+      const twice = ids.filter((id, i) => ids.indexOf(id) !== i);
+      expect(twice, `${physics}: equations shown twice`).toEqual([]);
+      const text = plainText(region);
+      expect(text, physics).not.toMatch(/\bsteps? (one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen)\b/i);
+      expect(text, physics).not.toMatch(/preview/i);
+    }
+    // The combined model shows the centre row as well as the general row.
+    expect(document.querySelector('[data-eq="d5_row0"]')).not.toBeNull();
+  });
+
   it('shows no number outside the equations, the references and the item numbers, with every item open', { timeout: 120_000 }, () => {
     render(<App />);
     act(() => useStrato.getState().setExpanded('numerical', true));
     select({ physics: 'combined' });
     for (const id of ITEM_IDS) act(() => useStrato.getState().setExpanded(itemExpandId(id), true));
     const region = screen.getByTestId('numerical-interpretation');
-    expect(plainText(region)).not.toMatch(/\d/);
+    expect(plainText(region).match(/.{0,30}\d.{0,30}/g)).toBeNull();
     const maths = Array.from(region.querySelectorAll('.katex-html')).map((k) => {
       const c = k.cloneNode(true) as HTMLElement;
       c.querySelectorAll('.katex-tag, .tag').forEach((t) => t.remove());
@@ -290,7 +308,7 @@ describe('a step: equation, parts and disclosures', () => {
     expect(screen.getByTestId('more-panel-implementation').hidden).toBe(false);
     await user.click(screen.getByTestId('more-conditions'));
     expect(screen.getByTestId('more-panel-implementation').hidden).toBe(true);
-    expect(screen.getByTestId('more-panel-conditions').textContent).toContain('(F21)');
+    expect(screen.getByTestId('more-panel-conditions').textContent).toContain('(F2)');
     await user.click(screen.getByTestId('more-terms'));
     expect(screen.getByTestId('more-panel-terms').textContent).toMatch(/Lower diagonal/);
   });

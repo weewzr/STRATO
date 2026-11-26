@@ -258,6 +258,7 @@ const D5_EQ19 = eq('d5_decayed_amount', 'Decayed amount, booked apart from the r
 const D5_EQ22 = eq('d5_arrhenius', 'Diffusivity of a material as a function of temperature', 'd5', '22', D5_31, L`D_{\mathrm{material}}(T) = D_{0,\mathrm{material}}\exp\left(-\frac{E_{a,\mathrm{material}}}{R_{\mathrm{gas}}T}\right)`);
 const D5_EQ23 = eq('d5_step_diffusivity', 'Diffusivity used in a step: the value at the middle of the step', 'd5', '23', D5_32, L`\bar D_{\mathrm{material}}^j = D_{\mathrm{material}}\left(T\left(t^j + \tfrac{1}{2}\Delta t\right)\right)`);
 const D5_EQ26 = eq('d5_combined_balance', 'Flux balance of a node in the combined model', 'd5', '26', D5_41, L`V_i\,\frac{C_i^{j+1} - C_i^j}{\Delta t} = K_{i,\mathrm{outer}}^j\left(C_{i+1}^{j+1} - C_i^{j+1}\right) - K_{i,\mathrm{inner}}^j\left(C_i^{j+1} - C_{i-1}^{j+1}\right) + \bar Q_i^j - \lambda V_i\,C_i^{j+1}`);
+const D5_ROW0 = eq('d5_row0', 'Centre row of the system of a step', 'd5', null, D5_41, L`\left(1 + 6\,\mathrm{Fo}_{\mathrm{kernel}}^j + \kappa\right)C_0^{j+1} - 6\,\mathrm{Fo}_{\mathrm{kernel}}^jC_1^{j+1} = C_0^j + \Delta t\,\bar G_{\mathrm{kernel}}^j`, { note: 'The centre row of the combined model, printed after the general row in the document on generation, decay and temperature; the centre node has no weight and takes the pointwise source of the kernel.' });
 const D5_ROW = eq('d5_row', 'Row of the system of a step, with its right-hand side vector', 'd5', null, D5_41, L`L_i^jC_{i-1}^{j+1} + B_i^jC_i^{j+1} + U_i^jC_{i+1}^{j+1} = C_i^j + \Delta t\,g_i^j`, { note: 'The line that follows the flux balance of the combined model in the document on generation, decay and temperature: the row of the matrix and the right-hand side vector. The right-hand side gains the nodal source density multiplied by the time step.' });
 const D5_EQ27 = eq('d5_combined_balance_sum', 'Balance of a step with the generated and the decayed amount', 'd5', '27', D5_42, L`M^{j+1} - M^j = -\Delta t\,\Phi^{j+1} + \left(M_{\mathrm{gen}}^{j+1} - M_{\mathrm{gen}}^j\right) - \left(M_{\mathrm{dec}}^{j+1} - M_{\mathrm{dec}}^j\right)`);
 
@@ -299,13 +300,15 @@ const doc5 = (section: string): DocRef => ({ doc: 'd5', section });
  */
 const DEV = 'src/numerical/physics_run.rs';
 const DEV_CODE = {
-  meanOver: { label: 'TimeFunction::mean_over, the step average of the source (D5 Eq. 13, F32)', path: DEV, symbol: 'pub fn mean_over' },
-  sourceNodes: { label: 'source_nodes, the source weights and nodal source densities (D5 Eq. 9, F33, F34)', path: DEV, symbol: 'pub fn source_nodes' },
-  stepWithSource: { label: 'Stepper::step_with_source, the right-hand side C + dt g (F38)', path: 'src/numerical/btcs.rs', symbol: 'pub fn step_with_source' },
-  yieldSource: { label: 'FissionYield::source_mol_per_m3_s, the kernel source (D5 Eq. 2)', path: 'src/physics/source.rs', symbol: 'pub fn source_mol_per_m3_s' },
-  newWithDecay: { label: 'Stepper::new_with_decay, the decay number on every diagonal entry (D5 Eq. 16, F35, F37)', path: 'src/numerical/btcs.rs', symbol: 'pub fn new_with_decay' },
+  // The F32 to F38 numbers are those of Document 2, Section 11, which exists on the development branch only.
+  meanOver: { label: 'TimeFunction::mean_over, the step average of the source (D5 Eq. 13; Document 2, Section 11 on the development branch, F32)', path: DEV, symbol: 'pub fn mean_over' },
+  sourceNodes: { label: 'source_nodes, the source weights and nodal source densities (D5 Eq. 9; Document 2, Section 11 on the development branch, F33, F34)', path: DEV, symbol: 'pub fn source_nodes' },
+  stepWithSource: { label: 'Stepper::step_with_source, the right-hand side C + dt g (Document 2, Section 11 on the development branch, F38)', path: 'src/numerical/btcs.rs', symbol: 'pub fn step_with_source' },
+  yieldSource: { label: 'source_mol_per_m3_s, the kernel source (D5 Eq. 2)', path: 'src/physics/source.rs', symbol: 'pub fn source_mol_per_m3_s' },
+  newWithDecay: { label: 'Stepper::new_with_decay, the decay number on every diagonal entry (D5 Eq. 16; Document 2, Section 11 on the development branch, F35, F37)', path: 'src/numerical/btcs.rs', symbol: 'pub fn new_with_decay' },
   assembleWithDecay: { label: 'assemble_with_decay, the rows of the matrix with kappa', path: 'src/numerical/btcs.rs', symbol: 'pub fn assemble_with_decay' },
-  runPhysics: { label: 'run_physics, the time loop: T at the middle of the step, matrix reassembled when D or dt changes (D5 Eq. 23, F36)', path: DEV, symbol: 'pub fn run_physics' },
+  runPhysics: { label: 'run_physics, the time loop with one uniform time step: T at the middle of the step, matrix reassembled when D changes (D5 Eq. 23; Document 2, Section 11 on the development branch, F36)', path: DEV, symbol: 'pub fn run_physics' },
+  runScenario: { label: 'run_scenario, the scenario time loop: matrix reassembled when D or the time step changes', path: 'src/numerical/scenario.rs', symbol: 'pub fn run_scenario' },
   arrhenius: { label: 'ArrheniusTerm, one term of the diffusivity law (D5 Eq. 22)', path: 'src/physics/arrhenius.rs', symbol: 'pub struct ArrheniusTerm' },
 } satisfies Record<string, DevCodeRef>;
 
@@ -491,7 +494,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
         latex: String.raw`\frac{1}{\left(r\right)^2}\frac{\partial}{\partial r}\left[\left(r\right)^2 D(r)\,\frac{\partial C}{\partial r}\right]`,
         meaning: 'The net inflow by diffusion into a thin shell, per unit volume. The factor that grows with the square of the radius follows the area of the shell; the diffusivity stays inside the derivative so that it may jump at an interface.',
         units: [U_R, U_D],
-        assumptions: ['Spherical symmetry.', 'Valid where the diffusivity is smooth. At an interface it is not applied as written: step eight builds the interface rows from fluxes.'],
+        assumptions: ['Spherical symmetry.', 'Valid where the diffusivity is smooth. At an interface it is not applied as written: the interface rows are built from fluxes, as stated under Material-interface conditions.'],
         derivation: doc1(D1_1),
       }),
       part({
@@ -532,7 +535,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
         latex: String.raw`D_{\mathrm{kernel}}`,
         meaning: 'Kernel, buffer, inner pyrocarbon, silicon carbide and outer pyrocarbon each have one constant diffusivity. Materials are named, never numbered by the node index.',
         units: [U_DM, u(String.raw`R_1, R_2, R_3, R_4, R_5`, 'outer radii of kernel, buffer, IPyC, SiC and OPyC; R_0 = 0', String.raw`\mathrm{m}`)],
-        assumptions: ['The diffusivity is constant in each material.', 'The temperature is constant; temperature dependence is a labelled preview.'],
+        assumptions: ['The diffusivity is constant in each material.', 'The temperature is constant; temperature dependence is stated under Temperature-dependent diffusion coefficients, with the status that the build reports.'],
         derivation: doc1('0. Scope, physical model and notation'),
       }),
       part({
@@ -642,11 +645,11 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       }),
     ],
     implementation: {
-      equations: [D1_EQ11, D1_EQ14, D1_EQ15, F10, F11, F8],
+      equations: [D1_EQ11, D1_EQ14, D1_EQ15, F11, F8],
       code: [CODE.assemble, CODE.coefficients],
       pseudocode: [PSEUDO.coefficients, PSEUDO.assemble],
       derivation: [doc1(D1_33), doc1(D1_34), doc2(D2_5)],
-      note: 'The general row is the flux balance of the node over the new time step, written once for every interior and interface node. The explicit coefficient forms are checks: they equal it to rounding.',
+      note: 'The general row is the flux balance of the node over the new time step, written once for every interior and interface node; the flux balance itself is stated under Material-interface conditions. The explicit coefficient forms are checks: they equal it to rounding.',
     },
     live: 'The time step and the number of steps of the current run are in the controls; the solver reports the step it used.',
   },
@@ -788,7 +791,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       code: [CODE.outer, CODE.release, CODE.assemble],
       pseudocode: [PSEUDO.outer, PSEUDO.release],
       derivation: [doc1(D1_6), doc2(D2_5), doc2(D2_7)],
-      note: 'The release rate must use the stored conductance of the last interval, not a recomputed one; otherwise the balance of step twelve acquires a residual of discretisation size.',
+      note: 'The release rate must use the stored conductance of the last interval, not a recomputed one; otherwise the balance stated under Numerical verification and convergence acquires a residual of discretisation size.',
     },
     live: 'The release rate of the current run appears in the release readout and the release curve of the live simulation.',
   },
@@ -886,11 +889,11 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       }),
     ],
     implementation: {
-      equations: [F20],
+      equations: [],
       code: [CODE.thomas, CODE.thomasNew, CODE.thomasSolve, CODE.step, CODE.run, CODE.crossCheck],
       pseudocode: [PSEUDO.thomas, PSEUDO.step, PSEUDO.run],
       derivation: [doc2('6.3 Solution of the linear system'), TRACE],
-      note: 'The links point at the solver branch. The routine that solves each step is ThomasFactors, coded in the form of the equation above. solve_in_place is the general Thomas solve, kept only as a cross-check utility.',
+      note: 'The links point at the solver branch. The routine that solves each step is ThomasFactors, coded in the form of the equation above. solve_in_place is the general Thomas solve, kept only as a cross-check utility. The right-hand side that each sweep solves is stated under Tridiagonal matrix assembly.',
     },
     live: 'The solver of the current run is this algorithm; its version, commit and verification status are listed in the numbers below and in the diagnostics under the live simulation.',
   },
@@ -932,11 +935,11 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       }),
     ],
     implementation: {
-      equations: [F26, F28, F29, F30],
+      equations: [],
       code: [CODE.inventory, CODE.accumulator, CODE.release, CODE.fraction, CODE.residual],
       pseudocode: [PSEUDO.inventory, PSEUDO.release, PSEUDO.residual],
       derivation: [doc2(D2_7), TRACE],
-      note: 'The reported release fraction is the released amount over the exact start inventory. The complementary value, one minus the inventory over the start inventory, is a diagnostic that differs from it by the balance residual.',
+      note: 'The reported release fraction is the released amount over the exact start inventory. The complementary value, one minus the inventory over the start inventory, is a diagnostic that differs from it by the balance residual. The release rate is stated under Absorbing outer-boundary condition, the release fraction in the next step of this item, and the balance and its residual under Numerical verification and convergence.',
     },
     live: 'The values of the inventory, the released amount and the balance residual for the current run are under Inventory balance in the live simulation below, as the Rust wrapper returns them; nothing is computed in the browser.',
   },
@@ -1190,7 +1193,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
     implementation: {
       equations: [D5_EQ22],
       code: [],
-      devCode: [DEV_CODE.runPhysics, DEV_CODE.arrhenius],
+      devCode: [DEV_CODE.runPhysics, DEV_CODE.runScenario, DEV_CODE.arrhenius],
       pseudocode: [PSEUDO.hooks],
       derivation: [doc5(D5_31), doc5(D5_32)],
       note: 'The weights of the nodes, the start vector and the source weights do not depend on the diffusivity and are not computed again. With a constant temperature the run is the constant-diffusivity run.',
@@ -1272,13 +1275,13 @@ const CONTINUOUS_CONDITIONS = [D1_EQ26, D1_EQ27, OUTER_CONT, D1_EQ38];
 const DISCRETE_CONDITIONS = [F1, F2, F18, F21, F22];
 
 /**
- * The conditions of the problem, stated once: the continuous ones with the five-layer material model (step
- * four) and the discrete ones with the assembly of the system (step ten). Every other step has none to
- * state (the earlier builder repeated them under every step; the Numerical Interpretation says each thing once).
+ * The conditions of the problem, stated once: the continuous ones with the five-layer material model
+ * (item two) and the discrete ones with the assembly of the system (item eight). Every other step has none
+ * to state (the earlier builder repeated them under every step; the Numerical Interpretation says each
+ * thing once). A condition that another step shows as its main or related equation is not shown again.
  */
 export function conditionsFor(stage: Stage): { equations: ShownEquation[]; note: string } | null {
-  const def = STEP_DEFS[stage];
-  const shown = new Set(def.main.map(key));
+  const shown = new Set(STAGES.flatMap((s) => [...STEP_DEFS[s].main, ...STEP_DEFS[s].implementation.equations]).map(key));
   if (stage === 4) {
     return {
       equations: CONTINUOUS_CONDITIONS.filter((e) => !shown.has(key(e))),
@@ -1288,10 +1291,19 @@ export function conditionsFor(stage: Stage): { equations: ShownEquation[]; note:
   if (stage === 10) {
     return {
       equations: DISCRETE_CONDITIONS.filter((e) => !shown.has(key(e))),
-      note: 'The conditions on the grid. Document 2, Section 8 states the standing hypotheses: every number of intervals is at least one, every diffusivity is positive and finite, and the time step is positive. No condition relates the time step to the spacing.',
+      note: 'The conditions on the grid. Document 2, Section 8 states the standing hypotheses: every number of intervals is at least one, every diffusivity is positive and finite, and the time step is positive. No condition relates the time step to the spacing. The absorbing value at the outer surface is stated under Absorbing outer-boundary condition.',
     };
   }
   return null;
+}
+
+/** What a source and decay change in the accounting, one sentence per mechanism (inline mathematics between dollar signs; Document 5, Sections 1.4 and 2). */
+function accountingNote(gen: boolean, dec: boolean): string {
+  const g =
+    'With a source the generated amount is booked, and the release gains the source of the half-interval next to the outer surface, $\\bar Q_N^j$. For the approved kernel-only source $\\bar Q_N^j$ is zero, so the release is the baseline release.';
+  const d = 'With decay the decayed amount is booked apart from the release, which is unchanged: the release is the flow through the outer surface only.';
+  const both = ' The balance below is the general one: its generated amount is zero without a source and its decayed amount is zero without decay.';
+  return `${gen ? g : ''}${gen && dec ? ' ' : ''}${dec ? d : ''}${both}`;
 }
 
 /** The physics selections that add to a baseline step (the baseline adds nothing). */
@@ -1320,7 +1332,7 @@ export function physicsAdditions(stage: Stage, physics: PhysicsId): { equations:
       if (tmp) parts.push('the off-diagonal and diagonal entries are evaluated with the diffusivities of the step, as stated under the temperature-dependent diffusion coefficients');
       const lead = physics === 'combined' ? 'The complete formulation of the combined model: ' : 'With the selected physics, ';
       return {
-        equations: physics === 'combined' ? [D5_EQ26, D5_ROW] : gen ? [D5_ROW] : [],
+        equations: physics === 'combined' ? [D5_EQ26, D5_ROW, D5_ROW0] : gen ? [D5_ROW] : [],
         note: `${lead}${parts.join('; ')}.`,
       };
     }
@@ -1334,7 +1346,7 @@ export function physicsAdditions(stage: Stage, physics: PhysicsId): { equations:
     case 12:
       return {
         equations: [...(gen ? [D5_EQ12] : []), ...(dec ? [D5_EQ19] : []), ...(gen || dec ? [D5_EQ27] : [])],
-        note: gen || dec ? 'With a source or decay the release gains the source of the half-interval next to the outer surface, and the balance gains the generated and the decayed amount.' : 'With temperature dependence alone the rows and the release use the same stored conductances of the step, so the balance is that of the baseline.',
+        note: gen || dec ? accountingNote(gen, dec) : 'With temperature dependence alone the rows and the release use the same stored conductances of the step, so the balance is that of the baseline.',
       };
     case 13: {
       const lines: string[] = [];

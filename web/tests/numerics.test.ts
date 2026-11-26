@@ -128,7 +128,7 @@ describe('what a scenario writes inside the items', () => {
     expect(scenarioNote('shutdown', 10)).toMatch(/diagonal/);
     expect(scenarioNote('shutdown', 11)).toMatch(/reassembled/);
     // Steady-state operation: constant conditions are not a stationary field.
-    expect(scenarioNote('steady', 12)).toMatch(/do not make the concentration field stationary/);
+    expect(scenarioNote('steady', 12)).toMatch(/stationary field would repeat from step to step/);
     // Startup: time-dependent generation and temperature enter through the step average and the middle of the step.
     expect(scenarioNote('startup', 9)).toMatch(/step average of the generation/);
     expect(scenarioNote('startup', 11)).toMatch(/middle of the step/);
