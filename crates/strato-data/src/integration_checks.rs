@@ -682,7 +682,10 @@ fn release_checks(rep: &mut Report, reg: &Register) {
     for r in rows {
         let n: u32 = r.id[2..].parse().unwrap_or(0);
         let want = match n {
-            157..=267 | 374..=492 => Some(Denominator::CompactInventory),
+            // E-010..E-014 and E-033..E-045: the matrix-corrected fractions of Collin et al.
+            // (2016); their denominator is the calculated compact inventory (task
+            // data-comparison-denominators, audit log section 10).
+            10..=14 | 33..=45 | 157..=267 | 374..=492 => Some(Denominator::CompactInventory),
             268..=315 => Some(Denominator::CapsuleInventory),
             493..=540 => Some(Denominator::ParticleInventory),
             _ => None,
@@ -709,8 +712,8 @@ fn release_checks(rep: &mut Report, reg: &Register) {
         .count();
     rep.add(
         "DI.release.denominator",
-        bad.is_empty() && ne == 61,
-        "denominator: compact inventory for the tabulated and digitised compact fractions, capsule inventory for the mass-balance rows, average particle inventory for the particle equivalents; 61 rows (JAERI, CRP-6, matrix-corrected and a few text rows) say not established and stay DATA INCOMPLETE",
+        bad.is_empty() && ne == 43,
+        "denominator: compact inventory for the tabulated and digitised compact fractions and the matrix-corrected fractions of Collin et al. (2016), capsule inventory for the mass-balance rows, average particle inventory for the particle equivalents; 43 rows (JAERI, CRP-6 and a few text rows) say not established and stay DATA INCOMPLETE",
         format!("{ne} not established; wrong: {bad:?}"),
     );
 }
