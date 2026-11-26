@@ -170,6 +170,16 @@ const ALL_IDS: &[&str] = &[
     "DI.irr.step9",
     "DI.irr.derived-series",
     "DI.register-md.matches-csv",
+    "EX.curve.rows-agree",
+    "EX.curve.one-definition",
+    "EX.curve.times-monotone",
+    "EX.curve.cumulative",
+    "EX.curve.digitised-uncertainty",
+    "EX.curve.audit-entry",
+    "EX.curve.source-resolves",
+    "EX.curve.fail-closed",
+    "EX.release.dataset-id",
+    "EX.temperature.new-history",
 ];
 
 #[test]

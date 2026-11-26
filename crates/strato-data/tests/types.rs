@@ -21,8 +21,8 @@ fn row_counts_are_those_of_the_readme() {
     assert_eq!(r.arrhenius.rows.len(), 141);
     assert_eq!(r.decay.rows.len(), 16);
     assert_eq!(r.yields.rows.len(), 56);
-    assert_eq!(r.temperature.rows.len(), 157);
-    assert_eq!(r.release.rows.len(), 482);
+    assert_eq!(r.temperature.rows.len(), 164);
+    assert_eq!(r.release.rows.len(), 578);
 }
 
 #[test]
@@ -37,7 +37,7 @@ fn status_counts_match_the_audit() {
             n(Status::Digitised),
             n(Status::NotVerified)
         ),
-        (263, 218, 1)
+        (263, 314, 1)
     );
     let n = |s: Status| r.temperature.rows.iter().filter(|x| x.status == s).count();
     assert_eq!(
@@ -46,7 +46,7 @@ fn status_counts_match_the_audit() {
             n(Status::Digitised),
             n(Status::NotVerified)
         ),
-        (110, 42, 5)
+        (110, 49, 5)
     );
     assert!(r.geometry.rows.iter().all(|x| x.status == Status::Verified));
 }
@@ -264,7 +264,7 @@ fn an_upper_bound_is_not_a_point_value() {
             .count()
             == 23
     );
-    // the value kinds partition the 482 rows
+    // the value kinds partition the 578 rows
     let counts = r.release.rows.iter().fold([0usize; 6], |mut a, x| {
         let i = match x.value {
             ReleaseValue::Point(_) => 0,
@@ -277,7 +277,7 @@ fn an_upper_bound_is_not_a_point_value() {
         a[i] += 1;
         a
     });
-    assert_eq!(counts, [226, 224, 23, 1, 5, 3]);
+    assert_eq!(counts, [226, 320, 23, 1, 5, 3]);
 }
 
 #[test]
@@ -447,7 +447,7 @@ fn symbolic_temperatures_are_not_numbers() {
     ));
     assert!(row.t_start.as_ref().unwrap().celsius().is_none());
     let hist = t.histories();
-    assert_eq!(hist.len(), 61);
+    assert_eq!(hist.len(), 62);
     assert_eq!(
         hist.iter()
             .find(|(h, _)| *h == "AGR1-ST-C16-1600")

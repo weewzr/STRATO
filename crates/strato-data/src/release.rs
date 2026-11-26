@@ -55,6 +55,8 @@ string_enum! {
         Crp6 => "CRP-6",
         /// AGR-2 safety tests (UCO TRISO, a different irradiation and fuel batch from AGR-1).
         Agr2 => "AGR-2",
+        /// German (FRG) heating tests of spherical fuel elements, quoted by IAEA-TECDOC-978.
+        Frg => "FRG",
     }
 }
 
@@ -115,6 +117,8 @@ string_enum! {
         SphereReleaseFractionApproximate => "sphere release fraction (approximate text value)",
         /// Cumulative compact release fraction.
         CumulativeCompactReleaseFraction => "cumulative compact release fraction",
+        /// Cumulative release fraction of a fuel sphere read from a release-versus-time curve.
+        CumulativeSphereReleaseFraction => "cumulative sphere release fraction",
         /// Capsule inventory found outside the compacts: in-pile release.
         CapsuleFractionOutsideCompacts => "capsule fraction measured outside the fuel compacts (in-pile release)",
         /// Release in particle equivalents of 75 loose particles.
