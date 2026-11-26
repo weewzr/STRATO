@@ -79,8 +79,9 @@ pub fn native_command() -> Vec<String> {
 }
 
 /// Command line of the battery of the parity test (tcs_parity example of the wrapper): `requests`
-/// prints the requests of the named cases, `native` the native replies. The cases are the small ones of the
-/// battery (the others are compared by the Rust example against the WebAssembly module run in Node).
+/// prints the requests of the named cases, `native` the native replies. The cases are the ones small
+/// enough to keep in a file; the others (large grids) are compared by the Rust example against the
+/// WebAssembly module run in Node.
 pub fn battery_command(what: &str) -> Vec<String> {
     let mut v: Vec<String> = [
         "cargo",
@@ -101,11 +102,15 @@ pub fn battery_command(what: &str) -> Vec<String> {
     v
 }
 
-pub const BATTERY_CASES: [&str; 5] = [
+pub const BATTERY_CASES: [&str; 9] = [
     "validate_toml",
     "validate_rejected_dt",
     "run_single_step",
+    "run_profile_times",
+    "run_rejected_steps",
+    "compare_coarse_sic_diffusivity",
     "export_timeseries_csv",
+    "export_comparison_csv",
     "build_info",
 ];
 
@@ -181,7 +186,7 @@ pub const RETIRED_FILES: [&str; 10] = [
 pub const NOTE_RUN: &str = "Time series, profiles and diagnostics of the native BTCS run of the synthetic five-layer case, as the solver's command line wrote them (numerical solution of the stated model; not experimental validation).";
 pub const NOTE_COMPARISON: &str = "Release fraction of the BTCS run and of the analytical (Sturm-Liouville series) solution at every output time; the absolute difference is computed in Rust from the two columns; empty cells are null where the series is not valid.";
 pub const NOTE_CHECK: &str = "Independent check of the BTCS release fraction against a reference that contains no BTCS code, with the observed orders in time and in space, copied from the regression suite; a regression reference, not truth.";
-pub const NOTE_BATTERY: &str = "Requests of the small cases of the parity battery of the BTCS functions (validate, run, export, build info) and the replies of the native wrapper (x86_64), the reference of the browser parity test of the functions beyond the default run.";
+pub const NOTE_BATTERY: &str = "Requests of the cases of the parity battery of the BTCS functions that are small enough to keep in a file (validate, run, compare, export, build info) and the replies of the native wrapper (x86_64), the reference of the browser parity test of the functions beyond the default run.";
 pub const NOTE_WRAPPER: &str =
     "run reply of the native wrapper (x86_64), the reference of the browser parity test.";
 

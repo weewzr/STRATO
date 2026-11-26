@@ -90,7 +90,9 @@ fn header(
     h.insert("strato_version".into(), json!(ctx.version));
     h.insert("commit".into(), json!(ctx.commit));
     h.insert("input_file".into(), json!(s::INPUT));
-    h.insert("input_sha256".into(), json!(ctx.input_sha256));
+    // The SHA-256 of the input file as it is on disk. The solver's own header, inside the CSV
+    // bodies, has a different quantity (the digest of the canonical text of the validated input).
+    h.insert("input_file_sha256".into(), json!(ctx.input_sha256));
     h.insert("command".into(), json!(command));
     h.insert("rustc".into(), json!(ctx.rustc));
     h.insert("created_utc".into(), json!(ctx.created));
@@ -120,7 +122,7 @@ fn csv_with_header(ctx: &Context, kind: &str, command: &str, body: &str) -> Stri
         "strato_version",
         "commit",
         "input_file",
-        "input_sha256",
+        "input_file_sha256",
         "command",
         "rustc",
         "created_utc",
