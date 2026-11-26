@@ -1,11 +1,11 @@
 # STRATO experimental comparison: temperature sensitivity of the release of an intact particle over the registered heating-test temperatures
 # label: numerical solution of the stated model; not experimental validation; the comparison with the register is a comparison of release behaviour, not a validation
 # solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1
-# commit: 4f2e176a8a32e8032625942fe5a4017712252753
+# commit: 388bacc
 # model_limitations: kernel-only start (inventory-matched start node); constant diffusion coefficient per layer evaluated at the test temperature from the first hour (heating ramps are not modelled); no radioactive decay and no fission-product generation in the solver yet; perfect interface contact; absorbing outer surface; one intact particle, no matrix; the model fraction is a fraction of the particle's own inventory
 # parameter_source: geometry design AGR1-B-M16 (register rows G-01 G-02 G-03 G-04 G-05); diffusion coefficients chosen by the strato-data selection function (decision 47) for the heating-test phase, that is the rows of register sets C16-T2 and C16-BUF as printed, evaluated at the test temperature (the kernel rows are UO2 surrogates: no UCO measurement exists, decision 40); the class of each coefficient (owner ruling 16) and its phase of use are in the sensitivity file and in the coefficient_sets of comparison.json
 # parameter_class: coefficients are the published heating-test correlation of the register (class and phase per row in the sensitivity file); radii are the registered measured baseline geometry; every measurement keeps its register row id
-# release_measurements_sha256: 30d953b7a7370f678f1e5cec5e1a0d61a3cfc9d9c14bd00a8a10220c16ff6ce5
+# release_measurements_sha256: 769cb15ea1701316e2d6a11e987c363a0096c07d36345c4c91d482fa0f27573a
 # arrhenius_sha256: 2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4
 # geometry_sha256: 8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f
 # temperature_histories_sha256: b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d

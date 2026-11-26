@@ -292,7 +292,7 @@ pub struct Dataset {
     pub group: String,
     /// Quantity as the register words it.
     pub quantity: String,
-    /// Source of the rows (one source per dataset).
+    /// Every source of the rows, in the order of first appearance, joined by " | ".
     pub source: String,
     /// Ids of the rows.
     pub row_ids: Vec<String>,
@@ -308,19 +308,28 @@ pub struct Dataset {
     pub max_duration_h: Option<f64>,
 }
 
-/// Group the records into datasets and aggregate. Groups never mix nuclides, quantity
-/// definitions or sources (a source's rows of several compacts stay pooled, as before).
+/// The distinct sources of a group of rows, in the order of first appearance, joined by " | ".
+fn sources_of(rows: &[&RowRecord]) -> String {
+    let mut sources: Vec<&str> = Vec::new();
+    for r in rows {
+        if !sources.contains(&r.row.source.as_str()) {
+            sources.push(r.row.source.as_str());
+        }
+    }
+    sources.join(" | ")
+}
+
+/// Group the records into datasets and aggregate. Groups never mix nuclides or quantity
+/// definitions. A group may hold rows of several sources; the dataset names every one of them.
 pub fn datasets(records: &[RowRecord]) -> Vec<Dataset> {
-    type Key = (String, String, String, String, String);
-    let mut order: Vec<Key> = Vec::new();
-    let mut map: BTreeMap<Key, Vec<&RowRecord>> = BTreeMap::new();
+    let mut order: Vec<(String, String, String, String)> = Vec::new();
+    let mut map: BTreeMap<(String, String, String, String), Vec<&RowRecord>> = BTreeMap::new();
     for r in records {
         let key = (
             r.row.program.as_str().to_string(),
             measured_text(&r.row),
             r.row.group.as_str().to_string(),
             r.row.quantity.as_str().to_string(),
-            r.row.source.clone(),
         );
         if !map.contains_key(&key) {
             order.push(key.clone());
@@ -359,7 +368,7 @@ pub fn datasets(records: &[RowRecord]) -> Vec<Dataset> {
                 nuclide: key.1.clone(),
                 group: key.2.clone(),
                 quantity: key.3.clone(),
-                source: key.4.clone(),
+                source: sources_of(rows),
                 row_ids: rows.iter().map(|r| r.row.id.clone()).collect(),
                 counts,
                 point: point_aggregate(&points),

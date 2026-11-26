@@ -1224,6 +1224,8 @@ Time at temperature (h)
 <line opacity="1" stroke="#787878" stroke-width="2" x1="982" y1="278" x2="990" y2="270"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="1008" y1="264" x2="1016" y2="272"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="1008" y1="272" x2="1016" y2="264"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="622" y1="318" x2="630" y2="326"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="622" y1="326" x2="630" y2="318"/>
 <polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="2" points="613,233 620,240 613,247 606,240 613,233 "/>
 <polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="2" points="613,231 620,238 613,245 606,238 613,231 "/>
 <polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="2" points="656,226 663,233 656,240 649,233 656,226 "/>
@@ -1273,7 +1275,7 @@ Time at temperature (h)
 measured: Cs, Cs-134, Cs-137
 </text>
 <text x="1024" y="441" dy="-0.5ex" text-anchor="end" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-91 registered values drawn; 22 upper-bound comparisons
+92 registered values drawn; 22 upper-bound comparisons
 </text>
 <text x="1293" y="83" dy="0.76em" text-anchor="middle" font-family="sans-serif" font-size="16.129032258064516" opacity="1" fill="#191919">
 Strontium (Sr)
@@ -1868,11 +1870,43 @@ Time at temperature (h)
 <line opacity="1" stroke="#787878" stroke-width="2" x1="1307" y1="230" x2="1315" y2="222"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="1448" y1="214" x2="1456" y2="222"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="1448" y1="222" x2="1456" y2="214"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1136" y1="374" x2="1144" y2="382"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1136" y1="382" x2="1144" y2="374"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1159" y1="367" x2="1167" y2="375"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1159" y1="375" x2="1167" y2="367"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1193" y1="357" x2="1201" y2="365"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1193" y1="365" x2="1201" y2="357"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1214" y1="351" x2="1222" y2="359"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1214" y1="359" x2="1222" y2="351"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1255" y1="344" x2="1263" y2="352"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1255" y1="352" x2="1263" y2="344"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1279" y1="342" x2="1287" y2="350"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1279" y1="350" x2="1287" y2="342"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1302" y1="341" x2="1310" y2="349"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1302" y1="349" x2="1310" y2="341"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1329" y1="340" x2="1337" y2="348"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1329" y1="348" x2="1337" y2="340"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1352" y1="339" x2="1360" y2="347"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1352" y1="347" x2="1360" y2="339"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1374" y1="339" x2="1382" y2="347"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1374" y1="347" x2="1382" y2="339"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1400" y1="338" x2="1408" y2="346"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1400" y1="346" x2="1408" y2="338"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1423" y1="337" x2="1431" y2="345"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1423" y1="345" x2="1431" y2="337"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1447" y1="338" x2="1455" y2="346"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1447" y1="346" x2="1455" y2="338"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1469" y1="337" x2="1477" y2="345"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1469" y1="345" x2="1477" y2="337"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1497" y1="336" x2="1505" y2="344"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1497" y1="344" x2="1505" y2="336"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1520" y1="336" x2="1528" y2="344"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1520" y1="344" x2="1528" y2="336"/>
 <text x="1125" y="110" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 measured: Sr, Sr-90
 </text>
 <text x="1537" y="441" dy="-0.5ex" text-anchor="end" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-74 registered values drawn; none supports a comparison (context only)
+90 registered values drawn; none supports a comparison (context only)
 </text>
 <polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="3" points="40,529 74,529 "/>
 <text x="84" y="520" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
@@ -1945,12 +1979,12 @@ rising steeply from zero, the base run and the run with half the step differ by 
 tolerance). Not drawn because the time at temperature lies beyond the 420 h axis (the value is never moved onto the edge): E-150 (500 h), E-151 (500 h), E-154 (699 h), E-613 (428 h), E-614 (452 h), E-615 (475 h),
 </text>
 <text x="24" y="818" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-E-633 (428 h), E-634 (451 h), E-635 (476 h), E-636 (499 h). Model: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit 4f2e176a8a32e8032625942fe5a4017712252753; registered AGR1-B-M16
+E-633 (428 h), E-634 (451 h), E-635 (476 h), E-636 (499 h), E-654 (428 h), E-655 (452 h), E-656 (475 h), E-657 (498 h). Model: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit
 </text>
 <text x="24" y="836" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at the test temperature; kernel-only start; constant temperature;
+388bacc; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at the test temperature; kernel-only
 </text>
 <text x="24" y="854" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-decay and generation are not in the solver. This is a numerical comparison, not an experimental validation.
+start; constant temperature; decay and generation are not in the solver. This is a numerical comparison, not an experimental validation.
 </text>
 </svg>
