@@ -209,6 +209,16 @@ fn independent_checks_pass_live_and_match_the_recorded_ones() {
                 r.limit_difference,
                 r.tolerance
             );
+            // Decision 49 (a): the observed orders round to 1 in time and 2 in space, so that a
+            // first-order spatial defect fails here.
+            assert!(
+                (r.time_order - 1.0).abs() < 0.5 && (r.space_order - 2.0).abs() < 0.5,
+                "{}: t={} observed orders {} (time) and {} (space) do not round to 1 and 2",
+                case.id,
+                r.t,
+                r.time_order,
+                r.space_order
+            );
             // The criterion is the convention of the module documentation, nothing else.
             assert_eq!(
                 r.tolerance.to_bits(),
@@ -230,6 +240,11 @@ fn independent_checks_pass_live_and_match_the_recorded_ones() {
             assert!(close(row[col("f_limit")], live.f_limit, 1.0));
             assert!(close(row[col("time_order")], live.time_order, 1.0));
             assert!(close(row[col("space_order")], live.space_order, 1.0));
+            assert!(
+                (row[col("time_order")] - 1.0).abs() < 0.5
+                    && (row[col("space_order")] - 2.0).abs() < 0.5,
+                "recorded orders must round to 1 and 2"
+            );
             assert_eq!(row[col("passed")], 1.0, "recorded check must have passed");
         }
     }
