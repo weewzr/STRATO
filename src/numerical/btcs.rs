@@ -151,6 +151,26 @@ pub struct Assembly {
 ///
 /// A non-finite matrix entry.
 pub fn assemble(grid: &Grid, coeff: Coefficients, dt: f64) -> Result<Assembly> {
+    assemble_with_decay(grid, coeff, dt, 0.0)
+}
+
+/// PS-05 with the decay number `kappa = lambda dt` of (F35) added to every diagonal entry,
+/// in the operation order `fl(fl(fl(1 - L) - U) + kappa)` of (F37) and Document 5, Section
+/// 5.8. For `kappa = 0` the addition is skipped, so the matrix is the baseline matrix bit for
+/// bit. `kappa` is the one stored number that the decay booking (F40) also uses.
+///
+/// # Errors
+///
+/// A non-finite matrix entry, or a decay number that is negative or not finite.
+pub fn assemble_with_decay(
+    grid: &Grid,
+    coeff: Coefficients,
+    dt: f64,
+    kappa: f64,
+) -> Result<Assembly> {
+    if !(kappa.is_finite() && kappa >= 0.0) {
+        bail!("decay number must be finite and not negative");
+    }
     let n = grid.n;
     let mut lower = vec![0.0; n];
     let mut diag = vec![0.0; n];
@@ -168,6 +188,11 @@ pub fn assemble(grid: &Grid, coeff: Coefficients, dt: f64) -> Result<Assembly> {
         lower[i] = l;
         diag[i] = 1.0 - l - u;
         upper[i] = u;
+    }
+    if kappa != 0.0 {
+        for b in diag.iter_mut() {
+            *b += kappa;
+        }
     }
     lower[1] = 0.0;
     upper[n - 1] = 0.0;
@@ -201,8 +226,18 @@ impl Stepper {
     ///
     /// As [`Coefficients::new`] and [`assemble`]; a computed pivot that is not positive.
     pub fn new(grid: &Grid, d: [f64; 5], dt: f64) -> Result<Stepper> {
+        Stepper::new_with_decay(grid, d, dt, 0.0)
+    }
+
+    /// As [`Stepper::new`], with the decay number `kappa = lambda dt` (F35) on every diagonal
+    /// entry; `kappa = 0` is [`Stepper::new`] bit for bit.
+    ///
+    /// # Errors
+    ///
+    /// As [`Stepper::new`]; a decay number that is negative or not finite.
+    pub fn new_with_decay(grid: &Grid, d: [f64; 5], dt: f64, kappa: f64) -> Result<Stepper> {
         let coeff = Coefficients::new(grid, d, dt)?;
-        let assembly = assemble(grid, coeff, dt)?;
+        let assembly = assemble_with_decay(grid, coeff, dt, kappa)?;
         let n = grid.n;
         let m = &assembly.matrix;
         let factors = ThomasFactors::new(&m.lower[1..n], &m.diag, &m.upper[..n - 1])?;
@@ -240,6 +275,27 @@ impl Stepper {
     pub fn step(&mut self, c_old: &[f64], c_new: &mut [f64]) -> Result<()> {
         let n = self.assembly.matrix.diag.len();
         self.rhs.copy_from_slice(&c_old[..n]);
+        self.factors
+            .solve(&self.rhs, &mut c_new[..n], &mut self.work)?;
+        c_new[n] = 0.0;
+        Ok(())
+    }
+
+    /// As [`Stepper::step`] with the right-hand side `b_i^j = C_i^j + dt g_i^j` of (F38),
+    /// coded as `fl(C_i^j + fl(dt g_i^j))` (the operation order of Document 5, Section 5.8).
+    /// `g` holds the nodal source densities `g_0 .. g_{N-1}` (F34) in mol m^-3 s^-1. Where
+    /// `g_i = 0` the sum `C_i^j + 0` is exact, so a run with every `g_i = 0` is [`Stepper::step`]
+    /// bit for bit (P19).
+    ///
+    /// # Errors
+    ///
+    /// A non-finite result of the solve.
+    pub fn step_with_source(&mut self, c_old: &[f64], g: &[f64], c_new: &mut [f64]) -> Result<()> {
+        let n = self.assembly.matrix.diag.len();
+        let dt = self.assembly.dt;
+        for i in 0..n {
+            self.rhs[i] = c_old[i] + dt * g[i];
+        }
         self.factors
             .solve(&self.rhs, &mut c_new[..n], &mut self.work)?;
         c_new[n] = 0.0;
