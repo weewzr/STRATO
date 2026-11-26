@@ -17,7 +17,7 @@ const G_REF: f64 = 3.0e-3;
 
 /// Diffusivity law used only by these tests: Arrhenius-like in the temperature, different in every
 /// layer, large enough that release is visible in a few hundred hours.
-fn law(t_c: f64) -> anyhow::Result<DiffusivityAt> {
+fn law(_t_s: f64, t_c: f64) -> anyhow::Result<DiffusivityAt> {
     let t_k = t_c + 273.15;
     let d = std::array::from_fn(|k| {
         let e = 2.0e3 * (1.0 + 0.2 * k as f64);
@@ -249,7 +249,7 @@ fn the_diffusivity_is_taken_at_the_middle_of_each_step() {
     let steps = def.steps(&[]).unwrap();
     for (row, (a, b)) in run.rows.iter().skip(1).zip(&steps) {
         let mid_c = 500.0 + 0.6 * (0.5 * (a + b));
-        let (expected, _) = law(mid_c).unwrap();
+        let (expected, _) = law(0.5 * (a + b), mid_c).unwrap();
         for k in 0..5 {
             assert_eq!(row.d_m2_s[k].to_bits(), expected[k].to_bits());
         }

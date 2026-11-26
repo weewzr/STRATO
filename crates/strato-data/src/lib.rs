@@ -30,6 +30,7 @@ pub mod integration_checks;
 pub mod irradiation;
 pub mod register;
 pub mod release;
+pub mod scenarios;
 pub mod select;
 pub mod table;
 pub mod temperature;

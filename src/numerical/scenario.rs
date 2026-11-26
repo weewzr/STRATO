@@ -82,8 +82,8 @@ pub type DiffusivityAt = ([f64; 5], [RangeCode; 5]);
 pub enum Diffusion<'a> {
     /// Constant in time.
     Constant([f64; 5]),
-    /// A function of the temperature in degrees Celsius, evaluated at the middle of each step.
-    OfTemperature(&'a dyn Fn(f64) -> Result<DiffusivityAt>),
+    /// A function of the time in s and the temperature in degrees Celsius, both at the middle of\n    /// each step (the time lets the caller switch the correlation set between phases of a\n    /// scenario; the engine itself chooses nothing).
+    OfTemperature(&'a dyn Fn(f64, f64) -> Result<DiffusivityAt>),
 }
 
 /// One segment of the step plan: up to `end_s` no step exceeds `dt_max_s`.
@@ -499,10 +499,10 @@ pub fn run_scenario(def: &ScenarioDefinition, cfg: &ScenarioConfig<'_>) -> Resul
         }
     };
     let t_of = |t: f64| def.temperature_c.value_at(t);
-    let d_at = |t_c: f64| -> Result<DiffusivityAt> {
+    let d_at = |t_s: f64, t_c: f64| -> Result<DiffusivityAt> {
         match &cfg.diffusion {
             Diffusion::Constant(d) => Ok((*d, [RangeCode::NotStated; 5])),
-            Diffusion::OfTemperature(f) => f(t_c),
+            Diffusion::OfTemperature(f) => f(t_s, t_c),
         }
     };
 
@@ -526,7 +526,7 @@ pub fn run_scenario(def: &ScenarioDefinition, cfg: &ScenarioConfig<'_>) -> Resul
     let mut max_rel: f64 = 0.0;
 
     let (cmin0, _) = min_max(&c_old);
-    let (d0, _) = d_at(t_of(0.0))?;
+    let (d0, _) = d_at(0.0, t_of(0.0))?;
     let bound0 = combined_balance_bound(&BoundTerms {
         n,
         steps_taken: 0,
@@ -602,7 +602,7 @@ pub fn run_scenario(def: &ScenarioDefinition, cfg: &ScenarioConfig<'_>) -> Resul
         let kappa = lambda * dt;
         // (F36): the diffusivities of the step, from the temperature at its middle.
         let t_mid_c = t_of(0.5 * (t_a + t_b));
-        let (d_step, codes) = d_at(t_mid_c)?;
+        let (d_step, codes) = d_at(0.5 * (t_a + t_b), t_mid_c)?;
         for (k, d) in d_step.iter().enumerate() {
             if !(d.is_finite() && *d > 0.0) {
                 bail!("the diffusivity of material {k} at {t_mid_c} C is not finite and positive");
