@@ -22,7 +22,8 @@ use strato::{
     numerical::{
         boundary_conditions::release_rate,
         btcs::{run_input, Stepper},
-        diagnostics::StepDiagnostics,
+        coefficients::Coefficients,
+        diagnostics::{BalanceBound, StepDiagnostics},
         grid::{Grid, ValidatedInput},
         inventory::{initial_vector, kernel_surface_theta, Accumulator},
         physics_run::{
@@ -1412,4 +1413,202 @@ fn invalid_physics_inputs_are_refused() {
         &[]
     )
     .is_err());
+}
+
+// ---------------------------------------------------------------------------------------
+// G1: the discrete steady state of the weights (P22, P22a), the release ratio, stability (P26)
+// ---------------------------------------------------------------------------------------
+
+/// Residuals of the discrete steady rows `K_out (C_{i+1} - C_i) - K_in (C_i - C_{i-1}) + Q_i`
+/// (centre row: `6 D (C_1 - C_0)/h^2 + G`) for the exact steady profile `c`, divided by the
+/// scale `S_i = K_out (C_{i+1} + C_i) + K_in (C_i + C_{i-1}) + Q_i`. Returns the largest ratio
+/// over the rows `0 ..= N-1`.
+fn steady_row_ratio(grid: &Grid, d: [f64; 5], q: &[f64], c: &[f64], g0: f64) -> (f64, f64, f64) {
+    let k = Coefficients::new(grid, d, 1.0).unwrap().k_outer;
+    let n = grid.n;
+    let mut worst = 0.0f64;
+    let (mut sum_res, mut sum_scale) = (0.0f64, 0.0f64);
+    // Centre row (F12) with the pointwise source g_0.
+    let h = grid.dr_region[0];
+    let fo6 = 6.0 * d[0] / (h * h);
+    let res0 = fo6 * (c[1] - c[0]) + g0;
+    worst = worst.max(res0.abs() / (fo6 * (c[1] + c[0]) + g0));
+    for i in 1..n {
+        let res = k[i] * (c[i + 1] - c[i]) - k[i - 1] * (c[i] - c[i - 1]) + q[i];
+        let scale = k[i] * (c[i + 1] + c[i]) + k[i - 1] * (c[i] + c[i - 1]) + q[i];
+        worst = worst.max(res.abs() / scale);
+        sum_res += res.abs();
+        sum_scale += scale;
+    }
+    (worst, sum_res, sum_scale)
+}
+
+/// Radii, interval counts, diffusivities and whether the source is uniform in all materials.
+type SteadyCase = ([f64; 5], [usize; 5], [f64; 5], bool);
+
+#[test]
+fn steady_state_rows_of_the_weights_are_exact_p22_and_p22a() {
+    // P22: for a kernel-only source the nodal values of the exact steady profile (14) solve the
+    // discrete steady rows exactly, for any grid and any diffusivities; P22a: also for one
+    // material with one spacing and a uniform source. Evaluated here in double precision.
+    // Tolerance, per row, relative to the scale S_i of the absolute terms: the nodal values are
+    // sums of non-negative terms formed outward from R_5 (at most 9 roundings per term, one per
+    // hop and per interface), so each has relative error at most gamma_30; the stored K has 3
+    // roundings, the difference and the product 2 more, the weights Q_i 5, and the three
+    // additions of the row 3: gamma_30 + gamma_5 + gamma_5 + gamma_3, which gamma_45 covers. The
+    // stored radii are not exactly uniform in the kernel (r_i = fl(i dr)), which changes the
+    // quadratic-profile identity by a relative 2 u at most: gamma_45 still covers it.
+    let bound = gamma(45.0);
+    let g = 0.37;
+    let uniform_radii = [1.0e-4, 2.0e-4, 3.0e-4, 4.0e-4, 5.0e-4];
+    let cases: [SteadyCase; 4] = [
+        (RADII, [7, 11, 3, 5, 13], D5, false),
+        (RADII, [3, 1, 2, 1, 4], D5, false),
+        (RADII, [10; 5], D5, false),
+        (uniform_radii, [8; 5], [3.0e-12; 5], true),
+    ];
+    for (radii, cells, d, uniform) in cases {
+        let grid = Grid::from_radii(radii, cells).unwrap();
+        let gbar = if uniform {
+            [g; 5]
+        } else {
+            [g, 0.0, 0.0, 0.0, 0.0]
+        };
+        let nodes = source_nodes(&grid, gbar);
+        // The exact steady profile at the stored node radii.
+        let n = grid.n;
+        let mut c = vec![0.0; n + 1];
+        if uniform {
+            for i in 0..=n {
+                c[i] = g * (radii[4] * radii[4] - grid.r[i] * grid.r[i]) / (6.0 * d[0]);
+            }
+        } else {
+            // C at the outer radius of each material, from R_5 inward.
+            let mut c_at = [0.0; 5];
+            let a = |k: usize| g * radii[0] * radii[0] * radii[0] / (3.0 * d[k]);
+            for k in (1..5).rev() {
+                c_at[k - 1] = c_at[k] + a(k) * (1.0 / radii[k - 1] - 1.0 / radii[k]);
+            }
+            for i in 0..=n {
+                let r = grid.r[i];
+                let k = if i == 0 {
+                    0
+                } else {
+                    grid.region_of_interval[i - 1].index()
+                };
+                c[i] = if k == 0 {
+                    c_at[0] + g * (radii[0] * radii[0] - r * r) / (6.0 * d[0])
+                } else {
+                    c_at[k] + a(k) * (1.0 / r - 1.0 / radii[k])
+                };
+            }
+            c[n] = 0.0;
+        }
+        let (worst, sum_res, sum_scale) = steady_row_ratio(&grid, d, &nodes.q, &c, nodes.g[0]);
+        println!(
+            "RESULT P22{} steady rows {cells:?}: worst |row residual| / scale = {worst:.3e} (bound {bound:.3e})",
+            if uniform { "a" } else { "" }
+        );
+        assert!(worst <= bound, "{cells:?}: {worst} > {bound}");
+        if !uniform {
+            // The steady release equals the generation rate. The rows of 1 ..= N-1 add up
+            // (the inner flows cancel the outer flows of the next row, K_1,inner = 0, C_N = 0) to
+            // sum_i res_i = sum_i Q_i - K_{N-1} C_{N-1}, so |flow - sum Q| <= sum |res_i|. The
+            // computed residuals carry their own roundings (at most gamma_5 S_i each, as above)
+            // and the product K C and the sum of the weights gamma_{N+3} of their size.
+            let k = Coefficients::new(&grid, d, 1.0).unwrap();
+            let flow = k.k_last() * c[n - 1];
+            let allowed =
+                sum_res + gamma(5.0) * sum_scale + gamma(n as f64 + 3.0) * (flow + nodes.sum_q);
+            assert!(
+                (flow - nodes.sum_q).abs() <= allowed,
+                "{cells:?}: release {flow} generation {}",
+                nodes.sum_q
+            );
+            println!(
+                "RESULT P22 steady release against generation {cells:?}: relative difference {:.3e}",
+                (flow - nodes.sum_q).abs() / nodes.sum_q
+            ); // Negative control: the plain half-interval weight at N_kernel breaks the steady
+               // state at a size that dwarfs the bound (Document 5, Section 1.6).
+            let nk = grid.interface_nodes[0];
+            let mut q_plain = nodes.q.clone();
+            q_plain[nk] = grid.r[nk] * grid.r[nk] / 2.0 * grid.dr_inner(nk) * g;
+            let (bad, _, _) = steady_row_ratio(&grid, d, &q_plain, &c, nodes.g[0]);
+            assert!(bad > 1.0e3 * bound, "{cells:?}: control {bad}");
+            println!("RESULT P22 negative control (plain weight at N_kernel) {cells:?}: {bad:.3e}");
+        }
+    }
+}
+
+#[test]
+fn release_to_generation_ratio_is_one_at_steady_state_without_decay() {
+    // One Backward Euler step of 1e13 s with a uniform source and no decay reaches the steady
+    // state, where the release equals the generation (D2, F42). From the balance (F41) with
+    // lambda = 0 and one step, M_gen = dt p S and dt Phi = M_gen + M^0 - M^1 - eps, so
+    // beta - 1 = (M^0 - M^1 - eps) / M_gen; the division by M_gen adds gamma_3.
+    let radii = [1.0e-4, 2.0e-4, 3.0e-4, 4.0e-4, 5.0e-4];
+    let end = 1.0e13;
+    let base = vi_steps(radii, [10; 5], [1.0e-10; 5], 1, end, 1);
+    let pi = pin(
+        base,
+        end,
+        0.0,
+        uniform_source(1.0e-3),
+        DiffusivityModel::Constant([1.0e-10; 5]),
+    );
+    let run = run_physics(&pi, &[]).unwrap();
+    let (_, d, p) = run.series.last().unwrap();
+    let beta = p.release_to_generation_ratio.unwrap();
+    let m0 = run.meta.initial_inventory;
+    let allowed = (m0 + d.inventory + d.balance_residual_bound) / p.generated + gamma(3.0);
+    println!(
+        "RESULT F42 release/generation at steady state: beta - 1 = {:.3e} (allowed {allowed:.3e})",
+        beta - 1.0
+    );
+    assert!((beta - 1.0).abs() <= allowed);
+    assert!(
+        allowed < 1.0e-8,
+        "the case must resolve beta = 1: {allowed}"
+    );
+    // At j = 0 and for a run without source the ratio is not defined.
+    assert!(run.series[0].2.release_to_generation_ratio.is_none());
+    let none = run_physics(
+        &PhysicsInput::baseline(vi([3; 5], D5, 100.0, 1000.0, 1), 1000.0),
+        &[],
+    )
+    .unwrap();
+    assert!(none
+        .series
+        .iter()
+        .all(|(_, _, p)| p.release_to_generation_ratio.is_none()));
+}
+
+#[test]
+fn maximum_norm_does_not_grow_with_a_temperature_history_p26() {
+    // No source, no decay, a changing temperature: ||C^{j+1}||_inf <= ||C^j||_inf (P26). In
+    // floating point the solve satisfies (A + E) x = b with |E| <= kappa_t |A| (derivation in
+    // `numerical::diagnostics::BalanceBound`) and the stored matrix has the row margin 1 up to
+    // gamma_5 times its row sum; hence ||x||_inf <= ||b||_inf / (1 - (kappa_t + gamma_5) ||A||_inf)
+    // with b = C^j exactly (the source term adds an exact zero). ||A||_inf is the largest row
+    // sum over all assembled matrices (reported by the run).
+    let end = 2.0e5;
+    let base = vi_steps(RADII, [20; 5], D5, 400, end, 1);
+    let pi = pin(
+        base,
+        end,
+        0.0,
+        SourceModel::none(),
+        arrhenius(synthetic_laws(), ramp(1000.0, 1200.0, end)),
+    );
+    let run = run_physics(&pi, &[]).unwrap();
+    let factor = 1.0 / (1.0 - (BalanceBound::kappa_t() + gamma(5.0)) * run.meta.matrix_norm_inf);
+    let mut worst = 0.0f64;
+    for w in run.series.windows(2) {
+        let (a, b) = (w[0].1.max_concentration, w[1].1.max_concentration);
+        assert!(b <= a * factor, "max {b} after {a}, factor {factor}");
+        worst = worst.max(b / a);
+    }
+    println!(
+        "RESULT P26 largest ratio of consecutive maxima {worst:.12} (allowed factor {factor:.12})"
+    );
 }
