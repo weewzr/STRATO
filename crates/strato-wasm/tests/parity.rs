@@ -629,8 +629,10 @@ fn compare_returns_modified_minus_baseline() {
 #[test]
 fn build_info_reports_the_v1_capabilities() {
     let v: Value = serde_json::from_str(&strato_wasm::build_info()).unwrap();
-    assert_eq!(v["abi"], 1);
-    assert_eq!(strato_wasm::abi_version(), 1);
+    // ABI 2: the BTCS functions were added beside the finite-volume ones (the legacy
+    // capabilities and label below are those of the finite-volume functions).
+    assert_eq!(v["abi"], 2);
+    assert_eq!(strato_wasm::abi_version(), 2);
     assert_eq!(v["capabilities"], json!(["diffusion_layered"]));
     assert_eq!(v["label"], "COMPUTED v1.0");
     let cargo = std::fs::read_to_string(path("Cargo.toml")).unwrap();

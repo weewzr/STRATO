@@ -66,7 +66,7 @@ test.describe('browser parity', () => {
     const { body, elapsed_ms, hello } = await callWorker(page, 'run_v1', { schema: 1, config: CASE.data.config });
     const run = body as RunOk;
     expect(run.status).toBe('ok');
-    expect((hello as { abi: number }).abi).toBe(1);
+    expect((hello as { abi: number }).abi).toBe(2);
     const results: ArrayComparison[] = [];
     const arrays = ['times_s', 'release_fraction', 'inventory_mol', 'cumulative_release_mol', 'release_rate_mol_s', 'balance_residual_mol', 'min_concentration_mol_m3'] as const;
     for (const k of arrays) results.push(compareArrays(k, run[k], NATIVE[k], PARITY_RTOL));
