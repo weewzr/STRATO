@@ -21,6 +21,16 @@ path = "src/main.rs"
 name = "strato-btcs"
 path = "src/bin/strato_btcs.rs"
 
+[features]
+# The estimate of the error of the Method B extensions (module `analytical::extension_floor`,
+# Document 6, Section 8): references and measurement code for tests and for the table example.
+# Off by default so that the library (and the WebAssembly build) does not carry it.
+extension-estimate = []
+
+[[example]]
+name = "extension_floor_table"
+required-features = ["extension-estimate"]
+
 [dependencies]
 anyhow = "1"
 csv = "1"
