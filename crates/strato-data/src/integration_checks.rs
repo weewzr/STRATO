@@ -682,7 +682,10 @@ fn release_checks(rep: &mut Report, reg: &Register) {
     for r in rows {
         let n: u32 = r.id[2..].parse().unwrap_or(0);
         let want = match n {
-            157..=267 | 374..=492 => Some(Denominator::CompactInventory),
+            // E-010..E-014 and E-033..E-045: the matrix-corrected fractions of Collin et al.
+            // (2016); their denominator is the calculated compact inventory (task
+            // data-comparison-denominators, audit log section 10).
+            10..=14 | 33..=45 | 157..=267 | 374..=492 => Some(Denominator::CompactInventory),
             268..=315 => Some(Denominator::CapsuleInventory),
             493..=540 => Some(Denominator::ParticleInventory),
             _ => None,
@@ -709,9 +712,34 @@ fn release_checks(rep: &mut Report, reg: &Register) {
         .count();
     rep.add(
         "DI.release.denominator",
-        bad.is_empty() && ne == 61,
-        "denominator: compact inventory for the tabulated and digitised compact fractions, capsule inventory for the mass-balance rows, average particle inventory for the particle equivalents; 61 rows (JAERI, CRP-6, matrix-corrected and a few text rows) say not established and stay DATA INCOMPLETE",
+        bad.is_empty() && ne == 43,
+        "denominator: compact inventory for the tabulated and digitised compact fractions and the matrix-corrected fractions of Collin et al. (2016), capsule inventory for the mass-balance rows, average particle inventory for the particle equivalents; 43 rows (JAERI, CRP-6 and a few text rows) say not established and stay DATA INCOMPLETE",
         format!("{ne} not established; wrong: {bad:?}"),
+    );
+    // Decision 68(b): the ten intact matrix-corrected rows carry the window label to the end of
+    // the 300 h plateau and say in their applicability that they hold under premise BP1; the
+    // eight failed-SiC matrix-corrected rows keep their earlier label (audit log section 11).
+    const WINDOW_LABEL: &str =
+        "after about 24 h at T to end of 300 h plateau (or test end if shorter) (matrix-corrected)";
+    const WINDOW_APPLICABILITY: &str = "under premise BP1; window to the end of the 300 h plateau or the shorter test end (Collin p. 4)";
+    let mut wrong = Vec::new();
+    for r in rows {
+        let n: u32 = r.id[2..].parse().unwrap_or(0);
+        let intact_ten = matches!(n, 10..=14 | 33..=37);
+        let label_ok = if intact_ten {
+            r.time_basis == WINDOW_LABEL && r.particle_applicability.contains(WINDOW_APPLICABILITY)
+        } else {
+            r.time_basis != WINDOW_LABEL && !r.particle_applicability.contains(WINDOW_APPLICABILITY)
+        };
+        if !label_ok {
+            wrong.push(r.id.clone());
+        }
+    }
+    rep.add(
+        "DI.release.window-label",
+        wrong.is_empty(),
+        "the time window label of the ten intact matrix-corrected rows E-010..E-014 and E-033..E-037 is `after about 24 h at T to end of 300 h plateau (or test end if shorter) (matrix-corrected)` and their particle_applicability says `under premise BP1; window to the end of the 300 h plateau or the shorter test end (Collin p. 4)`; no other row carries either",
+        format!("wrong: {wrong:?}"),
     );
 }
 

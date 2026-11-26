@@ -518,10 +518,13 @@ pub fn placed_rows(reg: &Register, records: &[RowRecord]) -> Vec<Placed> {
             _ => continue,
         };
         let is_bound = is_bound || matches!(r.eval, Eval::Bound { .. });
-        // Measurements of a window (matrix-corrected) are placed at the end of the window.
-        let t_h = match &r.row.time_h {
-            Some(p) => p.value,
-            None => match end_time(reg, &r.row, t.value) {
+        // Measurements of a window (matrix-corrected) are placed at the end of the window: the end
+        // of the 300 h plateau or of the shorter test (decision 68), not the as-run end of a
+        // longer test.
+        let t_h = match (&r.row.time_h, &r.model) {
+            (Some(p), _) => p.value,
+            (None, Some(m)) if r.is_window_bound() => m.spec.t_end_h,
+            _ => match end_time(reg, &r.row, t.value) {
                 Some((h, _)) => h,
                 None => continue,
             },
@@ -845,13 +848,13 @@ pub fn figure_a(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
         Glyph::Plus { c: INK },
     ));
     items.push(entry(
-        "Hollow square: model over the same 24 h-to-end window as a matrix-corrected value",
+        "Hollow square: model over the same window (24 h to the plateau end) as a window upper bound",
         Glyph::Square { c: INK },
     ));
     items.extend(status_legend(&placed));
     let y = legend(&root, 40, 520, 760, 2, &items)?;
     let mut text = format!(
-        "Experimental values: {}. Digitised values carry the reading uncertainty of the register; the sources report no per-value measurement uncertainty for these rows (the one general statement, a 5 percent systematic gamma-measurement error plus counting statistics for the Stempien 2023 values, is not a per-value uncertainty and changes no status), so no error bars are drawn. Compact values are not single-particle values. Rows with several times per compact are drawn at their own times; values without a time are drawn at the registered end of test. Matrix-corrected values are releases over a window that starts at 24 h and ends at the plotted time, so they are drawn beside the model's value over the same window, not against the cumulative curve. The model has no decay: every panel is the element, and the nuclides measured are listed in the panel. Analytical-series values are drawn only where the criterion holds: {}. {} ",
+        "Experimental values: {}. Digitised values carry the reading uncertainty of the register; the sources report no per-value measurement uncertainty for these rows (the one general statement, a 5 percent systematic gamma-measurement error plus counting statistics for the Stempien 2023 values, is not a per-value uncertainty and changes no status), so no error bars are drawn. Compact values are not single-particle values. Rows with several times per compact are drawn at their own times; values without a time are drawn at the registered end of test. The matrix-corrected values of intact compacts are window upper bounds under premise BP1 (the source's assumption, not an established fact): fractions of the as-run calculated compact inventory over a window from 24 h at temperature to the end of the 300 h plateau (or the end of the test if shorter), drawn as bounds at the window end beside the model's value over the same window, not against the cumulative curve. The model has no decay: every panel is the element, and the nuclides measured are listed in the panel. Analytical-series values are drawn only where the criterion holds: {}. {} ",
         sources_of(&placed),
         crate::studies::ANALYTIC_CRITERION,
         EARLY_TIME_NOTE
@@ -963,7 +966,7 @@ fn deviation_figure(
         if pts.is_empty() {
             chart
                 .draw_series(std::iter::once(Text::new(
-                    "DATA INCOMPLETE rows have no deviation (decision 22)",
+                    "upper bounds and rows without a point comparison have no deviation (decisions 22 and 67)",
                     (210.0, (ylo * yhi).sqrt()),
                     ts_pos(16, HPos::Center, VPos::Center),
                 )))
@@ -1709,6 +1712,23 @@ pub fn deviation_lines(records: &[RowRecord], species: Species) -> Vec<String> {
                         .map_or("undefined".to_string(), three),
                 ));
             }
+            Eval::Bound {
+                limit,
+                margin,
+                source: crate::status::BoundSource::WindowUnderBp1,
+            } => {
+                out.push(format!(
+                    "{} | {} \u{b0}C | window {}-{} h at temperature | bound {} (digitised, matrix-corrected fraction of the as-run calculated compact inventory) | model over the same window {} | model over bound {} | {}: not a point comparison, so no deviation, no relative deviation and no NRMSE is formed",
+                    r.row.id,
+                    m.spec.t_c,
+                    m.spec.window_start_h,
+                    m.spec.t_end_h,
+                    three(*limit),
+                    three(m.f_window),
+                    three(margin.ratio),
+                    crate::status::WINDOW_BOUND_CLASS,
+                ));
+            }
             Eval::Provisional { value, log10_ratio } => {
                 any_scale = true;
                 out.push(format!(
@@ -2003,7 +2023,7 @@ fn nuclide_figure(
                 .map_err(pe)?;
             chart
                 .draw_series(std::iter::once(Text::new(
-                    "no row has an established fraction of a comparable quantity (see the lines below)",
+                    "no row is a point comparison; no NRMSE is formed (see the lines below)",
                     (210.0, (top + bottom) / 2.0 - 0.4),
                     ts_pos(14, HPos::Center, VPos::Center),
                 )))
@@ -2022,7 +2042,7 @@ fn nuclide_figure(
         .any(|p| drawable(p) && p.model_window.is_some_and(|w| w > 1e-10))
     {
         items.push(entry(
-            "Hollow square: model over the same 24 h-to-end window as a matrix-corrected value",
+            "Hollow square: model over the same window (24 h to the plateau end) as a window upper bound",
             Glyph::Square { c: INK },
         ));
     }

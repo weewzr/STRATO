@@ -128,6 +128,9 @@ fn bound_groups(rec: &[RowRecord]) -> Vec<Vec<&RowRecord>> {
         let (Eval::Bound { .. }, Some(m)) = (&r.eval, &r.model) else {
             continue;
         };
+        if r.is_window_bound() {
+            continue;
+        }
         let text = measured_text(&r.row);
         let element = text.split('-').next().unwrap_or("");
         let key = format!(
@@ -199,24 +202,42 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     let _ = writeln!(s, "## Summary of the result\n");
     let _ = writeln!(
         s,
-        "Every one of the {n} rows of the release register has a status that the program derives from the row and from the coordinator's decisions (decisions 15 to 24 of the project's decision list). The counts are:\n"
+        "Every one of the {n} rows of the release register has a status that the program derives from the row and from the coordinator's decisions (decisions 15 to 24, 67 and 68 of the project's decision list). The counts are:\n"
     );
     let _ = writeln!(s, "| Status | Rows |\n|---|---:|");
     for st in Status::ALL {
         let _ = writeln!(s, "| {} | {} |", st.label(), count(st));
     }
+    // The reported bounds and totals read as bounds, and, apart, the window upper bounds under
+    // premise BP1 (decisions 67 and 68): the two are different classes.
     let exceeded: Vec<&RowRecord> = rec
         .iter()
-        .filter(|r| r.status == Status::ExceedsReportedUpperBound)
+        .filter(|r| r.status == Status::ExceedsReportedUpperBound && !r.is_window_bound())
         .collect();
-    let within = count(Status::WithinReportedUpperBound);
+    let within = rec
+        .iter()
+        .filter(|r| r.status == Status::WithinReportedUpperBound && !r.is_window_bound())
+        .count();
     let ratios: Vec<f64> = rec
+        .iter()
+        .filter(|r| !r.is_window_bound())
+        .filter_map(|r| match &r.eval {
+            Eval::Bound { margin, .. } => Some(margin.ratio),
+            _ => None,
+        })
+        .collect();
+    let window_rows: Vec<&RowRecord> = rec.iter().filter(|r| r.is_window_bound()).collect();
+    let window_ratios: Vec<f64> = window_rows
         .iter()
         .filter_map(|r| match &r.eval {
             Eval::Bound { margin, .. } => Some(margin.ratio),
             _ => None,
         })
         .collect();
+    let window_exceeded = window_rows
+        .iter()
+        .filter(|r| r.status == Status::ExceedsReportedUpperBound)
+        .count();
     let (rmin, rmax) = ratios
         .iter()
         .fold((f64::INFINITY, 0.0_f64), |(a, b), x| (a.min(*x), b.max(*x)));
@@ -260,9 +281,22 @@ pub fn render(inp: &ReportInput<'_>) -> String {
             }
         );
     }
+    if !window_rows.is_empty() {
+        let wmin = window_ratios.iter().copied().fold(f64::INFINITY, f64::min);
+        let wmax = window_ratios.iter().copied().fold(0.0_f64, f64::max);
+        let _ = writeln!(
+            s,
+            "- **Window upper bounds under premise BP1.** {} rows ({}) are the matrix-corrected fractions of intact compacts of Cs-134 and Ag-110m (figures 3 and 6 of the source). They are fractions of the as-run calculated compact inventory (Collin et al. 2016, manuscript p. 3) over the window from about 24 h at temperature to the end of the 300 h plateau, or to the end of the test if shorter (p. 4), and the source itself calls the correction an attempt that cannot separate release from the particles from release from the matrix (p. 6). They are read as upper bounds on the release through intact coatings in that window only under premise BP1, which is the source's assumption and not an established fact. The model value compared with each is the release over the same window. The model exceeds {} of them, by {} to {} times the bound (model over bound); they are listed in their own section and are not counted among the bounds above.",
+            window_rows.len(),
+            compress_ids(&window_rows.iter().map(|r| r.row.id.clone()).collect::<Vec<_>>()),
+            window_exceeded,
+            sci(wmin),
+            sci(wmax)
+        );
+    }
     let _ = writeln!(
         s,
-        "- **Point comparisons.** {points} rows have the status COMPARISON AVAILABLE as a point value. The only rows that were intended as point values (the matrix-corrected fractions of intact compacts of Cs-134 and Ag-110m, figures 3 and 6 of the source) have a denominator that the register records as *not established*, so by decision 22 they stay DATA INCOMPLETE. For these rows only the measured value, the model value and the log10 ratio of the two are given, for scale; no deviation, relative deviation, RMSE, MAE or maximum is formed for them, and they enter no status and no aggregate."
+        "- **Point comparisons.** {points} rows have the status COMPARISON AVAILABLE as a point value: no registered row is a point comparison (decision 67). The matrix-corrected rows of intact compacts are window upper bounds (above); the failed-SiC rows E-038..E-045 are compacts in which particles with failed SiC dominate and are NOT DIRECTLY COMPARABLE; the JAERI rows E-117..E-149 stay DATA INCOMPLETE because the source gives neither a denominator nor a decay correction nor the test sequence. Therefore every set of points for a normalised root-mean-square error has N = 0, and no NRMSE (decisions 64 and 65) and no deviation, relative deviation, RMSE, MAE or maximum is produced, shown or written; no rule is relaxed to obtain one."
     );
     let _ = writeln!(
         s,
@@ -282,7 +316,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     let _ = writeln!(s, "## What was run\n");
     let _ = writeln!(
         s,
-        "The solver is the five-layer spherical backward-time centred-space finite-difference solver of the STRATO repository (package version {}, source commit `{}`). For every comparable row the program runs it for the registered measured baseline geometry (design `{}`), with each layer's diffusion coefficient evaluated at the test temperature from the registered published heating-test correlation, chosen by the selection function of the `strato-data` crate (decisions 16, 39, 40 and 47: the rows of set `C16-T2` for kernel, pyrocarbon and silicon carbide, set `C16-BUF` for the buffer), and reads the release fraction at the time of the measurement. The time is counted from the moment the test temperature is reached. The temperature ramp of the real test (about 31 to 35 h) is not modelled, and the diffusion coefficients are constant, because the solver has constant coefficients; temperature-dependent diffusion, decay and generation are not yet in the solver.\n",
+        "The solver is the five-layer spherical backward-time centred-space finite-difference solver of the STRATO repository (package version {}, source commit `{}`). For every comparable row the program runs it for the registered measured baseline geometry (design `{}`), with each layer's diffusion coefficient evaluated at the test temperature from the registered published heating-test correlation, chosen by the selection function of the `strato-data` crate (decisions 16, 39, 40 and 47: the rows of set `C16-T2` for kernel, pyrocarbon and silicon carbide, set `C16-BUF` for the buffer), and reads the release fraction at the time of the measurement (for the ten matrix-corrected rows of intact compacts, the release over the window from 24 h at temperature to the end of the 300 h plateau, or the end of the test if shorter, as decisions 67 and 68 fix; where the register holds no as-run duration of the compact at that temperature the plateau end is used, and the origin of every window end is stated in the results). The time is counted from the moment the test temperature is reached. The temperature ramp of the real test (about 31 to 35 h) is not modelled, and the diffusion coefficients are constant, because the solver has constant coefficients; temperature-dependent diffusion, decay and generation are not yet in the solver.\n",
         inp.prov.solver_version,
         inp.prov.commit,
         crate::data::GEOMETRY_DESIGN
@@ -328,7 +362,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     let st = crate::model::Settings::BASE;
     let _ = writeln!(
         s,
-        "\nNumerical settings of the base runs: intervals per layer {:?}, requested time step {} h; the numerical difference reported beside every model value is the difference to a run with twice the intervals and half the step. Metrics are those of directive section 13 (absolute deviation, relative percentage deviation, RMSE, MAE, maximum absolute deviation, uncertainty-normalised residual) plus the signed log10 ratio and the log-space RMSE (decision 18). Relative deviation is undefined for a measured value that is not positive, and no near-zero floor is applied because no row states a detection floor (decision 17). No accuracy threshold is used anywhere.\n",
+        "\nNumerical settings of the base runs: intervals per layer {:?}, requested time step {} h; the numerical difference reported beside every model value is the difference to a run with twice the intervals and half the step. Metrics are those of directive section 13 (absolute deviation, relative percentage deviation, RMSE, MAE, maximum absolute deviation, uncertainty-normalised residual) plus the signed log10 ratio and the log-space RMSE (decision 18). No normalised root-mean-square error is computed or shown (decisions 64, 65 and 67): no registered row is a point comparison, so the set of compatible points has N = 0. Relative deviation is undefined for a measured value that is not positive, and no near-zero floor is applied because no row states a detection floor (decision 17). No accuracy threshold is used anywhere.\n",
         st.intervals, st.dt_h
     );
 
@@ -398,7 +432,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
         s,
         "| Row | Nuclide | Compact or sample | Test temperature (°C) | Time at test temperature (h) | Bound read as | Bound | Model | Model / bound | Status | Numerical difference of the model | Same result also in rows |\n|---|---|---|---:|---:|---|---:|---:|---:|---|---:|---|"
     );
-    for r in rec {
+    for r in rec.iter().filter(|r| !r.is_window_bound()) {
         if let (
             Eval::Bound {
                 limit,
@@ -457,36 +491,90 @@ pub fn render(inp: &ReportInput<'_>) -> String {
         );
     }
 
-    let _ = writeln!(
-        s,
-        "## DATA INCOMPLETE rows with a model value, for scale only\n"
-    );
-    let _ = writeln!(
-        s,
-        "The register does not establish what the matrix-corrected fractions of figures 3 and 6 are fractions of (denominator *not established*, decision 22), so the program keeps them DATA INCOMPLETE and forms no deviation for them: a relative deviation, an RMSE, a MAE or a maximum computed against an unknown denominator would not mean anything. Only the measured value, the model's release after the first 24 h at temperature to the end of the test (kernel-only start, assumption of decision 20) and the log10 ratio of the two are given, so that the order of magnitude of the difference can be seen. They enter no status and no aggregate. If a source confirms the denominator, the status changes by editing the one register cell and re-running the program.\n"
-    );
-    let _ = writeln!(
-        s,
-        "| Row | Nuclide | Compact | Test temperature (°C) | Window (h at test temperature) | Measured (digitised) | Model over the same window | log10 (model / measured), for scale |\n|---|---|---|---:|---|---:|---:|---:|"
-    );
-    for r in rec {
-        if let (Eval::Provisional { value, log10_ratio }, Some(m)) = (&r.eval, &r.model) {
-            let _ = writeln!(
-                s,
-                "| {} | {} | {} | {} | {}-{} | {} | {} | {} |",
-                r.row.id,
-                measured_text(&r.row),
-                crate::data::typography(&r.row.compact_or_sample),
-                temperature_cell(r),
-                m.spec.window_start_h,
-                m.spec.t_end_h,
-                sci(*value),
-                sci(m.f_window),
-                log10_ratio.map_or("undefined".to_string(), |x| format!("{x:.2}"))
-            );
+    if !window_rows.is_empty() {
+        let _ = writeln!(
+            s,
+            "## Window upper bounds under premise BP1 (matrix-corrected rows of intact compacts)\n"
+        );
+        let _ = writeln!(
+            s,
+            "Class: {}. Denominator: {}. The measured value of each row is the matrix-corrected fraction of the as-run calculated compact inventory (Collin et al. 2016, manuscript p. 3) that was released between about 24 h at temperature and the end of the 300 h plateau, or the end of the test if that was shorter (p. 4). The source's correction subtracts the release assumed to have come from outside the SiC during the first 24 h; it is an attempt, and the source states that release from the particles cannot be separated from silver slowly driven out of the matrix later (p. 6). The value therefore counts any release from outside the SiC after about 24 h as well. It bounds the release of an intact particle through its coatings in the window only under premise BP1, which is the source's assumption and not an established fact. The model quantity compared with each row is the release of one intact particle over the same window (kernel-only start, assumption of decision 20), and the comparison is an inequality: the model over the window must not exceed the value. The model fraction is a fraction of the particle's own inventory and the bound a fraction of the compact inventory; the register holds no inventory ratio that would convert one into the other. These rows are not point comparisons, enter no set of points, and no NRMSE or deviation is formed from them (decisions 64, 65, 67 and 68). The status words WITHIN and EXCEEDS REPORTED UPPER BOUND are the program's words for every inequality; for these rows the bound is not stated by the source as a bound but read as one under premise BP1, and the class column of the results says so.\n",
+            crate::status::WINDOW_BOUND_CLASS,
+            crate::status::WINDOW_BOUND_DENOMINATOR
+        );
+        let _ = writeln!(
+            s,
+            "| Row | Nuclide | Compact | Test temperature (°C) | Window (h at test temperature) | Bound (digitised) | Model over the same window | Model / bound | Status | Numerical difference of the model |\n|---|---|---|---:|---|---:|---:|---:|---|---:|"
+        );
+        for r in &window_rows {
+            if let (Eval::Bound { limit, margin, .. }, Some(m)) = (&r.eval, &r.model) {
+                let _ = writeln!(
+                    s,
+                    "| {} | {} | {} | {} | {}-{} | {} | {} | {} | {} | {} |",
+                    r.row.id,
+                    measured_text(&r.row),
+                    crate::data::typography(&r.row.compact_or_sample),
+                    temperature_cell(r),
+                    m.spec.window_start_h,
+                    m.spec.t_end_h,
+                    sci(*limit),
+                    sci(m.f_window),
+                    sci(margin.ratio),
+                    r.status.label(),
+                    sci(m.numerical_difference)
+                );
+            }
         }
+        let _ = writeln!(s, "\nWhere the window ends:\n");
+        let mut origins: Vec<(String, Vec<String>)> = Vec::new();
+        for r in &window_rows {
+            let Some(m) = &r.model else { continue };
+            match origins.iter_mut().find(|(o, _)| *o == m.spec.time_source) {
+                Some((_, ids)) => ids.push(r.row.id.clone()),
+                None => origins.push((m.spec.time_source.clone(), vec![r.row.id.clone()])),
+            }
+        }
+        for (origin, ids) in &origins {
+            let _ = writeln!(s, "- {}: {}.", compress_ids(ids), origin);
+        }
+        let _ = writeln!(s);
     }
-    let _ = writeln!(s);
+    let provisional: Vec<&RowRecord> = rec
+        .iter()
+        .filter(|r| matches!(r.eval, Eval::Provisional { .. }))
+        .collect();
+    if !provisional.is_empty() {
+        let _ = writeln!(
+            s,
+            "## DATA INCOMPLETE rows with a model value, for scale only\n"
+        );
+        let _ = writeln!(
+            s,
+            "The register does not establish what these fractions are fractions of (denominator *not established*, decision 22), so the program keeps them DATA INCOMPLETE and forms no deviation for them. Only the measured value, the model's release over the same window and the log10 ratio of the two are given, so that the order of magnitude of the difference can be seen. They enter no status and no aggregate.\n"
+        );
+        let _ = writeln!(
+            s,
+            "| Row | Nuclide | Compact | Test temperature (°C) | Window (h at test temperature) | Measured (digitised) | Model over the same window | log10 (model / measured), for scale |\n|---|---|---|---:|---|---:|---:|---:|"
+        );
+        for r in &provisional {
+            if let (Eval::Provisional { value, log10_ratio }, Some(m)) = (&r.eval, &r.model) {
+                let _ = writeln!(
+                    s,
+                    "| {} | {} | {} | {} | {}-{} | {} | {} | {} |",
+                    r.row.id,
+                    measured_text(&r.row),
+                    crate::data::typography(&r.row.compact_or_sample),
+                    temperature_cell(r),
+                    m.spec.window_start_h,
+                    m.spec.t_end_h,
+                    sci(*value),
+                    sci(m.f_window),
+                    log10_ratio.map_or("undefined".to_string(), |x| format!("{x:.2}"))
+                );
+            }
+        }
+        let _ = writeln!(s);
+    }
 
     let _ = writeln!(s, "## Aggregate metrics per dataset\n");
     let _ = writeln!(
@@ -528,7 +616,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     // ---- Figures -----------------------------------------------------------------------------
     let _ = writeln!(s, "## Figures\n");
     let figs = [
-        ("figure_A_release_vs_time.svg", "A. Fraction released versus time at temperature, for the three elements at 1600, 1700 and 1800 °C (the model has no decay, so each panel is the element; the nuclides measured are listed in the panel). Lines: BTCS. Plus signs: the independent analytical series of the five-layer problem (the eigenfunction expansion of the repository), only at the times where it meets its validity criterion (truncation valid, and the value above the series' own estimated accuracy; negative or unresolved values are not drawn). Hollow squares: the model's own value over the 24 h-to-end window of a matrix-corrected measurement, drawn beside it because that measurement is a window release, not cumulative from t = 0. Markers: registered measurements, by what they can support (downward triangle: upper bound, hollow when exceeded by the model; hollow diamond: DATA INCOMPLETE; grey cross: NOT DIRECTLY COMPARABLE context). Log scale; no error bars, because no source reports a per-value measurement uncertainty for the plotted rows. Measurements whose time lies beyond the 420 h axis are not drawn and are listed in the footer. The early part of every curve is not converged in time (see the section on accuracy)."),
+        ("figure_A_release_vs_time.svg", "A. Fraction released versus time at temperature, for the three elements at 1600, 1700 and 1800 °C (the model has no decay, so each panel is the element; the nuclides measured are listed in the panel). Lines: BTCS. Plus signs: the independent analytical series of the five-layer problem (the eigenfunction expansion of the repository), only at the times where it meets its validity criterion (truncation valid, and the value above the series' own estimated accuracy; negative or unresolved values are not drawn). Hollow squares: the model's own value over the window of a window upper bound under premise BP1 (24 h at temperature to the end of the 300 h plateau, or the test end if shorter), drawn beside it because that bound is a window release, not cumulative from t = 0. Markers: registered measurements, by what they can support (downward triangle: upper bound, among them the window upper bounds, hollow when exceeded by the model; hollow diamond: DATA INCOMPLETE; grey cross: NOT DIRECTLY COMPARABLE context). Log scale; no error bars, because no source reports a per-value measurement uncertainty for the plotted rows. Measurements whose time lies beyond the 420 h axis are not drawn and are listed in the footer. The early part of every curve is not converged in time (see the section on accuracy)."),
         ("figure_B_absolute_deviation.svg", "B. Absolute deviation versus time of the point comparisons (none exist, so the panel is empty and says so; DATA INCOMPLETE rows have no deviation) and, beside it, the model over each upper bound (an inequality, not a deviation)."),
         ("figure_C_relative_deviation.svg", "C. Relative percentage deviation versus time of the point comparisons (none exist), with the policy for undefined values stated on the figure, and the model over each upper bound."),
         ("figure_D_radial_profiles.svg", "D. Radial concentration profiles through the five layers at selected times, 1600 °C."),
@@ -536,7 +624,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
         ("figure_F_spatial_convergence.svg", "F. Spatial convergence against the exact series of a homogeneous verification case (synthetic diffusion coefficient, not AGR-1 data)."),
         ("figure_G_temporal_convergence.svg", "G. Temporal convergence on a fixed fine mesh, same homogeneous verification case."),
         ("figure_H_temperature_sensitivity.svg", "H. Temperature sensitivity of the release after 300 h for each registered coefficient variant."),
-        ("figure_I_silver_110m_comparison.svg", "I. Silver-110m (Ag-110m): the registered measurements, marked by what each can support, as in figure A (grey cross: NOT DIRECTLY COMPARABLE context, muted; hollow diamond: DATA INCOMPLETE; downward triangle: upper bound, hollow when exceeded by the model), where a vertical bar on a marker is the reading uncertainty of a digitised value and a marker without a bar is a printed value, exact as printed; the BTCS prediction (lines); the analytical prediction where it is valid (plus signs); hollow squares, the model's value over the window of a matrix-corrected measurement; and, in the right panel, the log10 ratio of the model to the measured value, for scale only where no deviation is defined, with the numerical deviations in the lines under the figure. Measurements whose time lies beyond the time axis are not drawn and are listed in the footer."),
+        ("figure_I_silver_110m_comparison.svg", "I. Silver-110m (Ag-110m): the registered measurements, marked by what each can support, as in figure A (grey cross: NOT DIRECTLY COMPARABLE context, muted; hollow diamond: DATA INCOMPLETE; downward triangle: upper bound, among them the window upper bounds under premise BP1, hollow when exceeded by the model), where a vertical bar on a marker is the reading uncertainty of a digitised value and a marker without a bar is a printed value, exact as printed; the BTCS prediction (lines); the analytical prediction where it is valid (plus signs); hollow squares, the model's value over the window of a window upper bound; and, in the right panel, the log10 ratio of the model to the measured value for rows that have one, with the statement that no deviation and no NRMSE is defined where no row is a point comparison, and the window bounds with their model values in the lines under the figure. Measurements whose time lies beyond the time axis are not drawn and are listed in the footer."),
         ("figure_J_strontium_90_comparison.svg", "J. Strontium-90 (Sr-90): the same layout and markers as figure I."),
         ("figure_K_caesium_137_data_unavailable.svg", "K. Caesium-137 (Cs-137): DATA UNAVAILABLE, no release measurement exists for the AGR-1 particles in the sources of the register."),
     ];
@@ -854,46 +942,44 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     };
     let ag_in_pile = span("Ag", "includes_in_pile_inventory");
     let sr_in_pile = span("Sr", "includes_in_pile_inventory");
-    let ag_prov_span = {
-        let vals: Vec<f64> = rec
-            .iter()
-            .filter_map(|r| match &r.eval {
-                Eval::Provisional { value, .. } if measured_text(&r.row).starts_with("Ag") => {
-                    Some(*value)
-                }
-                _ => None,
-            })
-            .collect();
-        format!(
-            "{} to {}",
-            sci(vals.iter().copied().fold(f64::INFINITY, f64::min)),
-            sci(vals.iter().copied().fold(0.0, f64::max))
-        )
-    };
-    let ag_prov: Vec<&RowRecord> = rec
+    let ag_window: Vec<(&RowRecord, f64, f64)> = window_rows
         .iter()
-        .filter(|r| {
-            matches!(r.eval, Eval::Provisional { .. }) && measured_text(&r.row).starts_with("Ag")
+        .filter(|r| measured_text(&r.row).starts_with("Ag"))
+        .filter_map(|r| match &r.eval {
+            Eval::Bound { limit, margin, .. } => Some((*r, *limit, margin.ratio)),
+            _ => None,
         })
         .collect();
-    if !ag_prov.is_empty() {
-        let lo = ag_prov
+    if !ag_window.is_empty() {
+        let lim_lo = ag_window.iter().map(|x| x.1).fold(f64::INFINITY, f64::min);
+        let lim_hi = ag_window.iter().map(|x| x.1).fold(0.0_f64, f64::max);
+        let ratio_lo = ag_window.iter().map(|x| x.2).fold(f64::INFINITY, f64::min);
+        let ratio_hi = ag_window.iter().map(|x| x.2).fold(0.0_f64, f64::max);
+        let n_exceed = ag_window
             .iter()
-            .filter_map(|r| match &r.eval {
-                Eval::Provisional { log10_ratio, .. } => *log10_ratio,
-                _ => None,
-            })
-            .fold(f64::INFINITY, f64::min);
-        let hi = ag_prov
-            .iter()
-            .filter_map(|r| match &r.eval {
-                Eval::Provisional { log10_ratio, .. } => *log10_ratio,
-                _ => None,
-            })
-            .fold(f64::NEG_INFINITY, f64::max);
+            .filter(|x| x.0.status == Status::ExceedsReportedUpperBound)
+            .count();
         let _ = writeln!(
             s,
-            "**Silver.** The model releases {ag_lo} to {ag_hi} percent of the silver within 300 h at 1600 to 1800 °C (figure A), whereas the matrix-corrected digitised values of the intact compacts are {ag_prov_span}. The log10 ratios of model to measured value, given for scale only, range from {lo:.1} to {hi:.1}. These rows are DATA INCOMPLETE, so no deviation is formed, this is not a status of comparison, and the register does not give the inventory ratio that would convert a compact fraction into a particle fraction, so the size of the gap is not a finding. The compact totals that include the inventory released in the reactor (registered values {ag_in_pile}) are NOT DIRECTLY COMPARABLE and are drawn as context only.\n"
+            "**Silver.** The model releases {ag_lo} to {ag_hi} percent of the silver within 300 h at 1600 to 1800 °C (figure A). The matrix-corrected digitised values of the intact compacts, which are window upper bounds under premise BP1 (denominator: the as-run calculated compact inventory), are {} to {}; the model's release over the same window is {} to {} times these bounds, and it exceeds {n_exceed} of {} of them. The bound holds only if the source's premise holds, and the model fraction is a fraction of the particle's own inventory while the bound is a fraction of the compact inventory, which the register does not convert; the size of the gap is therefore a statement about these inequalities, not a deviation, and no NRMSE or other deviation is formed. The compact totals that include the inventory released in the reactor (registered values {ag_in_pile}) are NOT DIRECTLY COMPARABLE and are drawn as context only.\n",
+            sci(lim_lo),
+            sci(lim_hi),
+            sci(ratio_lo),
+            sci(ratio_hi),
+            ag_window.len()
+        );
+    }
+    if !window_rows.is_empty() {
+        let cs_w = window_rows
+            .iter()
+            .filter(|r| measured_text(&r.row).starts_with("Cs"))
+            .count();
+        let _ = writeln!(
+            s,
+            "**Matrix-corrected rows of intact compacts.** {} rows ({} of caesium, {} of silver) are window upper bounds under premise BP1, not point comparisons (decisions 67 and 68). The window of each row ends at the end of the 300 h plateau or at the end of the test if that is shorter. For the compacts whose register as-run history gives a longer hold at the test temperature (6-4-3 at 1600 °C, 400 h; 4-4-3 at 1700 °C, 303 h) the longer as-run end is not the window end; for the compacts for which the register holds no as-run duration, the plateau end is used and the test may have been shorter, which the results say row by row.\n",
+            window_rows.len(),
+            cs_w,
+            window_rows.len() - cs_w
         );
     }
     let _ = writeln!(
@@ -902,7 +988,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     );
     let _ = writeln!(
         s,
-        "**Rows that did not take part, and what would change that.** NOT ASSESSED ({}): counts, one-particle constants and thresholds, and the prompt range that spans the heating ramps (needs temperature-dependent diffusion). DATA INCOMPLETE ({}): the matrix-corrected rows (denominator), the JAERI loose-particle rows (denominator, heat-up ramp, end-of-irradiation profile), and krypton rows (background-limited bounds, the krypton SiC row under re-read). NOT DIRECTLY COMPARABLE ({}): compacts with failed SiC, totals that include in-pile release, deposition-cup collections over multi-temperature histories, loose particles that include failures, fuel spheres, another fuel batch, and quantities that describe the irradiation phase. Eu-154 rows are only totals that include in-pile release, and the register has no europium diffusion coefficients.\n",
+        "**Rows that did not take part, and what would change that.** NOT ASSESSED ({}): counts, one-particle constants and thresholds, and the prompt range that spans the heating ramps (needs temperature-dependent diffusion). DATA INCOMPLETE ({}): the JAERI loose-particle rows (denominator, decay correction, test sequence, heat-up ramp, end-of-irradiation profile), and krypton rows (background-limited bounds, the krypton SiC row under re-read). NOT DIRECTLY COMPARABLE ({}): compacts with failed SiC, totals that include in-pile release, deposition-cup collections over multi-temperature histories, loose particles that include failures, fuel spheres, another fuel batch, and quantities that describe the irradiation phase. Eu-154 rows are only totals that include in-pile release, and the register has no europium diffusion coefficients.\n",
         count(Status::NotAssessed),
         count(Status::DataIncomplete),
         count(Status::NotDirectlyComparable)

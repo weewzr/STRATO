@@ -185,6 +185,10 @@ fn temperature_text(r: &RowRecord) -> String {
 pub fn eval_kind(e: &Eval) -> &'static str {
     match e {
         Eval::None => "none",
+        Eval::Bound {
+            source: crate::status::BoundSource::WindowUnderBp1,
+            ..
+        } => "window upper bound under premise BP1 (inequality over the window)",
         Eval::Bound { .. } => "upper bound (inequality)",
         Eval::Point { .. } => "point value",
         Eval::Provisional { .. } => {
@@ -220,6 +224,8 @@ pub fn rows_csv(prov: &Prov, records: &[RowRecord]) -> String {
         "Comparison status",
         "Status rule",
         "Reason for the status",
+        "Class of the comparison",
+        "Denominator of the comparison",
         "Model element",
         "Model diffusion coefficient set",
         "Window start (h at temperature)",
@@ -275,6 +281,8 @@ pub fn rows_csv(prov: &Prov, records: &[RowRecord]) -> String {
             r.status.label().to_string(),
             r.verdict.category.to_string(),
             r.verdict.reason.clone(),
+            r.comparison_class().to_string(),
+            r.comparison_denominator(),
         ];
         match &r.model {
             Some(m) => {
@@ -496,7 +504,7 @@ pub fn deviation_csv(prov: &Prov, records: &[RowRecord]) -> String {
         "Excess of the model over a bound (dimensionless)",
     ];
     let mut csv = Csv::new(
-        &prov.header("deviation of the model from the measurement versus time; rows whose denominator is not established (DATA INCOMPLETE) carry the measured value, the model value and the log10 ratio for scale only, with no deviation"),
+        &prov.header("deviation of the model from the measurement versus time; upper bounds, among them the window upper bounds under premise BP1 (E-010..E-014 and E-033..E-037, model value over the window), carry the bound, the model value, the log10 ratio and the excess, with no deviation and no NRMSE; rows whose denominator is not established would carry the measured value, the model value and the log10 ratio for scale only"),
         &cols,
     );
     let mut items: Vec<&RowRecord> = records
@@ -737,6 +745,9 @@ fn row_assumptions(r: &RowRecord, m: &crate::compare::ModelValue) -> Vec<String>
     if m.spec.element_label_only {
         a.push(ELEMENT_ONLY_STATEMENT.to_string());
     }
+    if r.is_window_bound() {
+        a.push("window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no NRMSE".to_string());
+    }
     if matches!(r.eval, Eval::Provisional { .. }) {
         a.push("provisional: the denominator is not established, so this model value is shown for scale only; no deviation, relative deviation or aggregate is formed from it".to_string());
     }
@@ -820,6 +831,8 @@ pub fn comparison_json(
                 ("status", J::s(r.status.label())),
                 ("status_rule", J::s(r.verdict.category)),
                 ("status_reason", J::s(&r.verdict.reason)),
+                ("comparison_class", J::s(r.comparison_class())),
+                ("comparison_denominator", J::s(r.comparison_denominator())),
                 ("evaluation_kind", J::s(eval_kind(&r.eval))),
             ];
             if let Some(m) = &r.model {

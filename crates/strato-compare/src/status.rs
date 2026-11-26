@@ -72,7 +72,26 @@ pub enum BoundSource {
     /// A printed total that includes matrix and background, read as an upper bound on the same
     /// grounds as a digitised total.
     PrintedTotal,
+    /// A matrix-corrected fraction of an intact compact over a window: an upper bound on the
+    /// release through intact coatings in that window only under premise BP1, which is the
+    /// source's assumption (decisions 67 and 68).
+    WindowUnderBp1,
 }
+
+/// The class of the ten intact matrix-corrected rows (decision 68(a)).
+pub const WINDOW_BOUND_CLASS: &str = "window upper bound under premise BP1";
+
+/// The denominator of those rows as the comparison states it (decision 68(a)): the register cell
+/// says "calculated compact inventory"; the source calculates it for the as-run irradiation.
+pub const WINDOW_BOUND_DENOMINATOR: &str = "as-run calculated compact inventory";
+
+/// The end of the 300 h plateau of the safety tests, hours at temperature (Collin et al. 2016,
+/// manuscript p. 4: the experimental fractions were determined at the end of the 300 h plateaus).
+pub const PLATEAU_H: f64 = 300.0;
+
+/// Start of the window of a matrix-corrected value, hours at temperature: the release during
+/// the first 24 h at temperature is not counted by the source's correction.
+pub const WINDOW_START_H: f64 = 24.0;
 
 impl BoundSource {
     /// Text for the files.
@@ -81,6 +100,9 @@ impl BoundSource {
             BoundSource::ReportedUpperBound => "reported upper bound",
             BoundSource::DigitisedTotal => "digitised total read as an upper bound",
             BoundSource::PrintedTotal => "printed total read as an upper bound",
+            BoundSource::WindowUnderBp1 => {
+                "window upper bound under premise BP1 (the premise is the source's assumption, not an established fact)"
+            }
         }
     }
 }
@@ -194,6 +216,36 @@ pub fn end_time(reg: &Register, row: &ReleaseRow, t_c: f64) -> Option<(f64, Stri
         return Some((h.hours, format!("as-run hold, {}", h.source)));
     }
     nominal_hold(reg, t_c).map(|h| (h.hours, format!("nominal hold, {}", h.source)))
+}
+
+/// The end of the window of a matrix-corrected value: the end of the 300 h plateau, or the end of
+/// the test where the register gives an as-run hold at this temperature that is shorter
+/// (decisions 67 and 68). Where the register holds no as-run duration of the compact at this
+/// temperature, the plateau end is used and the origin text says so.
+pub fn window_end(reg: &Register, row: &ReleaseRow, t_c: f64) -> (f64, String) {
+    match hold_of(reg, &format!("AGR1-ASRUN-{}", row.compact_or_sample), t_c) {
+        Some(h) if h.hours < PLATEAU_H => (
+            h.hours,
+            format!(
+                "end of the test: the as-run hold of {} h ({}) is shorter than the {} h plateau",
+                h.hours, h.source, PLATEAU_H
+            ),
+        ),
+        Some(h) => (
+            PLATEAU_H,
+            format!(
+                "end of the {} h plateau (Collin et al. 2016, manuscript p. 4); the as-run hold of {} h ({}) is longer and is not the window end",
+                PLATEAU_H, h.hours, h.source
+            ),
+        ),
+        None => (
+            PLATEAU_H,
+            format!(
+                "end of the {} h plateau (Collin et al. 2016, manuscript p. 4); the register holds no as-run duration of compact {} at {} degC, so the plateau end is used and the test may have been shorter",
+                PLATEAU_H, row.compact_or_sample, t_c
+            ),
+        ),
+    }
 }
 
 /// Decide the status and the plan of one row.
@@ -319,16 +371,15 @@ pub fn classify(reg: &Register, row: &ReleaseRow) -> Verdict {
             if let (Some((element, label_only)), TestTemperature::Celsius(t), Some(value)) =
                 (element_of(row), &row.temperature, single_value(row))
             {
-                if let (Some(species), Some((t_end, source))) =
-                    (Species::of_element(&element), end_time(reg, row, t.value))
-                {
-                    // "after about 24 h at T to end": the window is the release after the first 24 h.
+                if let Some(species) = Species::of_element(&element) {
+                    // The window is the release after the first 24 h to the end of the plateau.
+                    let (t_end, source) = window_end(reg, row, t.value);
                     v.plan = Plan::Provisional {
                         spec: RunSpec {
                             species,
                             element_label_only: label_only,
                             t_c: t.value,
-                            window_start_h: 24.0,
+                            window_start_h: WINDOW_START_H,
                             t_end_h: t_end,
                             time_source: source,
                         },
@@ -448,16 +499,32 @@ pub fn classify(reg: &Register, row: &ReleaseRow) -> Verdict {
             },
         };
     }
-    // 7c. A matrix-corrected point value with an established denominator.
+    // 7c. A matrix-corrected value of an intact compact with an established denominator. It is
+    // a fraction of the as-run calculated compact inventory (Collin et al. 2016, manuscript p. 3)
+    // over the window from about 24 h at temperature to the end of the 300 h plateau, or to the
+    // end of the test if shorter (p. 4), and the source calls the correction an attempt that
+    // cannot separate particle release from matrix release (p. 6). It is therefore never a
+    // point comparison: it is a window upper bound under premise BP1, which is the source's
+    // assumption, not an established fact (decisions 67 and 68(a)). It never enters N.
     if corrected {
+        let (window_end_h, window_origin) = window_end(reg, row, t.value);
         return Verdict {
             status: Status::ComparisonAvailable,
-            category: "point_matrix_corrected",
-            reason: "matrix-corrected release after about 24 h at temperature, compared from the kernel-only start (decision 20)"
-                .to_string(),
-            plan: Plan::Point {
-                spec: spec(24.0),
-                value,
+            category: "window_upper_bound_bp1",
+            reason: format!(
+                "{WINDOW_BOUND_CLASS}: matrix-corrected fraction of the {WINDOW_BOUND_DENOMINATOR} over the window from about {WINDOW_START_H} h at temperature to the end of the {PLATEAU_H} h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no NRMSE"
+            ),
+            plan: Plan::Inequality {
+                spec: RunSpec {
+                    species,
+                    element_label_only: label_only,
+                    t_c: t.value,
+                    window_start_h: WINDOW_START_H,
+                    t_end_h: window_end_h,
+                    time_source: window_origin,
+                },
+                limit: value,
+                source: BoundSource::WindowUnderBp1,
             },
         };
     }
@@ -510,5 +577,8 @@ pub const CATEGORIES: &[(&str, &str)] = &[
     ("no_test_duration", "no test duration"),
     ("inequality_reported_bound", "reported upper bound"),
     ("inequality_total_as_bound", "total read as an upper bound"),
-    ("point_matrix_corrected", "matrix-corrected point value"),
+    (
+        "window_upper_bound_bp1",
+        "window upper bound under premise BP1",
+    ),
 ];

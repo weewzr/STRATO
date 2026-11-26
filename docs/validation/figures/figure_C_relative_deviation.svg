@@ -145,7 +145,7 @@ Time at temperature (h)
 NO ROW HAS A POINT COMPARISON AVAILABLE
 </text>
 <text x="434" y="255" dy="0.5ex" text-anchor="middle" font-family="sans-serif" font-size="12.903225806451614" opacity="1" fill="#191919">
-DATA INCOMPLETE rows have no deviation (decision 22)
+upper bounds and rows without a point comparison have no deviation (decisions 22 and 67)
 </text>
 <text x="1165" y="83" dy="0.76em" text-anchor="middle" font-family="sans-serif" font-size="15.32258064516129" opacity="1" fill="#191919">
 Model value over upper bound (inequality, not a deviation)
@@ -371,6 +371,11 @@ Time at temperature (h)
 <text x="874" y="283" dy="-0.5ex" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 bound reached (ratio 1): above this line the model exceeds the bound
 </text>
+<polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1342,157 1354,157 1348,170 1342,157 "/>
+<polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1342,177 1354,177 1348,190 1342,177 "/>
+<polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1342,199 1354,199 1348,212 1342,199 "/>
+<polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1342,196 1354,196 1348,209 1342,196 "/>
+<polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1342,135 1354,135 1348,148 1342,135 "/>
 <polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1342,173 1354,173 1348,186 1342,173 "/>
 <polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1342,185 1354,185 1348,198 1342,185 "/>
 <polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1342,208 1354,208 1348,221 1342,208 "/>
@@ -382,6 +387,11 @@ bound reached (ratio 1): above this line the model exceeds the bound
 <polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1342,211 1354,211 1348,224 1342,211 "/>
 <polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1022,148 1034,148 1028,161 1022,148 "/>
 <polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1342,211 1354,211 1348,224 1342,211 "/>
+<polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1342,203 1354,203 1348,216 1342,203 "/>
+<polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1342,208 1354,208 1348,221 1342,208 "/>
+<polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1342,189 1354,189 1348,202 1342,189 "/>
+<polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1342,171 1354,171 1348,184 1342,171 "/>
+<polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1342,206 1354,206 1348,219 1342,206 "/>
 <polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1342,173 1354,173 1348,186 1342,173 "/>
 <polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1342,185 1354,185 1348,198 1342,185 "/>
 <polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="1347,129 1359,129 1353,142 1347,129 "/>
@@ -399,7 +409,7 @@ Relative deviation is undefined for a measured value that is not positive and no
 denominator is not established (DATA INCOMPLETE, decision 22) has no deviation and is not drawn; its measured and model values are in figure A. Upper bounds are inequalities and never enter a deviation; an exceeded
 </text>
 <text x="24" y="556" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-bound is drawn in vermilion whatever the test temperature. Model: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit c9978f0f64b04fe18f312c82c38592f36d05d2f8; registered AGR1-B-M16
+bound is drawn in vermilion whatever the test temperature. Model: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit b6331621ca70dc453e6856bdd1263bf61c15260b; registered AGR1-B-M16
 </text>
 <text x="24" y="574" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at the test temperature; kernel-only start; constant temperature;

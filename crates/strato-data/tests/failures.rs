@@ -331,6 +331,43 @@ fn a_non_detect_that_loses_its_class_fails() {
 }
 
 #[test]
+fn a_matrix_corrected_row_that_loses_its_denominator_fails() {
+    let mut t = real_texts();
+    t.release = mutate_line(
+        &t.release,
+        "E-033,",
+        ",calculated compact inventory",
+        ",not established",
+    );
+    assert_fails(&t, "DI.release.denominator");
+}
+
+#[test]
+fn a_matrix_corrected_intact_row_with_the_old_window_label_fails() {
+    // Decision 68(b): the label must say that the window ends at the 300 h plateau.
+    let mut t = real_texts();
+    t.release = mutate_line(
+        &t.release,
+        "E-011,",
+        "after about 24 h at T to end of 300 h plateau (or test end if shorter) (matrix-corrected)",
+        "after about 24 h at T to end (matrix-corrected)",
+    );
+    assert_fails(&t, "DI.release.window-label");
+}
+
+#[test]
+fn a_matrix_corrected_intact_row_without_premise_bp1_in_its_applicability_fails() {
+    let mut t = real_texts();
+    t.release = mutate_line(
+        &t.release,
+        "E-035,",
+        "; under premise BP1; window to the end of the 300 h plateau or the shorter test end (Collin p. 4)",
+        "",
+    );
+    assert_fails(&t, "DI.release.window-label");
+}
+
+#[test]
 fn a_digitised_row_without_reading_uncertainty_fails() {
     let mut t = real_texts();
     t.release = mutate_line(&t.release, "E-425,", ",rel_value_pct=0.5;time_h=0.2,", ",,");

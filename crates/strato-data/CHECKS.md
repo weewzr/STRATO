@@ -161,7 +161,8 @@ The generator itself (writing `web/src/generated/agr1_reference.json` and the ge
 | `DI.release.non-detect` | class M-ND on exactly E-217, E-220, E-221, E-225, E-228, E-231, each an upper bound | `di_release_non_detect` |
 | `DI.release.group-label` | the group label for no counted failure but a releasing particle on exactly E-406 and E-417 | `di_release_group_label` |
 | `DI.release.withdrawn-ids` | E-316 to E-373 absent, ids unique | `di_release_withdrawn_ids` |
-| `DI.release.denominator` | denominators by dataset; 61 rows not established | `di_release_denominator` |
+| `DI.release.denominator` | denominators by dataset (the matrix-corrected rows E-010..E-014 and E-033..E-045 are compact-inventory rows); 43 rows not established | `di_release_denominator` |
+| `DI.release.window-label` | the time window label of E-010..E-014 and E-033..E-037 is `after about 24 h at T to end of 300 h plateau (or test end if shorter) (matrix-corrected)` and their applicability carries `under premise BP1; window to the end of the 300 h plateau or the shorter test end (Collin p. 4)` (decision 68(b)); no other row carries either | `di_release_window_label` |
 | `DI.irr.completeness` | 2028 burnup rows: 72 compacts and 6 capsules, 13 cycles, burnup and fluence, once each | `di_irr_completeness` |
 | `DI.irr.monotone` | cumulative values never decrease; cycle ends equal the running sum of the 13 cycle lengths (0.1 EFPD) | `di_irr_monotone` |
 | `DI.irr.rev3-difference` | Appendix D after cycle 13 minus Tables 3 and 4: -0.01 to +0.05 percent FIMA | `di_irr_rev3_difference` |
