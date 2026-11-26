@@ -21,7 +21,7 @@ import {
   type Stage,
   type TermId,
 } from './terms';
-import { Tex } from './Tex';
+import { RichText, Tex } from './Tex';
 
 // Block A of the Explore page: the progressive equation builder for the BTCS solver
 // (prompt/DESIGN_SPECIFICATION.md Section 3). Display only. Selecting a step never changes the
@@ -73,6 +73,34 @@ function useTagPlacement(ref: { current: HTMLElement | null }, dep: unknown) {
   }, [ref, dep]);
 }
 
+/**
+ * Whether the box holds more than it shows sideways, and whether more lies to the right of what is shown.
+ * Used for the fading edge and the "scroll sideways" label, so that a cut-off equation is not mistaken for a complete one.
+ */
+function useSideScroll(ref: { current: HTMLElement | null }, dep: unknown): { scrolls: boolean; more: boolean } {
+  const [state, setState] = useState({ scrolls: false, more: false });
+  useEffect(() => {
+    const box = ref.current;
+    if (!box) return;
+    const measure = () => {
+      const scrolls = box.scrollWidth > box.clientWidth + 1;
+      const more = scrolls && box.scrollLeft + box.clientWidth < box.scrollWidth - 1;
+      setState((s) => (s.scrolls === scrolls && s.more === more ? s : { scrolls, more }));
+    };
+    measure();
+    box.addEventListener('scroll', measure, { passive: true });
+    if (typeof ResizeObserver === 'undefined') return () => box.removeEventListener('scroll', measure);
+    const ro = new ResizeObserver(measure);
+    ro.observe(box);
+    for (const child of Array.from(box.children)) ro.observe(child);
+    return () => {
+      box.removeEventListener('scroll', measure);
+      ro.disconnect();
+    };
+  }, [ref, dep]);
+  return state;
+}
+
 function ShownEq({ eq }: { eq: ShownEquation }) {
   const box = useRef<HTMLDivElement>(null);
   useTagPlacement(box, eq.id);
@@ -82,7 +110,11 @@ function ShownEq({ eq }: { eq: ShownEquation }) {
       <div className="eq-box" ref={box}>
         <Tex display latex={withTag(eq.latex, equationNumber(eq))} />
       </div>
-      {eq.note ? <p className="shown-eq__note">{eq.note}</p> : null}
+      {eq.note ? (
+        <p className="shown-eq__note">
+          <RichText text={eq.note} />
+        </p>
+      ) : null}
       <p className="shown-eq__source">
         Source: <DocLink refTo={{ doc: eq.source.doc, section: eq.source.section }} />
         {eq.source.tag ? null : ' (untagged line)'}
@@ -185,7 +217,9 @@ function TermCard({ term, catalogue, id, floating }: { term: TermId; catalogue: 
       </p>
       <p className="term-card__title">{def.name}</p>
       {status && def.mechanism ? <StatusChip status={status} mechanism={def.mechanism} /> : null}
-      <p className="term-card__meaning">{def.meaning}</p>
+      <p className="term-card__meaning">
+        <RichText text={def.meaning} />
+      </p>
       <p className="term-card__links">
         <DocLink refTo={def.derivation} prefix="Derivation:" />
         <span aria-hidden="true"> · </span>
@@ -523,20 +557,38 @@ export function EquationBuilder({ compact }: { compact: boolean }) {
 
   // An equation that does not fit beside its number gets the number on its own line.
   useTagPlacement(eqBox, stage);
+  const side = useSideScroll(eqBox, stage);
+  const hintId = useId();
 
   return (
     <div className="builder" data-testid="equation-builder" data-stage={stage}>
       <StagePicker stage={stage} onPick={setStage} asSelect={compact} />
       <div className="builder__main">
         <div className="builder__eq" data-testid="equation-block">
-          <div className="eq-box eq-box--main" data-testid="equation" data-active-term={outlined} data-tag={numbers.join(' ')} ref={eqBox}>
-            {equations.map((e, i) => (
-              <div className={i === 0 ? 'eq-first' : 'eq-system'} key={`${stage}-${e.id}`} data-eq={e.id}>
-                <span className="eq-label">{e.label}</span>
-                <Tex display latex={withTag(e.latex, equationNumber(e))} />
-              </div>
-            ))}
+          <div className={`eq-frame${side.more ? ' eq-frame--more' : ''}`}>
+            <div
+              className="eq-box eq-box--main"
+              data-testid="equation"
+              data-active-term={outlined}
+              data-tag={numbers.join(' ')}
+              ref={eqBox}
+              {...(side.scrolls ? { tabIndex: 0, role: 'region', 'aria-label': `Equation of step ${stage}, scrolls sideways`, 'aria-describedby': hintId } : {})}
+            >
+              {equations.map((e, i) => (
+                <div className={i === 0 ? 'eq-first' : 'eq-system'} key={`${stage}-${e.id}`} data-eq={e.id}>
+                  <span className="eq-label">{e.label}</span>
+                  <Tex display latex={withTag(e.latex, equationNumber(e))} />
+                </div>
+              ))}
+            </div>
+            <span className="eq-fade" aria-hidden="true" />
           </div>
+          {side.scrolls ? (
+            <p className="eq-scroll-hint" id={hintId} data-testid="equation-scroll-hint">
+              <span aria-hidden="true">{side.more ? '→ ' : '← '}</span>
+              Scroll sideways to see the whole equation.
+            </p>
+          ) : null}
           <p className="eq-where" data-testid="equation-caption">
             <strong className="eq-where__stage">
               Step <span className="stage-num">{stage}</span>, {def.name}.
@@ -559,7 +611,9 @@ export function EquationBuilder({ compact }: { compact: boolean }) {
             refs: tagsOf(impl.equations),
             body: (
               <>
-                <p className="more__note">{impl.note}</p>
+                <p className="more__note">
+                  <RichText text={impl.note ?? ''} />
+                </p>
                 {impl.equations.map((e) => (
                   <ShownEq key={e.id} eq={e} />
                 ))}
@@ -599,7 +653,9 @@ export function EquationBuilder({ compact }: { compact: boolean }) {
             refs: tagsOf(conds.equations),
             body: (
               <>
-                <p className="more__note">{conds.note}</p>
+                <p className="more__note">
+                  <RichText text={conds.note} />
+                </p>
                 {conds.equations.map((e) => (
                   <ShownEq key={e.id} eq={e} />
                 ))}
@@ -615,7 +671,9 @@ export function EquationBuilder({ compact }: { compact: boolean }) {
                 {balance.equations.map((e) => (
                   <ShownEq key={e.id} eq={e} />
                 ))}
-                <p className="more__note">{balance.note}</p>
+                <p className="more__note">
+                  <RichText text={balance.note} />
+                </p>
               </>
             ),
           },

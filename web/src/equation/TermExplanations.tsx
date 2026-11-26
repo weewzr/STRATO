@@ -3,7 +3,7 @@ import { StatusChip } from '../research/StatusChip';
 import { useStrato } from '../state/store';
 import { docHref, DOCS } from './links';
 import { STEP_DEFS } from './terms';
-import { Tex } from './Tex';
+import { RichText, Tex } from './Tex';
 
 /**
  * Block D, first part: every part of the step shown in block A, with its meaning in plain words,
@@ -35,7 +35,9 @@ export function TermExplanations() {
                 <span className="term-x__basis">{firstOfMechanism ? row.status_basis : `Same mechanism as the part above.`}</span>
               </p>
             ) : null}
-            <p>{p.meaning}</p>
+            <p>
+              <RichText text={p.meaning} />
+            </p>
             {p.units.length > 0 ? (
               <table className="table table--units">
                 <caption className="visually-hidden">Symbols and units of {p.name.toLowerCase()}</caption>

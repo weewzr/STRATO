@@ -1691,6 +1691,36 @@ select.field__input {
   overflow-y: hidden;
   container: eqbox / inline-size;
 }
+/* An equation that is wider than its box shows a fading edge on the side where more lies, and a short
+   label under the box (both set by the builder from the measured widths; the label is also read aloud). */
+.eq-frame {
+  position: relative;
+}
+.eq-fade {
+  display: none;
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  bottom: 1px;
+  width: 3rem;
+  pointer-events: none;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: linear-gradient(to right, transparent, var(--surface));
+}
+.eq-frame--more .eq-fade {
+  display: block;
+}
+.eq-box[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.eq-scroll-hint {
+  margin: var(--space-1) 0 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  text-align: right;
+}
 /* KaTeX sets the equation number at the right edge with absolute positioning. In a narrow box a
    long equation runs under it, so there the number moves to its own line, right-aligned, under the
    equation (phone and tablet widths, and any narrow column). */

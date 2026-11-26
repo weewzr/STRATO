@@ -28,6 +28,23 @@ export function renderTex(latex: string, display: boolean): string {
   return html;
 }
 
+/** Splits prose into text and inline-mathematics pieces; mathematics is written between dollar signs (no dollar sign is used otherwise). */
+export function splitMath(text: string): { math: boolean; text: string }[] {
+  return text
+    .split('$')
+    .map((t, i) => ({ math: i % 2 === 1, text: t }))
+    .filter((p) => p.text !== '');
+}
+
+/** Prose with inline mathematics: the pieces between dollar signs are rendered by KaTeX, the rest stays text. */
+export function RichText({ text }: { text: string }) {
+  return (
+    <>
+      {splitMath(text).map((p, i) => (p.math ? <Tex key={i} latex={p.text} /> : <span key={i}>{p.text}</span>))}
+    </>
+  );
+}
+
 export function Tex({ latex, display = false, className, testId }: { latex: string; display?: boolean; className?: string; testId?: string }) {
   const html = useMemo(() => renderTex(latex, display), [latex, display]);
   const cls = `tex${display ? ' tex--display' : ''}${className ? ` ${className}` : ''}`;

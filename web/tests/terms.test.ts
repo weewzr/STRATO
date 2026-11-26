@@ -31,8 +31,17 @@ import { renderTex } from '../src/equation/Tex';
 const REPO = fileURLToPath(new URL('../..', import.meta.url));
 const docText = (doc: DocId) => readFileSync(join(REPO, DOCS[doc].path), 'utf8');
 const TEXT: Record<DocId, string> = { d1: docText('d1'), d2: docText('d2'), d3: docText('d3'), d4: docText('d4') };
-/** What UTF-8 text looks like after a wrong read as Windows-1252: a lead character followed by its continuation. */
-const MOJIBAKE = ['Ã¢â‚¬', 'Ãƒ', 'Ã‚', 'Ãâ‚¬', 'ï¿½'];
+/*
+ * The patterns are written as \u escapes so that this file is pure ASCII and cannot be damaged by a re-encoding.
+ * They are the forms that occurred: the right single quotation mark (U+2019, bytes E2 80 99), the Greek letters pi
+ * (U+03C0, CF 80) and Delta (U+0394, CE 94) and the middle dot (U+00B7, C2 B7), each read as Windows-1252; the lead
+ * characters of such pairs; and the replacement character.
+ */
+const MOJIBAKE = ['\u00e2\u20ac', '\u00cf\u20ac', '\u00ce\u201d', '\u00c2', '\u00c3', '\ufffd'];
+/** Returns the first damaged-text pattern the text contains, or null. */
+export function findMojibake(text: string): string | null {
+  return MOJIBAKE.find((bad) => text.includes(bad)) ?? null;
+}
 const squash = (s: string) => s.replace(/\s+/g, '');
 const MATHS = squash(TEXT.d1 + TEXT.d2);
 
@@ -403,7 +412,8 @@ describe('notation of directive Section 5', () => {
     for (const s of STAGES) {
       const def = STEP_DEFS[s];
       const texts = [def.name, def.short, def.summary, ...def.main.flatMap((e) => [e.label, e.note ?? '']), ...def.parts.flatMap((p) => [p.name, p.meaning])];
-      for (const t of texts) expect(t, `step ${s}: "${t}"`).not.toMatch(/\d/);
+      // Inline mathematics (between dollar signs) is an equation, taken from the documents and checked below.
+      for (const t of texts) expect(t.replace(/\$[^$]*\$/g, ''), `step ${s}: "${t}"`).not.toMatch(/\d/);
     }
   });
 });
@@ -521,11 +531,56 @@ describe('text encoding of the builder', () => {
     for (const s of STAGES) {
       const d = STEP_DEFS[s];
       strings.push(d.name, d.short, d.summary, d.implementation.note ?? '', d.live ?? '');
-      for (const e of d.main) strings.push(e.label, e.note ?? '', e.latex);
-      for (const p of d.parts) strings.push(p.name, p.meaning, p.symbol, ...p.units.flatMap((u) => [u.symbol, u.unit]));
+      const shown = [...d.main, ...d.implementation.equations, ...conditionsFor(s).equations, ...balanceFor(s).equations];
+      for (const e of shown) strings.push(e.label, e.note ?? '', e.latex);
+      for (const p of d.parts) strings.push(p.name, p.meaning, p.symbol, ...p.units.flatMap((u) => [u.symbol, u.unit, u.meaning]));
       strings.push(conditionsFor(s).note, balanceFor(s).note);
     }
-    for (const t of strings) for (const bad of MOJIBAKE) expect(t.includes(bad), `"${t.slice(0, 60)}" contains ${bad}`).toBe(false);
+    for (const t of strings) expect(findMojibake(t), `"${t.slice(0, 60)}" holds damaged text`).toBeNull();
+  });
+
+  it('the damaged-text check fails on every damaged form that occurred and passes the correct text', () => {
+    // Fixtures as escapes: the real damaged strings of the earlier builds, and their correct forms.
+    const damaged = [
+      'Fick\u00e2\u20ac\u2122s law put into the local balance',
+      'divided by 4\u00cf\u20ac',
+      'inventory \u00c2\u00b7 release',
+      'error of order (\u00ce\u201dr) squared',
+      'broken \ufffd character',
+    ];
+    for (const text of damaged) expect(findMojibake(text), text).not.toBeNull();
+    const correct = ['Fick\u2019s law put into the local balance', 'divided by 4\u03c0', 'inventory \u00b7 release', 'order (\u0394r) squared'];
+    for (const text of correct) expect(findMojibake(text), text).toBeNull();
+  });
+
+  it('inline mathematics in the prose is taken from Documents 1 and 2, and no prose spells it out as plain text', () => {
+    const prose: string[] = [];
+    for (const s of STAGES) {
+      const d = STEP_DEFS[s];
+      prose.push(d.summary, d.implementation.note ?? '', d.live ?? '', conditionsFor(s).note, balanceFor(s).note);
+      for (const e of [...d.main, ...d.implementation.equations, ...conditionsFor(s).equations, ...balanceFor(s).equations]) prose.push(e.note ?? '');
+      for (const p of d.parts) prose.push(p.meaning);
+    }
+    let spans = 0;
+    for (const text of prose) {
+      const pieces = text.split('$');
+      expect(pieces.length % 2, `unbalanced dollar signs in "${text.slice(0, 60)}"`).toBe(1);
+      pieces.forEach((piece, i) => {
+        if (i % 2 === 1) {
+          spans++;
+          renderTex(piece, false);
+          expect(MATHS.includes(squash(piece)), `inline mathematics "${piece}" is not in Document 1 or 2`).toBe(true);
+        } else {
+          expect(/_\*|\(Delta r\)|squared/.test(piece), `plain-text mathematics in "${piece.slice(0, 60)}"`).toBe(false);
+        }
+      });
+    }
+    expect(spans).toBeGreaterThan(0);
+  });
+
+  it('this test file is pure ASCII, so that its patterns cannot be re-encoded unnoticed', () => {
+    const own = readFileSync(fileURLToPath(import.meta.url), 'utf8');
+    expect(Array.from(own).every((c) => c.charCodeAt(0) < 128)).toBe(true);
   });
 
   it('no source file of the page starts with a byte-order mark or holds a mojibake sequence', () => {
@@ -533,7 +588,7 @@ describe('text encoding of the builder', () => {
       for (const f of walk(join(SRC, dir)).filter((p) => /\.(ts|tsx|css)$/.test(p))) {
         const b = readFileSync(f);
         expect(b[0] === 0xef && b[1] === 0xbb && b[2] === 0xbf, `${f} starts with a byte-order mark`).toBe(false);
-        if (!f.endsWith('terms.test.ts')) for (const bad of MOJIBAKE) expect(b.toString('utf8').includes(bad), `${f} contains ${bad}`).toBe(false);
+        expect(findMojibake(b.toString('utf8')), `${f} holds damaged text`).toBeNull();
       }
     }
   });

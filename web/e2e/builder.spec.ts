@@ -310,7 +310,17 @@ test.describe('builder on a 390 px phone (device emulation)', () => {
       expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
       const overflowX = await page.getByTestId('equation').evaluate((e) => getComputedStyle(e).overflowX);
       expect(overflowX).toBe('auto');
+      // A box that holds more than it shows says so, in words a screen reader also gets; a box that fits says nothing.
+      const scrolls = await page.getByTestId('equation').evaluate((e) => e.scrollWidth > e.clientWidth + 1);
+      await expect(page.getByTestId('equation-scroll-hint')).toHaveCount(scrolls ? 1 : 0);
+      if (scrolls) {
+        await expect(page.getByTestId('equation-scroll-hint')).toContainText('Scroll sideways');
+        await expect(page.getByTestId('equation')).toHaveAttribute('aria-label', /scrolls sideways/);
+      }
     }
+    // Step 10 (the matrix) is wider than a phone: it must show the hint.
+    await page.getByTestId('stage-select').selectOption('10');
+    await expect(page.getByTestId('equation-scroll-hint')).toBeVisible();
     // Tapping a part opens its card in the flow.
     await page.getByTestId('stage-select').selectOption('16');
     await page.getByTestId('term-decay').tap();
