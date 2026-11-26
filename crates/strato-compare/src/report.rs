@@ -649,7 +649,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
         .fold(f64::INFINITY, f64::min);
     let _ = writeln!(
         s,
-        "\nThe model values of the rows of this report are read at {earliest} h at temperature or later, and the numerical difference of each of them is given beside it in the tables.\n"
+        "\nThe model values of the rows of this report are read at {earliest} h at temperature or later, and the numerical difference of each of them is given beside it in the tables."
     );
     let mut worst = 0.0_f64;
     for r in rec {

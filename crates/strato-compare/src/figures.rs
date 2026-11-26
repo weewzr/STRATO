@@ -1859,7 +1859,7 @@ fn nuclide_figure(
             }
         }
         let drawn: Vec<&Placed> = placed.iter().filter(|p| drawable(p)).collect();
-        let count = |f: &dyn Fn(&Placed) -> bool| drawn.iter().filter(|p| f(**p)).count();
+        let count = |f: &dyn Fn(&Placed) -> bool| drawn.iter().filter(|p| f(p)).count();
         let n_ctx = count(&|p| marker_pass(p) == 0);
         let n_inc = count(&|p| p.status == Status::DataIncomplete);
         let n_bound = count(&|p| p.is_bound && marker_pass(p) == 2);
