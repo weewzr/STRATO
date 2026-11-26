@@ -623,8 +623,12 @@ fn release_checks(rep: &mut Report, reg: &Register) {
         .iter()
         .filter(|r| r.reading_uncertainty == ReadingUncertainty::NotRecorded)
         .count();
+    // The 219 digitised rows of the earlier register are E-001..E-540; the rows added later (E-541
+    // on) are checked by the family EX.
+    let earlier = |r: &ReleaseRow| r.id[2..].parse::<u32>().is_ok_and(|n| n <= 540);
     let n_stated = rows
         .iter()
+        .filter(|r| earlier(r))
         .filter(|r| matches!(r.reading_uncertainty, ReadingUncertainty::Stated { .. }))
         .count();
     let collin_unstated: Vec<&str> = rows
@@ -636,7 +640,7 @@ fn release_checks(rep: &mut Report, reg: &Register) {
     rep.add(
         "DI.release.reading-uncertainty",
         bad.is_empty() && n_stated == 219 && n_rec == 0 && collin_unstated.is_empty(),
-        "reading_uncertainty is empty exactly for the rows that were not read from a figure; each of the 219 digitised rows states it (none says not recorded: the 34 visually read rows of Morris et al. 2016 were re-read from the vector paths of their figures); every digitised row of Collin et al. (2016) states it (decision 31)",
+        "reading_uncertainty is empty exactly for the rows that were not read from a figure; each of the 219 digitised rows of E-001..E-540 states it (none says not recorded: the 34 visually read rows of Morris et al. 2016 were re-read from the vector paths of their figures); every digitised row of Collin et al. (2016) states it (decision 31)",
         format!(
             "{n_stated} stated, {n_rec} not recorded; wrong: {bad:?}; Collin rows without it: {collin_unstated:?}"
         ),
@@ -688,6 +692,12 @@ fn release_checks(rep: &mut Report, reg: &Register) {
             10..=14 | 33..=45 | 157..=267 | 374..=492 => Some(Denominator::CompactInventory),
             268..=315 => Some(Denominator::CapsuleInventory),
             493..=540 => Some(Denominator::ParticleInventory),
+            // E-541..E-636 (experiment-data integration): the particle equivalents of the 75 loose
+            // particles (Hunn et al. 2016), the compact fractions of Demkowicz et al. (2015) and
+            // the sphere fractions of IAEA-TECDOC-978 Fig. 4-7, whose denominator is not stated.
+            541..=572 => Some(Denominator::ParticleInventory),
+            573..=594 => Some(Denominator::CompactInventory),
+            595..=636 => Some(Denominator::NotEstablished),
             _ => None,
         };
         if let Some(w) = want {
@@ -708,12 +718,13 @@ fn release_checks(rep: &mut Report, reg: &Register) {
     }
     let ne = rows
         .iter()
+        .filter(|r| earlier(r))
         .filter(|r| r.denominator == Denominator::NotEstablished)
         .count();
     rep.add(
         "DI.release.denominator",
         bad.is_empty() && ne == 43,
-        "denominator: compact inventory for the tabulated and digitised compact fractions and the matrix-corrected fractions of Collin et al. (2016), capsule inventory for the mass-balance rows, average particle inventory for the particle equivalents; 43 rows (JAERI, CRP-6 and a few text rows) say not established and stay DATA INCOMPLETE",
+        "denominator: compact inventory for the tabulated and digitised compact fractions and the matrix-corrected fractions of Collin et al. (2016), capsule inventory for the mass-balance rows, average particle inventory for the particle equivalents; 43 rows of E-001..E-540 (JAERI, CRP-6 and a few text rows) say not established and stay DATA INCOMPLETE; the rows from E-541 on follow the ranges named in the source of the check",
         format!("{ne} not established; wrong: {bad:?}"),
     );
     // Decision 68(b): the ten intact matrix-corrected rows carry the window label to the end of

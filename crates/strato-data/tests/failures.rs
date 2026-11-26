@@ -505,3 +505,108 @@ fn a_kernel_label_that_says_unscaled_for_the_scaled_case_fails_the_labels_check_
         s.labels
     );
 }
+
+// ---------------------------------------------------------------------------------------------
+// The family EX: release-versus-time curves and their assessments (task experiment-data-integration)
+
+#[test]
+fn a_curve_whose_times_do_not_increase_fails() {
+    let mut t = real_texts();
+    t.release = mutate_line(
+        &t.release,
+        "E-542,",
+        ",35.7,elapsed time from start of heating,",
+        ",20,elapsed time from start of heating,",
+    );
+    assert_fails(&t, "EX.curve.times-monotone");
+}
+
+#[test]
+fn a_new_digitised_row_without_reading_uncertainty_fails() {
+    let mut t = real_texts();
+    t.release = mutate_line(&t.release, "E-545,", ",abs_value=0.01;time_h=0.3,", ",,");
+    assert_fails(&t, "EX.curve.digitised-uncertainty");
+}
+
+#[test]
+fn a_cumulative_curve_that_falls_fails() {
+    let mut t = real_texts();
+    // the last point of the Cs-134 curve of compact 4-3-3 falls far below the one before it
+    t.release = mutate_line(&t.release, "E-583,", ",6.78e-7,", ",1e-9,");
+    assert_fails(&t, "EX.curve.cumulative");
+}
+
+#[test]
+fn a_curve_called_suitable_without_verification_fails() {
+    let mut t = real_texts();
+    t.curve_assessment = mutate_line(
+        &t.curve_assessment,
+        "DEM15-433-CS134,",
+        ",PLOT ONLY,",
+        ",R2 SUITABLE,",
+    );
+    assert_fails(&t, "EX.curve.fail-closed");
+}
+
+#[test]
+fn a_curve_whose_point_count_is_wrong_is_a_load_error() {
+    let mut t = real_texts();
+    t.curve_assessment = mutate_line(
+        &t.curve_assessment,
+        "DEM15-433-SR90,",
+        ",E-584..E-594,",
+        ",E-584..E-593,",
+    );
+    let e = load_err(&t);
+    assert!(
+        e.contains("n_points") && e.contains("DEM15-433-SR90"),
+        "{e}"
+    );
+}
+
+#[test]
+fn a_row_with_another_dataset_in_its_notes_fails() {
+    let mut t = real_texts();
+    t.release = mutate_line(
+        &t.release,
+        "E-541,",
+        "Dataset HUNN16-442-CS134 (curve_assessment.csv).",
+        "Dataset HUNN16-442-CS137 (curve_assessment.csv).",
+    );
+    assert_fails(&t, "EX.release.dataset-id");
+}
+
+#[test]
+fn a_new_digitised_row_without_an_audit_entry_fails() {
+    let mut t = real_texts();
+    let log = t
+        .audit_log
+        .take()
+        .expect("the audit log is in the data folder");
+    assert!(log.contains("| E-560 |"));
+    t.audit_log = Some(log.replace("| E-560 |", "| E-5x0 |"));
+    assert_fails(&t, "EX.curve.audit-entry");
+}
+
+#[test]
+fn a_new_curve_whose_source_is_not_in_the_register_fails() {
+    let mut t = real_texts();
+    let md = t
+        .register_markdown
+        .take()
+        .expect("the register is in the data folder");
+    t.register_markdown = Some(mutate_line(
+        &md,
+        "| Demkowicz et al. (2015; FACS) | Demkowicz",
+        "| Demkowicz et al. (2015; FACS) |",
+        "| Demkowicz et al. (2015; FACX) |",
+    ));
+    assert_fails(&t, "EX.curve.source-resolves");
+}
+
+#[test]
+fn a_history_step_that_does_not_add_up_fails() {
+    let mut t = real_texts();
+    t.temperature = mutate_line(&t.temperature, "TH-160,", ",7.1,,11.9,", ",9.1,,11.9,");
+    assert_fails(&t, "EX.temperature.new-history");
+}

@@ -644,6 +644,40 @@ Time at temperature (h)
 <line opacity="1" stroke="#787878" stroke-width="2" x1="390" y1="201" x2="398" y2="193"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="390" y1="163" x2="398" y2="171"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="390" y1="171" x2="398" y2="163"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="109" y1="167" x2="117" y2="175"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="109" y1="175" x2="117" y2="167"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="134" y1="167" x2="142" y2="175"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="134" y1="175" x2="142" y2="167"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="168" y1="167" x2="176" y2="175"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="168" y1="175" x2="176" y2="167"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="180" y1="167" x2="188" y2="175"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="180" y1="175" x2="188" y2="167"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="188" y1="167" x2="196" y2="175"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="188" y1="175" x2="196" y2="167"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="230" y1="167" x2="238" y2="175"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="230" y1="175" x2="238" y2="167"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="254" y1="167" x2="262" y2="175"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="254" y1="175" x2="262" y2="167"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="274" y1="167" x2="282" y2="175"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="274" y1="175" x2="282" y2="167"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="301" y1="167" x2="309" y2="175"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="301" y1="175" x2="309" y2="167"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="324" y1="167" x2="332" y2="175"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="324" y1="175" x2="332" y2="167"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="348" y1="167" x2="356" y2="175"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="348" y1="175" x2="356" y2="167"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="373" y1="167" x2="381" y2="175"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="373" y1="175" x2="381" y2="167"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="398" y1="166" x2="406" y2="174"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="398" y1="174" x2="406" y2="166"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="421" y1="166" x2="429" y2="174"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="421" y1="174" x2="429" y2="166"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="443" y1="166" x2="451" y2="174"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="443" y1="174" x2="451" y2="166"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="470" y1="166" x2="478" y2="174"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="470" y1="174" x2="478" y2="166"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="495" y1="166" x2="503" y2="174"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="495" y1="174" x2="503" y2="166"/>
 <polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="2" points="238,164 245,171 238,178 231,171 238,164 "/>
 <polyline fill="none" opacity="1" stroke="#CC79A7" stroke-width="2" points="99,178 106,185 99,192 92,185 99,178 "/>
 <polyline fill="none" opacity="1" stroke="#CC79A7" stroke-width="2" points="142,131 149,138 142,145 135,138 142,131 "/>
@@ -662,7 +696,7 @@ Time at temperature (h)
 measured: Ag, Ag-110m
 </text>
 <text x="510" y="441" dy="-0.5ex" text-anchor="end" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-105 registered values drawn; 5 upper-bound comparisons
+122 registered values drawn; 5 upper-bound comparisons
 </text>
 <text x="780" y="83" dy="0.76em" text-anchor="middle" font-family="sans-serif" font-size="16.129032258064516" opacity="1" fill="#191919">
 Caesium (Cs)
@@ -1134,6 +1168,64 @@ Time at temperature (h)
 <line opacity="1" stroke="#787878" stroke-width="2" x1="904" y1="216" x2="912" y2="208"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="904" y1="241" x2="912" y2="249"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="904" y1="249" x2="912" y2="241"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="628" y1="348" x2="636" y2="356"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="628" y1="356" x2="636" y2="348"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="635" y1="340" x2="643" y2="348"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="635" y1="348" x2="643" y2="340"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="650" y1="329" x2="658" y2="337"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="650" y1="337" x2="658" y2="329"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="659" y1="327" x2="667" y2="335"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="659" y1="335" x2="667" y2="327"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="674" y1="326" x2="682" y2="334"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="674" y1="334" x2="682" y2="326"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="698" y1="325" x2="706" y2="333"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="698" y1="333" x2="706" y2="325"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="722" y1="324" x2="730" y2="332"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="722" y1="332" x2="730" y2="324"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="746" y1="322" x2="754" y2="330"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="746" y1="330" x2="754" y2="322"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="770" y1="322" x2="778" y2="330"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="770" y1="330" x2="778" y2="322"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="794" y1="321" x2="802" y2="329"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="794" y1="329" x2="802" y2="321"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="935" y1="316" x2="943" y2="324"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="935" y1="324" x2="943" y2="316"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="605" y1="323" x2="613" y2="331"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="605" y1="331" x2="613" y2="323"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="647" y1="313" x2="655" y2="321"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="647" y1="321" x2="655" y2="313"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="680" y1="311" x2="688" y2="319"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="680" y1="319" x2="688" y2="311"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="695" y1="309" x2="703" y2="317"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="695" y1="317" x2="703" y2="309"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="701" y1="309" x2="709" y2="317"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="701" y1="317" x2="709" y2="309"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="743" y1="308" x2="751" y2="316"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="743" y1="316" x2="751" y2="308"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="768" y1="307" x2="776" y2="315"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="768" y1="315" x2="776" y2="307"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="789" y1="307" x2="797" y2="315"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="789" y1="315" x2="797" y2="307"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="815" y1="305" x2="823" y2="313"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="815" y1="313" x2="823" y2="305"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="838" y1="302" x2="846" y2="310"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="838" y1="310" x2="846" y2="302"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="861" y1="298" x2="869" y2="306"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="861" y1="306" x2="869" y2="298"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="887" y1="295" x2="895" y2="303"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="887" y1="303" x2="895" y2="295"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="910" y1="290" x2="918" y2="298"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="910" y1="298" x2="918" y2="290"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="935" y1="283" x2="943" y2="291"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="935" y1="291" x2="943" y2="283"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="956" y1="278" x2="964" y2="286"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="956" y1="286" x2="964" y2="278"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="982" y1="270" x2="990" y2="278"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="982" y1="278" x2="990" y2="270"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1008" y1="264" x2="1016" y2="272"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1008" y1="272" x2="1016" y2="264"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="622" y1="318" x2="630" y2="326"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="622" y1="326" x2="630" y2="318"/>
 <polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="2" points="613,233 620,240 613,247 606,240 613,233 "/>
 <polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="2" points="613,231 620,238 613,245 606,238 613,231 "/>
 <polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="2" points="656,226 663,233 656,240 649,233 656,226 "/>
@@ -1183,7 +1275,7 @@ Time at temperature (h)
 measured: Cs, Cs-134, Cs-137
 </text>
 <text x="1024" y="441" dy="-0.5ex" text-anchor="end" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-63 registered values drawn; 22 upper-bound comparisons
+92 registered values drawn; 22 upper-bound comparisons
 </text>
 <text x="1293" y="83" dy="0.76em" text-anchor="middle" font-family="sans-serif" font-size="16.129032258064516" opacity="1" fill="#191919">
 Strontium (Sr)
@@ -1756,11 +1848,65 @@ Time at temperature (h)
 <line opacity="1" stroke="#787878" stroke-width="2" x1="1417" y1="254" x2="1425" y2="246"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="1417" y1="253" x2="1425" y2="261"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="1417" y1="261" x2="1425" y2="253"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1141" y1="387" x2="1149" y2="395"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1141" y1="395" x2="1149" y2="387"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1148" y1="360" x2="1156" y2="368"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1148" y1="368" x2="1156" y2="360"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1163" y1="274" x2="1171" y2="282"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1163" y1="282" x2="1171" y2="274"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1172" y1="258" x2="1180" y2="266"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1172" y1="266" x2="1180" y2="258"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1187" y1="247" x2="1195" y2="255"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1187" y1="255" x2="1195" y2="247"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1211" y1="238" x2="1219" y2="246"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1211" y1="246" x2="1219" y2="238"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1235" y1="232" x2="1243" y2="240"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1235" y1="240" x2="1243" y2="232"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1259" y1="228" x2="1267" y2="236"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1259" y1="236" x2="1267" y2="228"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1283" y1="225" x2="1291" y2="233"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1283" y1="233" x2="1291" y2="225"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1307" y1="222" x2="1315" y2="230"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1307" y1="230" x2="1315" y2="222"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1448" y1="214" x2="1456" y2="222"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1448" y1="222" x2="1456" y2="214"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1136" y1="374" x2="1144" y2="382"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1136" y1="382" x2="1144" y2="374"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1159" y1="367" x2="1167" y2="375"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1159" y1="375" x2="1167" y2="367"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1193" y1="357" x2="1201" y2="365"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1193" y1="365" x2="1201" y2="357"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1214" y1="351" x2="1222" y2="359"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1214" y1="359" x2="1222" y2="351"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1255" y1="344" x2="1263" y2="352"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1255" y1="352" x2="1263" y2="344"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1279" y1="342" x2="1287" y2="350"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1279" y1="350" x2="1287" y2="342"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1302" y1="341" x2="1310" y2="349"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1302" y1="349" x2="1310" y2="341"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1329" y1="340" x2="1337" y2="348"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1329" y1="348" x2="1337" y2="340"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1352" y1="339" x2="1360" y2="347"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1352" y1="347" x2="1360" y2="339"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1374" y1="339" x2="1382" y2="347"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1374" y1="347" x2="1382" y2="339"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1400" y1="338" x2="1408" y2="346"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1400" y1="346" x2="1408" y2="338"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1423" y1="337" x2="1431" y2="345"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1423" y1="345" x2="1431" y2="337"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1447" y1="338" x2="1455" y2="346"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1447" y1="346" x2="1455" y2="338"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1469" y1="337" x2="1477" y2="345"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1469" y1="345" x2="1477" y2="337"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1497" y1="336" x2="1505" y2="344"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1497" y1="344" x2="1505" y2="336"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1520" y1="336" x2="1528" y2="344"/>
+<line opacity="1" stroke="#787878" stroke-width="2" x1="1520" y1="344" x2="1528" y2="336"/>
 <text x="1125" y="110" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 measured: Sr, Sr-90
 </text>
 <text x="1537" y="441" dy="-0.5ex" text-anchor="end" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-63 registered values drawn; none supports a comparison (context only)
+90 registered values drawn; none supports a comparison (context only)
 </text>
 <polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="3" points="40,529 74,529 "/>
 <text x="84" y="520" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
@@ -1803,39 +1949,42 @@ Hollow diamond: DATA INCOMPLETE, shown for scale, not a comparison
 Grey cross: NOT DIRECTLY COMPARABLE context (muted)
 </text>
 <text x="24" y="638" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-Experimental values: Collin et al. (2016); IAEA (1997); IAEA (2012); Morris et al. (2016); Stempien et al. (2023). Digitised values carry the reading uncertainty of the register; the sources report no per-value
+Experimental values: Collin et al. (2016); Demkowicz et al. (2015; FACS); IAEA (1997); IAEA (2012); Morris et al. (2016); Stempien et al. (2023). Digitised values carry the reading uncertainty of the register; the
 </text>
 <text x="24" y="656" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-measurement uncertainty for these rows (the one general statement, a 5 percent systematic gamma-measurement error plus counting statistics for the Stempien 2023 values, is not a per-value uncertainty and changes no
+sources report no per-value measurement uncertainty for these rows (the one general statement, a 5 percent systematic gamma-measurement error plus counting statistics for the Stempien 2023 values, is not a per-value
 </text>
 <text x="24" y="674" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-status), so no error bars are drawn. Compact values are not single-particle values. Rows with several times per compact are drawn at their own times; values without a time are drawn at the registered end of test.
+uncertainty and changes no status), so no error bars are drawn. Compact values are not single-particle values. Rows with several times per compact are drawn at their own times; values without a time are drawn at the
 </text>
 <text x="24" y="692" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-The matrix-corrected values of intact compacts are window upper bounds under premise BP1 (the source&apos;s assumption, not an established fact): fractions of the as-run calculated compact inventory over a window from 24
+registered end of test. The matrix-corrected values of intact compacts are window upper bounds under premise BP1 (the source&apos;s assumption, not an established fact): fractions of the as-run calculated compact
 </text>
 <text x="24" y="710" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-h at temperature to the end of the 300 h plateau (or the end of the test if shorter), drawn as bounds at the window end beside the model&apos;s value over the same window, not against the cumulative curve. The model has
+inventory over a window from 24 h at temperature to the end of the 300 h plateau (or the end of the test if shorter), drawn as bounds at the window end beside the model&apos;s value over the same window, not against the
 </text>
 <text x="24" y="728" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-no decay: every panel is the element, and the nuclides measured are listed in the panel. Analytical-series values are drawn only where the criterion holds: a value of the independent analytical series is exported
+cumulative curve. The model has no decay: every panel is the element, and the nuclides measured are listed in the panel. Analytical-series values are drawn only where the criterion holds: a value of the independent
 </text>
 <text x="24" y="746" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-only where (1) the time is not earlier than the series&apos; own minimum valid time (omitted modes below exp(-40) of their weight) and (2) the value exceeds the series&apos; estimated absolute accuracy (about 2.2e-16 over the
+analytical series is exported only where (1) the time is not earlier than the series&apos; own minimum valid time (omitted modes below exp(-40) of their weight) and (2) the value exceeds the series&apos; estimated absolute
 </text>
 <text x="24" y="764" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-smallest flux ratio of the shooting solution), and is positive; otherwise it is left empty. The early part of every BTCS curve is not converged in time: where the release is still rising steeply from zero, the base
+accuracy (about 2.2e-16 over the smallest flux ratio of the shooting solution), and is positive; otherwise it is left empty. The early part of every BTCS curve is not converged in time: where the release is still
 </text>
 <text x="24" y="782" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-run and the run with half the step differ by a large factor, and the report states for each curve the time after which they agree within 10 percent (a reading aid, not a tolerance). Not drawn because the time at
+rising steeply from zero, the base run and the run with half the step differ by a large factor, and the report states for each curve the time after which they agree within 10 percent (a reading aid, not a
 </text>
 <text x="24" y="800" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-temperature lies beyond the 420 h axis (the value is never moved onto the edge): E-150 (500 h), E-151 (500 h), E-154 (699 h). Model: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit
+tolerance). Not drawn because the time at temperature lies beyond the 420 h axis (the value is never moved onto the edge): E-150 (500 h), E-151 (500 h), E-154 (699 h), E-613 (428 h), E-614 (452 h), E-615 (475 h),
 </text>
 <text x="24" y="818" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-b6331621ca70dc453e6856bdd1263bf61c15260b; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at
+E-633 (428 h), E-634 (451 h), E-635 (476 h), E-636 (499 h), E-654 (428 h), E-655 (452 h), E-656 (475 h), E-657 (498 h), E-658 (500 h). Model: STRATO BTCS five-layer spherical finite difference, package version
 </text>
 <text x="24" y="836" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-the test temperature; kernel-only start; constant temperature; decay and generation are not in the solver. This is a numerical comparison, not an experimental validation.
+1.0.1, commit 85ea748; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at the test
+</text>
+<text x="24" y="854" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+temperature; kernel-only start; constant temperature; decay and generation are not in the solver. This is a numerical comparison, not an experimental validation.
 </text>
 </svg>

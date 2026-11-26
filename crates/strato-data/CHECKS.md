@@ -178,3 +178,22 @@ Failure tests added in `tests/failures.rs`: a register row that drifts from the 
 The test file `tests/text_hygiene.rs` is not a check of the register: it fails when `CHECKS.md`, the audit log, the register document or a data file holds a control character other than TAB, LF and CR followed by LF, a byte-order mark or invalid UTF-8.
 
 Workspace: the Rust tests and checks belong to the workspace of `crates/Cargo.toml`. At the repository root `cargo test` runs only the `strato` package; run `cargo test --locked --manifest-path crates/Cargo.toml` for the `strato-data` tests (155 check tests, 34 failure tests, 17 type tests, 2 text-hygiene tests and 16 unit tests at the time of writing) and `cargo run --locked --manifest-path crates/Cargo.toml -p strato-data -- check --repo .` for the checks.
+
+## Family EX: release-versus-time curves (new in Rust; task experiment-data-integration)
+
+These checks read `release_measurements.csv`, `curve_assessment.csv` (see `curve.rs`), the history AGR1-FACS-4-3-3 of `temperature_histories.csv`, and, when present, the register document and the audit log. The numbers are the 15 curves and the 117 rows E-541..E-657.
+
+| Id | What it asserts | Function |
+|---|---|---|
+| `EX.curve.rows-agree` | every row named by a curve exists and has the nuclide, the test temperature and the source of its curve | `experiment_checks` |
+| `EX.curve.one-definition` | the rows of one curve share unit, quantity, denominator, time basis, programme, specimen, fuel type, group and value class; the value kind of the record agrees with the value class | `experiment_checks` |
+| `EX.curve.times-monotone` | every row has a time in hours and the times increase strictly | `experiment_checks` |
+| `EX.curve.cumulative` | a cumulative curve does not fall by more than the reading uncertainties of two neighbouring points | `experiment_checks` |
+| `EX.curve.digitised-uncertainty` | every digitised row of a curve states the reading uncertainty of its value and of its time | `experiment_checks` |
+| `EX.curve.audit-entry` | every digitised row from E-541 on and every row of AGR1-FACS-4-3-3 has an audit-log entry; skipped when the audit log is absent | `experiment_checks` |
+| `EX.curve.source-resolves` | every curve has a source, location and link; a curve of the new rows uses the link of its rows and a key of the source table of the register | `experiment_checks` |
+| `EX.curve.fail-closed` | a curve is R2 SUITABLE only with a verification reference and the status independently verified; a PLOT ONLY curve has its reason code | `experiment_checks` |
+| `EX.release.dataset-id` | every row from E-541 on belongs to one curve and its notes start with the dataset id | `experiment_checks` |
+| `EX.temperature.new-history` | the 7 steps of AGR1-FACS-4-3-3 chain and add up within 0.15 h | `experiment_checks` |
+
+The two checks `DI.release.reading-uncertainty` and `DI.release.denominator` keep the counts of the earlier register (219 digitised rows with a stated uncertainty, 43 rows without an established denominator) over E-001..E-540; the rows from E-541 on are covered by the family EX and the denominator ranges of `DI.release.denominator`. Nine failure tests in `tests/failures.rs` damage one cell each (a time that does not increase, a missing uncertainty, a falling cumulative value, a curve called suitable, a wrong point count, a wrong dataset id, a missing audit entry, a source missing from the register, a history that does not add up).

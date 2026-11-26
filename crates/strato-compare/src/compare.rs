@@ -292,7 +292,7 @@ pub struct Dataset {
     pub group: String,
     /// Quantity as the register words it.
     pub quantity: String,
-    /// Source of the rows (the first row's).
+    /// Every source of the rows, in the order of first appearance, joined by " | ".
     pub source: String,
     /// Ids of the rows.
     pub row_ids: Vec<String>,
@@ -308,8 +308,19 @@ pub struct Dataset {
     pub max_duration_h: Option<f64>,
 }
 
+/// The distinct sources of a group of rows, in the order of first appearance, joined by " | ".
+fn sources_of(rows: &[&RowRecord]) -> String {
+    let mut sources: Vec<&str> = Vec::new();
+    for r in rows {
+        if !sources.contains(&r.row.source.as_str()) {
+            sources.push(r.row.source.as_str());
+        }
+    }
+    sources.join(" | ")
+}
+
 /// Group the records into datasets and aggregate. Groups never mix nuclides or quantity
-/// definitions.
+/// definitions. A group may hold rows of several sources; the dataset names every one of them.
 pub fn datasets(records: &[RowRecord]) -> Vec<Dataset> {
     let mut order: Vec<(String, String, String, String)> = Vec::new();
     let mut map: BTreeMap<(String, String, String, String), Vec<&RowRecord>> = BTreeMap::new();
@@ -357,7 +368,7 @@ pub fn datasets(records: &[RowRecord]) -> Vec<Dataset> {
                 nuclide: key.1.clone(),
                 group: key.2.clone(),
                 quantity: key.3.clone(),
-                source: rows[0].row.source.clone(),
+                source: sources_of(rows),
                 row_ids: rows.iter().map(|r| r.row.id.clone()).collect(),
                 counts,
                 point: point_aggregate(&points),

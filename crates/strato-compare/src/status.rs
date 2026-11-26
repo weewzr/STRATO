@@ -300,6 +300,13 @@ pub fn classify(reg: &Register, row: &ReleaseRow) -> Verdict {
                 "fuel-sphere value with matrix from a benchmark, approximate text value; not a single-particle quantity",
             );
         }
+        Program::Frg => {
+            return verdict(
+                Status::NotDirectlyComparable,
+                "fuel_sphere_curve",
+                "point of a release-versus-time curve of a fuel sphere with matrix (IAEA-TECDOC-978 Fig. 4-7), digitised from a scan; the sphere total is not a single-particle quantity and the denominator is not stated; the curve is plotted and its assessment (curve_assessment.csv) gives the caption",
+            );
+        }
         Program::Agr2 => {
             return verdict(
                 Status::NotDirectlyComparable,
@@ -465,6 +472,23 @@ pub fn classify(reg: &Register, row: &ReleaseRow) -> Verdict {
         time_source: source.clone(),
     };
 
+    // 7-. A point of a registered release-versus-time curve whose values are totals of a whole
+    // compact or sphere (the curve assessment, class compact_total): the series is plotted as a
+    // curve (decision 69) and the whole-curve metric decides what it may be compared with; the
+    // older single-row rule below does not read it (task experiment-data-integration).
+    if let Some(curve) = reg.curves.curve_of_row(&row.id) {
+        if curve.bound_class == strato_data::curve::BoundClass::CompactTotal {
+            return verdict(
+                Status::NotDirectlyComparable,
+                "registered_curve_compact_total",
+                format!(
+                    "point of the registered curve {} (curve_assessment.csv): the values are totals of a whole compact or sphere, an upper bound of the single-intact-particle release; the curve is plotted and the reason code of its assessment ({}) gives the caption",
+                    curve.dataset_id, curve.reason_code
+                ),
+            );
+        }
+    }
+
     // 7a. A reported upper bound.
     if let ReleaseValue::UpperBound(_) = row.value {
         return Verdict {
@@ -577,6 +601,14 @@ pub const CATEGORIES: &[(&str, &str)] = &[
     ("no_test_duration", "no test duration"),
     ("inequality_reported_bound", "reported upper bound"),
     ("inequality_total_as_bound", "total read as an upper bound"),
+    (
+        "fuel_sphere_curve",
+        "point of a release-versus-time curve of a fuel sphere (plotted as a curve)",
+    ),
+    (
+        "registered_curve_compact_total",
+        "point of a registered compact-total curve (plotted as a curve)",
+    ),
     (
         "window_upper_bound_bp1",
         "window upper bound under premise BP1",

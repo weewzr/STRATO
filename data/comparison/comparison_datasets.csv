@@ -1,19 +1,19 @@
 # STRATO experimental comparison: per-dataset aggregates; groups never mix nuclides or quantity definitions
 # label: numerical solution of the stated model; not experimental validation; the comparison with the register is a comparison of release behaviour, not a validation
 # solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1
-# commit: b6331621ca70dc453e6856bdd1263bf61c15260b
+# commit: 85ea748
 # model_limitations: kernel-only start (inventory-matched start node); constant diffusion coefficient per layer evaluated at the test temperature from the first hour (heating ramps are not modelled); no radioactive decay and no fission-product generation in the solver yet; perfect interface contact; absorbing outer surface; one intact particle, no matrix; the model fraction is a fraction of the particle's own inventory
 # parameter_source: geometry design AGR1-B-M16 (register rows G-01 G-02 G-03 G-04 G-05); diffusion coefficients chosen by the strato-data selection function (decision 47) for the heating-test phase, that is the rows of register sets C16-T2 and C16-BUF as printed, evaluated at the test temperature (the kernel rows are UO2 surrogates: no UCO measurement exists, decision 40); the class of each coefficient (owner ruling 16) and its phase of use are in the sensitivity file and in the coefficient_sets of comparison.json
 # parameter_class: coefficients are the published heating-test correlation of the register (class and phase per row in the sensitivity file); radii are the registered measured baseline geometry; every measurement keeps its register row id
-# release_measurements_sha256: b25e390f831a491f68398644efff1cfbc8c8b901cf95a167baaa314bc5bcbc4d
+# release_measurements_sha256: 29f0d7bec6f40fb97c52c0bf7972782d7849a58f5f910527fe8efa8afa9ddda9
 # arrhenius_sha256: 2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4
 # geometry_sha256: 8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f
-# temperature_histories_sha256: 6ab3201672afd15f92ec9e529318377c829afaa5804288a3a694032145ab4af0
+# temperature_histories_sha256: b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d
 Experimental programme,Nuclide or element as registered,Group of particles,Quantity as registered,Source,Number of register rows,Rows with status NOT ASSESSED,Rows with status DATA INCOMPLETE,Rows with status NOT DIRECTLY COMPARABLE,Rows with status COMPARISON AVAILABLE,Rows with status WITHIN REPORTED UNCERTAINTY,Rows with status OUTSIDE REPORTED UNCERTAINTY,Rows with status WITHIN REPORTED UPPER BOUND,Rows with status EXCEEDS REPORTED UPPER BOUND,Test temperatures (°C),Longest compared test duration (h),Point comparisons: number,Point comparisons: RMSE (dimensionless),Point comparisons: MAE (dimensionless),Point comparisons: maximum absolute deviation (dimensionless),Point comparisons: RMSE of log10 ratio (dimensionless),Point comparisons: MAE of log10 ratio (dimensionless),Point comparisons: number with a defined relative deviation,Upper bounds: number,Upper bounds: satisfied,Upper bounds: exceeded,Upper bounds: smallest model value over bound (dimensionless),Upper bounds: largest model value over bound (dimensionless),Row identifiers
 AGR-1,Cs-134,failed SiC,compact release fraction,Collin et al. (2016),9,0,0,9,0,0,0,0,0,1600 1700 1800,,0,,,,,,,0,,,,,E-001 E-002 E-003 E-004 E-005 E-006 E-007 E-008 E-009
 AGR-1,Cs-134,intact,compact release fraction,Collin et al. (2016),5,0,0,0,0,0,0,0,5,1600,3e2,0,,,,,,,5,0,5,4.758901314010248e2,5.651195310387169e4,E-010 E-011 E-012 E-013 E-014
-AGR-1,Cs-134,intact,total compact release fraction,Morris et al. (2016),13,0,0,0,0,0,0,0,13,1600 1700,4e2,0,,,,,,,13,0,13,1.8995614488696367e2,5.913442045814181e5,E-015 E-016 E-017 E-018 E-019 E-020 E-021 E-187 E-193 E-195 E-198 E-199 E-201
-AGR-1,Cs-134,failed SiC,total compact release fraction,Morris et al. (2016),14,0,0,14,0,0,0,0,0,1600 1700 1800,,0,,,,,,,0,,,,,E-022 E-023 E-024 E-025 E-026 E-188 E-189 E-190 E-191 E-192 E-194 E-196 E-197 E-200
+AGR-1,Cs-134,intact,total compact release fraction,Morris et al. (2016) | Stempien et al. (2023),13,0,0,0,0,0,0,0,13,1600 1700,4e2,0,,,,,,,13,0,13,1.8995614488696367e2,5.913442045814181e5,E-015 E-016 E-017 E-018 E-019 E-020 E-021 E-187 E-193 E-195 E-198 E-199 E-201
+AGR-1,Cs-134,failed SiC,total compact release fraction,Morris et al. (2016) | Stempien et al. (2023),14,0,0,14,0,0,0,0,0,1600 1700 1800,,0,,,,,,,0,,,,,E-022 E-023 E-024 E-025 E-026 E-188 E-189 E-190 E-191 E-192 E-194 E-196 E-197 E-200
 AGR-1,Cs-134,intact,cumulative compact release fraction (upper bound),Morris et al. (2016),1,0,0,0,0,0,0,0,1,1600,3e2,0,,,,,,,1,0,1,9.04191249661947e1,9.04191249661947e1,E-027
 AGR-1,Cs,intact,cumulative compact release fraction (upper bound),Morris et al. (2016),2,0,0,0,0,0,0,0,2,1600 1800,3e2,0,,,,,,,2,0,2,1.808382499323894e2,2.1288439872264356e4,E-028 E-029
 AGR-1,Cs-134,intact,prompt compact release fraction (range),Collin et al. (2016),1,1,0,0,0,0,0,0,0,1600,,0,,,,,,,0,,,,,E-030
@@ -21,16 +21,16 @@ AGR-1,Cs-134,failed SiC indicator,compact release fraction indicating a non-inta
 AGR-1,Cs-134,intact,compact release fraction (upper bound),Morris et al. (2016),1,0,0,0,0,0,0,0,1,1600,3e2,0,,,,,,,1,0,1,1.808382499323894e2,1.808382499323894e2,E-032
 AGR-1,Ag-110m,intact,compact release fraction,Collin et al. (2016),5,0,0,0,0,0,0,0,5,1600 1700,3e2,0,,,,,,,5,0,5,2.3675287725594347e2,3.9458812875990584e3,E-033 E-034 E-035 E-036 E-037
 AGR-1,Ag-110m,failed SiC,compact release fraction,Collin et al. (2016),8,0,0,8,0,0,0,0,0,1600 1700 1800,,0,,,,,,,0,,,,,E-038 E-039 E-040 E-041 E-042 E-043 E-044 E-045
-AGR-1,Ag-110m,intact,total compact release fraction,Morris et al. (2016),12,0,0,12,0,0,0,0,0,1600 1700,,0,,,,,,,0,,,,,E-046 E-048 E-051 E-052 E-053 E-055 E-172 E-178 E-180 E-183 E-184 E-186
-AGR-1,Ag-110m,failed SiC,total compact release fraction,Morris et al. (2016),17,0,0,17,0,0,0,0,0,1600 1700 1800,,0,,,,,,,0,,,,,E-047 E-049 E-050 E-054 E-056 E-057 E-058 E-059 E-173 E-174 E-175 E-176 E-177 E-179 E-181 E-182 E-185
+AGR-1,Ag-110m,intact,total compact release fraction,Morris et al. (2016) | Stempien et al. (2023),12,0,0,12,0,0,0,0,0,1600 1700,,0,,,,,,,0,,,,,E-046 E-048 E-051 E-052 E-053 E-055 E-172 E-178 E-180 E-183 E-184 E-186
+AGR-1,Ag-110m,failed SiC,total compact release fraction,Morris et al. (2016) | Stempien et al. (2023),17,0,0,17,0,0,0,0,0,1600 1700 1800,,0,,,,,,,0,,,,,E-047 E-049 E-050 E-054 E-056 E-057 E-058 E-059 E-173 E-174 E-175 E-176 E-177 E-179 E-181 E-182 E-185
 AGR-1,Ag-110m,all,prompt compact release fraction (range),Collin et al. (2016),1,0,0,1,0,0,0,0,0,,,0,,,,,,,0,,,,,E-060
 AGR-1,Ag-110m,all,fraction of Ag inventory in matrix (range),Collin et al. (2016),1,0,0,1,0,0,0,0,0,,,0,,,,,,,0,,,,,E-061
 AGR-1,Ag-110m,all,release in particle equivalents (range),Morris et al. (2016),1,0,0,1,0,0,0,0,0,1600,,0,,,,,,,0,,,,,E-062
 AGR-1,Sr-90,intact,compact release fraction,Collin et al. (2016),6,0,0,6,0,0,0,0,0,1600 1700,,0,,,,,,,0,,,,,E-063 E-064 E-065 E-066 E-067 E-068
 AGR-1,Sr-90,failed SiC,compact release fraction,Collin et al. (2016),10,0,0,10,0,0,0,0,0,1600 1700 1800,,0,,,,,,,0,,,,,E-069 E-070 E-071 E-072 E-073 E-074 E-075 E-076 E-077 E-078
 AGR-1,Eu-154,all,release in particle equivalents (range),Morris et al. (2016),1,0,0,1,0,0,0,0,0,1600,,0,,,,,,,0,,,,,E-079
-AGR-1,Eu-154,failed SiC,total compact release fraction,Morris et al. (2016),15,0,0,15,0,0,0,0,0,1600 1700 1800,,0,,,,,,,0,,,,,E-080 E-082 E-084 E-085 E-086 E-087 E-203 E-204 E-205 E-206 E-207 E-209 E-211 E-212 E-215
-AGR-1,Eu-154,intact,total compact release fraction,Morris et al. (2016),8,0,0,8,0,0,0,0,0,1600 1700,,0,,,,,,,0,,,,,E-081 E-083 E-202 E-208 E-210 E-213 E-214 E-216
+AGR-1,Eu-154,failed SiC,total compact release fraction,Morris et al. (2016) | Stempien et al. (2023),15,0,0,15,0,0,0,0,0,1600 1700 1800,,0,,,,,,,0,,,,,E-080 E-082 E-084 E-085 E-086 E-087 E-203 E-204 E-205 E-206 E-207 E-209 E-211 E-212 E-215
+AGR-1,Eu-154,intact,total compact release fraction,Morris et al. (2016) | Stempien et al. (2023),8,0,0,8,0,0,0,0,0,1600 1700,,0,,,,,,,0,,,,,E-081 E-083 E-202 E-208 E-210 E-213 E-214 E-216
 AGR-1,Kr-85,all,compact release fraction (upper bound),Morris et al. (2016),2,0,0,2,0,0,0,0,0,1600 1700,,0,,,,,,,0,,,,,E-088 E-089
 AGR-1,Kr-85,failed SiC,compact release fraction,Collin et al. (2016),6,0,0,6,0,0,0,0,0,1700 1800,,0,,,,,,,0,,,,,E-090 E-091 E-092 E-093 E-094 E-095
 AGR-1,Kr-85,between failures,compact release rate,Collin et al. (2016),1,0,0,1,0,0,0,0,0,1800,,0,,,,,,,0,,,,,E-096
@@ -58,13 +58,13 @@ AGR-1,Cs-134,failed SiC,fraction of compact inventory in matrix and OPyC (DLBL),
 AGR-1,Cs-134,intact,fraction of compact inventory in matrix and OPyC (DLBL),Stempien et al. (2023),6,0,0,6,0,0,0,0,0,,,0,,,,,,,0,,,,,E-251 E-252 E-255 E-256 E-257 E-258
 AGR-1,Eu-154,failed SiC,fraction of compact inventory in matrix and OPyC (DLBL),Stempien et al. (2023),3,0,0,3,0,0,0,0,0,,,0,,,,,,,0,,,,,E-259 E-262 E-263
 AGR-1,Eu-154,intact,fraction of compact inventory in matrix and OPyC (DLBL),Stempien et al. (2023),6,0,0,6,0,0,0,0,0,,,0,,,,,,,0,,,,,E-260 E-261 E-264 E-265 E-266 E-267
-AGR-1,Ag-110m,all,capsule fraction measured outside the fuel compacts (in-pile release),Demkowicz et al. (2013),12,0,0,12,0,0,0,0,0,,,0,,,,,,,0,,,,,E-268 E-269 E-270 E-271 E-272 E-273 E-292 E-293 E-294 E-295 E-296 E-297
-AGR-1,Sr-90,all,capsule fraction measured outside the fuel compacts (in-pile release),Demkowicz et al. (2013),12,0,0,12,0,0,0,0,0,,,0,,,,,,,0,,,,,E-274 E-275 E-276 E-277 E-278 E-279 E-298 E-299 E-300 E-301 E-302 E-303
-AGR-1,Cs-134,all,capsule fraction measured outside the fuel compacts (in-pile release),Demkowicz et al. (2013),12,0,0,12,0,0,0,0,0,,,0,,,,,,,0,,,,,E-280 E-281 E-282 E-283 E-284 E-285 E-304 E-305 E-306 E-307 E-308 E-309
-AGR-1,Eu-154,all,capsule fraction measured outside the fuel compacts (in-pile release),Demkowicz et al. (2013),12,0,0,12,0,0,0,0,0,,,0,,,,,,,0,,,,,E-286 E-287 E-288 E-289 E-290 E-291 E-310 E-311 E-312 E-313 E-314 E-315
+AGR-1,Ag-110m,all,capsule fraction measured outside the fuel compacts (in-pile release),Demkowicz et al. (2013) | Stempien et al. (2023),12,0,0,12,0,0,0,0,0,,,0,,,,,,,0,,,,,E-268 E-269 E-270 E-271 E-272 E-273 E-292 E-293 E-294 E-295 E-296 E-297
+AGR-1,Sr-90,all,capsule fraction measured outside the fuel compacts (in-pile release),Demkowicz et al. (2013) | Stempien et al. (2023),12,0,0,12,0,0,0,0,0,,,0,,,,,,,0,,,,,E-274 E-275 E-276 E-277 E-278 E-279 E-298 E-299 E-300 E-301 E-302 E-303
+AGR-1,Cs-134,all,capsule fraction measured outside the fuel compacts (in-pile release),Demkowicz et al. (2013) | Stempien et al. (2023),12,0,0,12,0,0,0,0,0,,,0,,,,,,,0,,,,,E-280 E-281 E-282 E-283 E-284 E-285 E-304 E-305 E-306 E-307 E-308 E-309
+AGR-1,Eu-154,all,capsule fraction measured outside the fuel compacts (in-pile release),Demkowicz et al. (2013) | Stempien et al. (2023),12,0,0,12,0,0,0,0,0,,,0,,,,,,,0,,,,,E-286 E-287 E-288 E-289 E-290 E-291 E-310 E-311 E-312 E-313 E-314 E-315
 AGR-1,Ag-110m,intact,cumulative compact release fraction,Stempien et al. (2023),20,0,0,20,0,0,0,0,0,1600,,0,,,,,,,0,,,,,E-425 E-426 E-427 E-428 E-429 E-430 E-431 E-432 E-433 E-434 E-462 E-463 E-464 E-465 E-466 E-467 E-468 E-469 E-470 E-471
 AGR-1,Ag-110m,failed SiC,cumulative compact release fraction,Stempien et al. (2023),27,0,0,27,0,0,0,0,0,1600 1800,,0,,,,,,,0,,,,,E-435 E-436 E-437 E-438 E-439 E-440 E-441 E-442 E-443 E-444 E-445 E-446 E-447 E-448 E-449 E-450 E-451 E-452 E-453 E-454 E-455 E-456 E-457 E-458 E-459 E-460 E-461
-AGR-1,Sr-90,intact,cumulative compact release fraction,Stempien et al. (2023),11,0,0,11,0,0,0,0,0,1600,,0,,,,,,,0,,,,,E-472 E-473 E-474 E-475 E-476 E-477 E-478 E-479 E-480 E-481 E-482
+AGR-1,Sr-90,intact,cumulative compact release fraction,Stempien et al. (2023) | Demkowicz et al. (2015; FACS),22,0,0,22,0,0,0,0,0,1600,,0,,,,,,,0,,,,,E-472 E-473 E-474 E-475 E-476 E-477 E-478 E-479 E-480 E-481 E-482 E-584 E-585 E-586 E-587 E-588 E-589 E-590 E-591 E-592 E-593 E-594
 AGR-1,Sr-90,failed SiC,cumulative compact release fraction,Stempien et al. (2023),10,0,0,10,0,0,0,0,0,1600,,0,,,,,,,0,,,,,E-483 E-484 E-485 E-486 E-487 E-488 E-489 E-490 E-491 E-492
 AGR-1,Sr-90,loose particles,cumulative release in particle equivalents (75 loose particles),Hunn et al. (2014; ORNL/LTR-2014/486),16,0,0,16,0,0,0,0,0,1800,,0,,,,,,,0,,,,,E-493 E-494 E-495 E-496 E-497 E-498 E-499 E-500 E-501 E-502 E-503 E-504 E-505 E-506 E-507 E-508
 AGR-1,Ag-110m,loose particles,cumulative release in particle equivalents (75 loose particles),Hunn et al. (2014; ORNL/LTR-2014/486),16,0,0,16,0,0,0,0,0,1800,,0,,,,,,,0,,,,,E-509 E-510 E-511 E-512 E-513 E-514 E-515 E-516 E-517 E-518 E-519 E-520 E-521 E-522 E-523 E-524
@@ -76,3 +76,9 @@ AGR-2,Sr-90,no counted failure; one particle released fission products,total com
 AGR-2,Ag-110m,failed SiC,total compact release fraction,Stempien et al. (2023),3,0,0,3,0,0,0,0,0,1800,,0,,,,,,,0,,,,,E-414 E-420 E-421
 AGR-2,Ag-110m,intact,total compact release fraction,Stempien et al. (2023),7,0,0,7,0,0,0,0,0,1600 1800,,0,,,,,,,0,,,,,E-415 E-416 E-418 E-419 E-422 E-423 E-424
 AGR-2,Ag-110m,no counted failure; one particle released fission products,total compact release fraction,Stempien et al. (2023),1,0,0,1,0,0,0,0,0,1800,,0,,,,,,,0,,,,,E-417
+AGR-1,Cs-134,loose particles,cumulative release in particle equivalents (75 loose particles),Hunn et al. (2016; ORNL/TM-2015/161),16,0,0,16,0,0,0,0,0,1800,,0,,,,,,,0,,,,,E-541 E-542 E-543 E-544 E-545 E-546 E-547 E-548 E-549 E-550 E-551 E-552 E-553 E-554 E-555 E-556
+AGR-1,Cs-137,loose particles,cumulative release in particle equivalents (75 loose particles),Hunn et al. (2016; ORNL/TM-2015/161),16,0,0,16,0,0,0,0,0,1800,,0,,,,,,,0,,,,,E-557 E-558 E-559 E-560 E-561 E-562 E-563 E-564 E-565 E-566 E-567 E-568 E-569 E-570 E-571 E-572
+AGR-1,Cs-134,intact,cumulative compact release fraction,Demkowicz et al. (2015; FACS),11,0,0,11,0,0,0,0,0,1600,,0,,,,,,,0,,,,,E-573 E-574 E-575 E-576 E-577 E-578 E-579 E-580 E-581 E-582 E-583
+FRG,Ag-110m,all,cumulative sphere release fraction,IAEA (1997),22,0,0,22,0,0,0,0,0,1600,,0,,,,,,,0,,,,,E-595 E-596 E-597 E-598 E-599 E-600 E-601 E-602 E-603 E-604 E-605 E-606 E-607 E-608 E-609 E-610 E-611 E-612 E-613 E-614 E-615 E-658
+FRG,Cs-137,all,cumulative sphere release fraction,IAEA (1997),22,0,0,22,0,0,0,0,0,1600,,0,,,,,,,0,,,,,E-616 E-617 E-618 E-619 E-620 E-621 E-622 E-623 E-624 E-625 E-626 E-627 E-628 E-629 E-630 E-631 E-632 E-633 E-634 E-635 E-636 E-637
+FRG,Sr-90,all,cumulative sphere release fraction,IAEA (1997),20,0,0,20,0,0,0,0,0,1600,,0,,,,,,,0,,,,,E-638 E-639 E-640 E-641 E-642 E-643 E-644 E-645 E-646 E-647 E-648 E-649 E-650 E-651 E-652 E-653 E-654 E-655 E-656 E-657

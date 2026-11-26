@@ -3,6 +3,7 @@
 use std::path::Path;
 
 use crate::arrhenius::{self, Arrhenius};
+use crate::curve::{self, Curves};
 use crate::decay::{self, Decay};
 use crate::error::{DataError, Result};
 use crate::geometry::{self, Geometry};
@@ -13,6 +14,9 @@ use crate::yields::{self, Yields};
 
 /// File name of the parameter register document, below `data/reference`.
 pub const REGISTER_MARKDOWN: &str = "STRATO_Parameter_Register.md";
+
+/// File name of the audit log, below `data/reference`.
+pub const AUDIT_LOG: &str = "B6_audit_log.md";
 
 /// The raw text of the six files, in the order geometry, Arrhenius, decay, yields, temperature, release.
 #[derive(Debug, Clone)]
@@ -38,6 +42,11 @@ pub struct RegisterTexts {
     /// `reference/STRATO_Parameter_Register.md` when the file exists (the check that compares its
     /// tables with the CSV files skips itself when it is absent).
     pub register_markdown: Option<String>,
+    /// `experimental/curve_assessment.csv`: one record per release-versus-time curve.
+    pub curve_assessment: String,
+    /// `reference/B6_audit_log.md` when the file exists (the check that every digitised row has an
+    /// audit entry skips itself when it is absent).
+    pub audit_log: Option<String>,
 }
 
 impl RegisterTexts {
@@ -62,6 +71,8 @@ impl RegisterTexts {
                 data_dir.join("reference").join(REGISTER_MARKDOWN),
             )
             .ok(),
+            curve_assessment: rd(curve::FILE)?,
+            audit_log: std::fs::read_to_string(data_dir.join("reference").join(AUDIT_LOG)).ok(),
         })
     }
 }
@@ -83,6 +94,8 @@ pub struct Register {
     pub release: Releases,
     /// AGR-1 irradiation conditions, burnup history and heat history.
     pub irradiation: Irradiation,
+    /// Assessments of the release-versus-time curves.
+    pub curves: Curves,
 }
 
 impl Register {
@@ -100,6 +113,7 @@ impl Register {
                 &t.irradiation_burnup,
                 &t.irradiation_power,
             )?,
+            curves: Curves::parse(&t.curve_assessment)?,
         })
     }
 

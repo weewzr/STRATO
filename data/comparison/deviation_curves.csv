@@ -1,14 +1,14 @@
 # STRATO experimental comparison: deviation of the model from the measurement versus time; upper bounds, among them the window upper bounds under premise BP1 (E-010..E-014 and E-033..E-037, model value over the window), carry the bound, the model value, the log10 ratio and the excess, with no deviation and no NRMSE; rows whose denominator is not established would carry the measured value, the model value and the log10 ratio for scale only
 # label: numerical solution of the stated model; not experimental validation; the comparison with the register is a comparison of release behaviour, not a validation
 # solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1
-# commit: b6331621ca70dc453e6856bdd1263bf61c15260b
+# commit: 85ea748
 # model_limitations: kernel-only start (inventory-matched start node); constant diffusion coefficient per layer evaluated at the test temperature from the first hour (heating ramps are not modelled); no radioactive decay and no fission-product generation in the solver yet; perfect interface contact; absorbing outer surface; one intact particle, no matrix; the model fraction is a fraction of the particle's own inventory
 # parameter_source: geometry design AGR1-B-M16 (register rows G-01 G-02 G-03 G-04 G-05); diffusion coefficients chosen by the strato-data selection function (decision 47) for the heating-test phase, that is the rows of register sets C16-T2 and C16-BUF as printed, evaluated at the test temperature (the kernel rows are UO2 surrogates: no UCO measurement exists, decision 40); the class of each coefficient (owner ruling 16) and its phase of use are in the sensitivity file and in the coefficient_sets of comparison.json
 # parameter_class: coefficients are the published heating-test correlation of the register (class and phase per row in the sensitivity file); radii are the registered measured baseline geometry; every measurement keeps its register row id
-# release_measurements_sha256: b25e390f831a491f68398644efff1cfbc8c8b901cf95a167baaa314bc5bcbc4d
+# release_measurements_sha256: 29f0d7bec6f40fb97c52c0bf7972782d7849a58f5f910527fe8efa8afa9ddda9
 # arrhenius_sha256: 2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4
 # geometry_sha256: 8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f
-# temperature_histories_sha256: 6ab3201672afd15f92ec9e529318377c829afaa5804288a3a694032145ab4af0
+# temperature_histories_sha256: b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d
 Row identifier,Comparison status,Kind of evaluation,Nuclide,Test temperature (°C),Time at temperature (h),Measured value or bound (dimensionless),Model value compared (dimensionless),"Signed deviation, model minus measurement (dimensionless)",Absolute deviation (dimensionless),Relative deviation (percent),"Signed log10 ratio, model over measurement (dimensionless)",Excess of the model over a bound (dimensionless)
 E-033,EXCEEDS REPORTED UPPER BOUND,window upper bound under premise BP1 (inequality over the window),Ag-110m,1.6e3,3e2,1.8e-3,5.918821931398587e-1,,,,2.5169627692536993e0,5.900821931398587e-1
 E-034,EXCEEDS REPORTED UPPER BOUND,window upper bound under premise BP1 (inequality over the window),Ag-110m,1.6e3,3e2,2.5e-3,5.918821931398587e-1,,,,2.3742952656849674e0,5.893821931398587e-1
