@@ -1064,7 +1064,7 @@ C16-T2-published: published heating-test correlation as printed (Collin 2016 Tab
 <polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="56,525 66,525 "/>
 <polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="72,525 74,525 "/>
 <text x="84" y="516" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
-kernel-radius-scaled: kernel coefficient scaled by (kernel radius 174.85 µm / reference radius 250 µm)^2 = 0.489 (decision 41; sensitivity case, not a published coefficient)
+kernel-radius-scaled: kernel coefficient scaled by (kernel radius 174.85 µm / reference radius 250 µm)² = 0.489 (decision 41; sensitivity case, not a published coefficient)
 </text>
 <polyline fill="none" opacity="1" stroke="#009E73" stroke-width="3" points="40,551 42,551 "/>
 <polyline fill="none" opacity="1" stroke="#009E73" stroke-width="3" points="47,551 49,551 "/>
@@ -1106,7 +1106,7 @@ than the published default are labelled alternatives, never defaults (decisions 
 S20-fitted-SiC) are fitted to AGR-1 heating-test data and disagree with the correction factors of Collin (2016) by 4 to 220 times (decision 40). Model: STRATO BTCS five-layer spherical finite difference, package
 </text>
 <text x="24" y="738" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-version 1.0.1, commit df8b0b4851d05789a537a40a9ff33510f9ac866a; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and
+version 1.0.1, commit 3a0ba1c2894bbb17040e2e60c5fcb2ba10414c2f; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and
 </text>
 <text x="24" y="756" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 C16-BUF), evaluated at the test temperature; kernel-only start; constant temperature; decay and generation are not in the solver. This is a numerical comparison, not an experimental validation.

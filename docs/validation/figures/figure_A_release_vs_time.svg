@@ -1,5 +1,5 @@
-<svg width="1560" height="880" viewBox="0 0 1560 880" xmlns="http://www.w3.org/2000/svg">
-<rect x="0" y="0" width="1560" height="880" opacity="1" fill="#FFFFFF" stroke="none"/>
+<svg width="1560" height="960" viewBox="0 0 1560 960" xmlns="http://www.w3.org/2000/svg">
+<rect x="0" y="0" width="1560" height="960" opacity="1" fill="#FFFFFF" stroke="none"/>
 <text x="24" y="14" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="20.967741935483872" opacity="1" fill="#191919">
 A. Fraction released versus time at temperature
 </text>
@@ -1116,10 +1116,6 @@ Time at temperature (h)
 <line opacity="1" stroke="#787878" stroke-width="2" x1="907" y1="233" x2="915" y2="225"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="904" y1="208" x2="912" y2="216"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="904" y1="216" x2="912" y2="208"/>
-<line opacity="1" stroke="#787878" stroke-width="2" x1="1025" y1="244" x2="1033" y2="252"/>
-<line opacity="1" stroke="#787878" stroke-width="2" x1="1025" y1="252" x2="1033" y2="244"/>
-<line opacity="1" stroke="#787878" stroke-width="2" x1="1025" y1="157" x2="1033" y2="165"/>
-<line opacity="1" stroke="#787878" stroke-width="2" x1="1025" y1="165" x2="1033" y2="157"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="907" y1="204" x2="915" y2="212"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="907" y1="212" x2="915" y2="204"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="934" y1="225" x2="942" y2="233"/>
@@ -1187,7 +1183,7 @@ Time at temperature (h)
 measured: Cs, Cs-134, Cs-137
 </text>
 <text x="1024" y="441" dy="-0.5ex" text-anchor="end" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-65 registered values drawn; 17 support a comparison
+63 registered values drawn; 17 support a comparison
 </text>
 <text x="1293" y="83" dy="0.76em" text-anchor="middle" font-family="sans-serif" font-size="16.129032258064516" opacity="1" fill="#191919">
 Strontium (Sr)
@@ -1666,8 +1662,6 @@ Time at temperature (h)
 <line opacity="1" stroke="#787878" stroke-width="2" x1="1417" y1="161" x2="1425" y2="153"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="1417" y1="174" x2="1425" y2="182"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="1417" y1="182" x2="1425" y2="174"/>
-<line opacity="1" stroke="#787878" stroke-width="2" x1="1538" y1="277" x2="1546" y2="285"/>
-<line opacity="1" stroke="#787878" stroke-width="2" x1="1538" y1="285" x2="1546" y2="277"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="1417" y1="261" x2="1425" y2="269"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="1417" y1="269" x2="1425" y2="261"/>
 <line opacity="1" stroke="#787878" stroke-width="2" x1="1420" y1="177" x2="1428" y2="185"/>
@@ -1766,7 +1760,7 @@ Time at temperature (h)
 measured: Sr, Sr-90
 </text>
 <text x="1537" y="441" dy="-0.5ex" text-anchor="end" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-64 registered values drawn; none supports a comparison (context only)
+63 registered values drawn; none supports a comparison (context only)
 </text>
 <polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="3" points="40,529 74,529 "/>
 <text x="84" y="520" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
@@ -1828,12 +1822,21 @@ cumulative curve. The model has no decay: every panel is the element, and the nu
 analytical series is exported only where (1) the time is not earlier than the series&apos; own minimum valid time (omitted modes below exp(-40) of their weight) and (2) the value exceeds the series&apos; estimated absolute
 </text>
 <text x="24" y="754" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-accuracy (about 2.2e-16 over the smallest flux ratio of the shooting solution), and is positive; otherwise it is left empty Model: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit
+accuracy (about 2.2e-16 over the smallest flux ratio of the shooting solution), and is positive; otherwise it is left empty The early part of every BTCS curve is not converged in time: where the release is still
 </text>
 <text x="24" y="772" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-df8b0b4851d05789a537a40a9ff33510f9ac866a; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at
+rising steeply from zero, the base run and the run with half the step differ by a large factor, and the report states for each curve the time after which they agree within 10 percent (a reading aid, not a
 </text>
 <text x="24" y="790" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-the test temperature; kernel-only start; constant temperature; decay and generation are not in the solver. This is a numerical comparison, not an experimental validation.
+tolerance). Not drawn because the time at temperature lies beyond the 420 h axis (the value is never moved onto the edge): E-150 (500 h), E-151 (500 h), E-154 (699 h). Model: STRATO BTCS five-layer spherical finite
+</text>
+<text x="24" y="808" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+difference, package version 1.0.1, commit 3a0ba1c2894bbb17040e2e60c5fcb2ba10414c2f; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function
+</text>
+<text x="24" y="826" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+(register sets C16-T2 and C16-BUF), evaluated at the test temperature; kernel-only start; constant temperature; decay and generation are not in the solver. This is a numerical comparison, not an experimental
+</text>
+<text x="24" y="844" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+validation.
 </text>
 </svg>

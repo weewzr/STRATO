@@ -3,7 +3,7 @@
   "provenance": {
     "solver": "STRATO BTCS five-layer spherical finite difference",
     "solver_package_version": "1.0.1",
-    "commit": "df8b0b4851d05789a537a40a9ff33510f9ac866a",
+    "commit": "3a0ba1c2894bbb17040e2e60c5fcb2ba10414c2f",
     "label": "numerical solution of the stated model; not experimental validation",
     "release_measurements_sha256": "873352515ae4c64d57acce407100e40c1b11d8bbfde80beb948a98adb96ef2f2",
     "arrhenius_sha256": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
@@ -30,7 +30,7 @@
   "coefficient_sets": [
     {
       "set": "C16-T2-published (Ag)",
-      "description": "Ag - published heating-test correlation as printed (Collin 2016 Table 2, rows C16-T2 and C16-BUF), chosen by the strato-data selection function: kernel: C16-01; buffer: C16-22; IPyC: C16-02; SiC: C16-03; OPyC: C16-02. Class of each coefficient (owner ruling 16) and phase of use: kernel: published PARFUME correlation, phase heating test; buffer: published PARFUME correlation, phase heating test; IPyC: published PARFUME correlation, phase heating test; SiC: published PARFUME correlation, phase heating test; OPyC: published PARFUME correlation, phase heating test. Statements of the selection function: kernel: UO2 coefficient used for the UCO kernel; no UCO measurement exists; kernel: referred to a 250 µm kernel radius and applied unscaled, as the published AGR-1 modelling does; buffer: modelling convention: the buffer is taken as non-retentive; IPyC: one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02); SiC: the published correlation over-estimates the silver release of AGR-1 (factor about 1000 at 1600 to 1700 C and 100 at 1800 C, Collin 2016); OPyC: one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)"
+      "description": "Ag - published heating-test correlation as printed (Collin 2016 Table 2, rows C16-T2 and C16-BUF), chosen by the strato-data selection function: kernel: C16-01; buffer: C16-22; IPyC: C16-02; SiC: C16-03; OPyC: C16-02. Class of each coefficient (owner ruling 16) and phase of use: kernel: published PARFUME correlation, phase heating test; buffer: published PARFUME correlation, phase heating test; IPyC: published PARFUME correlation, phase heating test; SiC: published PARFUME correlation, phase heating test; OPyC: published PARFUME correlation, phase heating test. Statements of the selection function: kernel: UO2 coefficient used for the UCO kernel; no UCO measurement exists; kernel: referred to a 250 µm kernel radius and applied unscaled, as the published AGR-1 modelling does; buffer: modelling convention: the buffer is taken as non-retentive; IPyC: one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02); SiC: the published correlation over-estimates the silver release of AGR-1 (factor about 1000 at 1600 to 1700 °C and 100 at 1800 °C, Collin 2016); OPyC: one pyrocarbon set for the inner and the outer pyrocarbon (register GAP-02)"
     },
     {
       "set": "C16-T2-published (Cs)",
@@ -3261,7 +3261,7 @@
     {
       "id": "E-027",
       "programme": "AGR-1",
-      "compact_or_sample": "five of eight 1600 C compacts",
+      "compact_or_sample": "five of eight 1600 °C compacts",
       "group": "intact",
       "nuclide": "Cs-134",
       "temperature_text": "1600",
@@ -3422,7 +3422,7 @@
     {
       "id": "E-030",
       "programme": "AGR-1",
-      "compact_or_sample": "five intact 1600 C compacts",
+      "compact_or_sample": "five intact 1600 °C compacts",
       "group": "intact",
       "nuclide": "Cs-134",
       "temperature_text": "1600",
@@ -4354,7 +4354,7 @@
     {
       "id": "E-062",
       "programme": "AGR-1",
-      "compact_or_sample": "1600 C compacts",
+      "compact_or_sample": "1600 °C compacts",
       "group": "all",
       "nuclide": "Ag-110m",
       "temperature_text": "1600",
@@ -4762,7 +4762,7 @@
     {
       "id": "E-079",
       "programme": "AGR-1",
-      "compact_or_sample": "six of eight 1600 C compacts",
+      "compact_or_sample": "six of eight 1600 °C compacts",
       "group": "all",
       "nuclide": "Eu-154",
       "temperature_text": "1600",
@@ -4978,7 +4978,7 @@
     {
       "id": "E-088",
       "programme": "AGR-1",
-      "compact_or_sample": "all 1600 C tests",
+      "compact_or_sample": "all 1600 °C tests",
       "group": "all",
       "nuclide": "Kr-85",
       "temperature_text": "1600",
@@ -5002,7 +5002,7 @@
     {
       "id": "E-089",
       "programme": "AGR-1",
-      "compact_or_sample": "1700 C series",
+      "compact_or_sample": "1700 °C series",
       "group": "all",
       "nuclide": "Kr-85",
       "temperature_text": "1700",
@@ -5602,7 +5602,7 @@
     {
       "id": "E-114",
       "programme": "AGR-1",
-      "compact_or_sample": "1600 C series (8 compacts)",
+      "compact_or_sample": "1600 °C series (8 compacts)",
       "group": "failure count",
       "nuclide": "n/a",
       "temperature_text": "1600",
@@ -5626,7 +5626,7 @@
     {
       "id": "E-115",
       "programme": "AGR-1",
-      "compact_or_sample": "1700 C series (2 compacts)",
+      "compact_or_sample": "1700 °C series (2 compacts)",
       "group": "failure count",
       "nuclide": "n/a",
       "temperature_text": "1700",
@@ -5650,7 +5650,7 @@
     {
       "id": "E-116",
       "programme": "AGR-1",
-      "compact_or_sample": "1800 C series (4 compacts)",
+      "compact_or_sample": "1800 °C series (4 compacts)",
       "group": "failure count",
       "nuclide": "n/a",
       "temperature_text": "1800",

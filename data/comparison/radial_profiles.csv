@@ -1,7 +1,7 @@
 # STRATO experimental comparison: radial concentration profiles through the five layers; the initial kernel concentration is the unit
 # label: numerical solution of the stated model; not experimental validation; the comparison with the register is a comparison of release behaviour, not a validation
 # solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1
-# commit: df8b0b4851d05789a537a40a9ff33510f9ac866a
+# commit: 3a0ba1c2894bbb17040e2e60c5fcb2ba10414c2f
 # model_limitations: kernel-only start (inventory-matched start node); constant diffusion coefficient per layer evaluated at the test temperature from the first hour (heating ramps are not modelled); no radioactive decay and no fission-product generation in the solver yet; perfect interface contact; absorbing outer surface; one intact particle, no matrix; the model fraction is a fraction of the particle's own inventory
 # parameter_source: geometry design AGR1-B-M16 (register rows G-01 G-02 G-03 G-04 G-05); diffusion coefficients chosen by the strato-data selection function (decision 47) for the heating-test phase, that is the rows of register sets C16-T2 and C16-BUF as printed, evaluated at the test temperature (the kernel rows are UO2 surrogates: no UCO measurement exists, decision 40); the class of each coefficient (owner ruling 16) and its phase of use are in the sensitivity file and in the coefficient_sets of comparison.json
 # parameter_class: coefficients are the published heating-test correlation of the register (class and phase per row in the sensitivity file); radii are the registered measured baseline geometry; every measurement keeps its register row id
