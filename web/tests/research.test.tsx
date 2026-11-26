@@ -318,7 +318,7 @@ describe('no pending mechanism has an enabled switch', () => {
       useStrato.setState({ requestRun: () => (asked += 1) });
     });
     const config = JSON.stringify(useStrato.getState().config);
-    const mechanisms = JSON.stringify(useStrato.getState().mechanisms);
+    const selection = JSON.stringify(useStrato.getState().selection);
     for (const page of ALL_PAGES) {
       const { unmount } = renderPage(page);
       const switches = Array.from(document.querySelectorAll<HTMLElement>('[role="switch"]'));
@@ -330,7 +330,7 @@ describe('no pending mechanism has an enabled switch', () => {
     for (const s of Array.from(document.querySelectorAll<HTMLElement>('[role="switch"]'))) expect(s.getAttribute('aria-disabled')).toBe('true');
     expect(asked).toBe(0);
     expect(JSON.stringify(useStrato.getState().config)).toBe(config);
-    expect(JSON.stringify(useStrato.getState().mechanisms)).toBe(mechanisms);
+    expect(JSON.stringify(useStrato.getState().selection)).toBe(selection);
   });
 
   it('stays disabled for a verified row without the capability, and for an implemented row with it', () => {
@@ -403,9 +403,11 @@ describe('roadmap, future phases and block E', () => {
     expect(within(roadmap).getByTestId('roadmap-bricks').querySelectorAll('[data-brick]')).toHaveLength(9);
   });
 
-  it('block E separates what the solver implements from the research, and links the Research section', () => {
-    render(<App />);
-    const e = screen.getByTestId('block-e');
+  // The summary of the catalogue left the Explore page with the hierarchy of 26 Nov 2026 (block E is now
+  // the results); the Research overview holds the same content, and the component keeps its own test here.
+  it('the catalogue summary separates what the solver implements from the research, and links the Research section', () => {
+    render(<FutureResearch />);
+    const e = screen.getByTestId('future-research');
     const impl = within(e).getByTestId('future-implemented');
     const pending = within(e).getByTestId('future-pending');
     for (const c of Array.from(impl.querySelectorAll<HTMLElement>('[data-status-row]'))) expect(['IMPLEMENTED', 'VERIFIED', 'VALIDATED']).toContain(c.dataset.status);
@@ -415,6 +417,11 @@ describe('roadmap, future phases and block E', () => {
     expect(within(e).getByTestId('future-planned').textContent).toMatch(/planned for a future phase/);
     expect(within(e).getByTestId('status-legend')).toBeTruthy();
     expect(e.querySelector('a[href="#/research"]')).not.toBeNull();
+  });
+
+  it('the Explore page no longer carries the catalogue summary', () => {
+    render(<App />);
+    expect(screen.queryByTestId('future-research')).toBeNull();
   });
 
   it('says on the downstream entry that FLiBe and cover-gas modelling does not exist and is planned, apart from the gas-cooled AGR data', () => {

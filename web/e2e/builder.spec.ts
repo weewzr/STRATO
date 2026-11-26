@@ -1,10 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Page } from '@playwright/test';
-import { expect, gotoSection, horizontalOverflow, solverRequests, test, waitForRun } from './fixtures';
+import { expect, gotoNumerical, horizontalOverflow, solverRequests, test, waitForRun } from './fixtures';
 
-// The progressive equation builder for the BTCS solver in the running build
-// (prompt/TESTING_AND_VALIDATION.md Sections 3, 3.1, 3.2 and 3.3).
+// The derivation steps of the BTCS solver in the running build (prompt/TESTING_AND_VALIDATION.md
+// Sections 3, 3.1, 3.2 and 3.3). Since the directive of 26 Nov 2026 they sit in the collapsed
+// "Numerical Interpretation" region (block C), opened here through the address.
 
 const catalogue = JSON.parse(readFileSync(join(process.cwd(), 'src', 'generated', 'research_catalogue.json'), 'utf8')) as {
   data: { mechanisms: { mechanism_id: string; status: string }[] };
@@ -33,13 +34,13 @@ test.describe('progressive equation builder at 1440 x 900', () => {
 
   test('every step leaves the simulation unchanged and sends no request; steps one to twelve are live and the others are labelled', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoNumerical(page);
     // The solver has run before the steps are changed; selecting a step must leave the inputs, the
     // result and the solver request count as they are.
     await waitForRun(page);
     const before = await simulationSnapshot(page);
     const sentBefore = await solverRequests(page);
-    const keyBefore = await page.getByTestId('block-b').getAttribute('data-input-key');
+    const keyBefore = await page.getByTestId('block-d').getAttribute('data-input-key');
     // Fonts and images the new equation needs may load; nothing else (no worker, data or solver request).
     const requests: string[] = [];
     page.on('request', (r) => {
@@ -52,18 +53,18 @@ test.describe('progressive equation builder at 1440 x 900', () => {
       if (s === 14 || PREVIEWS.includes(s)) await expect(page.getByTestId('preview-banner')).toBeVisible();
       else if (s === 13) await expect(page.getByTestId('live-note')).toContainText('not experimental validation');
       else await expect(page.getByTestId('live-note')).toContainText('Live: the simulation below solves these equations with the verified finite-difference BTCS Rust solver');
-      await expect(page.getByTestId('strip-stage')).toHaveText(`Step ${s} shown; simulation: Method A: BTCS`);
+      await expect(page.getByTestId('strip-stage')).toHaveText('Physics: Baseline diffusion; simulation: Method A: BTCS');
       expect(await simulationSnapshot(page)).toEqual(before);
     }
     await page.waitForTimeout(400);
     expect(await solverRequests(page)).toBe(sentBefore);
-    await expect(page.getByTestId('block-b')).toHaveAttribute('data-input-key', keyBefore ?? '');
+    await expect(page.getByTestId('block-d')).toHaveAttribute('data-input-key', keyBefore ?? '');
     expect(requests).toEqual([]);
   });
 
   test('Tab from the last part of a step moves into the card of that part, and keyboard focus is never lost', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoNumerical(page);
     const buttons = page.locator('.eq-term-btn');
     const n = await buttons.count();
     expect(n).toBeGreaterThan(1);
@@ -84,7 +85,7 @@ test.describe('progressive equation builder at 1440 x 900', () => {
 
   test('every research status shown equals the generated catalogue', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoNumerical(page);
     for (const s of STAGES) {
       await pickStage(page, s);
       const chips = await page.locator('[data-section="explore"] [data-status-for]').evaluateAll((els) =>
@@ -100,7 +101,7 @@ test.describe('progressive equation builder at 1440 x 900', () => {
 
   test('KaTeX typesets every step without an error, each equation numbered with the number of its document', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoNumerical(page);
     for (const s of STAGES) {
       await pickStage(page, s);
       await expect(page.locator('.katex-error')).toHaveCount(0);
@@ -115,29 +116,19 @@ test.describe('progressive equation builder at 1440 x 900', () => {
     }
   });
 
-  test('the switches stay disabled and the switch of the preview is marked', async ({ page, problems }) => {
+  test('the controls hold no second mechanism switch: the physics is chosen in the governing equation', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
-    for (const [s, id] of [
-      [15, 'source'],
-      [16, 'decay'],
-      [17, 'arrhenius'],
-    ] as const) {
-      await pickStage(page, s);
-      const sw = page.getByTestId(`mech-${id}`);
-      await expect(sw).toHaveAttribute('data-stage-current', 'true');
-      await expect(sw).toHaveAttribute('aria-disabled', 'true');
-      await sw.click({ force: true });
-      await expect(sw).toHaveAttribute('aria-checked', 'false');
-    }
+    await gotoNumerical(page);
+    await expect(page.getByTestId('controls').locator('[role="switch"]')).toHaveCount(0);
+    await expect(page.getByTestId('physics-picker').getByRole('radio')).toHaveCount(5);
   });
 
-  test('block A shows no number apart from equation numbers, references and step numbers', async ({ page, problems }) => {
+  test('the Numerical Interpretation region shows no number apart from equation numbers, references and step numbers', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoNumerical(page);
     for (const s of STAGES) {
       await pickStage(page, s);
-      const text = await page.getByTestId('block-a').evaluate((el) => {
+      const text = await page.getByTestId('equation-builder').evaluate((el) => {
         const c = el.cloneNode(true) as HTMLElement;
         // The numbers of the current run ("Live values") come from the wrapper; they are not text of the builder.
         c.querySelectorAll('.katex, [data-ref], .stage-num, .stage-select, [hidden], [data-testid="live-numbers"]').forEach((n) => n.remove());
@@ -149,7 +140,7 @@ test.describe('progressive equation builder at 1440 x 900', () => {
 
   test('the part card opens on hover and the part is outlined in the equation', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoNumerical(page);
     await pickStage(page, 16);
     await page.getByTestId('term-decay').hover();
     await expect(page.getByTestId('term-card')).toContainText('Radioactive decay');
@@ -165,7 +156,7 @@ test.describe('progressive equation builder at 1440 x 900', () => {
 
   test('the code links of the implementation disclosure point at the solver files, and the placeholder step links none', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoNumerical(page);
     await pickStage(page, 11);
     await page.getByTestId('more-implementation').click();
     const links = await page.getByTestId('more-panel-implementation').locator('a').evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).href));
@@ -182,7 +173,7 @@ test.describe('keyboard', () => {
 
   test('the step picker is one tab stop moved with the arrow keys; the disclosure panels open with Enter', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoNumerical(page);
     await page.getByTestId('stage-1').focus();
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('ArrowDown');
@@ -207,7 +198,7 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
 
     test('fades in only when motion is allowed', async ({ page, problems }) => {
       void problems;
-      await gotoSection(page, 'explore');
+      await gotoNumerical(page);
       await pickStage(page, 16);
       const dur = await page.locator('[data-testid="equation"] .eq-new').first().evaluate((e) => getComputedStyle(e).animationDuration);
       if (reducedMotion === 'reduce') expect(parseFloat(dur)).toBe(0);
@@ -236,9 +227,11 @@ for (const colorScheme of ['light', 'dark'] as const) {
     test.describe(`fold with the builder, ${colorScheme}, reduced motion ${reducedMotion}`, () => {
       test.use({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, colorScheme, reducedMotion });
 
-      test('every step keeps A and the top of B in the first screen', async ({ page, problems }) => {
+      // Rewritten for the hierarchy of 26 Nov 2026: the equation and the physics controls (block A) stay in the
+      // first screen whichever derivation step is open in block C below them; the step picker is in block C.
+      test('every step keeps the governing equation and the physics controls in the first screen', async ({ page, problems }) => {
         void problems;
-        await gotoSection(page, 'explore');
+        await gotoNumerical(page);
         await page.evaluate(() => document.fonts.ready);
         const tallest = await tallestStage(page);
         expect(tallest).toBeGreaterThanOrEqual(1);
@@ -248,7 +241,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
           await page.evaluate(() => window.scrollTo(0, 0));
           const footerTop = (await page.locator('footer.status').boundingBox())?.y ?? 900;
           const headerBottom = await page.locator('header.header').evaluate((el) => el.getBoundingClientRect().bottom);
-          for (const id of ['block-a', 'stage-picker', 'equation', 'particle', 'release-readout']) {
+          for (const id of ['equation-governing', 'physics-picker']) {
             const box = await page.getByTestId(id).boundingBox();
             expect(box, `${id} at step ${s}`).not.toBeNull();
             if (!box) continue;
@@ -296,7 +289,7 @@ for (const vp of [
 
     test('no equation number covers the equation at any step', async ({ page, problems }) => {
       void problems;
-      await gotoSection(page, 'explore');
+      await gotoNumerical(page);
       await page.evaluate(() => document.fonts.ready);
       for (const s of STAGES) {
         if (vp.width < 768) await page.getByTestId('stage-select').selectOption(String(s));
@@ -325,7 +318,7 @@ test.describe('builder on a 390 px phone (device emulation)', () => {
 
   test('step select, equation scrolling inside its own box, no sideways page scroll', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoNumerical(page);
     for (const s of STAGES) {
       await page.getByTestId('stage-select').selectOption(String(s));
       await expect(page.getByTestId('equation-builder')).toHaveAttribute('data-stage', String(s));

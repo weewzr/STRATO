@@ -4,6 +4,7 @@
 import { BUILD } from '../build';
 import { DEFAULT_CASE } from '../data/case';
 import { isAvailable } from '../equation/availability';
+import { buildCapability, MECHANISMS, WRAPPER_ID } from '../equation/capability';
 import { SWITCH_MECHANISM, type SwitchId } from '../equation/terms';
 import { CATALOGUE, statusOf } from '../research/catalogue';
 import { entryPage } from '../research/entries';
@@ -130,10 +131,12 @@ export async function runSelftest(): Promise<void> {
   const hashOk = /^[0-9a-f]{64}$/.test(DEFAULT_CASE.provenance.input_sha256);
   add('case_inputs', sameConfig && hashOk, `baseline equals generated case: ${sameConfig}; input SHA-256 present: ${hashOk}`);
 
-  // 3. Mechanisms without solver support stay unavailable (isAvailable() with the reported capabilities).
-  const mechEntries = Object.entries(state.mechanisms) as [SwitchId, { available: boolean; enabled: boolean }][];
-  const mechOk = mechEntries.every(([id, m]) => m.available === isAvailable(SWITCH_MECHANISM[id], state.capabilities) && (m.available || !m.enabled));
-  add('mechanisms_disabled', mechOk, `capabilities=[${state.capabilities.join(', ')}]; ${mechEntries.map(([id, m]) => `${id}:${m.available ? 'available' : 'unavailable'}`).join(' ')}`);
+  // 3. The status of each mechanism follows the capabilities the wrapper reported (equation/capability.ts), and
+  //    a mechanism that is not verified in this build is not simulable.
+  const cap = buildCapability(state.capabilities);
+  const mechEntries = MECHANISMS.map((m) => [m, cap.mechanisms[m]] as const);
+  const mechOk = mechEntries.every(([m, s]) => (s === 'verified') === isAvailable(WRAPPER_ID[m], state.capabilities) && (s !== 'planned') === state.capabilities.includes(WRAPPER_ID[m]));
+  add('mechanisms_status', mechOk, `capabilities=[${state.capabilities.join(', ')}]; ${mechEntries.map(([m, s]) => `${m}:${s}`).join(' ')}`);
 
   // 4. Every section renders its heading.
   const startHash = window.location.hash;

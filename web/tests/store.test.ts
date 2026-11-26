@@ -80,13 +80,8 @@ describe('store actions', () => {
     expect(useStrato.getState().caseId).toBe('synthetic_five_layer');
   });
 
-  it('keep the planned mechanisms off: they are unavailable before web phase 6', () => {
-    const a = useStrato.getState();
-    for (const m of ['decay', 'source', 'arrhenius'] as const) {
-      expect(useStrato.getState().mechanisms[m]).toEqual({ enabled: false, available: false });
-      a.setMechanism(m, true);
-      expect(useStrato.getState().mechanisms[m].enabled).toBe(false);
-    }
+  it('start with the default selection: baseline physics, steady-state operation, nothing expanded', () => {
+    expect(useStrato.getState().selection).toEqual({ physics: 'baseline', scenario: 'steady', expanded: [] });
   });
 
   it('select and clear a layer', () => {

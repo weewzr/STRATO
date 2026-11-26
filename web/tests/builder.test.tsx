@@ -11,7 +11,6 @@ import { CORE_STAGES, PREVIEW_STAGES, STAGES, STEP_DEFS, type Stage } from '../s
 import { ControlPanel } from '../src/panels/ControlPanel';
 import { CATALOGUE, CatalogueContext, parseCatalogue, statusOf, type Catalogue } from '../src/research/catalogue';
 import { useStrato } from '../src/state/store';
-import { fixtureCatalogue } from './catalogueFixture';
 
 function withCatalogue(cat: Catalogue, ui: React.ReactElement) {
   return <CatalogueContext.Provider value={cat}>{ui}</CatalogueContext.Provider>;
@@ -189,11 +188,13 @@ describe('equation and parts', () => {
     expect(screen.getByTestId('more-panel-implementation').textContent).toMatch(/^Placeholder/);
   });
 
-  it('block A shows no number apart from equation numbers, references and step numbers, at every step', { timeout: 120_000 }, () => {
+  // The builder moved from block A to the Numerical Interpretation region (block C) with the directive of 26 Nov 2026.
+  it('the Numerical Interpretation region shows no number apart from equation numbers, references and step numbers, at every step', { timeout: 120_000 }, () => {
     render(<App />);
+    act(() => useStrato.getState().setExpanded('numerical', true));
     for (const s of STAGES) {
       act(() => useStrato.getState().setStage(s));
-      const a = screen.getByTestId('block-a');
+      const a = screen.getByTestId('equation-builder');
       expect(plainText(a), `step ${s}`).not.toMatch(/\d/);
       // Inside the typeset maths: no decimal number outside the equation tags.
       const maths = Array.from(a.querySelectorAll('.katex-html')).map((k) => {
@@ -206,7 +207,17 @@ describe('equation and parts', () => {
   });
 });
 
-describe('no active toggle without solver support', () => {
+// The mechanism switches of the controls were replaced by the physics selection of block A on 26 Nov 2026
+// (tests/physics.test.tsx covers its status, the capability object and the simulation gate).
+describe('the controls hold no second mechanism control', () => {
+  it('has no mechanism switch', () => {
+    act(() => useStrato.getState().setCapabilities(['diffusion_btcs_layered']));
+    render(<ControlPanel layout="inline" />);
+    expect(document.querySelectorAll('[role="switch"]')).toHaveLength(0);
+  });
+});
+
+describe('catalogue rows with coupled equations', () => {
   const press = async (el: HTMLElement) => {
     const user = userEvent.setup();
     await user.click(el);
@@ -214,61 +225,6 @@ describe('no active toggle without solver support', () => {
     await user.keyboard('{Enter}');
     await user.keyboard(' ');
   };
-
-  it('with only the BTCS capability every mechanism switch is disabled, stays off and says why', async () => {
-    act(() => useStrato.getState().setCapabilities(['diffusion_btcs_layered']));
-    render(<ControlPanel layout="inline" />);
-    for (const id of ['source', 'decay', 'arrhenius']) {
-      const sw = screen.getByTestId(`mech-${id}`);
-      expect(sw.getAttribute('aria-disabled')).toBe('true');
-      await press(sw);
-      expect(sw.getAttribute('aria-checked')).toBe('false');
-      const why = document.getElementById(sw.getAttribute('aria-describedby') ?? '');
-      expect(why?.textContent).toMatch(/Not available: status RESEARCHED; awaiting reviewed implementation/);
-    }
-    expect(Object.values(useStrato.getState().mechanisms).every((m) => !m.enabled && !m.available)).toBe(true);
-    expect(screen.getByTestId('announce').textContent).toMatch(/not available; status RESEARCHED/);
-  });
-
-  it('a VERIFIED mechanism absent from the capabilities stays disabled', async () => {
-    const cat = fixtureCatalogue({ generation: 'VERIFIED', decay: 'VERIFIED', diffusivity_temperature: 'VERIFIED' });
-    act(() => useStrato.getState().setCapabilities(['diffusion_btcs_layered']));
-    render(withCatalogue(cat, <ControlPanel layout="inline" />));
-    for (const id of ['source', 'decay', 'arrhenius']) {
-      const sw = screen.getByTestId(`mech-${id}`);
-      expect(sw.getAttribute('aria-disabled')).toBe('true');
-      await press(sw);
-      expect(sw.getAttribute('aria-checked')).toBe('false');
-    }
-  });
-
-  it('a mechanism reported by the wrapper but only IMPLEMENTED stays disabled', async () => {
-    const cat = fixtureCatalogue({ generation: 'IMPLEMENTED', decay: 'IMPLEMENTED', diffusivity_temperature: 'IMPLEMENTED' });
-    act(() => useStrato.getState().setCapabilities(['diffusion_btcs_layered', 'generation', 'decay', 'diffusivity_temperature']));
-    render(withCatalogue(cat, <ControlPanel layout="inline" />));
-    for (const id of ['source', 'decay', 'arrhenius']) {
-      const sw = screen.getByTestId(`mech-${id}`);
-      expect(sw.getAttribute('aria-disabled')).toBe('true');
-      await press(sw);
-      expect(sw.getAttribute('aria-checked')).toBe('false');
-    }
-    expect(useStrato.getState().mechanisms.source.enabled).toBe(false);
-  });
-
-  it('setMechanism refuses a mechanism that isAvailable() rejects', () => {
-    act(() => useStrato.getState().setCapabilities(['diffusion_btcs_layered', 'generation']));
-    useStrato.getState().setMechanism('source', true);
-    expect(useStrato.getState().mechanisms.source).toEqual({ enabled: false, available: false });
-  });
-
-  it('marks the switch that the selected preview stands for', () => {
-    render(<ControlPanel layout="inline" />);
-    act(() => useStrato.getState().setStage(16));
-    expect(screen.getByTestId('mech-decay').dataset.stageCurrent).toBe('true');
-    expect(screen.getByTestId('mech-source').dataset.stageCurrent).toBeUndefined();
-    act(() => useStrato.getState().setStage(1));
-    expect(document.querySelectorAll('[data-stage-current]')).toHaveLength(0);
-  });
 
   it('a catalogue mechanism with coupled equations is shown as a system with a disabled switch', async () => {
     const raw = JSON.parse(JSON.stringify(CATALOGUE)) as Catalogue;

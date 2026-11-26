@@ -108,25 +108,9 @@ describe('ControlPanel', () => {
     expect(screen.queryByText('Must be a whole number.')).toBeNull();
   });
 
-  it('keeps the mechanism switches focusable, disabled and off', async () => {
-    const user = userEvent.setup();
+  it('holds no mechanism switch: the physics is selected in the governing equation (block A)', () => {
     render(<ControlPanel />);
-    for (const id of ['source', 'decay', 'arrhenius']) {
-      const sw = screen.getByTestId(`mech-${id}`);
-      expect(sw.getAttribute('role')).toBe('switch');
-      expect(sw.getAttribute('aria-disabled')).toBe('true');
-      expect(sw.getAttribute('aria-checked')).toBe('false');
-      expect(sw.hasAttribute('disabled')).toBe(false);
-      await user.click(sw);
-      expect(sw.getAttribute('aria-checked')).toBe('false');
-    }
-    // From web phase 2 each switch names its research status, read from the catalogue.
-    expect(screen.getAllByText(/Not available: status RESEARCHED; awaiting reviewed implementation/)).toHaveLength(3);
-    expect(useStrato.getState().mechanisms).toEqual({
-      decay: { enabled: false, available: false },
-      source: { enabled: false, available: false },
-      arrhenius: { enabled: false, available: false },
-    });
+    expect(document.querySelectorAll('[role="switch"]')).toHaveLength(0);
   });
 
   it('keeps Run unavailable before the solver exists', async () => {
@@ -170,19 +154,25 @@ describe('Explore page (owner decision M7)', () => {
     render(<App />);
     const blocks = Array.from(document.querySelectorAll<HTMLElement>('[data-section="explore"] [data-block]'));
     expect(blocks.map((b) => b.dataset.block)).toEqual(['A', 'B', 'C', 'D', 'E']);
-    for (const b of blocks) expect(b.getAttribute('aria-labelledby')).toBeTruthy();
+    // Block B is the empty slot of the scenario row, hidden from assistive technology until it holds the row.
+    for (const b of blocks.filter((x) => x.dataset.block !== 'B')) expect(b.getAttribute('aria-labelledby')).toBeTruthy();
+    expect(blocks[1]?.getAttribute('aria-hidden')).toBe('true');
     expect(document.querySelector('[data-block="A"] h1')).toBeTruthy();
     expect(document.querySelectorAll('h1')).toHaveLength(1);
   });
 
-  it('puts the particle cross-section and the release readout in block B', () => {
+  it('puts the particle cross-section in block D and the release readout in block E', () => {
     render(<App />);
-    const b = screen.getByTestId('block-b');
-    expect(within(b).getByTestId('particle')).toBeTruthy();
+    const d = screen.getByTestId('block-d');
+    const e = screen.getByTestId('block-e');
+    expect(within(d).getByTestId('particle')).toBeTruthy();
     // Without a solver reply (no worker in this test) the readout says so and carries no label.
-    expect(within(b).getByTestId('release-readout').textContent).toContain('Waiting for the solver');
-    expect(within(b).getByTestId('release-readout').querySelector('.badge')).toBeNull();
-    expect(within(b).getByTestId('simulation-case').textContent).toContain('not AGR-1 data');
+    expect(within(e).getByTestId('release-readout').textContent).toContain('Waiting for the solver');
+    expect(within(e).getByTestId('release-readout').querySelector('.badge')).toBeNull();
+    expect(within(d).getByTestId('simulation-case').textContent).toContain('not AGR-1 data');
+    // The scenario slot (block B) holds nothing visible.
+    expect(screen.getByTestId('block-b').childElementCount).toBe(0);
+    expect(screen.getByTestId('block-b').textContent).toBe('');
   });
 
   it('marks every later-phase area as a placeholder with its phase and no result label', () => {
@@ -191,10 +181,10 @@ describe('Explore page (owner decision M7)', () => {
     // Web phase 2 filled the two phase-2 placeholders (equation builder in A, terms in D); web
     // phase 3 filled the two phase-3 placeholders (inventory balance and diagnostics in B); web
     // phase 4 filled the phase-4 placeholder (the AGR-1 reference particle); web phase 5 filled the
-    // two phase-5 placeholders (radial profile and release curves in B); web phase 5.5 filled the
-    // last one (the research catalogue summary in E), so none is left.
+    // two phase-5 placeholders (radial profile and release curves); web phase 5.5 filled the last
+    // one, so none is left. The research catalogue summary lives under Research since 26 Nov 2026.
     expect(ph.map((p) => p.dataset.placeholderPhase)).toEqual([]);
-    expect(within(screen.getByTestId('block-e')).getByTestId('future-research')).toBeTruthy();
+    expect(screen.queryByTestId('future-research')).toBeNull();
     for (const p of ph) {
       expect(p.textContent).toMatch(/^Placeholder/);
       expect(p.querySelector('.badge')).toBeNull();

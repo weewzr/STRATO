@@ -15,10 +15,10 @@ for (const vp of VIEWPORTS) {
       });
     }
 
-    test('controls: inline in block C from 768 px, a bottom sheet below', async ({ page, problems }, info) => {
+    test('controls: inline in block D from 768 px, a bottom sheet below', async ({ page, problems }, info) => {
       void problems;
       await gotoSection(page, 'explore');
-      const blockC = page.getByTestId('block-c');
+      const blockC = page.getByTestId('block-d');
       // No control column beside the page at any width (owner decision M7).
       await expect(page.locator('aside')).toHaveCount(0);
       if (vp.width >= 768) {

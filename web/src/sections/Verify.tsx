@@ -2,6 +2,7 @@ import { repoFile } from '../build';
 import { METHOD_1, METHOD_2 } from '../methods';
 import { BalancePanelVerify, ConvergencePanel, MethodComparisonPanel } from '../panels/Verification';
 import { SolverStatus } from '../panels/SimResults';
+import { hrefFor } from '../route';
 import { SectionHeading, TableBox } from './common';
 
 const CHECKS: { check: string; shows: string; evidence: { path: string; text: string }[] }[] = [
@@ -84,6 +85,18 @@ export function Verify() {
       <ConvergencePanel />
       <h2>Inventory balance</h2>
       <BalancePanelVerify />
+      <h2>Boundary, interface and initial conditions</h2>
+      <p>
+        The centre of the particle is a point of symmetry, so no material crosses it. Neighbouring layers are in perfect contact: the
+        concentration and the diffusive flux are continuous at every interface. The outer surface is a perfect sink, held at zero
+        concentration. At the start the species is spread uniformly through the kernel and absent from the coating layers.
+      </p>
+      <h2>Verification is not validation</h2>
+      <p>
+        Verification shows that STRATO solves its own equations correctly. Validation asks whether the model matches measured release from
+        real particles; it needs the generation, decay and temperature-dependent physics and the comparison with measurements, and is
+        described under <a href={hrefFor('validate')}>Validate</a>.
+      </p>
       <h2>Checks and their evidence</h2>
       <TableBox label="Verification checks">
         <table className="table">

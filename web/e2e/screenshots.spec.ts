@@ -25,7 +25,7 @@ for (const vp of [
         await page.evaluate(() => document.fonts.ready);
         await page.screenshot({ path: join(dir, `explore-fold-${vp.width}-${scheme}.png`), fullPage: false });
         // Web phase 3: the solver results of block B.
-        await page.getByTestId('block-b').screenshot({ path: join(dir, `explore-results-${vp.width}-${scheme}.png`) });
+        await page.getByTestId('block-e').screenshot({ path: join(dir, `explore-results-${vp.width}-${scheme}.png`) });
         await page.getByTestId('inspect-3').click();
         if (vp.width < 768) {
           await page.getByTestId('open-panel').click();
@@ -37,7 +37,7 @@ for (const vp of [
         // The radius is now below the one inside it: the solver rejects the inputs and says why.
         if (vp.width < 768) await page.getByTestId('close-sheet').click();
         await waitForRun(page, 'rejected');
-        await page.getByTestId('block-b').screenshot({ path: join(dir, `explore-rejected-${vp.width}-${scheme}.png`) });
+        await page.getByTestId('block-d').screenshot({ path: join(dir, `explore-rejected-${vp.width}-${scheme}.png`) });
       });
     });
   }

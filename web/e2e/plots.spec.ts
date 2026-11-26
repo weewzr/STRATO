@@ -138,7 +138,7 @@ test.describe('block B plots', () => {
     void problems;
     await gotoSection(page, 'explore');
     await waitForRun(page);
-    const key = await page.getByTestId('block-b').getAttribute('data-input-key');
+    const key = await page.getByTestId('block-d').getAttribute('data-input-key');
     const before = await solverRequests(page);
     await page.getByTestId('profile-log').uncheck();
     await page.getByTestId('profile-start').uncheck();
@@ -149,7 +149,7 @@ test.describe('block B plots', () => {
     // Switching Method B off removes its curve only.
     await page.getByTestId('release-method-2').uncheck();
     await expect.poll(async () => (await drawn(page, 'release-plot')).map((t) => t.id).sort()).toEqual(['release-b', 'release-cursor']);
-    expect(await page.getByTestId('block-b').getAttribute('data-input-key')).toBe(key);
+    expect(await page.getByTestId('block-d').getAttribute('data-input-key')).toBe(key);
     expect(await solverRequests(page)).toBe(before);
   });
 

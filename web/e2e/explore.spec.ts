@@ -33,11 +33,11 @@ test.describe('blocks on a 390 px phone (device emulation)', () => {
     await gotoSection(page, 'explore');
     await expectOrder(page);
     expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
-    // Block C holds the entry to the controls; the controls themselves open in the bottom sheet.
-    const blockC = page.getByTestId('block-c');
-    await expect(blockC.getByTestId('open-panel')).toBeVisible();
-    await expect(blockC.getByTestId('controls')).toHaveCount(0);
-    await blockC.getByTestId('open-panel').click();
+    // Block D holds the entry to the controls; the controls themselves open in the bottom sheet.
+    const blockD = page.getByTestId('block-d');
+    await expect(blockD.getByTestId('open-panel')).toBeVisible();
+    await expect(blockD.getByTestId('controls')).toHaveCount(0);
+    await blockD.getByTestId('open-panel').click();
     const sheet = page.getByTestId('parameter-sheet');
     await expect(sheet).toBeVisible();
     await expect(sheet.getByTestId('controls')).toHaveAttribute('data-layout', 'sheet');
@@ -52,16 +52,18 @@ for (const colorScheme of ['light', 'dark'] as const) {
     test.describe(`fold at 1440 x 900, ${colorScheme}, reduced motion ${reducedMotion}`, () => {
       test.use({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, colorScheme, reducedMotion });
 
-      test('the equation block and the top of the simulation are visible without scrolling', async ({ page, problems }) => {
+      // Rewritten for the hierarchy of 26 Nov 2026: the governing equation is the first and largest element, so the
+      // equation and the physics controls fill the first screen; the simulation and the results follow below.
+      test('the governing equation and the physics controls are visible without scrolling', async ({ page, problems }) => {
         void problems;
         await gotoSection(page, 'explore');
-        // Web phase 3: measure with the solver's result in place (the readout then carries its label).
+        // Measure with the solver's result in place (the readout then carries its label).
         await waitForRun(page);
         await page.evaluate(() => document.fonts.ready);
         expect(await page.evaluate(() => window.scrollY)).toBe(0);
         const footerTop = (await page.locator('footer.status').boundingBox())?.y ?? 900;
         const headerBottom = await page.locator('header.header').evaluate((el) => el.getBoundingClientRect().bottom);
-        for (const id of ['block-a', 'particle', 'release-readout']) {
+        for (const id of ['equation-governing', 'physics-picker']) {
           const box = await page.getByTestId(id).boundingBox();
           expect(box, id).not.toBeNull();
           if (!box) continue;
@@ -93,7 +95,8 @@ test.describe('placeholders', () => {
     // registered-geometry view; web phase 5 replaced the profile and release placeholders with the
     // plots; web phase 5.5 replaced the last one with the research catalogue summary in block E.
     expect(phases).toEqual([]);
-    await expect(page.getByTestId('block-e').getByTestId('future-research')).toBeVisible();
+    // Since 26 Nov 2026 block E holds the results; the catalogue summary is under Research.
+    await expect(page.getByTestId('future-research')).toHaveCount(0);
     expect(phases).not.toContain('2');
     expect(phases).not.toContain('3');
     expect(phases).not.toContain('4');
@@ -103,26 +106,36 @@ test.describe('placeholders', () => {
     await expect(page.getByTestId('simulation-case')).toContainText('Synthetic five-layer verification case, not AGR-1 data');
   });
 
-  // Web phase 3: Run now runs the solver; the mechanism switches still send nothing (Section 3.2).
-  test('the mechanism switches send nothing and stay off; Run sends the check of the inputs and one run', async ({ page, problems }) => {
+  // Run runs the solver; a selection that the build does not implement sends nothing and shows nothing.
+  test('an unsupported selection sends nothing and shows no result; Run sends the check of the inputs and one run', async ({ page, problems }) => {
     void problems;
     const requests: string[] = [];
     await gotoSection(page, 'explore');
     await waitForRun(page);
     const before = await solverRequests(page);
     expect(before).toBeGreaterThanOrEqual(1);
-    page.on('request', (r) => requests.push(r.url()));
-    // aria-disabled controls stay focusable and clickable; force skips Playwright's enabled check.
-    for (const id of ['source', 'decay', 'arrhenius']) {
-      await page.getByTestId(`mech-${id}`).click({ force: true });
-      await expect(page.getByTestId(`mech-${id}`)).toHaveAttribute('aria-checked', 'false');
+    // Fonts the new equation needs may load and the browser asks for the page icon again when the address
+    // changes; nothing else (no worker, data or solver request).
+    page.on('request', (r) => {
+      if (!['font', 'image'].includes(r.resourceType()) && !r.url().endsWith('/favicon.svg')) requests.push(`${r.resourceType()} ${r.url()}`);
+    });
+    for (const id of ['generation', 'decay', 'temperature', 'combined']) {
+      await page.getByTestId(`physics-${id}`).click();
+      await expect(page.getByTestId(`physics-${id}`)).toHaveAttribute('aria-checked', 'true');
+      await expect(page.getByTestId('block-d')).toHaveAttribute('data-supported', 'false');
     }
     await page.waitForTimeout(400);
     expect(await solverRequests(page)).toBe(before);
     expect(requests).toEqual([]);
+    // The baseline again: the simulation runs (the check of the inputs and one run).
+    await page.getByTestId('physics-baseline').click();
+    await expect(page.getByTestId('block-d')).toHaveAttribute('data-supported', 'true');
+    await expect.poll(() => solverRequests(page)).toBe(before + 2);
+    await waitForRun(page);
+    requests.length = 0;
     await page.getByTestId('strip-run').click();
     // Run asks the wrapper to validate the inputs (shown beside the controls) and then to run them.
-    await expect.poll(() => solverRequests(page)).toBe(before + 2);
+    await expect.poll(() => solverRequests(page)).toBe(before + 4);
     await waitForRun(page);
     await expect(page.getByTestId('status-result')).toHaveText('Result COMPUTED v2.0');
     expect(requests).toEqual([]);

@@ -4,6 +4,8 @@
 // Compare section asks for it. Every request goes to a BTCS function of the wrapper; a failure to
 // load the solver is stored as a failure, and no other source of numbers exists. Nothing here
 // computes a value.
+import { buildCapability, runMechanisms, selectionSupport } from '../equation/capability';
+import { BTCS_CAPABILITY } from '../equation/availability';
 import { comparisonKey, inputKey, useStrato } from '../state/store';
 import { SolverClient, SolverError, type WorkerFactory } from './client';
 import { RUN_DEBOUNCE_MS } from './tolerances';
@@ -11,8 +13,19 @@ import { RUN_DEBOUNCE_MS } from './tolerances';
 let client: SolverClient | null = null;
 let timer: ReturnType<typeof setTimeout> | null = null;
 
-/** The mechanism ids a run asks for: the layered diffusion of the BTCS solver (builder steps 1 to 12). */
-const RUN_MECHANISMS = ['diffusion_btcs_layered'];
+/** The mechanism ids a comparison asks for: the layered diffusion of the BTCS solver (the Compare section compares inputs of the baseline model). */
+const COMPARE_MECHANISMS = [BTCS_CAPABILITY];
+
+/**
+ * Whether the build can run the selection of the Explore page as selected. A run is sent only then:
+ * the simulation is never run with a different model in place of the one selected, so for an
+ * unsupported selection nothing is sent and the page shows no result (equation/capability.ts).
+ */
+function selectionRunnable(): boolean {
+  const s = useStrato.getState();
+  if (s.capabilities.length === 0) return true;
+  return selectionSupport(buildCapability(s.capabilities), s.selection.physics, s.selection.scenario).supported;
+}
 
 export function solverClient(): SolverClient | null {
   return client;
@@ -55,13 +68,14 @@ async function validateNow(): Promise<void> {
 
 async function runNow(): Promise<void> {
   if (!client) return;
+  if (!selectionRunnable()) return;
   const s = useStrato.getState();
   const config = s.config;
   const key = inputKey(config);
   s.setRunning();
   void validateNow();
   try {
-    const pending = client.run(config, RUN_MECHANISMS, s.capabilities);
+    const pending = client.run(config, runMechanisms(s.selection.physics), s.capabilities);
     stampRequests();
     const reply = await pending;
     const info = { elapsedMs: reply.elapsedMs, requestId: reply.requestId, inputKey: key, dropped: reply.dropped };
@@ -98,7 +112,7 @@ async function compareNow(): Promise<void> {
   const key = comparisonKey(baseline, current);
   s.setComparison({ status: 'running' });
   try {
-    const pending = client.compare(baseline, current, RUN_MECHANISMS, s.capabilities);
+    const pending = client.compare(baseline, current, COMPARE_MECHANISMS, s.capabilities);
     stampRequests();
     const reply = await pending;
     const set = useStrato.getState().setComparison;
@@ -147,6 +161,9 @@ export function startSolver(factory: WorkerFactory = defaultFactory): SolverClie
   useStrato.setState({ requestRun: () => schedule(0), requestCompare: () => scheduleCompare(RUN_DEBOUNCE_MS) });
   useStrato.subscribe((state, prev) => {
     if (state.config !== prev.config && state.solver.state === 'ready') schedule(RUN_DEBOUNCE_MS);
+    // A new selection of the Explore page runs at once (or, when the build cannot run it, sends nothing).
+    const changedModel = state.selection.physics !== prev.selection.physics || state.selection.scenario !== prev.selection.scenario;
+    if (changedModel && state.solver.state === 'ready') schedule(0);
   });
   return client;
 }

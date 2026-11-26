@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Page } from '@playwright/test';
-import { expect, gotoSection, horizontalOverflow, solverRequests, test } from './fixtures';
+import { expect, gotoNumerical, gotoSection, horizontalOverflow, solverRequests, test } from './fixtures';
 
 const catalogueJson = JSON.parse(readFileSync(fileURLToPath(new URL('../src/generated/research_catalogue.json', import.meta.url)), 'utf8')) as {
   data: { mechanisms: { mechanism_id: string; species: string; material_domain: string; status: string }[] };
@@ -74,22 +74,21 @@ for (const vp of [
       }
     });
 
-    test('block E summarises the catalogue under the live simulation', async ({ page, problems }) => {
+    // The summary of the catalogue left the Explore page with the hierarchy of 26 Nov 2026 (block E is now the
+    // results); the Research overview carries the same content: implemented and research only, the three
+    // regimes, the nine species, the five statuses.
+    test('the Research overview separates what the solver implements from the research, and Explore carries no catalogue summary', async ({ page, problems }) => {
       void problems;
-      await gotoSection(page, 'explore');
-      const e = page.getByTestId('block-e');
-      await e.scrollIntoViewIfNeeded();
-      await expect(e.getByTestId('future-implemented')).toBeVisible();
-      await expect(e.getByTestId('future-pending')).toBeVisible();
-      await expect(e.getByTestId('future-species').locator('[data-species]')).toHaveCount(9);
-      await expect(e.getByTestId('future-regimes').locator('> section')).toHaveCount(3);
-      await expect(e.getByTestId('status-legend').locator('dd')).toHaveCount(5);
-      expect(await checkStatuses(page, '[data-testid="block-e"]')).toBeGreaterThan(0);
+      await gotoResearch(page, '');
+      await expect(page.getByTestId('overview-implemented')).toBeVisible();
+      await expect(page.getByTestId('overview-builder-research')).toBeVisible();
+      await expect(page.getByTestId('overview-species').locator('[data-species]')).toHaveCount(9);
+      await expect(page.locator('[data-testid^="overview-regime-"]')).toHaveCount(3);
+      await expect(page.getByTestId('status-legend').locator('dd')).toHaveCount(5);
       expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
-      if (dir) {
-        await page.evaluate(() => document.fonts.ready);
-        await e.screenshot({ path: join(dir, `explore-block-e-${vp.label}.png`) });
-      }
+      await gotoSection(page, 'explore');
+      await expect(page.getByTestId('future-research')).toHaveCount(0);
+      expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
     });
   });
 }
@@ -114,7 +113,7 @@ test.describe('catalogue switches by keyboard', () => {
 
   test('the last step of the builder lists the catalogue rows behind one disclosure, with disabled switches', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoNumerical(page);
     await page.getByTestId('stage-17').click();
     const toggle = page.getByTestId('stage6-toggle');
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
@@ -128,7 +127,7 @@ test.describe('catalogue switches by keyboard', () => {
     await expect(switches.first()).toHaveAttribute('aria-checked', 'false');
     expect(await checkStatuses(page, '[data-testid="stage6"]')).toBeGreaterThan(0);
     expect(await solverRequests(page)).toBe(before);
-    if (dir) await page.getByTestId('block-a').screenshot({ path: join(dir, 'explore-last-step-1440.png') });
+    if (dir) await page.getByTestId('block-c').screenshot({ path: join(dir, 'explore-last-step-1440.png') });
   });
 
   test('a link to a heading of another entry opens that entry at the heading', async ({ page, problems }) => {

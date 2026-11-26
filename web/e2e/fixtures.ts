@@ -37,9 +37,19 @@ export async function gotoSection(page: Page, id: string): Promise<void> {
   await expect(page.locator(`[data-section="${id}"] h1`)).toBeVisible();
 }
 
-/** Waits until the solver has answered for the current inputs (web phase 3). */
+/**
+ * Opens Explore with the Numerical Interpretation region expanded. The expanded region is part of the
+ * shared selection, so it is written to the address and the address opens it.
+ */
+export async function gotoNumerical(page: Page): Promise<void> {
+  await page.goto('./#/explore?open=numerical');
+  await expect(page.locator('[data-section="explore"] h1')).toBeVisible();
+  await expect(page.getByTestId('equation-builder')).toBeVisible();
+}
+
+/** Waits until the solver has answered for the current inputs (web phase 3); the simulation is block D of Explore. */
 export async function waitForRun(page: Page, status: 'ok' | 'rejected' = 'ok'): Promise<void> {
-  const b = page.getByTestId('block-b');
+  const b = page.getByTestId('block-d');
   await expect(b).toHaveAttribute('data-run-status', status, { timeout: 20_000 });
   const key = await b.getAttribute('data-input-key');
   if (status === 'ok') await expect(b).toHaveAttribute('data-result-key', key ?? '');

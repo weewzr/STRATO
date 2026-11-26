@@ -246,7 +246,9 @@ test.describe('reduced motion', () => {
 test.describe('3D cutaway', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('renders, rotates with the arrow keys, zooms and resets, and keeps the equation, the particle box with its controls and the profile on the first screen', async ({ page, problems }) => {
+  // Rewritten for the hierarchy of 26 Nov 2026: the particle is in block D below the equation, so the fold is
+  // measured with the particle box scrolled to the top of the page area; the readout and the profile are in block E.
+  test('renders, rotates with the arrow keys, zooms and resets, and keeps the particle box with its controls and key help inside one screen', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     await waitForRun(page);
@@ -259,14 +261,17 @@ test.describe('3D cutaway', () => {
     // the place of the 2D drawing at no greater height, so the equation, the whole particle box
     // with its 3D controls and key help, the release readout and the top of the profile figure stay
     // above the status line.
-    await page.evaluate(() => window.scrollTo(0, 0));
-    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+    const scrollY0 = await page.evaluate(() => {
+      const el = document.querySelector('[data-testid="particle"]');
+      window.scrollTo(0, (el?.getBoundingClientRect().top ?? 0) + window.scrollY - 120);
+      return window.scrollY;
+    });
     const footerTop = (await page.locator('footer.status').boundingBox())?.y ?? 900;
-    for (const id of ['block-a', 'particle', 'p3d-canvas', 'p3d-controls', 'p3d-zoom-in', 'p3d-zoom-out', 'p3d-reset', 'p3d-keys', 'release-readout', 'profile-figure']) {
+    for (const id of ['particle', 'p3d-canvas', 'p3d-controls', 'p3d-zoom-in', 'p3d-zoom-out', 'p3d-reset', 'p3d-keys']) {
       const box = await page.getByTestId(id).boundingBox();
       expect(box, id).not.toBeNull();
       expect(box?.y ?? -1, `${id} top`).toBeGreaterThanOrEqual(0);
-      expect((box?.y ?? 0) + (id === 'profile-figure' ? 0 : (box?.height ?? 0)), id).toBeLessThanOrEqual(footerTop + 0.5);
+      expect((box?.y ?? 0) + (box?.height ?? 0), id).toBeLessThanOrEqual(footerTop + 0.5);
     }
     // The buttons lie inside the scene's box, clear of the particle at the default view (about 92 %
     // of the stage height, centred), and the 3D drawing is no taller than the 2D one.
@@ -285,7 +290,7 @@ test.describe('3D cutaway', () => {
     await page.getByTestId('view-3d').click();
     await expect(c).toBeVisible({ timeout: 20_000 });
     await expect.poll(async () => Number((await c.getAttribute('data-frames')) ?? '0'), { timeout: 20_000 }).toBeGreaterThan(0);
-    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrollY0);
     const az0 = Number(await c.getAttribute('data-azimuth'));
     await c.focus();
     await page.keyboard.press('ArrowRight');
@@ -296,7 +301,7 @@ test.describe('3D cutaway', () => {
     await page.getByTestId('p3d-reset').click();
     expect(Number(await c.getAttribute('data-azimuth'))).toBe(az0);
     // The buttons were on screen, so using them did not scroll the page.
-    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrollY0);
     if (dir) await page.screenshot({ path: join(dir, 'explore-3d-1440.png') });
     await page.getByTestId('view-2d').click();
     await expect(page.getByTestId('xsec')).toBeVisible();

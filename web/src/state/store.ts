@@ -2,15 +2,28 @@
 // Defaults come from the generated case JSON (strato-webtools case), never from literals.
 import { create } from 'zustand';
 import { cloneConfig, DEFAULT_CASE, findCase, type RegionConfig, type CaseConfig } from '../data/case';
-import { isAvailable } from '../equation/availability';
-import { SWITCH_MECHANISM, type Stage } from '../equation/terms';
+import { DEFAULT_PHYSICS, DEFAULT_SCENARIO, PHYSICS_IDS, SCENARIO_IDS, type PhysicsId, type ScenarioId } from '../equation/capability';
+import type { Stage } from '../equation/terms';
 import type { BtcsLimits, BuildInfo, CompareOk, Grid, RunResponse, ValidateReply } from '../solver/types';
 
-// Mechanism switches; the ids map to mechanism_id rows of data/research/mechanisms.csv through
-// SWITCH_MECHANISM (equation/terms.ts): decay -> decay, source -> generation, arrhenius -> diffusivity_temperature.
-export type Mechanism = 'decay' | 'source' | 'arrhenius';
-/** Builder stage shown in block A (prompt/DESIGN_SPECIFICATION.md Section 3.1). */
+/** Builder step shown in the Numerical Interpretation region (prompt/DESIGN_SPECIFICATION.md Section 3.1). */
 export type { Stage };
+
+/**
+ * The one selection state of the Explore page (owner directive of 26 Nov 2026, Section 6): the physics
+ * of the governing equation, the operating scenario and which numerical regions are expanded. It lives
+ * in this store, so it survives navigation between the sections, and state/address.ts writes it to and
+ * reads it from the address, so a copied address reproduces the view. It is never stored in the browser.
+ */
+export interface Selection {
+  physics: PhysicsId;
+  scenario: ScenarioId;
+  /** Ids of the expanded numerical regions (today only 'numerical', the Numerical Interpretation region). */
+  expanded: string[];
+}
+export const DEFAULT_SELECTION: Selection = { physics: DEFAULT_PHYSICS, scenario: DEFAULT_SCENARIO, expanded: [] };
+/** The ids that `expanded` may hold. */
+export const EXPANDABLE_IDS = ['numerical'] as const;
 export type RunStatus = 'idle' | 'running' | 'ok' | 'rejected' | 'error';
 export type RegionField = 'outer_radius_m' | 'diffusivity_m2_s' | 'cells';
 export type TimeField = 'dt_s' | 'end_time_s' | 'output_every_steps';
@@ -28,12 +41,6 @@ export interface PlaybackState {
   tIndex: number;
   playing: boolean;
   speed: number;
-}
-
-export interface MechanismState {
-  enabled: boolean;
-  /** Set only from isAvailable() (equation/availability.ts): reported by the wrapper and at the live status. */
-  available: boolean;
 }
 
 /** The WebAssembly solver as the page sees it (web phase 3). */
@@ -92,7 +99,8 @@ export interface StratoState {
   stage: Stage;
   /** Mechanism ids the wasm wrapper reports from build_info(); empty until the module has loaded (web phase 3). */
   capabilities: string[];
-  mechanisms: Record<Mechanism, MechanismState>;
+  /** The shared selection of the Explore page (physics, scenario, expanded regions); mirrored in the address. */
+  selection: Selection;
   run: RunResponse | null;
   baselineRun: RunResponse | null;
   status: RunStatus;
@@ -127,9 +135,12 @@ export interface StratoState {
   setTemperature: (value: number) => void;
   resetToBaseline: () => void;
   setCurrentAsBaseline: () => void;
-  setMechanism: (m: Mechanism, enabled: boolean) => void;
   setStage: (stage: Stage) => void;
-  /** Records build_info().capabilities of the wasm wrapper and recomputes availability (web phase 3 calls it). */
+  /** Replaces the selection (invalid parts fall back to the default); an equal selection changes nothing. */
+  setSelection: (patch: Partial<Selection>) => void;
+  /** Expands or collapses one numerical region; the rest of the selection is kept. */
+  setExpanded: (id: string, open: boolean) => void;
+  /** Records build_info().capabilities of the wasm wrapper (web phase 3 calls it). */
   setCapabilities: (capabilities: string[]) => void;
   selectLayer: (index: number | null) => void;
   /** Display options of the particle (colour scale, colour map, 2D or 3D); they change no input and no result. */
@@ -167,18 +178,16 @@ export function inputKey(cfg: CaseConfig): string {
   return h.toString(16).padStart(8, '0');
 }
 
-const MECHANISM_KEYS: Mechanism[] = ['decay', 'source', 'arrhenius'];
-
-function mechanismsFor(capabilities: readonly string[], prev?: Record<Mechanism, MechanismState>): Record<Mechanism, MechanismState> {
-  const out = {} as Record<Mechanism, MechanismState>;
-  for (const m of MECHANISM_KEYS) {
-    const available = isAvailable(SWITCH_MECHANISM[m], capabilities);
-    out[m] = { enabled: available && (prev?.[m].enabled ?? false), available };
-  }
-  return out;
+/** A selection that holds only valid parts: anything else becomes the default; the expanded ids are unique and in a fixed order. */
+export function normaliseSelection(sel: { physics?: string | undefined; scenario?: string | undefined; expanded?: readonly string[] | undefined }): Selection {
+  const physics = PHYSICS_IDS.includes(sel.physics as PhysicsId) ? (sel.physics as PhysicsId) : DEFAULT_SELECTION.physics;
+  const scenario = SCENARIO_IDS.includes(sel.scenario as ScenarioId) ? (sel.scenario as ScenarioId) : DEFAULT_SELECTION.scenario;
+  const expanded = EXPANDABLE_IDS.filter((id) => (sel.expanded ?? []).includes(id));
+  return { physics, scenario, expanded };
 }
 
-const initialMechanisms = (): Record<Mechanism, MechanismState> => mechanismsFor([]);
+export const sameSelection = (a: Selection, b: Selection): boolean =>
+  a.physics === b.physics && a.scenario === b.scenario && a.expanded.length === b.expanded.length && a.expanded.every((id, i) => id === b.expanded[i]);
 
 export function initialState() {
   return {
@@ -187,7 +196,7 @@ export function initialState() {
     baselineConfig: cloneConfig(DEFAULT_CASE.config),
     stage: 1 as Stage,
     capabilities: [] as string[],
-    mechanisms: initialMechanisms(),
+    selection: { ...DEFAULT_SELECTION, expanded: [] as string[] },
     run: null,
     baselineRun: null,
     status: 'idle' as RunStatus,
@@ -275,16 +284,19 @@ export const useStrato = create<StratoState>()((set, get) => ({
 
   setCurrentAsBaseline: () => set({ baselineConfig: cloneConfig(get().config), baselineRun: get().run }),
 
-  setMechanism: (m, enabled) => {
-    const cur = get().mechanisms[m];
-    // Only a mechanism that the wrapper reports and whose catalogue status is the live one can be switched on.
-    if (!cur.available || !isAvailable(SWITCH_MECHANISM[m], get().capabilities)) return;
-    set({ mechanisms: { ...get().mechanisms, [m]: { ...cur, enabled } } });
-  },
-
   setStage: (stage) => set({ stage }),
 
-  setCapabilities: (capabilities) => set({ capabilities: [...capabilities], mechanisms: mechanismsFor(capabilities, get().mechanisms) }),
+  setSelection: (patch) => {
+    const next = normaliseSelection({ ...get().selection, ...patch });
+    if (!sameSelection(next, get().selection)) set({ selection: next });
+  },
+
+  setExpanded: (id, open) => {
+    const cur = get().selection.expanded;
+    get().setSelection({ expanded: open ? [...cur, id] : cur.filter((e) => e !== id) });
+  },
+
+  setCapabilities: (capabilities) => set({ capabilities: [...capabilities] }),
 
   selectLayer: (index) => set({ view: { ...get().view, selectedLayer: index } }),
 

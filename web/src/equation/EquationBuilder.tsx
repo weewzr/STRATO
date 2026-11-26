@@ -78,7 +78,7 @@ function useTagPlacement(ref: { current: HTMLElement | null }, dep: unknown) {
  * Whether the box holds more than it shows sideways, and whether more lies to the right of what is shown.
  * Used for the fading edge and the "scroll sideways" label, so that a cut-off equation is not mistaken for a complete one.
  */
-function useSideScroll(ref: { current: HTMLElement | null }, dep: unknown): { scrolls: boolean; more: boolean } {
+export function useSideScroll(ref: { current: HTMLElement | null }, dep: unknown): { scrolls: boolean; more: boolean } {
   const [state, setState] = useState({ scrolls: false, more: false });
   useEffect(() => {
     const box = ref.current;
