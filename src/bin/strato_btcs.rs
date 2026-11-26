@@ -12,6 +12,14 @@
 //! each with a provenance header (solver version, commit, input digest). The result is a
 //! numerical solution of the stated model; it is not experimental validation.
 //!
+//! An input with a `[physics]` section (see `numerical::physics_config`) is run with
+//! generation, radioactive decay and temperature-dependent diffusion (directive section 17).
+//! The same three files are written, with the columns of
+//! `postprocessing::physics_export::PHYSICS_SERIES_COLUMNS` (generated and decayed amounts,
+//! the three release fractions, the residual of the full balance with its rounding bound, the
+//! temperature) and a `physics` block in the JSON. The fission-rate density is an explicit
+//! input; a direct fission-yield source for an activation product is refused.
+//!
 //! ```text
 //! strato-btcs <input.toml> [--out DIR] [--snapshots T1,T2,...] [--commit HASH]
 //!                          [--parameter-source TEXT] [--parameter-class TEXT]
@@ -29,8 +37,17 @@ use anyhow::{bail, Context, Result};
 use std::{env, fs, path::Path};
 use strato::{
     config::Config,
-    numerical::btcs::{run_input, validate_input, Limits},
-    postprocessing::export::{build_commit, profile_csv, run_json, timeseries_csv, Provenance},
+    numerical::{
+        btcs::{run_input, validate_input, Limits},
+        physics_config::load_physics,
+        physics_run::run_physics,
+    },
+    postprocessing::{
+        export::{build_commit, profile_csv, run_json, timeseries_csv, Provenance},
+        physics_export::{
+            physics_profile_csv, physics_provenance, physics_run_json, physics_timeseries_csv,
+        },
+    },
 };
 
 /// Largest allowed number of nodes times steps, a guard against runs that cannot finish.
@@ -106,11 +123,72 @@ fn main() -> Result<()> {
         None => vec![0.0, end],
     };
 
-    let run = run_input(&input, &snapshot_times)?;
-
     let commit = commit_arg
         .or_else(|| env::var("STRATO_BUILD_COMMIT").ok())
         .unwrap_or_else(|| build_commit().to_string());
+
+    // A `[physics]` section selects the solver with generation, decay and temperature.
+    let raw = fs::read_to_string(&input_path).with_context(|| format!("reading {input_path}"))?;
+    if let Some(setup) = load_physics(&raw, input.clone(), end)? {
+        let run = run_physics(&setup.input, &snapshot_times)?;
+        let mut prov = physics_provenance(&cfg, &setup.input, &input_path, &commit);
+        if source_arg.is_some() || class_arg.is_some() {
+            let source = source_arg.unwrap_or_else(|| prov.parameter_source.clone());
+            let class = class_arg.unwrap_or_else(|| prov.parameter_class.clone());
+            prov = prov.with_parameter_source(&source, &class);
+        }
+        let dir = out_dir.unwrap_or_else(|| cfg.output.directory.clone());
+        fs::create_dir_all(&dir).with_context(|| format!("creating {dir}"))?;
+        let out = Path::new(&dir);
+        let ts_path = out.join("btcs_timeseries.csv");
+        let pr_path = out.join("btcs_profiles.csv");
+        let js_path = out.join("btcs_run.json");
+        fs::write(&ts_path, physics_timeseries_csv(&prov, &run)?)?;
+        fs::write(&pr_path, physics_profile_csv(&prov, &run)?)?;
+        fs::write(
+            &js_path,
+            physics_run_json(&prov, &setup.input, &setup.labels, &run)?,
+        )?;
+        let (_, last, extra) = &run.series[run.series.len() - 1];
+        let worst = run
+            .series
+            .iter()
+            .map(|(_, _, p)| p.balance_residual_relative.abs())
+            .fold(0.0, f64::max);
+        println!("case={}", cfg.case_name);
+        println!("solver={}", prov.solver);
+        println!("package_version={}", prov.package_version);
+        println!("commit={}", prov.commit);
+        println!("input_sha256={}", prov.input_sha256);
+        println!("mechanisms=generation,decay,temperature (as given in [physics])");
+        println!("nodes_N={}", run.meta.n);
+        println!("dt_s={:e}", run.meta.dt);
+        println!("steps={}", run.meta.steps);
+        println!("matrix_assemblies={}", run.meta.assemblies);
+        println!(
+            "final_release_fraction_of_initial_inventory={:e}",
+            last.release_fraction
+        );
+        println!(
+            "final_release_fraction_of_initial_plus_generated={:e}",
+            extra.release_fraction_of_total
+        );
+        println!("final_inventory_mol={:e}", last.inventory);
+        println!("final_generated_mol={:e}", extra.generated);
+        println!("final_decayed_mol={:e}", extra.decayed);
+        println!("worst_balance_residual_relative_to_total={worst:e}");
+        println!(
+            "final_balance_residual_bound_relative_to_total={:e}",
+            last.balance_residual_bound / (run.meta.initial_inventory + extra.generated)
+        );
+        println!("min_concentration_mol_m3={:e}", last.min_concentration);
+        println!("timeseries={}", ts_path.display());
+        println!("profiles={}", pr_path.display());
+        println!("run_json={}", js_path.display());
+        return Ok(());
+    }
+
+    let run = run_input(&input, &snapshot_times)?;
     let mut prov = Provenance::new(&cfg, &input, &input_path, &commit);
     if source_arg.is_some() || class_arg.is_some() {
         let source = source_arg.unwrap_or_else(|| prov.parameter_source.clone());

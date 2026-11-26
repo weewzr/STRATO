@@ -1,0 +1,36 @@
+# STRATO shared results: observed convergence orders (synthetic homogeneous case against the exact series)
+# label: numerical solution of the stated model; not experimental validation
+# solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1
+# pipeline: strato-results 0.1.0, schema 1
+# commit: 83a93fa04c7191d5543828e1eb0fca2b46523702
+# solver_source_sha256: 02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275
+# input_sha256 geometry.csv: 8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f
+# input_sha256 arrhenius.csv: 2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4
+# input_sha256 decay.csv: 9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf
+# input_sha256 fission_yields.csv: 4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0
+# input_sha256 temperature_histories.csv: 6ab3201672afd15f92ec9e529318377c829afaa5804288a3a694032145ab4af0
+# input_sha256 release_measurements.csv: b25e390f831a491f68398644efff1cfbc8c8b901cf95a167baaa314bc5bcbc4d
+# input_sha256 agr1_irradiation_conditions.csv: 31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d
+# input_sha256 agr1_burnup_by_cycle.csv: e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f
+# input_sha256 agr1_power_history_digitised.csv: 25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a
+# input_sha256 scenarios/s1_normal_operation.csv: c420e1e04e043ed0418099c27156cabda8188f40ce2fb239d1ce3916cccc7970
+# input_sha256 scenarios/s2_shutdown_cooldown.csv: f575e9a42670e52293083907b3658fd7e3a99c279912861999f0cb847cbf6044
+# input_sha256 scenarios/s3_startup.csv: bf2b6bd01168d0aa72f9db61f5fa4eae60ff39a81928eaed515ae8279916bfa7
+# input_sha256 scenarios/s4_control_rod_insertion.csv: 93856f2003ca65b7a7258d60819a47b8a651d695dffeff0fd7dc664b90309759
+# input_sha256 scenarios/s5_fuel_removal.csv: 4cad00101259e2fdbeec585f27d8910502a1858ab38bce59899c132b0caad9bb
+Study,Refinement level,Step (m or s),Count,Absolute error (dimensionless),Observed order
+spatial,1,4.375e-5,16,2.7653538856204918e-3,
+spatial,2,2.1875e-5,31,6.945584356195522e-4,1.9932961322890759e0
+spatial,4,1.09375e-5,61,1.7378341521961937e-4,1.9988056711584796e0
+spatial,8,5.46875e-6,121,4.3430546873945985e-5,2.0005083827930608e0
+spatial,16,2.734375e-6,241,1.0832876490785015e-5,2.003293741636032e0
+spatial,32,1.3671875e-6,481,2.682875635651172e-6,2.013564292248526e0
+temporal,1,1.44e4,25,6.571206659261752e-3,
+temporal,2,7.2e3,50,3.3829683813220157e-3,9.578686213113489e-1
+temporal,4,3.6e3,100,1.7159920673586182e-3,9.79246809544815e-1
+temporal,8,1.8e3,200,8.632573314023562e-4,9.911802969539327e-1
+temporal,16,9e2,400,4.3194466885565497e-4,9.989441633131217e-1
+temporal,32,4.5e2,800,2.150350170215254e-4,1.0062749059896894e0
+temporal,64,2.25e2,1600,1.0626471788693914e-4,1.016908940845399e0
+temporal,128,1.125e2,3200,5.180043120350808e-5,1.0366266588531536e0
+temporal,256,5.625e1,6400,2.454846977240077e-5,1.077331010399304e0

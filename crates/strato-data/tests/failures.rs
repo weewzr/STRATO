@@ -185,7 +185,323 @@ fn a_dropped_row_is_noticed_by_the_row_count_check_of_the_other_readers() {
     let mut t = real_texts();
     t.arrhenius = drop_line(&t.arrhenius, "A1-04,");
     let reg = Register::from_texts(&t).expect("still a valid file");
-    assert_eq!(reg.arrhenius.rows.len(), 117);
+    assert_eq!(reg.arrhenius.rows.len(), 140);
     // but the B6 re-read of the audit, which lists A1-04, notices the loss
     assert_fails(&t, "D5.V.b6-coverage");
+}
+
+// ---- the data-integration checks can fail
+
+#[test]
+fn a_class_outside_the_four_is_an_error() {
+    let mut t = real_texts();
+    t.arrhenius = mutate_line(
+        &t.arrhenius,
+        "A1-01,",
+        ",transferred material correlation,",
+        ",measured at AGR-1,",
+    );
+    let e = load_err(&t);
+    assert!(
+        e.contains("coefficient_class") && e.contains("A1-01"),
+        "{e}"
+    );
+}
+
+#[test]
+fn a_wrong_class_for_a_set_fails() {
+    let mut t = real_texts();
+    t.arrhenius = mutate_line(
+        &t.arrhenius,
+        "S20-01,",
+        ",AGR-1-specific fitted correlation,",
+        ",published PARFUME correlation,",
+    );
+    assert_fails(&t, "DI.class.one-per-row");
+}
+
+#[test]
+fn a_lost_printed_range_makes_the_selection_stop_refusing() {
+    let mut t = real_texts();
+    t.arrhenius = mutate_line(
+        &t.arrhenius,
+        "C16-20,",
+        ",1400,1750,printed range,",
+        ",,,printed range,",
+    );
+    t.arrhenius = mutate_line(
+        &t.arrhenius,
+        "C16-20,",
+        ",heating test,,,printed",
+        ",heating test,,,",
+    );
+    assert_fails(&t, "DI.select.refuses-outside-range");
+}
+
+#[test]
+fn a_range_without_its_kind_or_a_kind_without_a_range_is_a_load_error() {
+    let mut t = real_texts();
+    t.arrhenius = mutate_line(
+        &t.arrhenius,
+        "C16-20,",
+        ",heating test,,,printed",
+        ",heating test,,,",
+    );
+    assert!(Register::from_texts(&t).is_err());
+    let mut t = real_texts();
+    // C16-22 has no range: giving it a kind must fail
+    let hit = t
+        .arrhenius
+        .lines()
+        .find(|l| l.starts_with("C16-22,"))
+        .unwrap()
+        .to_string();
+    assert!(hit.ends_with(",heating test,,,"), "{hit}");
+    t.arrhenius = t.arrhenius.replace(&hit, &format!("{hit}fitted"));
+    assert!(Register::from_texts(&t).is_err());
+}
+
+#[test]
+fn the_fitted_range_of_the_schappel_rows_is_not_called_published() {
+    use strato_data::arrhenius::RangeKind;
+    use strato_data::select::{ParticleLayer, Phase, Selector, Variant};
+    let r = common::real_register();
+    let sel = Selector {
+        arrhenius: &r.arrhenius,
+        irradiation: &r.irradiation,
+    };
+    let s = sel
+        .select(
+            "Ag",
+            ParticleLayer::SiC,
+            Phase::HeatingTest,
+            Variant::SchappelFitted,
+        )
+        .unwrap();
+    assert_eq!(s.range_kind, Some(RangeKind::Fitted));
+    let msg = s.diffusivity_at(1000.0).unwrap_err().to_string();
+    assert!(
+        msg.contains("fitted range (not printed by the source)"),
+        "{msg}"
+    );
+    assert!(!msg.contains("published range"), "{msg}");
+}
+
+#[test]
+fn a_schappel_row_changed_from_fitted_to_printed_fails() {
+    for id in ["S20-01,", "S20-02,", "S20-03,"] {
+        let mut t = real_texts();
+        t.arrhenius = mutate_line(
+            &t.arrhenius,
+            id,
+            ",heating test,,,fitted",
+            ",heating test,,,printed",
+        );
+        assert_fails(&t, "DI.select.schappel-range");
+    }
+}
+
+#[test]
+fn a_row_with_a_printed_range_changed_to_fitted_fails() {
+    let mut t = real_texts();
+    let hit = t
+        .arrhenius
+        .split('\n')
+        .find(|l| l.starts_with("C16-20,"))
+        .unwrap()
+        .to_string();
+    assert!(hit.ends_with(",printed"), "{hit}");
+    let changed = format!("{}fitted", &hit[..hit.len() - "printed".len()]);
+    t.arrhenius = t.arrhenius.replace(&hit, &changed);
+    assert_fails(&t, "DI.select.schappel-range");
+}
+
+#[test]
+fn a_changed_default_row_breaks_the_equality_of_the_phases() {
+    let mut t = real_texts();
+    t.arrhenius = mutate_line(&t.arrhenius, "C15-05,", ",5.6e-8,", ",5.7e-8,");
+    assert_fails(&t, "DI.select.c15-equals-c16");
+}
+
+#[test]
+fn a_non_detect_that_loses_its_class_fails() {
+    let mut t = real_texts();
+    t.release = mutate_line(&t.release, "E-217,", ",M-ND,", ",M-UB,");
+    assert_fails(&t, "DI.release.non-detect");
+}
+
+#[test]
+fn a_matrix_corrected_row_that_loses_its_denominator_fails() {
+    let mut t = real_texts();
+    t.release = mutate_line(
+        &t.release,
+        "E-033,",
+        ",calculated compact inventory",
+        ",not established",
+    );
+    assert_fails(&t, "DI.release.denominator");
+}
+
+#[test]
+fn a_matrix_corrected_intact_row_with_the_old_window_label_fails() {
+    // Decision 68(b): the label must say that the window ends at the 300 h plateau.
+    let mut t = real_texts();
+    t.release = mutate_line(
+        &t.release,
+        "E-011,",
+        "after about 24 h at T to end of 300 h plateau (or test end if shorter) (matrix-corrected)",
+        "after about 24 h at T to end (matrix-corrected)",
+    );
+    assert_fails(&t, "DI.release.window-label");
+}
+
+#[test]
+fn a_matrix_corrected_intact_row_without_premise_bp1_in_its_applicability_fails() {
+    let mut t = real_texts();
+    t.release = mutate_line(
+        &t.release,
+        "E-035,",
+        "; under premise BP1; window to the end of the 300 h plateau or the shorter test end (Collin p. 4)",
+        "",
+    );
+    assert_fails(&t, "DI.release.window-label");
+}
+
+#[test]
+fn a_digitised_row_without_reading_uncertainty_fails() {
+    let mut t = real_texts();
+    t.release = mutate_line(&t.release, "E-425,", ",rel_value_pct=0.5;time_h=0.2,", ",,");
+    assert_fails(&t, "DI.release.reading-uncertainty");
+}
+
+#[test]
+fn a_malformed_reading_uncertainty_is_an_error() {
+    let mut t = real_texts();
+    t.release = mutate_line(
+        &t.release,
+        "E-425,",
+        ",rel_value_pct=0.5;time_h=0.2,",
+        ",about half a percent,",
+    );
+    let e = load_err(&t);
+    assert!(
+        e.contains("reading_uncertainty") && e.contains("E-425"),
+        "{e}"
+    );
+}
+
+#[test]
+fn a_reused_withdrawn_id_fails() {
+    let mut t = real_texts();
+    t.release = mutate_line(&t.release, "E-315,", "E-315,", "E-340,");
+    assert_fails(&t, "DI.release.withdrawn-ids");
+}
+
+#[test]
+fn a_burnup_that_falls_between_cycles_fails() {
+    let mut t = real_texts();
+    t.irradiation_burnup = mutate_line(&t.irradiation_burnup, "IRRB-0001,", ",0.72,", ",9.72,");
+    assert_fails(&t, "DI.irr.monotone");
+}
+
+#[test]
+fn a_changed_particle_count_changes_the_derived_rate() {
+    let mut t = real_texts();
+    t.irradiation_conditions =
+        mutate_line(&t.irradiation_conditions, "IRR-456,", ",4154,", ",4145,");
+    assert_fails(&t, "DI.irr.inventory");
+}
+
+#[test]
+fn a_register_row_that_drifts_from_the_csv_fails() {
+    // the old wording of the non-detect rows: class M-UB and the obsolete note
+    let mut t = real_texts();
+    let md = t
+        .register_markdown
+        .clone()
+        .expect("the register document exists");
+    let lines: Vec<&str> = md.split('\n').collect();
+    let n = lines.iter().filter(|l| l.starts_with("| E-217 |")).count();
+    assert_eq!(n, 1);
+    let drifted = md.replace(
+        lines.iter().find(|l| l.starts_with("| E-217 |")).unwrap(),
+        &lines
+            .iter()
+            .find(|l| l.starts_with("| E-217 |"))
+            .unwrap()
+            .replace("| M-ND; t =", "| M-UB; t ="),
+    );
+    t.register_markdown = Some(drifted);
+    assert_fails(&t, "DI.register-md.matches-csv");
+}
+
+#[test]
+fn a_changed_or_truncated_coefficient_in_the_register_fails() {
+    // main coefficient table (the row that starts "| C16-20 | Kr") and the section-6 copy
+    // (the row that starts "| C16-08 | Term"); a changed Q, a changed exponent, a truncated one
+    let md = real_texts()
+        .register_markdown
+        .expect("the register document exists");
+    for (prefix, from, to) in [
+        ("| C16-20 | Kr", "| 657 |", "| 658 |"),
+        ("| C16-20 | Kr", "$3.7\\times10^{1}$", "$3.7\\times10^{2}$"),
+        ("| C16-20 | Kr", "$3.7\\times10^{1}$", "$3.7$"),
+        ("| C16-08 | Term", "| 5.5e-14 |", "| 5.5e-1 |"),
+        ("| C16-08 | Term", "| 5.5e-14 |", "| 5.5 |"),
+    ] {
+        let mut t = real_texts();
+        let line = md.split('\n').find(|l| l.starts_with(prefix)).unwrap();
+        assert!(line.contains(from), "{prefix}: {from}");
+        t.register_markdown = Some(md.replacen(line, &line.replacen(from, to, 1), 1));
+        assert_fails(&t, "DI.register-md.matches-csv");
+    }
+}
+
+#[test]
+fn a_changed_register_value_or_range_fails() {
+    let md = real_texts()
+        .register_markdown
+        .expect("the register document exists");
+    for (prefix, from, to) in [
+        ("| E-001 |", "$2.0\\times10^{-4}$", "$2.1\\times10^{-4}$"),
+        (
+            "| C16-20 | Term",
+            "| 1400 to 1750 (printed",
+            "| accident conditions (printed",
+        ),
+    ] {
+        let mut t = real_texts();
+        let line = md
+            .split('\n')
+            .find(|l| l.starts_with(prefix) && l.contains(from))
+            .unwrap();
+        assert!(line.contains(from), "{prefix}: {from}");
+        t.register_markdown = Some(md.replacen(line, &line.replacen(from, to, 1), 1));
+        assert_fails(&t, "DI.register-md.matches-csv");
+    }
+}
+
+#[test]
+fn a_kernel_label_that_says_unscaled_for_the_scaled_case_fails_the_labels_check_by_design() {
+    // the selection of the sensitivity case never carries the label "unscaled"
+    let r = common::real_register();
+    let sel = strato_data::select::Selector {
+        arrhenius: &r.arrhenius,
+        irradiation: &r.irradiation,
+    };
+    use strato_data::select::{ParticleLayer, Phase, Variant};
+    let s = sel
+        .select(
+            "Cs",
+            ParticleLayer::Kernel,
+            Phase::HeatingTest,
+            Variant::KernelScaledSensitivity,
+        )
+        .unwrap();
+    assert!(s.kernel_scale.is_some());
+    assert!(
+        !s.labels.iter().any(|l| l.contains("unscaled")),
+        "{:?}",
+        s.labels
+    );
 }

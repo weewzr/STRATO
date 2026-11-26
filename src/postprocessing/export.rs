@@ -244,14 +244,14 @@ pub fn canonical_input(cfg: &Config, input: &ValidatedInput) -> String {
     s
 }
 
-fn num(x: f64) -> Result<String> {
+pub(crate) fn num(x: f64) -> Result<String> {
     if !x.is_finite() {
         bail!("export refuses a non-finite value");
     }
     Ok(format!("{x:e}"))
 }
 
-fn comment_header(prov: &Provenance, what: &str) -> String {
+pub(crate) fn comment_header(prov: &Provenance, what: &str) -> String {
     let mut s = String::new();
     let _ = writeln!(s, "# {SOLVER_ID}: {what}");
     let _ = writeln!(s, "# label: {LABEL}");
@@ -270,7 +270,7 @@ fn comment_header(prov: &Provenance, what: &str) -> String {
     s
 }
 
-fn one_line(s: &str) -> String {
+pub(crate) fn one_line(s: &str) -> String {
     s.replace(['\n', '\r'], " ")
 }
 
@@ -437,7 +437,7 @@ pub fn profile_csv(
     Ok(s)
 }
 
-fn json_str(x: &str) -> String {
+pub(crate) fn json_str(x: &str) -> String {
     let mut s = String::from("\"");
     for ch in x.chars() {
         match ch {
@@ -456,7 +456,7 @@ fn json_str(x: &str) -> String {
     s
 }
 
-fn json_arr(values: &[f64]) -> Result<String> {
+pub(crate) fn json_arr(values: &[f64]) -> Result<String> {
     let mut s = String::from("[");
     for (k, v) in values.iter().enumerate() {
         if k > 0 {
@@ -652,7 +652,7 @@ pub fn run_json(prov: &Provenance, input: &ValidatedInput, run: &RunResult) -> R
     Ok(s)
 }
 
-fn param_json(name: &str, value: &str, source: &str, class: &str) -> String {
+pub(crate) fn param_json(name: &str, value: &str, source: &str, class: &str) -> String {
     format!(
         "{{\"name\":{},\"value\":{},\"source\":{},\"class\":{}}}",
         json_str(name),
@@ -662,7 +662,7 @@ fn param_json(name: &str, value: &str, source: &str, class: &str) -> String {
     )
 }
 
-fn dictionary_json(columns: &[Column]) -> String {
+pub(crate) fn dictionary_json(columns: &[Column]) -> String {
     let parts: Vec<String> = columns
         .iter()
         .map(|c| format!("{}:{}", json_str(c.0), json_str(c.1)))
@@ -670,7 +670,7 @@ fn dictionary_json(columns: &[Column]) -> String {
     format!("{{{}}}", parts.join(","))
 }
 
-fn json_arr_str(items: &[&str]) -> String {
+pub(crate) fn json_arr_str(items: &[&str]) -> String {
     let parts: Vec<String> = items.iter().map(|x| json_str(x)).collect();
     format!("[{}]", parts.join(","))
 }

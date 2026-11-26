@@ -139,6 +139,37 @@ const ALL_IDS: &[&str] = &[
     "GEN.geometry.radii",
     "GEN.geometry.default",
     "CAT.nuclides",
+    "DI.class.one-per-row",
+    "DI.class.no-measurement",
+    "DI.phase.rules",
+    "DI.radius.kernel",
+    "DI.fluence.definition",
+    "DI.select.resolves",
+    "DI.select.decision39",
+    "DI.select.c15-equals-c16",
+    "DI.select.second-term-need",
+    "DI.select.refuses-outside-range",
+    "DI.select.alternative",
+    "DI.select.default-class",
+    "DI.select.unavailable",
+    "DI.select.schappel-range",
+    "DI.select.scaling-labels",
+    "DI.select.kernel-scale",
+    "DI.release.reading-uncertainty",
+    "DI.release.non-detect",
+    "DI.release.group-label",
+    "DI.release.withdrawn-ids",
+    "DI.release.denominator",
+    "DI.release.window-label",
+    "DI.irr.completeness",
+    "DI.irr.monotone",
+    "DI.irr.rev3-difference",
+    "DI.irr.power-windows",
+    "DI.irr.inventory",
+    "DI.irr.step8",
+    "DI.irr.step9",
+    "DI.irr.derived-series",
+    "DI.register-md.matches-csv",
 ];
 
 #[test]
@@ -777,4 +808,159 @@ fn gen_geometry_default() {
 #[test]
 fn cat_nuclides() {
     passes("CAT.nuclides");
+}
+
+#[test]
+fn di_class_one_per_row() {
+    passes("DI.class.one-per-row");
+}
+
+#[test]
+fn di_class_no_measurement() {
+    passes("DI.class.no-measurement");
+}
+
+#[test]
+fn di_phase_rules() {
+    passes("DI.phase.rules");
+}
+
+#[test]
+fn di_radius_kernel() {
+    passes("DI.radius.kernel");
+}
+
+#[test]
+fn di_fluence_definition() {
+    passes("DI.fluence.definition");
+}
+
+#[test]
+fn di_select_resolves() {
+    passes("DI.select.resolves");
+}
+
+#[test]
+fn di_select_decision39() {
+    passes("DI.select.decision39");
+}
+
+#[test]
+fn di_select_c15_equals_c16() {
+    passes("DI.select.c15-equals-c16");
+}
+
+#[test]
+fn di_select_second_term_need() {
+    passes("DI.select.second-term-need");
+}
+
+#[test]
+fn di_select_refuses_outside_range() {
+    passes("DI.select.refuses-outside-range");
+}
+
+#[test]
+fn di_select_alternative() {
+    passes("DI.select.alternative");
+}
+
+#[test]
+fn di_select_default_class() {
+    passes("DI.select.default-class");
+}
+
+#[test]
+fn di_select_unavailable() {
+    passes("DI.select.unavailable");
+}
+
+#[test]
+fn di_select_kernel_scale() {
+    passes("DI.select.kernel-scale");
+}
+
+#[test]
+fn di_release_reading_uncertainty() {
+    passes("DI.release.reading-uncertainty");
+}
+
+#[test]
+fn di_release_non_detect() {
+    passes("DI.release.non-detect");
+}
+
+#[test]
+fn di_release_group_label() {
+    passes("DI.release.group-label");
+}
+
+#[test]
+fn di_release_withdrawn_ids() {
+    passes("DI.release.withdrawn-ids");
+}
+
+#[test]
+fn di_release_denominator() {
+    passes("DI.release.denominator");
+}
+
+#[test]
+fn di_release_window_label() {
+    passes("DI.release.window-label");
+}
+
+#[test]
+fn di_irr_completeness() {
+    passes("DI.irr.completeness");
+}
+
+#[test]
+fn di_irr_monotone() {
+    passes("DI.irr.monotone");
+}
+
+#[test]
+fn di_irr_rev3_difference() {
+    passes("DI.irr.rev3-difference");
+}
+
+#[test]
+fn di_irr_power_windows() {
+    passes("DI.irr.power-windows");
+}
+
+#[test]
+fn di_irr_inventory() {
+    passes("DI.irr.inventory");
+}
+
+#[test]
+fn di_irr_step8() {
+    passes("DI.irr.step8");
+}
+
+#[test]
+fn di_irr_step9() {
+    passes("DI.irr.step9");
+}
+
+#[test]
+fn di_irr_derived_series() {
+    passes("DI.irr.derived-series");
+}
+
+#[test]
+fn di_select_schappel_range() {
+    passes("DI.select.schappel-range");
+}
+
+#[test]
+fn di_select_scaling_labels() {
+    passes("DI.select.scaling-labels");
+}
+
+#[test]
+fn di_register_md_matches_csv() {
+    passes("DI.register-md.matches-csv");
 }

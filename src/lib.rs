@@ -15,6 +15,9 @@
 //! solver of version 1.x is retired; `docs/archive/finite-volume/README.md` says where it is
 //! kept. Numerical verification is not experimental validation.
 
+/// Version of this package, for the provenance records of generated files.
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 pub mod analytical;
 pub mod config;
 pub mod numerical;

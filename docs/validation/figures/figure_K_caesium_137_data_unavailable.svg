@@ -1,0 +1,40 @@
+<svg width="1560" height="448" viewBox="0 0 1560 448" xmlns="http://www.w3.org/2000/svg">
+<rect x="0" y="0" width="1560" height="448" opacity="1" fill="#FFFFFF" stroke="none"/>
+<text x="24" y="14" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="20.967741935483872" opacity="1" fill="#191919">
+K. Caesium-137 (Cs-137): DATA UNAVAILABLE
+</text>
+<text x="24" y="48" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.903225806451614" opacity="1" fill="#191919">
+No release measurement of Cs-137 exists for the AGR-1 particles in the sources of the register; no curve, no deviation and no metric is drawn
+</text>
+<rect x="24" y="80" width="1512" height="150" opacity="1" fill="none" stroke="#787878"/>
+<text x="780" y="140" dy="0.5ex" text-anchor="middle" font-family="sans-serif" font-size="38.70967741935484" opacity="1" fill="#191919">
+DATA UNAVAILABLE
+</text>
+<text x="780" y="195" dy="0.5ex" text-anchor="middle" font-family="sans-serif" font-size="14.516129032258064" opacity="1" fill="#191919">
+Fraction of Cs-137 released versus time at temperature: no measurement, no comparison
+</text>
+<text x="24" y="255" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+AGR-1 and AGR-2 report no release of Cs-137 (decision 43): the register holds 0 Cs-137 rows of those programmes.
+</text>
+<text x="24" y="274" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+The register holds 12 Cs-137 rows of the programme JAERI (IAEA (1997)) with the status DATA INCOMPLETE; they are not a release measurement of the AGR-1 particles, their denominator is not
+</text>
+<text x="24" y="293" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+established, and no deviation is formed from them.
+</text>
+<text x="24" y="312" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+The model computes the element caesium without decay (decay is not in the solver yet): it gives the release of the element, not of a nuclide. Figure A draws the registered Cs-137 rows of the
+</text>
+<text x="24" y="331" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
+other programme against the caesium curve with the marker of their status; of the 12 Cs-137 rows, 0 support a point comparison.
+</text>
+<text x="24" y="364" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+Model: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit b6331621ca70dc453e6856bdd1263bf61c15260b; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen
+</text>
+<text x="24" y="382" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+by the strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at the test temperature; kernel-only start; constant temperature; decay and generation are not in the solver. This is a numerical
+</text>
+<text x="24" y="400" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+comparison, not an experimental validation.
+</text>
+</svg>

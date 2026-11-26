@@ -49,7 +49,17 @@ fn run_check(data: &std::path::Path) -> ExitCode {
         }
     };
     let species = std::fs::read_to_string(data.join("research").join("species.csv")).ok();
-    let report = strato_data::checks::run_all(&texts, species.as_deref());
+    let mut report = strato_data::checks::run_all(&texts, species.as_deref());
+    // The scenario definitions of data/scenarios/ against the registers.
+    match scenario_report(data, &texts) {
+        Ok(r) => report.results.extend(r.results),
+        Err(e) => report.results.push(strato_data::checks::CheckResult {
+            id: "SC.load".to_string(),
+            passed: false,
+            description: "the scenario files are read by the typed reader".to_string(),
+            detail: e,
+        }),
+    }
     for r in &report.results {
         println!("{r}");
     }
@@ -59,6 +69,16 @@ fn run_check(data: &std::path::Path) -> ExitCode {
     } else {
         ExitCode::from(1)
     }
+}
+
+fn scenario_report(
+    data: &std::path::Path,
+    texts: &strato_data::register::RegisterTexts,
+) -> Result<strato_data::checks::Report, String> {
+    let reg = Register::from_texts(texts).map_err(|e| e.to_string())?;
+    let st = strato_data::scenarios::ScenarioTexts::read(data).map_err(|e| e.to_string())?;
+    let sc = strato_data::scenarios::Scenarios::parse(&st).map_err(|e| e.to_string())?;
+    Ok(strato_data::scenarios::run_checks(&reg, &sc))
 }
 
 fn run_summary(data: &std::path::Path) -> ExitCode {

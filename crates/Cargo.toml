@@ -6,7 +6,7 @@
 
 [workspace]
 resolver = "2"
-members = ["strato-docsite", "strato-webtools", "strato-data"]
+members = ["strato-docsite", "strato-webtools", "strato-data", "strato-compare", "strato-results"]
 exclude = ["strato-wasm"]
 
 [workspace.package]
@@ -14,3 +14,16 @@ edition = "2021"
 license = "AGPL-3.0-only"
 repository = "https://github.com/weewzr/STRATO"
 publish = false
+
+# The results pipeline runs the BTCS solver thousands of times; an unoptimised build of the
+# solver takes hours for what an optimised one does in minutes. Only the numerical crates are
+# optimised in the development profile, so the tests of the tools stay quick to build and run.
+[profile.dev.package.strato]
+opt-level = 3
+
+[profile.dev.package.strato-compare]
+opt-level = 3
+
+[profile.dev.package.strato-results]
+opt-level = 3
+

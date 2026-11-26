@@ -1,6 +1,6 @@
 # Data-layer checks: what the Python audit scripts check and where Rust checks it
 
-The crate `strato-data` (folder `crates/strato-data`) reads the six register files of `data/` into typed Rust values and reproduces, in Rust, every consistency check that the Python audit scripts make on those files. The command is
+The crate `strato-data` (folder `crates/strato-data`) reads the nine files of `data/` (the six register files and the three irradiation files) into typed Rust values and reproduces, in Rust, every consistency check that the Python audit scripts make on those files. The command is
 
 ```
 cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-data -- check --repo .
@@ -10,7 +10,7 @@ It prints one `PASS` or `FAIL` line per check and a `SUMMARY` line, writes nothi
 
 ## How to read the tables
 
-- **Id**: the stable id of the check. The first part names the Python script: `D5` = `scripts/derivation_checks/D5_parameter_register.py`, `B4D` = `b4_decay_source_pseudocode.py`, `B4P` = `b4_phase2_pseudocode_integration.py`, `B6` = `scripts/data_register/b6_nuclear_crosscheck.py`, `GEN` = `scripts/web/generate_data.py`, `CAT` = `scripts/web/check_catalogue.py`, `LOAD` = new in Rust.
+- **Id**: the stable id of the check. The first part names the Python script: `D5` = `scripts/derivation_checks/D5_parameter_register.py`, `B4D` = `b4_decay_source_pseudocode.py`, `B4P` = `b4_phase2_pseudocode_integration.py`, `B6` = `scripts/data_register/b6_nuclear_crosscheck.py`, `GEN` = `scripts/web/generate_data.py`, `CAT` = `scripts/web/check_catalogue.py`, `LOAD` = new in Rust, `DI` = the data integration of decisions 39 to 46 (new in Rust, no Python counterpart).
 - **Python source**: file and line of the check in the script (the line of the `report(...)` or `check(...)` call, or the first line of the block).
 - **Rust test**: every check id has one test in `crates/strato-data/tests/audit_checks.rs` named after the id in lower case with every character that is not a letter or digit replaced by `_` (for example `D5.L.lambda` is `d5_l_lambda`). It runs the check on the real files and asserts that the check ran and passed. The test `the_list_of_ids_is_the_list_of_checks_that_run` fails if a check is added or removed without updating the list, and `the_whole_check_set_passes` asserts the summary.
 - **Tolerances** are those of the Python scripts, unchanged. Where the Python script used SymPy (symbolic algebra) the Rust check is exact-decimal or numerical and says so in its description; the symbolic residual checks are not retired, they are re-expressed. No tolerance was loosened.
@@ -136,3 +136,45 @@ The generator itself (writing `web/src/generated/agr1_reference.json` and the ge
 - `scripts/data_register/b6_audit_patch.py`: the one-time idempotent patch that added `evidence_class` and `particle_applicability`. Its only assertion (evidence class in the vocabulary) is `D5.V.evidence.<file>`. History, not a check.
 - `scripts/data_register/render_register.py` and `register_template.md`: generate `STRATO_Parameter_Register.md` from the CSVs. A generator, not a check. No Rust renderer is part of this task.
 - `scripts/derivation_checks/D5_parameter_register.py` stays in place; no Python script is deleted by this task.
+
+## Family DI: the data integration (new in Rust; expected numbers are those printed in the three research reports)
+
+| Id | What it checks | Rust test |
+|---|---|---|
+| `DI.class.one-per-row` | every row of `arrhenius.csv` has exactly one of the four classes of owner ruling 16; the class follows the set (TECDOC-978, BUF, E410, T71, E109: transferred; C15, C16, H21: PARFUME; S20: AGR-1 fitted); no row is `NOT VERIFIED` | `di_class_one_per_row` |
+| `DI.class.no-measurement` | no row is an AGR-1 experimental measurement | `di_class_no_measurement` |
+| `DI.phase.rules` | `phase_of_use`: irradiation for C15, H21 and A1-05, heating test for C16, S20, A1-06, A1-07, E410-01, A3-14, not specified for the rest | `di_phase_rules` |
+| `DI.radius.kernel` | `reference_radius_um` is 250 on the kernel rows of A1, T71, C15, C16, H21 and empty elsewhere | `di_radius_kernel` |
+| `DI.fluence.definition` | `fluence_definition` is filled on A3-01, E109-01, C15-07, C16-08, H21-06 and on every row that documents the exp(Gamma/5) factor | `di_fluence_definition` |
+| `DI.select.resolves` | every entry of the default table of `select` resolves to rows of one set whose species, layer, term order and class agree with the file | `di_select_resolves` |
+| `DI.select.decision39` | irradiation selections use single-term C15 rows, heating-test selections use C16 rows with both terms for Cs and Kr in the kernel, Cs and Sr in SiC and Kr in PyC. One documented exception: Kr in the pyrocarbon layers during irradiation has no irradiation-phase row, so it takes the heating-test rows C16-18 and C16-19 (the only published Kr pyrocarbon rows); the second term (2.0e5, 923) is below 0.1 percent of the total up to 1800 C (the ratio 1.001 of the check DI.select.second-term-need), and the selection carries a label that says so | `di_select_decision39` |
+| `DI.select.c15-equals-c16` | first term of every C16 row equals the C15 row of the same species and layer (D0 and Q as printed) | `di_select_c15_equals_c16` |
+| `DI.select.second-term-need` | ratio of the two-term coefficient to its first term at 1500, 1600, 1700, 1800 C reproduces section 4 of the diffusivity report (1.503, 2.297, 91.1, 2.011, 5.134, 47.0, 1.461, 3.581, 1.001) to 1.1e-3 (below 10) or 2.5e-3 | `di_select_second_term_need` |
+| `DI.select.refuses-outside-range` | Kr in SiC (C16-20, 1400 to 1750 C) is refused at 1800 and 1399 C, an extrapolation is marked, rows without a printed range give a value anywhere | `di_select_refuses_outside_range` |
+| `DI.select.alternative` | Schappel rows S20-01 to S20-03 only for heating-test Ag, Cs, Sr in SiC, never the default, refused for irradiation | `di_select_alternative` |
+| `DI.select.default-class` | every default selection is `published PARFUME correlation` except A1-05 (transferred) | `di_select_default_class` |
+| `DI.select.unavailable` | Eu, Kr in SiC during irradiation and the Schappel set for the kernel (Err, no fallback to the default rows) return DATA UNAVAILABLE; Xe follows the Kr rows only where TECDOC-978 prints the row for Xe (A1-05, A1-06/07 in the kernel, A2-04/05 in the pyrocarbon, A3-17 in SiC for the heating tests), each with a label naming that row, and is DATA UNAVAILABLE in SiC during irradiation | `di_select_unavailable` |
+| `DI.select.schappel-range` | `range_kind` is `fitted` on S20-01 to S20-03 (the source prints no range) and `printed` on every other row that has a range; for each of Ag, Cs and Sr in SiC the Schappel selection carries the fitted range 1600 to 1800 C, 1000 C is refused with the words "fitted range (not printed by the source)" and never "published range", 1700 C is accepted, an extrapolation is marked as fitted, and the label says R is not printed | `di_select_schappel_range` |
+| `DI.select.scaling-labels` | no selection with the kernel scaling carries a label saying unscaled and each says it is scaled; default kernel selections say unscaled | `di_select_scaling_labels` |
+| `DI.select.kernel-scale` | the sensitivity factor equals (174.85/250)^2 = 0.4892 (decision text 0.489) and scales the evaluated coefficient exactly | `di_select_kernel_scale` |
+| `DI.release.reading-uncertainty` | empty exactly for rows not read from a figure; all 219 digitised rows state it, none is not recorded (the Morris 2016 rows were re-read from the vector paths), every digitised Collin 2016 row stated | `di_release_reading_uncertainty` |
+| `DI.release.non-detect` | class M-ND on exactly E-217, E-220, E-221, E-225, E-228, E-231, each an upper bound | `di_release_non_detect` |
+| `DI.release.group-label` | the group label for no counted failure but a releasing particle on exactly E-406 and E-417 | `di_release_group_label` |
+| `DI.release.withdrawn-ids` | E-316 to E-373 absent, ids unique | `di_release_withdrawn_ids` |
+| `DI.release.denominator` | denominators by dataset (the matrix-corrected rows E-010..E-014 and E-033..E-045 are compact-inventory rows); 43 rows not established | `di_release_denominator` |
+| `DI.release.window-label` | the time window label of E-010..E-014 and E-033..E-037 is `after about 24 h at T to end of 300 h plateau (or test end if shorter) (matrix-corrected)` and their applicability carries `under premise BP1; window to the end of the 300 h plateau or the shorter test end (Collin p. 4)` (decision 68(b)); no other row carries either | `di_release_window_label` |
+| `DI.irr.completeness` | 2028 burnup rows: 72 compacts and 6 capsules, 13 cycles, burnup and fluence, once each | `di_irr_completeness` |
+| `DI.irr.monotone` | cumulative values never decrease; cycle ends equal the running sum of the 13 cycle lengths (0.1 EFPD) | `di_irr_monotone` |
+| `DI.irr.rev3-difference` | Appendix D after cycle 13 minus Tables 3 and 4: -0.01 to +0.05 percent FIMA | `di_irr_rev3_difference` |
+| `DI.irr.power-windows` | 124 five-EFPD windows for each of the 6 capsules | `di_irr_power_windows` |
+| `DI.irr.inventory` | steps 1 to 4: 2.32627e21 atoms per compact, 5.6001e17 per particle, 2.23916e-11 m3, 2.50097e28 m-3 (2e-5) | `di_irr_inventory` |
+| `DI.irr.step8` | time-average fission-rate density for eight burnups (5.27e19 to 9.13e19) to the printed three figures | `di_irr_step8` |
+| `DI.irr.step9` | all 78 capsule-average cycle values equal the printed table (half a unit of the last printed digit) | `di_irr_step9` |
+| `DI.irr.derived-series` | weighted means 8.709e19 (capsule 3) and 6.240e19 (capsule 6), extremes 2.485e19 and 1.269e20, label text | `di_irr_derived_series` |
+| `DI.register-md.matches-csv` | every `| E-xxx |` row of `STRATO_Parameter_Register.md` restates class, qualifier, value and notes of `release_measurements.csv`, and every coefficient row restates pre-factor, activation energy, source, temperature range and class of `arrhenius.csv` | `di_register_md_matches_csv` |
+
+Failure tests added in `tests/failures.rs`: a register row that drifts from the CSV (class, value, range), an unknown class, a wrong class for a set, a lost printed range, a changed C15 value, a non-detect that loses its class, a digitised row without reading uncertainty, a malformed reading uncertainty, a reused withdrawn id, a falling burnup, a changed particle count, a Schappel row whose `range_kind` changes from fitted to printed (each of S20-01 to S20-03) and a row with a printed range that is changed to fitted.
+
+The test file `tests/text_hygiene.rs` is not a check of the register: it fails when `CHECKS.md`, the audit log, the register document or a data file holds a control character other than TAB, LF and CR followed by LF, a byte-order mark or invalid UTF-8.
+
+Workspace: the Rust tests and checks belong to the workspace of `crates/Cargo.toml`. At the repository root `cargo test` runs only the `strato` package; run `cargo test --locked --manifest-path crates/Cargo.toml` for the `strato-data` tests (155 check tests, 34 failure tests, 17 type tests, 2 text-hygiene tests and 16 unit tests at the time of writing) and `cargo run --locked --manifest-path crates/Cargo.toml -p strato-data -- check --repo .` for the checks.

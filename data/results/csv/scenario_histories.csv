@@ -1,0 +1,160 @@
+# STRATO shared results: scenario histories (prescribed inputs) with the source of every number
+# label: numerical solution of the stated model; not experimental validation
+# solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1
+# pipeline: strato-results 0.1.0, schema 1
+# commit: 83a93fa04c7191d5543828e1eb0fca2b46523702
+# solver_source_sha256: 02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275
+# input_sha256 geometry.csv: 8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f
+# input_sha256 arrhenius.csv: 2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4
+# input_sha256 decay.csv: 9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf
+# input_sha256 fission_yields.csv: 4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0
+# input_sha256 temperature_histories.csv: 6ab3201672afd15f92ec9e529318377c829afaa5804288a3a694032145ab4af0
+# input_sha256 release_measurements.csv: b25e390f831a491f68398644efff1cfbc8c8b901cf95a167baaa314bc5bcbc4d
+# input_sha256 agr1_irradiation_conditions.csv: 31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d
+# input_sha256 agr1_burnup_by_cycle.csv: e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f
+# input_sha256 agr1_power_history_digitised.csv: 25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a
+# input_sha256 scenarios/s1_normal_operation.csv: c420e1e04e043ed0418099c27156cabda8188f40ce2fb239d1ce3916cccc7970
+# input_sha256 scenarios/s2_shutdown_cooldown.csv: f575e9a42670e52293083907b3658fd7e3a99c279912861999f0cb847cbf6044
+# input_sha256 scenarios/s3_startup.csv: bf2b6bd01168d0aa72f9db61f5fa4eae60ff39a81928eaed515ae8279916bfa7
+# input_sha256 scenarios/s4_control_rod_insertion.csv: 93856f2003ca65b7a7258d60819a47b8a651d695dffeff0fd7dc664b90309759
+# input_sha256 scenarios/s5_fuel_removal.csv: 4cad00101259e2fdbeec585f27d8910502a1858ab38bce59899c132b0caad9bb
+Scenario,Variant,Row id,Record,Quantity,Time,Time unit,Value,Unit,Interpolation,Source row ids,Basis,Reason or statement
+S1,,S1-001,meta,title,,,,,,,,Scenario 1: normal steady-state operation
+S1,,S1-002,meta,physical_interpretation,,,,,,,,"A fresh particle under constant generation and constant temperature at the reference conditions: the baseline concentration, inventory and release. Steady refers to the inputs; the solution does not reach steady state within the irradiation."
+S1,,S1-003,meta,label,,,,,,,,prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation
+S1,,S1-004,meta,nuclides_meaningful,,,,,,,,Sr-90;Cs-137
+S1,,S1-005,meta,nuclides_not_meaningful,,,,,,,,"Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero"
+S1,,S1-006,meta,initial_state,,,,,,,,fresh particle: C = 0 everywhere
+S1,,S1-007,meta,interpolation_rule,,,,,,,,linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly
+S1,,S1-008,meta,diffusivity_phase,,,,,,,,irradiation: C15 rows through the selection function (Phase::Irradiation); evaluated outside 955 to 1197 degC through diffusivity_extrapolated and labelled
+S1,,S1-009,meta,rate_density_reference,,,,,,IRR-053;IRR-002;IRR-059,derived from published AGR-1 burnup (calculated),capsule:3
+S1,exploration-1197C,S1-010,meta,rate_density_reference,,,,,,IRR-097;IRRB-0005;IRR-006;IRRB-0161;IRR-007;IRRB-0317;IRR-008;IRRB-0473;IRR-009;IRRB-0629;IRR-010;IRRB-0785;IRR-011;IRRB-0941;IRR-012;IRRB-1097;IRR-013;IRRB-1253;IRR-014;IRRB-1409;IRR-015;IRRB-1565;IRR-016;IRRB-1721;IRR-017;IRRB-1877;IRR-018,derived from published AGR-1 burnup (calculated),compact:6-2-1
+S1,exploration-1197C,S1-011,meta,label,,,,,,,,model exploration at the registered compact time-average peak temperature 1197 degC with the fission-rate density derived for the same compact; not a normal-operation reference and not experimental
+S1,,S1-020,history,G_kernel_factor,0,d,1,1,linear,IRR-053;IRR-002,derived from published AGR-1 burnup (calculated),factor 1 is the Capsule 3 time-average fission-rate density derived from published burnup
+S1,,S1-021,history,G_kernel_factor,620.2,d,1,1,linear,IRR-002,registered source row,end of irradiation 620.2 EFPD
+S1,,S1-022,history,T_C,0,d,1028,degC,linear,IRR-059,registered source row,"Capsule 3 time-average volume-average temperature, calculated by the as-run thermal analysis, not measured"
+S1,,S1-023,history,T_C,620.2,d,1028,degC,linear,IRR-059;IRR-002,registered source row,held to the end of irradiation
+S1,exploration-1197C,S1-030,history,T_C,0,d,1197,degC,linear,IRR-097,registered source row,"compact time-average peak temperature of compact 6-2-1, calculated"
+S1,exploration-1197C,S1-031,history,T_C,620.2,d,1197,degC,linear,IRR-097;IRR-002,registered source row,held to the end of irradiation
+S1,cycles,S1-040,history,fission_rate_density,0,d,5.09,1e19 m^-3 s^-1,step,IRRB-0103;IRR-006,derived from published AGR-1 burnup (calculated),cycle 1 Capsule 3 average
+S1,cycles,S1-041,history,fission_rate_density,46.6,d,6.73,1e19 m^-3 s^-1,step,IRRB-0259;IRR-007,derived from published AGR-1 burnup (calculated),cycle 2
+S1,cycles,S1-042,history,fission_rate_density,98.2,d,8.04,1e19 m^-3 s^-1,step,IRRB-0415;IRR-008,derived from published AGR-1 burnup (calculated),cycle 3
+S1,cycles,S1-043,history,fission_rate_density,149.3,d,9.09,1e19 m^-3 s^-1,step,IRRB-0571;IRR-009,derived from published AGR-1 burnup (calculated),cycle 4
+S1,cycles,S1-044,history,fission_rate_density,195.8,d,9.16,1e19 m^-3 s^-1,step,IRRB-0727;IRR-010,derived from published AGR-1 burnup (calculated),cycle 5
+S1,cycles,S1-045,history,fission_rate_density,231.5,d,11.88,1e19 m^-3 s^-1,step,IRRB-0883;IRR-011,derived from published AGR-1 burnup (calculated),cycle 6
+S1,cycles,S1-046,history,fission_rate_density,263.9,d,11.10,1e19 m^-3 s^-1,step,IRRB-1039;IRR-012,derived from published AGR-1 burnup (calculated),cycle 7
+S1,cycles,S1-047,history,fission_rate_density,311.9,d,10.80,1e19 m^-3 s^-1,step,IRRB-1195;IRR-013,derived from published AGR-1 burnup (calculated),cycle 8
+S1,cycles,S1-048,history,fission_rate_density,363.9,d,10.48,1e19 m^-3 s^-1,step,IRRB-1351;IRR-014,derived from published AGR-1 burnup (calculated),cycle 9
+S1,cycles,S1-049,history,fission_rate_density,412.8,d,8.74,1e19 m^-3 s^-1,step,IRRB-1507;IRR-015,derived from published AGR-1 burnup (calculated),cycle 10
+S1,cycles,S1-050,history,fission_rate_density,470.1,d,8.61,1e19 m^-3 s^-1,step,IRRB-1663;IRR-016,derived from published AGR-1 burnup (calculated),cycle 11
+S1,cycles,S1-051,history,fission_rate_density,513.8,d,8.17,1e19 m^-3 s^-1,step,IRRB-1819;IRR-017,derived from published AGR-1 burnup (calculated),cycle 12
+S1,cycles,S1-052,history,fission_rate_density,565.5,d,6.67,1e19 m^-3 s^-1,step,IRRB-1975;IRR-018,derived from published AGR-1 burnup (calculated),"cycle 13; time base is effective full-power days, outages are not represented"
+S1,,S1-060,step,dt_max,620.2,d,0.5,d,,IRR-002,numerical setting (chosen; refinement-checked per Section 3.5),one segment to the end of irradiation; the number of steps is ceil(L / dt_max)
+S2,,S2-001,meta,title,,,,,,,,Scenario 2: reactor shutdown and cooldown
+S2,,S2-002,meta,physical_interpretation,,,,,,,,Generation stops at shutdown. The inventory present keeps diffusing and decaying while the temperature falls along a prescribed cooldown.
+S2,,S2-003,meta,label,,,,,,,,prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation
+S2,,S2-004,meta,nuclides_meaningful,,,,,,,,Sr-90;Cs-137
+S2,,S2-005,meta,nuclides_not_meaningful,,,,,,,,"Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero"
+S2,,S2-006,meta,initial_state,,,,,,,,the state of Scenario 1 at the end of irradiation; run as one continuous history from the fresh particle
+S2,,S2-007,meta,interpolation_rule,,,,,,,,linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly; times of this file are measured from the shutdown
+S2,,S2-008,meta,diffusivity_phase,,,,,,,,irradiation: C15 rows; below 955 degC evaluated through diffusivity_extrapolated and labelled C15 evaluated outside its documented application (955 to 1197 degC)
+S2,,S2-009,meta,rate_density_reference,,,,,,IRR-053;IRR-002;IRR-059,derived from published AGR-1 burnup (calculated),capsule:3
+S2,exploration-1197C,S2-010,meta,rate_density_reference,,,,,,IRR-097;IRRB-0005;IRR-006;IRRB-0161;IRR-007;IRRB-0317;IRR-008;IRRB-0473;IRR-009;IRRB-0629;IRR-010;IRRB-0785;IRR-011;IRRB-0941;IRR-012;IRRB-1097;IRR-013;IRRB-1253;IRR-014;IRRB-1409;IRR-015;IRRB-1565;IRR-016;IRRB-1721;IRR-017;IRRB-1877;IRR-018,derived from published AGR-1 burnup (calculated),compact:6-2-1
+S2,,S2-011,meta,lead_in,620.2,d,,,,IRR-002,registered source row,S1
+S2,,S2-012,meta,reference_continuation,,,,,,,prescribed input (assumed),"the reference curve for had the reactor kept operating continues Scenario 1 at generation factor 1 and the normal-operation temperature beyond the registered 620.2 EFPD for the same time as this scenario; a reference, not a registered irradiation"
+S2,exploration-1197C,S2-013,meta,label,,,,,,,,model exploration at the registered compact time-average peak temperature 1197 degC with the fission-rate density derived for the same compact; not experimental
+S2,,S2-020,history,G_kernel_factor,0,h,0,1,step,,prescribed input (assumed),generation ceases at shutdown: the definition of the scenario
+S2,,S2-021,history,G_kernel_factor,8760,h,0,1,step,,prescribed input (assumed),"365 d of storage, long enough to show the decay of the inventory"
+S2,,S2-022,history,T_C,0,h,1028,degC,linear,IRR-059,registered source row,Capsule 3 time-average volume-average temperature at shutdown
+S2,,S2-023,history,T_C,1.6633,h,30,degC,linear,TH-013,prescribed input (assumed),"rate of -600 degC/h as the furnace cool-down of the AGR-1 safety test as modelled (TH-013), used only for its magnitude and not a reactor measurement; 30 degC as in TH-007 and TH-013"
+S2,,S2-024,history,T_C,8760,h,30,degC,linear,TH-013,prescribed input (assumed),held at 30 degC as above
+S2,exploration-1197C,S2-030,history,T_C,0,h,1197,degC,linear,IRR-097,registered source row,compact time-average peak temperature of compact 6-2-1
+S2,exploration-1197C,S2-031,history,T_C,1.945,h,30,degC,linear,TH-013,prescribed input (assumed),the same -600 degC/h rate from 1197 degC: 1167 / 600 = 1.945 h
+S2,exploration-1197C,S2-032,history,T_C,8760,h,30,degC,linear,TH-013,prescribed input (assumed),held at 30 degC
+S2,,S2-040,step,dt_max,1.6633,h,60,s,,,numerical setting (chosen; refinement-checked per Section 3.5),during the cooldown
+S2,,S2-041,step,dt_max,8760,h,1,d,,,numerical setting (chosen; refinement-checked per Section 3.5),after the cooldown
+S2,exploration-1197C,S2-042,step,dt_max,1.945,h,60,s,,,numerical setting (chosen; refinement-checked per Section 3.5),during the cooldown
+S2,exploration-1197C,S2-043,step,dt_max,8760,h,1,d,,,numerical setting (chosen; refinement-checked per Section 3.5),after the cooldown
+S3,,S3-001,meta,title,,,,,,,,Scenario 3: reactor startup
+S3,,S3-002,meta,physical_interpretation,,,,,,,,Generation rises from zero with a corresponding temperature rise; the rising temperature raises the diffusivities.
+S3,,S3-003,meta,label,,,,,,,,prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation
+S3,,S3-004,meta,nuclides_meaningful,,,,,,,,Sr-90;Cs-137
+S3,,S3-005,meta,nuclides_not_meaningful,,,,,,,,"Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero"
+S3,,S3-006,meta,initial_state,,,,,,,,fresh particle: C = 0 everywhere (startup of fresh fuel)
+S3,,S3-007,meta,interpolation_rule,,,,,,,,linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly
+S3,,S3-008,meta,diffusivity_phase,,,,,,,,irradiation: C15 rows; below 955 degC evaluated through diffusivity_extrapolated and labelled C15 evaluated outside its documented application (955 to 1197 degC)
+S3,,S3-009,meta,rate_density_reference,,,,,,IRR-053;IRR-002;IRR-059,derived from published AGR-1 burnup (calculated),capsule:3
+S3,exploration-1197C,S3-010,meta,rate_density_reference,,,,,,IRR-097;IRRB-0005;IRR-006;IRRB-0161;IRR-007;IRRB-0317;IRR-008;IRRB-0473;IRR-009;IRRB-0629;IRR-010;IRRB-0785;IRR-011;IRRB-0941;IRR-012;IRRB-1097;IRR-013;IRRB-1253;IRR-014;IRRB-1409;IRR-015;IRRB-1565;IRR-016;IRRB-1721;IRR-017;IRRB-1877;IRR-018,derived from published AGR-1 burnup (calculated),compact:6-2-1
+S3,,S3-011,meta,event_time,1118.4,h,,,,IRR-006,registered source row,end of cycle 1 at 46.6 EFPD; the first 46.6 d are shown beside the full run
+S3,,S3-012,meta,reference_continuation,,,,,,IRR-053;IRR-002,derived from published AGR-1 burnup (calculated),the reference curve is Scenario 1 (a step start at full generation and temperature)
+S3,exploration-1197C,S3-013,meta,label,,,,,,,,model exploration at the registered compact time-average peak temperature 1197 degC with the fission-rate density derived for the same compact; not experimental
+S3,,S3-020,history,G_kernel_factor,0,h,0,1,linear,,prescribed input (assumed),start from zero power
+S3,,S3-021,history,G_kernel_factor,24,h,1,1,linear,,prescribed input (assumed),a 24 h linear power ascension: no registered ascension time exists in the AGR-1 records and 24 h resolves the transient on the time axis
+S3,,S3-022,history,G_kernel_factor,14884.8,h,1,1,linear,IRR-002,registered source row,620.2 d (IRR-002) times 24 h/d
+S3,,S3-023,history,T_C,0,h,30,degC,linear,TH-007,prescribed input (assumed),cold start at 30 degC as TH-007
+S3,,S3-024,history,T_C,24,h,1028,degC,linear,IRR-059,prescribed input (assumed),value from IRR-059; the ramp duration is a prescribed input (assumed) equal to the power ramp (temperature taken to follow power)
+S3,,S3-025,history,T_C,14884.8,h,1028,degC,linear,IRR-059;IRR-002,registered source row,held to 620.2 d
+S3,exploration-1197C,S3-030,history,T_C,0,h,30,degC,linear,TH-007,prescribed input (assumed),cold start at 30 degC as TH-007
+S3,exploration-1197C,S3-031,history,T_C,24,h,1197,degC,linear,IRR-097,prescribed input (assumed),value from IRR-097; the ramp duration is a prescribed input (assumed) equal to the power ramp
+S3,exploration-1197C,S3-032,history,T_C,14884.8,h,1197,degC,linear,IRR-097;IRR-002,registered source row,held to 620.2 d
+S3,,S3-040,step,dt_max,24,h,600,s,,,numerical setting (chosen; refinement-checked per Section 3.5),during the power and temperature ramp
+S3,,S3-041,step,dt_max,14884.8,h,0.5,d,,,numerical setting (chosen; refinement-checked per Section 3.5),after the ramp; the end of cycle 1 is a boundary
+S4,,S4-001,meta,title,,,,,,,,Scenario 4: control-rod insertion (prescribed power reduction)
+S4,,S4-002,meta,physical_interpretation,,,,,,,,"The reactor power, and with it the fission rate in the kernel, is reduced along an assumed history and the temperature falls correspondingly. STRATO models only the consequence for the generation rate and the temperature, not the rod or the core."
+S4,,S4-003,meta,label,,,,,,,,prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation
+S4,,S4-004,meta,nuclides_meaningful,,,,,,,,Sr-90;Cs-137
+S4,,S4-005,meta,nuclides_not_meaningful,,,,,,,,"Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero"
+S4,,S4-006,meta,initial_state,,,,,,,,the state of Scenario 1 at the insertion time; run as one continuous history from the fresh particle
+S4,,S4-007,meta,interpolation_rule,,,,,,,,linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly; times of this file are measured from the insertion
+S4,,S4-008,meta,diffusivity_phase,,,,,,,,irradiation: C15 rows; at 900 degC evaluated through diffusivity_extrapolated and labelled C15 evaluated outside its documented application (955 to 1197 degC); the post-transition release depends on that extrapolation
+S4,,S4-009,meta,rate_density_reference,,,,,,IRR-053;IRR-002;IRR-059,derived from published AGR-1 burnup (calculated),capsule:3
+S4,exploration-1197C,S4-010,meta,rate_density_reference,,,,,,IRR-097;IRRB-0005;IRR-006;IRRB-0161;IRR-007;IRRB-0317;IRR-008;IRRB-0473;IRR-009;IRRB-0629;IRR-010;IRRB-0785;IRR-011;IRRB-0941;IRR-012;IRRB-1097;IRR-013;IRRB-1253;IRR-014;IRRB-1409;IRR-015;IRRB-1565;IRR-016;IRRB-1721;IRR-017;IRRB-1877;IRR-018,derived from published AGR-1 burnup (calculated),compact:6-2-1
+S4,,S4-011,meta,lead_in,310.1,d,,,,,prescribed input (assumed),S1: the middle of the irradiation so that before and after are equally long
+S4,,S4-012,meta,reference_continuation,,,,,,IRR-053;IRR-002,derived from published AGR-1 burnup (calculated),the reference curve is Scenario 1 continued to 620.2 d
+S4,exploration-1197C,S4-013,meta,label,,,,,,,,model exploration at the registered compact time-average peak temperature 1197 degC with the fission-rate density derived for the same compact; not experimental
+S4,,S4-014,meta,magnitude,,,,,,,,"the magnitudes of the release fractions, the inventories and the generated and decayed amounts are results of the run, not inputs: the results program writes them to curves/s5.control-rod-insertion.*.json with a resolution flag for every point of the release fraction (base against refined run, science design Section 3.5), and none is stated here; the post-transition release depends on the C15 extrapolation to 900 degC"
+S4,,S4-020,history,G_kernel_factor,0,h,1,1,linear,IRR-053;IRR-002,derived from published AGR-1 burnup (calculated),Scenario 1 value (the Capsule 3 time-average fission-rate density derived from published burnup)
+S4,,S4-021,history,G_kernel_factor,1,h,0.5,1,linear,,prescribed input (assumed),power halved within 1 h: a reduction large enough to be visible in the generated inventory
+S4,,S4-022,history,G_kernel_factor,7442.4,h,0.5,1,linear,IRR-002,prescribed input (assumed),held to 620.2 d (IRR-002): 310.1 d times 24 h/d after the insertion; the factor 0.5 is assumed
+S4,,S4-023,history,T_C,0,h,1028,degC,linear,IRR-059,registered source row,Capsule 3 time-average volume-average temperature
+S4,,S4-024,history,T_C,1,h,900,degC,linear,,prescribed input (assumed),"a drop of 128 degC that changes the diffusivity of Cs in SiC by a factor 0.283 and of Sr in the kernel by 7.3e-3 (C15-07, C15-09); no registered power-temperature relation exists"
+S4,,S4-025,history,T_C,7442.4,h,900,degC,linear,IRR-002,prescribed input (assumed),held to 620.2 d (IRR-002); the temperature value is assumed as above
+S4,exploration-1197C,S4-030,history,T_C,0,h,1197,degC,linear,IRR-097,registered source row,compact time-average peak temperature of compact 6-2-1
+S4,exploration-1197C,S4-031,history,T_C,1,h,1069,degC,linear,,prescribed input (assumed),the same drop of 128 degC as the base variant: 1197 - 128
+S4,exploration-1197C,S4-032,history,T_C,7442.4,h,1069,degC,linear,IRR-002,prescribed input (assumed),held to 620.2 d; the temperature value is assumed as above
+S4,,S4-040,step,dt_max,1,h,60,s,,,numerical setting (chosen; refinement-checked per Section 3.5),during the 1 h transition
+S4,,S4-041,step,dt_max,7442.4,h,0.5,d,,,numerical setting (chosen; refinement-checked per Section 3.5),after the transition
+S5,,S5-001,meta,title,,,,,,,,Scenario 5: fuel removal (refuelling)
+S5,,S5-002,meta,physical_interpretation,,,,,,,,The particle leaves the reactor: generation stops permanently and the temperature drops to storage while diffusion and decay continue. STRATO does not simulate the mechanical process. As a labelled option the stored particle then follows the registered AGR-1 safety-test history.
+S5,,S5-003,meta,label,,,,,,,,"prescribed-input simulation; not a validated reactor prediction; numerical solution of the stated model; not experimental validation; refuelling itself (reinsertion, multi-pass irradiation, a changed neighbourhood) is not represented"
+S5,,S5-004,meta,nuclides_meaningful,,,,,,,,Sr-90;Cs-137
+S5,,S5-005,meta,nuclides_not_meaningful,,,,,,,,"Ag-110m;Cs-134;Eu-154: no direct fission-yield source term (decision 15), so the source is zero"
+S5,,S5-006,meta,initial_state,,,,,,,,the state of Scenario 1 at the end of irradiation; run as one continuous history from the fresh particle
+S5,,S5-007,meta,interpolation_rule,,,,,,,,linear between breakpoints and the last value held; a step entry is a jump at its time and the step average treats it exactly; times of this file are measured from the removal
+S5,,S5-008,meta,diffusivity_phase,,,,,,,,"irradiation: C15 rows up to the end of storage; below 955 degC evaluated through diffusivity_extrapolated and labelled; in a heating variant the set switches to the heating-test rows C16 at the start of the heating history, when the temperature is at most 1250 degC"
+S5,,S5-009,meta,rate_density_reference,,,,,,IRR-053;IRR-002;IRR-059,derived from published AGR-1 burnup (calculated),capsule:3
+S5,exploration-1197C,S5-010,meta,rate_density_reference,,,,,,IRR-097;IRRB-0005;IRR-006;IRRB-0161;IRR-007;IRRB-0317;IRR-008;IRRB-0473;IRR-009;IRRB-0629;IRR-010;IRRB-0785;IRR-011;IRRB-0941;IRR-012;IRRB-1097;IRR-013;IRRB-1253;IRR-014;IRRB-1409;IRR-015;IRRB-1565;IRR-016;IRRB-1721;IRR-017;IRRB-1877;IRR-018,derived from published AGR-1 burnup (calculated),compact:6-2-1
+S5,,S5-011,meta,lead_in,620.2,d,,,,IRR-002,registered source row,S1
+S5,,S5-012,meta,reference_continuation,,,,,,,prescribed input (assumed),"the reference curve continues Scenario 1 at generation factor 1 and the normal-operation temperature beyond the registered 620.2 EFPD for the same time as this scenario; a reference, not a registered irradiation"
+S5,exploration-1197C,S5-013,meta,label,,,,,,,,model exploration at the registered compact time-average peak temperature 1197 degC with the fission-rate density derived for the same compact; not experimental
+S5,heating-1600,S5-014,meta,heating_history,,,,,,TH-007;TH-008;TH-009;TH-010;TH-011;TH-012;TH-013,registered source row,AGR1-ST-C16-1600
+S5,heating-1700,S5-015,meta,heating_history,,,,,,TH-014;TH-015;TH-016;TH-017;TH-018;TH-019;TH-020,registered source row,AGR1-ST-C16-1700
+S5,heating-1800,S5-016,meta,heating_history,,,,,,TH-021;TH-022;TH-023;TH-024;TH-025;TH-026;TH-027,registered source row,AGR1-ST-C16-1800
+S5,heating-1600,S5-017,meta,storage_before_heating,8760,h,,,,,prescribed input (assumed),the time between the end of irradiation and the AGR-1 tests is not registered; the storage of the base history is used
+S5,heating-1700,S5-018,meta,storage_before_heating,8760,h,,,,,prescribed input (assumed),as for 1600 degC
+S5,heating-1800,S5-019,meta,storage_before_heating,8760,h,,,,,prescribed input (assumed),as for 1600 degC
+S5,,S5-020,history,G_kernel_factor,0,h,0,1,step,,prescribed input (assumed),generation ceases at removal: the definition of the scenario
+S5,,S5-021,history,G_kernel_factor,8760,h,0,1,step,,prescribed input (assumed),365 d of storage
+S5,,S5-022,history,T_C,0,h,1028,degC,linear,IRR-059,registered source row,Capsule 3 time-average volume-average temperature at removal
+S5,,S5-023,history,T_C,1.6633,h,30,degC,linear,TH-013,prescribed input (assumed),"rate of -600 degC/h as the furnace cool-down of the AGR-1 safety test as modelled (TH-013), used only for its magnitude and not a reactor measurement"
+S5,,S5-024,history,T_C,8760,h,30,degC,linear,TH-013,prescribed input (assumed),held at 30 degC as above
+S5,exploration-1197C,S5-030,history,T_C,0,h,1197,degC,linear,IRR-097,registered source row,compact time-average peak temperature of compact 6-2-1
+S5,exploration-1197C,S5-031,history,T_C,1.945,h,30,degC,linear,TH-013,prescribed input (assumed),the same -600 degC/h rate from 1197 degC: 1167 / 600 = 1.945 h
+S5,exploration-1197C,S5-032,history,T_C,8760,h,30,degC,linear,TH-013,prescribed input (assumed),held at 30 degC
+S5,,S5-040,step,dt_max,1.6633,h,60,s,,,numerical setting (chosen; refinement-checked per Section 3.5),during the cooldown
+S5,,S5-041,step,dt_max,8760,h,1,d,,,numerical setting (chosen; refinement-checked per Section 3.5),after the cooldown
+S5,exploration-1197C,S5-042,step,dt_max,1.945,h,60,s,,,numerical setting (chosen; refinement-checked per Section 3.5),during the cooldown
+S5,exploration-1197C,S5-043,step,dt_max,8760,h,1,d,,,numerical setting (chosen; refinement-checked per Section 3.5),after the cooldown
+S5,heating-1600,S5-044,meta,heating_dt_max,,h,0.05,h,,,numerical setting (chosen; refinement-checked per Section 3.5),largest step in each registered heating-history segment
+S5,heating-1700,S5-045,meta,heating_dt_max,,h,0.05,h,,,numerical setting (chosen; refinement-checked per Section 3.5),largest step in each registered heating-history segment
+S5,heating-1800,S5-046,meta,heating_dt_max,,h,0.05,h,,,numerical setting (chosen; refinement-checked per Section 3.5),largest step in each registered heating-history segment
