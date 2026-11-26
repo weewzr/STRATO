@@ -163,6 +163,13 @@ pub fn compare(request_json: &str) -> String {
     btcs_api::compare(request_json)
 }
 
+/// Writes a data file of a BTCS run (CSV time series, CSV profiles or the JSON of the run) with
+/// its provenance header, by the library's export, and returns it as text in a reply.
+#[wasm_bindgen]
+pub fn export_run(request_json: &str) -> String {
+    btcs_api::export_run(request_json)
+}
+
 // ---------------------------------------------------------------------------------------
 // Build information
 // ---------------------------------------------------------------------------------------

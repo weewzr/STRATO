@@ -5,7 +5,6 @@
 //! strato-webtools catalogue [--check]
 //! strato-webtools colormaps [--check]
 //! strato-webtools geometry [--check]
-//! strato-webtools figures [--check]
 //! strato-webtools precomputed [--check]
 //! strato-webtools check-catalogue
 //! strato-webtools build-wasm [--check]
@@ -18,14 +17,13 @@
 use std::path::Path;
 
 use crate::util::{self, Error, Result};
-use crate::{case, catalogue, check, colormaps, figures, geometry, precomputed, wasm};
+use crate::{case, catalogue, check, colormaps, geometry, precomputed, wasm};
 
 pub const USAGE: &str = "usage:
   strato-webtools case <input.toml> [--check] [--root <dir>]
   strato-webtools catalogue [--check] [--root <dir>]
   strato-webtools colormaps [--check] [--root <dir>]
   strato-webtools geometry [--check] [--root <dir>]
-  strato-webtools figures [--check] [--root <dir>]
   strato-webtools precomputed [--check] [--root <dir>]
   strato-webtools check-catalogue [--root <dir>]
   strato-webtools build-wasm [--check] [--root <dir>]";
@@ -120,7 +118,6 @@ pub fn main_with(args: &[String]) -> i32 {
         "catalogue",
         "colormaps",
         "geometry",
-        "figures",
         "precomputed",
         "check-catalogue",
         "build-wasm",
@@ -149,7 +146,6 @@ pub fn main_with(args: &[String]) -> i32 {
             "catalogue" => catalogue_run(&root, a.check),
             "colormaps" => colormaps::run(&root, a.check),
             "geometry" => geometry::run(&root, a.check),
-            "figures" => figures::run(&root, a.check),
             "precomputed" => precomputed::run(&root, a.check),
             "check-catalogue" => check_catalogue(&root),
             "build-wasm" => wasm::run(&root, a.check),

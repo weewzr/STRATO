@@ -1,40 +1,61 @@
 //! The one place that knows how the numerical solver is called.
 //!
 //! The web tools never link the solver. They run its command line and its native wrapper example
-//! and convert what those print and write. When the solver changes (the finite-volume code is
-//! replaced by the spherical BTCS scheme), the command lines, the names of the files the command
-//! line writes, and the names of the converted files change here, and nowhere else.
+//! and convert what those print and write. The solver is the spherical BTCS finite-difference
+//! scheme (`strato-btcs`); the command lines, the names of the files the command line writes,
+//! the file that holds the independent check and the names of the converted files are here, and
+//! nowhere else. A later change of solver changes this file and the conversion in
+//! `precomputed.rs`.
 
 /// The input case that the precomputed results are computed from.
 pub const INPUT: &str = "inputs/synthetic/synthetic_five_layer.toml";
 
-/// The folder (under the repository root) where the command line writes its CSV files.
-pub const CLI_OUT_DIR: &str = "results/synthetic-five-layer";
+/// The folder (under the repository root, ignored by Git) where the command line writes its files.
+pub const CLI_OUT_DIR: &str = "results/web-btcs";
 
-/// The folder with the reference output that the command line must reproduce byte for byte
-/// (docs/development/provenance.md Section 3).
-pub const GOLDEN_DIR: &str = "tests/golden/v1.0";
+/// Name of the solver that the headers of the converted files carry.
+pub const SOLVER_ID: &str = "STRATO BTCS five-layer spherical finite difference";
 
-/// Command line of the native release binary of the root crate.
-pub fn cli_command() -> Vec<String> {
-    [
+/// Source row and class that the exported files carry for the parameters (decision 31). The
+/// input is the synthetic benchmark of the repository: it is not literature data.
+pub const PARAMETER_SOURCE: &str = "synthetic benchmark, not literature data";
+pub const PARAMETER_CLASS: &str = "synthetic benchmark";
+
+/// Fractions of the end time at which the command line writes concentration profiles. A choice
+/// of the display (which instants the downloadable profiles show), not a parameter of the model;
+/// the solver serves each from the nearest step and never interpolates.
+pub const SNAPSHOT_FRACTIONS: [f64; 5] = [0.0, 0.1, 0.25, 0.5, 1.0];
+
+/// Command line of the native release binary of the root crate. `snapshots` is the
+/// comma-separated list of snapshot times in seconds, `commit` the commit written into the headers.
+pub fn cli_command(snapshots: &str, commit: &str) -> Vec<String> {
+    let mut v: Vec<String> = [
         "cargo",
         "run",
         "--locked",
         "--release",
         "--quiet",
+        "--bin",
+        "strato-btcs",
         "--",
         INPUT,
+        "--out",
+        CLI_OUT_DIR,
+        "--snapshots",
     ]
     .map(String::from)
-    .to_vec()
+    .to_vec();
+    v.push(snapshots.to_string());
+    v.extend(["--commit".to_string(), commit.to_string()]);
+    v.extend(["--parameter-source".to_string(), PARAMETER_SOURCE.to_string()]);
+    v.extend(["--parameter-class".to_string(), PARAMETER_CLASS.to_string()]);
+    v
 }
 
 /// The same command as the person would type it, recorded in the provenance headers.
-pub const CLI_TEXT: &str =
-    "cargo run --locked --release -- inputs/synthetic/synthetic_five_layer.toml";
+pub const CLI_TEXT: &str = "cargo run --locked --release --bin strato-btcs -- inputs/synthetic/synthetic_five_layer.toml --out results/web-btcs --snapshots <fractions of the end time> --commit <commit> --parameter-source <source> --parameter-class <class>";
 
-/// Command line of the native run of the WebAssembly wrapper, which prints the run response as
+/// Command line of the native run of the WebAssembly wrapper, which prints the `run` reply as
 /// JSON on standard output.
 pub fn native_command() -> Vec<String> {
     [
@@ -46,7 +67,7 @@ pub fn native_command() -> Vec<String> {
         "--manifest-path",
         "crates/strato-wasm/Cargo.toml",
         "--example",
-        "native_run",
+        "native_btcs_run",
         "--",
         INPUT,
     ]
@@ -54,61 +75,84 @@ pub fn native_command() -> Vec<String> {
     .to_vec()
 }
 
-pub const NATIVE_TEXT: &str = "cargo run --locked --release --manifest-path crates/strato-wasm/Cargo.toml --example native_run -- inputs/synthetic/synthetic_five_layer.toml";
+pub const NATIVE_TEXT: &str = "cargo run --locked --release --manifest-path crates/strato-wasm/Cargo.toml --example native_btcs_run -- inputs/synthetic/synthetic_five_layer.toml";
 
-/// The four CSV files the command line writes into [`CLI_OUT_DIR`] (and the golden folder holds).
-pub const CLI_CSV: [&str; 4] = [
-    "timeseries.csv",
-    "final_profile.csv",
-    "comparison_fv_vs_analytical.csv",
-    "convergence_study.csv",
+/// The three files the command line writes into [`CLI_OUT_DIR`].
+pub const CLI_TIMESERIES: &str = "btcs_timeseries.csv";
+pub const CLI_PROFILES: &str = "btcs_profiles.csv";
+pub const CLI_RUN_JSON: &str = "btcs_run.json";
+
+/// The independent check of the regression suite for this input (run by the library's
+/// regression example, which writes it under tests/golden/btcs): the release fraction of the
+/// BTCS run against a reference that contains no BTCS code, with the observed orders in time and
+/// in space. The tool copies it; it computes nothing.
+pub const CHECK_FILE: &str = "tests/golden/btcs/s5_n40_dt200/independent_check.csv";
+
+/// Machine keys of the columns of the independent-check file, in file order
+/// (`postprocessing::export::CHECK_COLUMNS`). The conversion checks the number of columns.
+pub const CHECK_KEYS: [&str; 17] = [
+    "t_s",
+    "f_btcs",
+    "f_reference",
+    "abs_difference",
+    "time_error",
+    "time_order",
+    "time_uncertainty",
+    "space_error",
+    "space_order",
+    "space_uncertainty",
+    "cross_error",
+    "f_limit",
+    "limit_difference",
+    "reference_floor",
+    "tolerance",
+    "limit_difference_over_tolerance",
+    "passed",
 ];
-
-/// The role of each of the four CSV files, in the order of [`CLI_CSV`].
-pub const ROLE_TIMESERIES: usize = 0;
-pub const ROLE_PROFILE: usize = 1;
-pub const ROLE_COMPARISON: usize = 2;
-pub const ROLE_CONVERGENCE: usize = 3;
-
-/// Name of the standard-output reference file in the golden folder.
-pub const GOLDEN_STDOUT: &str = "main_run_stdout.txt";
 
 /// Lines of the command line's standard output that name files (their separators depend on the
 /// platform) and are left out of the summary.
-pub const PATH_KEYS: [&str; 5] = [
-    "timeseries",
-    "profile",
-    "figure",
-    "comparison",
-    "convergence_study",
-];
-
-/// Columns of the CSV files that hold whole numbers.
-pub const INTEGER_COLUMNS: [&str; 3] = ["cell", "material", "total_cells"];
+pub const PATH_KEYS: [&str; 3] = ["timeseries", "profiles", "run_json"];
 
 /// Names written to web/public/data/, in the order of the files written and checked.
-pub const PRECOMPUTED_FILES: [&str; 9] = [
+pub const PRECOMPUTED_FILES: [&str; 8] = [
+    "btcs_run.json",
+    "btcs_vs_analytical.json",
+    "btcs_independent_check.json",
+    "wrapper_native_synthetic.json",
+    "btcs_run.timeseries.csv",
+    "btcs_run.profiles.csv",
+    "btcs_vs_analytical.csv",
+    "btcs_independent_check.csv",
+];
+
+/// Names of files of an earlier solver that no longer exist; `precomputed --check` reports one
+/// that is still in the folder.
+pub const RETIRED_FILES: [&str; 10] = [
     "synthetic_run.json",
     "comparison_fv_vs_analytical.json",
     "convergence_study.json",
     "golden_v1.json",
-    "wrapper_native_synthetic.json",
     "synthetic_run.timeseries.csv",
     "synthetic_run.final_profile.csv",
     "comparison_fv_vs_analytical.csv",
     "convergence_study.csv",
+    "convergence_guides.json",
+    "convergence_guides.csv",
 ];
 
-pub const NOTE_RUN: &str = "Time series and final profile of the native STRATO v1.0 run (Code B).";
-pub const NOTE_COMPARISON: &str = "Code B against Code C at every output time, as the CLI writes it; empty series cells are null.";
-pub const NOTE_CONVERGENCE: &str = "Spatial and temporal refinement study of the native run; observed orders as the CLI prints them.";
-pub const NOTE_GOLDEN: &str = "Values of the golden v1.0 files, copied for the browser parity check; not regenerated by any run.";
+pub const NOTE_RUN: &str = "Time series, profiles and diagnostics of the native BTCS run of the synthetic five-layer case, as the solver's command line wrote them (numerical solution of the stated model; not experimental validation).";
+pub const NOTE_COMPARISON: &str = "Release fraction of the BTCS run and of the analytical (Sturm-Liouville series) solution at every output time; the absolute difference is computed in Rust from the two columns; empty cells are null where the series is not valid.";
+pub const NOTE_CHECK: &str = "Independent check of the BTCS release fraction against a reference that contains no BTCS code, with the observed orders in time and in space, copied from the regression suite; a regression reference, not truth.";
 pub const NOTE_WRAPPER: &str =
-    "run_v1 response of the native wrapper (x86_64), the reference of the browser parity test.";
+    "run reply of the native wrapper (x86_64), the reference of the browser parity test.";
 
-/// Names of the summary entries of the convergence study that the command line prints.
-pub const SUMMARY_KEYS: [&str; 3] = [
-    "exact_final_release_fraction",
-    "spatial_observed_orders",
-    "temporal_observed_orders",
+/// Names of the summary entries of the command line's standard output that the page shows.
+pub const SUMMARY_KEYS: [&str; 6] = [
+    "nodes_N",
+    "steps",
+    "final_release_fraction",
+    "worst_balance_residual_relative",
+    "final_balance_residual_bound_relative",
+    "min_concentration_mol_m3",
 ];

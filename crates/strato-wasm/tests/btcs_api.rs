@@ -778,3 +778,57 @@ fn build_info_reports_abi_2_and_the_btcs_capability() {
         .iter()
         .any(|f| f == "run_v1"));
 }
+
+// ---------------------------------------------------------------------------------------
+// export_run: the data files of a run, written by the library's export
+// ---------------------------------------------------------------------------------------
+
+fn export(format: &str) -> Value {
+    let req = json!({"schema": 2, "config": synthetic_config_value(), "format": format,
+        "input_file": "synthetic_five_layer.toml",
+        "parameter_source": "synthetic benchmark, not literature data",
+        "parameter_class": "synthetic benchmark"});
+    serde_json::from_str(&strato_wasm::export_run(&req.to_string())).unwrap()
+}
+
+#[test]
+fn export_time_series_csv_carries_the_provenance_header_and_the_run_values() {
+    let v = export("timeseries_csv");
+    assert_eq!(v["status"], "ok", "{v}");
+    assert_eq!(v["label"], "COMPUTED v2.0");
+    assert_eq!(v["media_type"], "text/csv");
+    let text = v["text"].as_str().unwrap();
+    assert!(text.contains("# solver_package_version: "));
+    assert!(text.contains(&format!("# commit: {}", strato_wasm::BUILD_COMMIT)));
+    assert!(text.contains("# input_sha256: "));
+    assert!(text.contains("# parameter_source: synthetic benchmark, not literature data"));
+    assert!(text.contains("# parameter_class: synthetic benchmark"));
+    assert!(text.contains("Release fraction (dimensionless)"));
+    // The last row holds the release fraction that `run` returns, bit for bit (both are the
+    // shortest round-trip text of the same solver value).
+    let run = run_ok(&request(synthetic_config_value()));
+    let last = text.lines().last().unwrap();
+    let cell: f64 = last.split(',').nth(3).unwrap().parse().unwrap();
+    let expected = *floats(&run["release_fraction"]).last().unwrap();
+    assert_eq!(cell, expected);
+}
+
+#[test]
+fn export_profiles_and_run_json_are_written_and_the_format_is_checked() {
+    let p = export("profiles_csv");
+    assert_eq!(p["status"], "ok", "{p}");
+    assert!(p["text"].as_str().unwrap().contains("Concentration (mol/m^3)"));
+    let j = export("run_json");
+    assert_eq!(j["status"], "ok", "{j}");
+    assert_eq!(j["media_type"], "application/json");
+    let parsed: Value = serde_json::from_str(j["text"].as_str().unwrap()).unwrap();
+    assert!(parsed.is_object());
+    let bad = export("xlsx");
+    assert_eq!(bad["status"], "rejected");
+    assert!(bad["errors"][0].as_str().unwrap().contains("unknown export format"));
+    // A configuration that the solver rejects is rejected by the export with the same message.
+    let req = json!({"schema": 2, "format": "timeseries_csv",
+        "config": with(synthetic_config_value(), "/time/dt_s", json!(0.0))});
+    let v: Value = serde_json::from_str(&strato_wasm::export_run(&req.to_string())).unwrap();
+    assert_eq!(v["status"], "rejected");
+}

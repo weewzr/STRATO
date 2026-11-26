@@ -26,11 +26,28 @@ const OUT: &str = "web/src/solver/pkg";
 const WASM_NAME: &str = "strato_wasm";
 const TARGET: &str = "wasm32-unknown-unknown";
 
-/// The functions the web worker calls. They are the wrapper's contract; the BTCS switch renames
-/// them here and in the wrapper in one change.
-pub const REQUIRED_EXPORTS: [&str; 6] = [
+/// The functions the web worker calls (BTCS interface, ABI 2) and the module's own status
+/// functions. The page calls no other export.
+pub const WEB_EXPORTS: [&str; 6] = [
     "abi_version",
     "build_info",
+    "validate",
+    "run",
+    "compare",
+    "export_run",
+];
+/// The finite-volume functions that the module still carries until the retirement task removes
+/// them. The page never calls them (web/tests/btcs_only.test.ts); the export check lists them so
+/// that no other export can slip in beside them.
+pub const LEGACY_EXPORTS: [&str; 4] = ["validate_config", "run_v1", "analytical_release", "compare_v1"];
+/// Every export the module may have: the web contract and the legacy functions.
+pub const REQUIRED_EXPORTS: [&str; 10] = [
+    "abi_version",
+    "build_info",
+    "validate",
+    "run",
+    "compare",
+    "export_run",
     "validate_config",
     "run_v1",
     "analytical_release",
@@ -283,6 +300,17 @@ pub fn run(root: &Path, check_only: bool) -> Result<i32> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_allowed_exports_are_the_web_functions_and_the_legacy_ones() {
+        let mut want: Vec<&str> = WEB_EXPORTS.to_vec();
+        want.extend(LEGACY_EXPORTS);
+        assert_eq!(REQUIRED_EXPORTS.to_vec(), want);
+        // The web contract is the BTCS interface and the data export, by method-neutral names.
+        for n in WEB_EXPORTS {
+            assert!(!n.ends_with("_v1") && !n.contains("config"), "{n}");
+        }
+    }
 
     #[test]
     fn export_section_is_read() {

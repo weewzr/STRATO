@@ -33,7 +33,10 @@ use strato::{
         grid::{Grid, NodeClass, ValidatedInput},
         inventory::inventory,
     },
-    postprocessing::comparison::{layers_from_config, MAX_MODES},
+    postprocessing::{
+        comparison::{layers_from_config, MAX_MODES},
+        export::{profile_csv, run_json, timeseries_csv, Provenance},
+    },
 };
 
 /// Schema version of every request and response object of the BTCS interface.
@@ -92,6 +95,8 @@ pub fn build_info_value() -> Value {
         "solver": solver_value(),
         "schema": SCHEMA_BTCS,
         "functions": ["validate", "run", "compare"],
+        "export_functions": ["export_run"],
+        "export_formats": EXPORT_FORMATS,
         "capabilities": CAPABILITIES_BTCS,
         "label": LABEL_BTCS,
         "limits": limits_value(),
@@ -726,6 +731,116 @@ pub fn run(request_json: &str) -> String {
     match result {
         Ok(v) => v.to_string(),
         Err(errors) => rejected(errors).to_string(),
+    }
+}
+
+// ---------------------------------------------------------------------------------------
+// Export (data download)
+// ---------------------------------------------------------------------------------------
+
+/// The export formats of `export_run`, the three builders of `postprocessing::export`.
+pub const EXPORT_FORMATS: [&str; 3] = ["timeseries_csv", "profiles_csv", "run_json"];
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ExportRequest {
+    schema: u32,
+    config: Value,
+    #[serde(default)]
+    profile_times_s: Option<Vec<f64>>,
+    format: String,
+    /// File name recorded in the provenance header (the library keeps the last path component).
+    #[serde(default)]
+    input_file: Option<String>,
+    /// Source row of the parameters (decision 31); without it the header says that none is recorded.
+    #[serde(default)]
+    parameter_source: Option<String>,
+    /// Class of the parameters (decision 31).
+    #[serde(default)]
+    parameter_class: Option<String>,
+}
+
+fn export_value(request: Value) -> Result<Value, Vec<String>> {
+    let req: ExportRequest =
+        serde_json::from_value(request).map_err(|e| vec![format!("request: {e}")])?;
+    if !EXPORT_FORMATS.contains(&req.format.as_str()) {
+        return Err(vec![format!(
+            "unknown export format {:?}; expected one of {}",
+            req.format,
+            EXPORT_FORMATS.join(", ")
+        )]);
+    }
+    let mut run_request = json!({"schema": req.schema, "config": req.config});
+    if let Some(times) = req.profile_times_s {
+        run_request["profile_times_s"] = json!(times);
+    }
+    let p = prepare_value(run_request)?;
+    let dt = p.input.dt;
+    let times: Vec<f64> = p.profile_steps.iter().map(|(s, _)| *s as f64 * dt).collect();
+    let result = btcs::run_input(&p.input, &times).map_err(|e| vec![format!("{e:#}")])?;
+    let mut prov = Provenance::new(
+        &p.cfg,
+        &p.input,
+        req.input_file.as_deref().unwrap_or(""),
+        BUILD_COMMIT,
+    );
+    if req.parameter_source.is_some() || req.parameter_class.is_some() {
+        let source = req
+            .parameter_source
+            .unwrap_or_else(|| prov.parameter_source.clone());
+        let class = req
+            .parameter_class
+            .unwrap_or_else(|| prov.parameter_class.clone());
+        prov = prov.with_parameter_source(&source, &class);
+    }
+    let (text, media_type) = match req.format.as_str() {
+        "timeseries_csv" => (
+            timeseries_csv(&prov, &result.series, result.meta.initial_inventory),
+            "text/csv",
+        ),
+        "profiles_csv" => (
+            profile_csv(&prov, &result.grid, &result.snapshots),
+            "text/csv",
+        ),
+        _ => (
+            run_json(&prov, &p.input, &result),
+            "application/json",
+        ),
+    };
+    let text = text.map_err(|e| vec![format!("{e:#}")])?;
+    Ok(json!({
+        "schema": SCHEMA_BTCS,
+        "status": "ok",
+        "label": LABEL_BTCS,
+        "engine": engine(),
+        "format": req.format,
+        "media_type": media_type,
+        "text": text,
+    }))
+}
+
+/// The text of a data file of a run, written by the library's export (the CSV time series, the
+/// CSV profiles or the JSON of the whole run), each with its provenance header: solver
+/// version and commit, input digest, parameter source and class. The page saves the text
+/// unchanged. Request: `{schema: 2, config, profile_times_s?, format, input_file?,
+/// parameter_source?, parameter_class?}`, `format` one of [`EXPORT_FORMATS`].
+pub fn export_run(request_json: &str) -> String {
+    let result = placeholder_check(request_json).and_then(|()| {
+        let v: Value = serde_json::from_str(request_json).map_err(|e| vec![format!("request: {e}")])?;
+        export_value(v)
+    });
+    match result {
+        Ok(v) => v.to_string(),
+        Err(errors) => rejected(errors).to_string(),
+    }
+}
+
+fn placeholder_check(raw: &str) -> Result<(), Vec<String>> {
+    let errors = placeholder_errors(raw);
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(errors)
     }
 }
 

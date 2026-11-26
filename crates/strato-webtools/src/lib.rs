@@ -14,7 +14,6 @@ pub mod catalogue;
 pub mod check;
 pub mod cli;
 pub mod colormaps;
-pub mod figures;
 pub mod geometry;
 pub mod precomputed;
 pub mod pyfmt;

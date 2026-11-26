@@ -115,6 +115,20 @@ fn battery() -> Vec<(&'static str, &'static str, String)> {
         "run",
         req(with(base, "/time/dt_s", json!(1.0))).to_string(),
     ));
+    for (name, format) in [
+        ("export_timeseries_csv", "timeseries_csv"),
+        ("export_profiles_csv", "profiles_csv"),
+    ] {
+        out.push((
+            name,
+            "export_run",
+            json!({"schema": 2, "config": base.clone(), "format": format,
+                   "input_file": "synthetic_five_layer.toml",
+                   "parameter_source": "synthetic benchmark, not literature data",
+                   "parameter_class": "synthetic benchmark"})
+            .to_string(),
+        ));
+    }
     out.push(("build_info", "build_info", String::new()));
     out
 }
@@ -124,6 +138,7 @@ fn call(function: &str, input: &str) -> String {
         "validate" => strato_wasm::validate(input),
         "run" => strato_wasm::run(input),
         "compare" => strato_wasm::compare(input),
+        "export_run" => strato_wasm::export_run(input),
         "build_info" => strato_wasm::build_info(),
         other => panic!("unknown function {other}"),
     }
