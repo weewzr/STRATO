@@ -6,7 +6,7 @@
 
 [workspace]
 resolver = "2"
-members = ["strato-docsite"]
+members = ["strato-docsite", "strato-data", "strato-compare"]
 exclude = ["strato-wasm"]
 
 [workspace.package]
@@ -14,3 +14,4 @@ edition = "2021"
 license = "AGPL-3.0-only"
 repository = "https://github.com/weewzr/STRATO"
 publish = false
+
