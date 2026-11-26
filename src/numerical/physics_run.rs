@@ -362,8 +362,8 @@ impl PhysicsInput {
         }
     }
 
-    /// Checks the hypotheses of Document 5 that the data must meet: `lambda` finite and not
-    /// negative, every source history non-negative, every history defined on the whole run, a
+    /// Checks the hypotheses of Document 5 that the data must meet: the end time equal to
+    /// `steps * dt` of the base input to rounding, `lambda` finite and not negative, every source history non-negative, every history defined on the whole run, a
     /// positive temperature.
     ///
     /// # Errors
@@ -376,6 +376,17 @@ impl PhysicsInput {
         }
         if !(self.end_time_s.is_finite() && self.end_time_s > 0.0) {
             bail!("the end time must be finite and positive");
+        }
+        // The end time must be the one the base input defines, `steps * dt`: a history is read
+        // flat past its last point, so a shorter end time would be extrapolated without a
+        // message. `dt = end / steps` and the product each round once, `gamma_2`; four units of
+        // roundoff cover it.
+        let span = self.base.steps as f64 * self.base.dt;
+        if (self.end_time_s - span).abs() > 4.0 * BalanceBound::U * span {
+            bail!(
+                "the end time ({} s) differs from steps * dt ({span} s) of the base input",
+                self.end_time_s
+            );
         }
         for (k, g) in self.source.per_material.iter().enumerate() {
             if g.min_value() < 0.0 {
@@ -580,7 +591,9 @@ pub struct PhysicsMeta {
     pub assemblies: usize,
     /// Smallest row margin over all assembled matrices (P1, P24: at least `1 + kappa`).
     pub matrix_min_row_margin: f64,
-    /// Largest `|B_i - |L_i| - |U_i| - 1 - kappa|` over rows `0 ..= N-2` of all matrices.
+    /// Largest `|B_i - |L_i| - |U_i| - 1|` over rows `0 ..= N-2` of all matrices, as reported by
+    /// [`check_matrix_structure`]. With decay the interior margin is `1 + kappa`, so this value
+    /// is about `kappa`, not rounding level; the deviation from `1 + kappa` is not reported.
     pub matrix_max_interior_margin_deviation: f64,
     /// Largest row sum of absolute values over all matrices.
     pub matrix_norm_inf: f64,

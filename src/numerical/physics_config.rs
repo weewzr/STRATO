@@ -180,9 +180,10 @@ pub struct TermSection {
 pub struct ArrheniusSection {
     /// `Kernel`, `Buffer`, `IPyC`, `SiC` or `OPyC`.
     pub region: String,
-    /// Source row of the law (decision 31), recorded in the export.
+    /// Source row of the law (decision 31), recorded in the export. Required: [`load_physics`]
+    /// refuses a law without it.
     pub source: Option<String>,
-    /// Coefficient class (decision 16), recorded in the export.
+    /// Coefficient class (decision 16), recorded in the export. Required as `source`.
     pub class: Option<String>,
     /// One term, or the published sum of terms.
     pub terms: Vec<TermSection>,
@@ -433,13 +434,27 @@ pub fn load_physics(
                 if laws[k].is_some() {
                     bail!("region {} has two Arrhenius laws", sec.region);
                 }
+                // Decision 31: every exported parameter carries its source row and class. A
+                // law without them is refused; a user's own value is declared as such in the
+                // two fields (for example class "user-supplied, no source").
+                let (Some(src), Some(class)) = (sec.source.as_deref(), sec.class.as_deref()) else {
+                    bail!(
+                        "region {}: `source` and `class` are required for every Arrhenius law \
+                         (decision 31); for a value of your own write so in both fields",
+                        sec.region
+                    );
+                };
+                if src.trim().is_empty() || class.trim().is_empty() {
+                    bail!(
+                        "region {}: `source` and `class` must not be empty",
+                        sec.region
+                    );
+                }
                 laws[k] = Some(build_law(sec)?);
                 rows[k] = format!(
-                    "{}: {} term(s); source row: {}; class: {}",
+                    "{}: {} term(s); source row: {src}; class: {class}",
                     sec.region,
                     sec.terms.len(),
-                    sec.source.as_deref().unwrap_or("not recorded in the input"),
-                    sec.class.as_deref().unwrap_or("not recorded in the input")
                 );
             }
             let laws: Vec<ArrheniusLaw> = laws

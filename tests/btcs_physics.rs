@@ -25,7 +25,7 @@ use strato::{
         coefficients::Coefficients,
         diagnostics::{BalanceBound, StepDiagnostics},
         grid::{Grid, ValidatedInput},
-        inventory::{initial_vector, kernel_surface_theta, Accumulator},
+        inventory::{initial_vector, inventory, kernel_surface_theta, Accumulator},
         physics_run::{
             combined_balance_bound, run_physics, source_nodes, BoundKind, BoundTerms,
             DiffusivityModel, Interpolation, PhysicsInput, PhysicsRun, SourceModel, TimeFunction,
@@ -483,7 +483,27 @@ fn source_only_without_diffusion_accumulates_c_init_plus_g_t_p20_p21() {
         println!("RESULT G1 M_gen relative error {cells:?}: {rel:.3e} (bound {tol:.3e})");
         // Nothing decays and, with no diffusion, essentially nothing is released.
         assert_eq!(last.2.decayed, 0.0);
-        assert!(last.1.cumulative_release < 1.0e-20 * exact);
+        // The release with D = 1e-40: every increment is dt 4 pi K_{N-1} C_{N-1} (no outer
+        // source), K_{N-1} the stored coefficient of the last row, and no concentration exceeds
+        // C_init + G t (every step adds at most dt g_i to a right-hand side that the inverse,
+        // with row sums at most 1, does not enlarge; g_i is at most G (1 + gamma_9) by
+        // source_weights_f33_hand_values, and the 3 rounding steps more are inside gamma_12).
+        // J increments, each product with at most 3 roundings and the compensated sum 3u:
+        // gamma_(J + 6).
+        let k_last = Coefficients::new(&run.grid, TINY_D, run.meta.dt)
+            .unwrap()
+            .k_last();
+        let c_max = (1.0 + gk * t) * (1.0 + gamma(12.0));
+        let release_bound = t * 4.0 * PI * k_last * c_max * (1.0 + gamma(steps as f64 + 6.0));
+        assert!(
+            last.1.cumulative_release <= release_bound,
+            "release {} against its bound {release_bound}",
+            last.1.cumulative_release
+        );
+        println!(
+            "RESULT G1 no-diffusion release {cells:?}: {:.3e} mol (bound {release_bound:.3e}) against M_gen {exact:.3e}",
+            last.1.cumulative_release
+        );
     }
 }
 
@@ -770,8 +790,15 @@ fn decay_with_diffusion_matches_the_series_with_orders_1_and_2() {
         "RESULT G2 decay with diffusion reference: retained {:.9} released {:.9} decayed {:.9}",
         reference.0, reference.1, reference.2
     );
-    // The three exact fractions add up to 1 (continuous balance, sum w = 1).
-    assert!((reference.0 + reference.1 + reference.2 - 1.0).abs() < 1.0e-15);
+    // The released fraction of the reference is defined as `1 - retained - decayed`
+    // (`kernel_step_fractions`), so this only checks the reconstruction. Each of the three
+    // fractions is in [0, 1]: the two subtractions that form the released fraction round to
+    // nearest with results of size at most 1 (error at most `u` each), and the two additions of
+    // the check have results of size at most `1 + 2u` (error at most `u (1 + 2u)` each), and the
+    // final subtraction of 1 is exact (Sterbenz). The total is at most `4 u (1 + 2u)`, below
+    // `5 u`.
+    assert!(reference.0 >= 0.0 && reference.1 >= 0.0 && reference.2 >= 0.0);
+    assert!((reference.0 + reference.1 + reference.2 - 1.0).abs() <= 5.0 * U);
     convergence_study(
         "G2 decay+diffusion",
         &|n, j| homogeneous_run(n, j, d, lambda, 0.0, t),
@@ -840,6 +867,7 @@ fn steady_state_with_source_and_decay_in_one_material_has_second_order() {
     let phi_exact = 4.0 * PI * r_out * d * a * (br / br.tanh() - 1.0);
     let mut node_errors = Vec::new();
     let mut release_errors = Vec::new();
+    let mut release_errors_without = Vec::new();
     for n in [5usize, 10, 20, 40] {
         // One step of 1e13 s: lambda dt = 8e10, so the initial profile contributes 1e-11 of
         // its size, which is far below the spatial errors measured (1e-3 to 1e-6).
@@ -862,6 +890,12 @@ fn steady_state_with_source_and_decay_in_one_material_has_second_order() {
         let phi = run.series.last().unwrap().1.release_rate.unwrap();
         node_errors.push(err);
         release_errors.push((phi / phi_exact - 1.0).abs());
+        // The same release without the outer-node source term 4 pi Q_N (the first-order form of
+        // P23). One rounding of the subtraction is far below the errors compared (1e-3 to
+        // 1e-5), so no tolerance is needed beyond the order band below.
+        let q_n = source_nodes(grid, [g; 5]).q[grid.n];
+        let phi_without = phi - 4.0 * PI * q_n;
+        release_errors_without.push((phi_without / phi_exact - 1.0).abs());
         // Non-negative and below max(C_init, G/lambda) = 1 (P31, Eq. (28)): the step starts
         // from C_init = 1 and the bound shrinks by 1/(1 + kappa) per step, so one step of
         // kappa = 8e10 leaves at most 1.3e-11 + G/lambda, far below 1.
@@ -889,6 +923,33 @@ fn steady_state_with_source_and_decay_in_one_material_has_second_order() {
                 "order {order} does not round to 2"
             );
         }
+    }
+    // P23, the other half: without the term 4 pi Q_N the release is only first order (Document
+    // 5, Section 4.5: its error is the missing half interval of the OPyC source). The orders
+    // round to 1 (decision 49), and the error is larger than that of the full release at every
+    // grid.
+    println!(
+        "RESULT P23 release errors without the outer-node term at 5, 10, 20, 40 intervals per material: {}",
+        fmt(&release_errors_without)
+    );
+    let orders_without: Vec<f64> = release_errors_without
+        .windows(2)
+        .map(|w| (w[0] / w[1]).log2())
+        .collect();
+    println!(
+        "RESULT P23 observed orders without the outer-node term: {}",
+        orders_without
+            .iter()
+            .map(|o| format!("{o:.3}"))
+            .collect::<Vec<_>>()
+            .join(", ")
+    );
+    for (o, (a, b)) in orders_without
+        .iter()
+        .zip(release_errors_without.iter().zip(release_errors.iter()))
+    {
+        assert!((0.5..1.5).contains(o), "order {o} does not round to 1");
+        assert!(a > b, "the full release must be the more accurate one");
     }
 }
 
@@ -1373,6 +1434,14 @@ fn invalid_physics_inputs_are_refused() {
         |lambda: f64, src: SourceModel, d: DiffusivityModel| pin(base.clone(), end, lambda, src, d);
     let ok = mk(0.0, SourceModel::none(), DiffusivityModel::Constant(D5));
     assert!(run_physics(&ok, &[]).is_ok());
+    // An end time that is not steps * dt of the base input is refused (a history would be read
+    // flat past a shorter end), while the rounding of dt = end / steps is accepted.
+    for wrong_end in [0.5 * end, 1.001 * end] {
+        let mut bad = ok.clone();
+        bad.end_time_s = wrong_end;
+        let err = run_physics(&bad, &[]).unwrap_err().to_string();
+        assert!(err.contains("steps * dt"), "{err}");
+    }
     assert!(run_physics(
         &mk(-1.0, SourceModel::none(), DiffusivityModel::Constant(D5)),
         &[]
@@ -1451,14 +1520,20 @@ fn steady_state_rows_of_the_weights_are_exact_p22_and_p22a() {
     // P22: for a kernel-only source the nodal values of the exact steady profile (14) solve the
     // discrete steady rows exactly, for any grid and any diffusivities; P22a: also for one
     // material with one spacing and a uniform source. Evaluated here in double precision.
-    // Tolerance, per row, relative to the scale S_i of the absolute terms: the nodal values are
-    // sums of non-negative terms formed outward from R_5 (at most 9 roundings per term, one per
-    // hop and per interface), so each has relative error at most gamma_30; the stored K has 3
-    // roundings, the difference and the product 2 more, the weights Q_i 5, and the three
-    // additions of the row 3: gamma_30 + gamma_5 + gamma_5 + gamma_3, which gamma_45 covers. The
-    // stored radii are not exactly uniform in the kernel (r_i = fl(i dr)), which changes the
-    // quadratic-profile identity by a relative 2 u at most: gamma_45 still covers it.
-    let bound = gamma(45.0);
+    // Tolerance, per row, relative to the scale S_i of the absolute terms. The nodal values are
+    // sums of non-negative terms, each written without a cancelling subtraction so that its
+    // relative error is a plain count: a hop term `a_k (R_k - R_{k-1}) / (R_{k-1} R_k)` and the
+    // in-material term `a_k (R_k - r) / (r R_k)` (the difference of two numbers within a factor
+    // 2 is exact, Sterbenz) have `a_k = g R_1 R_1 R_1 / (3 D_k)` with 5 roundings, one product
+    // and one quotient: 7 roundings, and one more for the product with `a_k`: 8. The kernel
+    // term `g (R_1 - r)(R_1 + r) / (6 D_1)` has 6. A node adds at most 5 such terms (4
+    // additions), so its relative error is at most gamma_(8 + 4) = gamma_12 (a sum of
+    // non-negative terms). The row residual then has, relative to S_i: the nodal errors
+    // gamma_12; the stored K (3 roundings), the difference and the product (2): gamma_5; the
+    // weight Q_i (5 roundings): gamma_5; the two additions of the row: gamma_2; and the stored
+    // radii, which are not exactly uniform in the kernel (r_i = fl(i dr)) and change the
+    // quadratic-profile identity by a relative 2 u at most: gamma_2. Together gamma_26.
+    let bound = gamma(26.0);
     let g = 0.37;
     let uniform_radii = [1.0e-4, 2.0e-4, 3.0e-4, 4.0e-4, 5.0e-4];
     let cases: [SteadyCase; 4] = [
@@ -1480,14 +1555,15 @@ fn steady_state_rows_of_the_weights_are_exact_p22_and_p22a() {
         let mut c = vec![0.0; n + 1];
         if uniform {
             for i in 0..=n {
-                c[i] = g * (radii[4] * radii[4] - grid.r[i] * grid.r[i]) / (6.0 * d[0]);
+                c[i] = g * ((radii[4] - grid.r[i]) * (radii[4] + grid.r[i])) / (6.0 * d[0]);
             }
         } else {
             // C at the outer radius of each material, from R_5 inward.
             let mut c_at = [0.0; 5];
             let a = |k: usize| g * radii[0] * radii[0] * radii[0] / (3.0 * d[k]);
             for k in (1..5).rev() {
-                c_at[k - 1] = c_at[k] + a(k) * (1.0 / radii[k - 1] - 1.0 / radii[k]);
+                c_at[k - 1] =
+                    c_at[k] + a(k) * ((radii[k] - radii[k - 1]) / (radii[k - 1] * radii[k]));
             }
             for i in 0..=n {
                 let r = grid.r[i];
@@ -1497,9 +1573,9 @@ fn steady_state_rows_of_the_weights_are_exact_p22_and_p22a() {
                     grid.region_of_interval[i - 1].index()
                 };
                 c[i] = if k == 0 {
-                    c_at[0] + g * (radii[0] * radii[0] - r * r) / (6.0 * d[0])
+                    c_at[0] + g * ((radii[0] - r) * (radii[0] + r)) / (6.0 * d[0])
                 } else {
-                    c_at[k] + a(k) * (1.0 / r - 1.0 / radii[k])
+                    c_at[k] + a(k) * ((radii[k] - r) / (r * radii[k]))
                 };
             }
             c[n] = 0.0;
@@ -1611,4 +1687,353 @@ fn maximum_norm_does_not_grow_with_a_temperature_history_p26() {
     println!(
         "RESULT P26 largest ratio of consecutive maxima {worst:.12} (allowed factor {factor:.12})"
     );
+}
+
+// ---------------------------------------------------------------------------------------
+// The time levels of the time loop: (F36) at the middle of the step, (F32) the step average
+// ---------------------------------------------------------------------------------------
+
+/// Where in the step a hand chain evaluates the temperature.
+#[derive(Clone, Copy, Debug)]
+enum Level {
+    Start,
+    Middle,
+    End,
+}
+
+/// The result of a hand chain of `Stepper::new_with_decay` steps.
+struct HandChain {
+    profile: Vec<f64>,
+    released: f64,
+    generated: f64,
+    decayed: f64,
+    /// `combined_balance_bound` after every step, from terms recomputed here.
+    bounds: Vec<f64>,
+    /// The terms of the last bound.
+    last_terms: BoundTerms,
+}
+
+/// The time loop written out by hand for a constant source: at every step a new stepper with
+/// `D(T(t_eval))`, the right-hand side `C + dt g`, the release with the outer-node term, the
+/// generated and decayed amounts, and the terms of (F46) recomputed from the matrix and the
+/// concentrations of every step (`S^k` from the stored entries, `chi^k M^k` from the inventory
+/// before the step), so nothing is taken from `run_physics`.
+fn hand_chain(pi: &PhysicsInput, level: Level) -> HandChain {
+    let DiffusivityModel::Arrhenius {
+        laws,
+        gas,
+        temperature_k,
+    } = &pi.diffusivity
+    else {
+        panic!("a temperature history is needed");
+    };
+    let grid = Grid::build(&pi.base).unwrap();
+    let (n, dt, steps) = (grid.n, pi.base.dt, pi.base.steps);
+    let kappa = pi.decay_constant_per_s * dt;
+    let gbar: [f64; 5] = std::array::from_fn(|k| pi.source.per_material[k].value_at(0.0));
+    let nodes = source_nodes(&grid, gbar);
+    let (mut c_old, _, m0) = initial_vector(&grid, pi.base.c_init);
+    let mut c_new = vec![0.0; n + 1];
+    let (mut released, mut generated, mut decayed) =
+        (Accumulator::new(), Accumulator::new(), Accumulator::new());
+    let (mut sum_s, mut chi_inventory, mut m_current) = (0.0, 0.0, m0);
+    let mut bounds = Vec::new();
+    let mut last_terms = None;
+    for j in 0..steps {
+        let t_eval = match level {
+            Level::Start => j as f64 * dt,
+            Level::Middle => (j as f64 + 0.5) * dt,
+            Level::End => (j as f64 + 1.0) * dt,
+        };
+        let t_k = temperature_k.value_at(t_eval);
+        let d: [f64; 5] = std::array::from_fn(|k| {
+            laws[k]
+                .evaluate(Temperature::Kelvin(t_k), *gas)
+                .unwrap()
+                .d_m2_s
+        });
+        let mut s = Stepper::new_with_decay(&grid, d, dt, kappa).unwrap();
+        s.step_with_source(&c_old, &nodes.g, &mut c_new).unwrap();
+        let phi = 4.0 * PI * s.k_last() * c_new[n - 1] + 4.0 * PI * nodes.q[n];
+        released.add(dt * phi);
+        generated.add(dt * (4.0 * PI * nodes.sum_q));
+        let m_old = m_current;
+        m_current = inventory(&grid, &c_new);
+        if kappa != 0.0 {
+            decayed.add(kappa * m_current);
+        }
+        let a = &s.assembly().matrix;
+        let mut s_k = 0.0;
+        for i in 1..n {
+            let left = a.lower[i].abs() * c_new[i - 1].abs();
+            let right = a.upper[i].abs() * c_new[i + 1].abs();
+            s_k += grid.v[i] * (left + a.diag[i].abs() * c_new[i].abs() + right);
+        }
+        sum_s += s_k;
+        if nodes.active {
+            chi_inventory += m_old;
+        }
+        std::mem::swap(&mut c_old, &mut c_new);
+        let terms = BoundTerms {
+            n,
+            steps_taken: j + 1,
+            sum_s,
+            chi_inventory,
+            inventory: m_current,
+            initial_inventory: m0,
+            released: released.value(),
+            generated: generated.value(),
+            decayed: decayed.value(),
+        };
+        bounds.push(combined_balance_bound(&terms));
+        last_terms = Some(terms);
+    }
+    HandChain {
+        profile: c_old,
+        released: released.value(),
+        generated: generated.value(),
+        decayed: decayed.value(),
+        bounds,
+        last_terms: last_terms.unwrap(),
+    }
+}
+
+#[test]
+fn diffusivity_at_the_middle_of_the_step_f36_and_the_f46_bound_bookkeeping_match_a_hand_chain() {
+    // (F36): a linear ramp that is NOT aligned to the steps (the temperature differs at every
+    // step and at every step boundary), with decay and a source in all five materials, against
+    // a hand chain of `Stepper::new_with_decay` with D(T(t_j + dt/2)). The chain performs the
+    // same IEEE operations in the same order, so the profile, the release, the generated and
+    // the decayed amounts must be equal bit for bit (one executable and one thread: the
+    // platform exp and ln are evaluated in the same thread for both).
+    let (steps, end) = (40usize, 2.0e4);
+    let cells = [4, 3, 3, 4, 3];
+    let base = vi_steps(RADII, cells, D5, steps, end, 1);
+    let lambda = 1.0e-4;
+    let source = SourceModel {
+        per_material: [0.37, 0.11, 0.23, 0.05, 0.31].map(TimeFunction::Constant),
+    };
+    let pi = pin(
+        base,
+        end,
+        lambda,
+        source,
+        arrhenius(synthetic_laws(), ramp(900.0, 1100.0, end)),
+    );
+    let run = run_physics(&pi, &[]).unwrap();
+    assert_eq!(run.meta.assemblies, steps, "reassembled at every step");
+    let mid = hand_chain(&pi, Level::Middle);
+    assert!(run
+        .final_profile
+        .iter()
+        .zip(&mid.profile)
+        .all(|(a, b)| same_bits(*a, *b)));
+    let (_, last_d, last_p) = run.series.last().unwrap();
+    assert!(same_bits(last_d.cumulative_release, mid.released));
+    assert!(same_bits(last_p.generated, mid.generated));
+    assert!(same_bits(last_p.decayed, mid.decayed));
+    // Negative controls: the start-of-step and the end-of-step temperature are both first-order
+    // schemes (Document 5, Section 3.2) and differ from the midpoint chain in the profile.
+    for level in [Level::Start, Level::End] {
+        let other = hand_chain(&pi, level);
+        let relative = run
+            .final_profile
+            .iter()
+            .zip(&other.profile)
+            .map(|(a, b)| (a - b).abs() / a.abs().max(f64::MIN_POSITIVE))
+            .fold(0.0, f64::max);
+        println!("RESULT F36 largest relative profile difference to the {level:?}-of-step chain: {relative:.3e}");
+        assert!(
+            run.final_profile
+                .iter()
+                .zip(&other.profile)
+                .any(|(a, b)| !same_bits(*a, *b)),
+            "{level:?}: the chain must differ from the midpoint run"
+        );
+        assert!(relative > 1.0e3 * U, "{level:?}: {relative}");
+    }
+    // (F46): the bound of the run equals the bound recomputed from the matrices and the
+    // concentrations of every step. The recomputation repeats the operations of the loop, so
+    // the two agree to the rounding of the sums involved: the accumulation of `S^k` over J
+    // steps of N - 1 rows of 6 operations each, and of the other totals. gamma_(6 N + 2 J + 20)
+    // covers them.
+    let tol = gamma(6.0 * run.grid.n as f64 + 2.0 * steps as f64 + 20.0);
+    let mut worst = 0.0f64;
+    for (k, hand) in mid.bounds.iter().enumerate() {
+        let code = run.series[k + 1].1.balance_residual_bound;
+        let rel = (code - hand).abs() / hand;
+        worst = worst.max(rel);
+        assert!(rel <= tol, "step {}: bound {code} against {hand}", k + 1);
+    }
+    println!("RESULT F46 bookkeeping: largest relative difference between the bound of the run and the recomputed bound {worst:.3e} (allowed {tol:.3e})");
+    // The chi term u sum chi^k M^k is a part of the bound that must be resolved: without it the
+    // bound differs by far more than the allowed difference, so a run that dropped it would
+    // fail the comparison above.
+    let mut no_chi = mid.last_terms;
+    no_chi.chi_inventory = 0.0;
+    let full = combined_balance_bound(&mid.last_terms);
+    let shift = (full - combined_balance_bound(&no_chi)) / full;
+    println!("RESULT F46 relative size of the chi term in the last bound: {shift:.3e}");
+    assert!(shift > 1.0e3 * tol, "chi term {shift} against {tol}");
+}
+
+/// `int_0^end f dt` of a table, evaluated in exact arithmetic when the times and values are
+/// dyadic numbers of few bits (as in the test below): the trapezoid of each linear piece or the
+/// rectangle of each step piece, clipped at `end`; the last value of a step table holds for
+/// ever.
+fn exact_integral(times: &[f64], values: &[f64], mode: Interpolation, end: f64) -> f64 {
+    let mut total = 0.0;
+    for k in 0..times.len() {
+        let a = times[k];
+        let b = times.get(k + 1).copied().unwrap_or(f64::INFINITY);
+        let hi = b.min(end);
+        if a >= hi {
+            break;
+        }
+        total += match (mode, k + 1 < times.len()) {
+            (Interpolation::Linear, true) => {
+                let vb = values[k] + (values[k + 1] - values[k]) * ((hi - a) / (b - a));
+                (hi - a) * (values[k] + vb) / 2.0
+            }
+            _ => (hi - a) * values[k],
+        };
+    }
+    total
+}
+
+#[test]
+fn generated_amount_follows_the_step_average_f32_for_histories_with_breakpoints_inside_steps() {
+    // (F32) and P20 for a varying history: a kernel-only source whose breakpoints fall inside
+    // the steps (dt = 1 s, breakpoints at 0.5, 2.5, 6.5, 14.5, 30.5, 62.5 s; the lengths of the
+    // linear pieces are powers of two). All times and values are dyadic numbers of at most 6
+    // bits, so every step average and the integral of the reference are exact, and M_gen must
+    // equal (4 pi/3) R_1^3 times the exact integral up to the rounding of the weights only.
+    // Relative bound at every output step: the sum of the weights against R_1^3/3 (as in
+    // `generated_amount_is_the_exact_kernel_integral_p20`: the bound of the theta derivation,
+    // N - 1 additions, and 3 roundings of that reference), the factor 4 pi with its stored
+    // constant and product (2), the compensated accumulator (3 u) and the reference (4 pi/3)
+    // R_1^3 I with 6 roundings: gamma_12 covers the three last items together.
+    let times = [0.0, 0.5, 2.5, 6.5, 14.5, 30.5, 62.5, 94.5];
+    let linear_values = [0.5, 1.5, 0.25, 2.0, 3.0, 0.75, 1.25, 2.0];
+    let step_times = [0.0, 0.5, 2.5, 6.5, 14.5];
+    let step_values = [1.0, 3.0, 0.5, 2.0, 0.25];
+    let (steps, end) = (64usize, 64.0);
+    let cells = [3, 2, 4, 5, 2];
+    let histories = [
+        (
+            "linear",
+            TimeFunction::table(
+                times.to_vec(),
+                linear_values.to_vec(),
+                Interpolation::Linear,
+            )
+            .unwrap(),
+            &times[..],
+            &linear_values[..],
+            Interpolation::Linear,
+        ),
+        (
+            "step",
+            TimeFunction::table(
+                step_times.to_vec(),
+                step_values.to_vec(),
+                Interpolation::Step,
+            )
+            .unwrap(),
+            &step_times[..],
+            &step_values[..],
+            Interpolation::Step,
+        ),
+    ];
+    for (name, hist, ts, vs, mode) in histories {
+        let base = vi_steps(RADII, cells, D5, steps, end, 1);
+        assert_eq!(base.dt, 1.0);
+        let mut source = SourceModel::none();
+        source.per_material[0] = hist.clone();
+        let pi = pin(base, end, 0.0, source, DiffusivityModel::Constant(D5));
+        let run = run_physics(&pi, &[]).unwrap();
+        let nk = run.grid.interface_nodes[0];
+        let tol = (f23_relative_bound(nk, 2.0) + gamma(run.grid.n as f64 - 1.0) + gamma(12.0))
+            / (1.0 - gamma(12.0));
+        let r1_cubed = RADII[0] * RADII[0] * RADII[0];
+        let mut worst = 0.0f64;
+        for (t, _, p) in run.series.iter().skip(1) {
+            let integral = exact_integral(ts, vs, mode, *t);
+            let exact = 4.0 * PI / 3.0 * r1_cubed * integral;
+            let rel = (p.generated - exact).abs() / exact;
+            worst = worst.max(rel);
+            assert!(rel <= tol, "{name} t {t}: {} against {exact}", p.generated);
+        }
+        println!("RESULT F32 {name} history with breakpoints inside the steps: largest relative difference of M_gen to the exact integral {worst:.3e} (bound {tol:.3e})");
+        // The step average is what is resolved: the value at the end of each step (or at its
+        // start) would give a total that differs from the exact integral by far more than the
+        // bound.
+        let total = exact_integral(ts, vs, mode, end);
+        for (what, offset) in [("end", 1.0), ("start", 0.0)] {
+            let sampled: f64 = (0..steps).map(|j| hist.value_at(j as f64 + offset)).sum();
+            let off = (sampled - total).abs() / total;
+            println!("RESULT F32 {name}: sampling the history at the {what} of the step is off by {off:.3e}");
+            assert!(off > 100.0 * tol, "{name} {what}: {off} must be resolved");
+        }
+    }
+}
+
+#[test]
+fn decay_with_the_step_scaled_by_one_plus_kappa_is_the_decay_free_run_p25() {
+    // P25: (1 + kappa) A_base(dt / (1 + kappa)) = A_lambda(dt) in exact arithmetic, so
+    // D^j = (1 + kappa)^j C_lambda^j obeys the decay-free recursion with step dt/(1 + kappa).
+    // Without a source, the base recursion is a max-norm contraction (P2: ||A^-1|| <= 1) and
+    // C stays in [0, 1] (C_init = 1). Per step the two stored matrices differ entry by entry by
+    // the roundings of the two assemblies (4 each, Document 5, c_A), of the stored step
+    // dt' = fl(dt/(1 + kappa)) and of the scale (1 each) and, on the diagonal, of the addition
+    // of kappa (1) and of the scaling (1): gamma_12 of |A|. Each of the two solves is a
+    // perturbed system with |E| <= kappa_t |A| (`BalanceBound::kappa_t`). A perturbed system
+    // moves the solution by at most ||A^-1|| ||E|| ||x|| <= f eps ||A||, with
+    // f = 1/(1 - (kappa_t + gamma_5)||A||) as in P26. The errors add over the S steps (the
+    // recursion does not amplify them). The power (1 + kappa)^S by repeated multiplication has
+    // at most S - 1 roundings: gamma_S.
+    let (steps, end, lambda) = (100usize, 2.0e4, 2.5e-3);
+    let cells = [4, 3, 3, 4, 3];
+    let base_lambda = vi_steps(RADII, cells, D5, steps, end, steps);
+    let dt = base_lambda.dt;
+    let kappa = lambda * dt;
+    assert!(kappa > 0.1, "the decay must matter: kappa {kappa}");
+    let run_lambda = run_physics(
+        &pin(
+            base_lambda,
+            end,
+            lambda,
+            SourceModel::none(),
+            DiffusivityModel::Constant(D5),
+        ),
+        &[],
+    )
+    .unwrap();
+    let mut base_short = vi_steps(RADII, cells, D5, steps, end, steps);
+    base_short.dt = dt / (1.0 + kappa);
+    let end_short = steps as f64 * base_short.dt;
+    let run_base = run_physics(&PhysicsInput::baseline(base_short, end_short), &[]).unwrap();
+    let scale = (1.0 + kappa).powi(steps as i32);
+    let norm = run_base
+        .meta
+        .matrix_norm_inf
+        .max(run_lambda.meta.matrix_norm_inf / (1.0 + kappa));
+    let kt = BalanceBound::kappa_t();
+    let f = 1.0 / (1.0 - (kt + gamma(5.0)) * norm);
+    let tol = steps as f64 * f * (gamma(12.0) + 2.0 * kt) * norm + gamma(steps as f64);
+    let mut worst = 0.0f64;
+    for (a, b) in run_lambda.final_profile.iter().zip(&run_base.final_profile) {
+        worst = worst.max((a * scale - b).abs());
+        assert!(*b <= 1.0 && *b >= 0.0);
+    }
+    println!("RESULT P25 largest nodal difference between (1 + kappa)^J C_lambda and the decay-free run with dt/(1 + kappa): {worst:.3e} (bound {tol:.3e}; kappa {kappa:.3}, ||A|| {norm:.3})");
+    assert!(worst <= tol, "{worst} > {tol}");
+    // The unscaled profiles are far apart: the check resolves the scale.
+    let unscaled = run_lambda
+        .final_profile
+        .iter()
+        .zip(&run_base.final_profile)
+        .map(|(a, b)| (a - b).abs())
+        .fold(0.0, f64::max);
+    assert!(unscaled > 1.0e6 * tol, "{unscaled}");
 }

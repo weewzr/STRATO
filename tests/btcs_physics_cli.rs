@@ -209,9 +209,11 @@ fn cli_source_and_decay_run_agrees_with_the_library_bit_for_bit() {
 
 #[test]
 fn cli_temperature_history_run_exports_the_temperature_and_reassembles() {
-    // The diffusivities come from exp and ln of the platform library, which can differ in the
-    // last bit between two executables (observed here between a test thread and a command-line
-    // process: one unit in the last place of one D), and the rounding noise of the solve then
+    // The diffusivities come from exp and ln of the platform library. Their last bit was seen
+    // to differ between a test thread and the command-line process (one unit in the last place
+    // of one D), and an independent verification probe (not committed) found 17161 of 100010 exp/ln results different between the
+    // main thread and a spawned thread inside one executable (spawned and nested spawned
+    // threads agreed); the cause is not established. The rounding noise of the solve then
     // differs at the 1e-12 level. Document 5, Section 3.5 does not claim bit identity across
     // platforms for this path, and none is asserted: the checks are structural, and the
     // residual bound holds in the file itself.
@@ -305,6 +307,29 @@ fn cli_refuses_an_activation_product_and_a_missing_fission_rate() {
         .output()
         .unwrap();
     assert!(!r.status.success());
+    // Decision 31: a law without its source row or class is refused, not exported as "not
+    // recorded".
+    let no_class = laws_text().replacen("class = \"synthetic, not literature data\"\n", "", 1);
+    let file = dir.join("noclass.toml");
+    fs::write(
+        &file,
+        input_text(&format!(
+            "[physics.temperature]\nunit = \"K\"\nvalue = 1000.0\n\n{no_class}"
+        )),
+    )
+    .unwrap();
+    let r = Command::new(bin)
+        .arg(&file)
+        .arg("--out")
+        .arg(dir.join("o6"))
+        .output()
+        .unwrap();
+    assert!(!r.status.success());
+    assert!(
+        String::from_utf8_lossy(&r.stderr).contains("decision 31"),
+        "{}",
+        String::from_utf8_lossy(&r.stderr)
+    );
     // An unknown key in the section is an error, not ignored.
     let file = dir.join("typo.toml");
     fs::write(&file, input_text("[physics.decay]\nhalf_life = 5.0\n")).unwrap();
@@ -329,7 +354,8 @@ fn two_term_law_is_data_not_code_and_is_reported_as_a_sum() {
         .enumerate()
     {
         laws.push_str(&format!(
-            "[[physics.arrhenius]]\nregion = \"{name}\"\n[[physics.arrhenius.terms]]\nd0_m2_s = 1.0e-6\nactivation_energy_kj_per_mol = {}\n",
+            "[[physics.arrhenius]]\nregion = \"{name}\"\nsource = \"synthetic row {}\"\nclass = \"synthetic, not literature data\"\n[[physics.arrhenius.terms]]\nd0_m2_s = 1.0e-6\nactivation_energy_kj_per_mol = {}\n",
+            k + 1,
             100.0 + 10.0 * k as f64
         ));
         if k == 1 {
