@@ -22,7 +22,7 @@ fn row_counts_are_those_of_the_readme() {
     assert_eq!(r.decay.rows.len(), 16);
     assert_eq!(r.yields.rows.len(), 56);
     assert_eq!(r.temperature.rows.len(), 164);
-    assert_eq!(r.release.rows.len(), 599);
+    assert_eq!(r.release.rows.len(), 600);
 }
 
 #[test]
@@ -264,7 +264,7 @@ fn an_upper_bound_is_not_a_point_value() {
             .count()
             == 23
     );
-    // the value kinds partition the 599 rows
+    // the value kinds partition the 600 rows
     let counts = r.release.rows.iter().fold([0usize; 6], |mut a, x| {
         let i = match x.value {
             ReleaseValue::Point(_) => 0,
@@ -510,4 +510,8 @@ fn the_hfr_k3_1_curves_are_sphere_curves_and_the_cs_curve_keeps_its_time_order()
     assert_eq!(cs.row_ids.len(), 22);
     assert_eq!(&cs.row_ids[..3], ["E-616", "E-637", "E-617"]);
     assert_eq!(r.curves.get("IAEA97-K31-SR90").unwrap().row_ids.len(), 20);
+    // all 22 printed Ag-110m markers: 21 by the resolved interior, the 22nd (E-658) from its outline
+    let ag = r.curves.get("IAEA97-K31-AG110M").unwrap();
+    assert_eq!(ag.row_ids.len(), 22);
+    assert_eq!(ag.row_ids.last().map(String::as_str), Some("E-658"));
 }
