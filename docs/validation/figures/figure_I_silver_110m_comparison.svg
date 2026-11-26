@@ -1044,7 +1044,7 @@ Time at temperature (h)
 NO DEVIATION IS DEFINED FOR Ag-110m
 </text>
 <text x="1204" y="410" dy="0.5ex" text-anchor="middle" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-no row is a point comparison; no NRMSE is formed (see the lines below)
+no row is a point comparison; no whole-curve metric is formed (see the lines below)
 </text>
 <polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="3" points="40,659 74,659 "/>
 <text x="84" y="650" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
@@ -1122,31 +1122,31 @@ including failed ones); 2 x mixed_particles (mixture of failed and intact partic
 E-033 | 1600 °C | window 24-300 h at temperature | bound 1.800e-3 (digitised, matrix-corrected fraction of the as-run calculated compact inventory) | model over the same window 5.919e-1 |
 </text>
 <text x="24" y="970" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-model over bound 3.288e2 | window upper bound under premise BP1: not a point comparison, so no deviation, no relative deviation and no NRMSE is formed
+model over bound 3.288e2 | window upper bound under premise BP1: not a point comparison, so no deviation, no relative deviation and no whole-curve metric is formed
 </text>
 <text x="24" y="989" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 E-034 | 1600 °C | window 24-300 h at temperature | bound 2.500e-3 (digitised, matrix-corrected fraction of the as-run calculated compact inventory) | model over the same window 5.919e-1 |
 </text>
 <text x="24" y="1008" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-model over bound 2.368e2 | window upper bound under premise BP1: not a point comparison, so no deviation, no relative deviation and no NRMSE is formed
+model over bound 2.368e2 | window upper bound under premise BP1: not a point comparison, so no deviation, no relative deviation and no whole-curve metric is formed
 </text>
 <text x="24" y="1027" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 E-035 | 1600 °C | window 24-300 h at temperature | bound 6.000e-4 (digitised, matrix-corrected fraction of the as-run calculated compact inventory) | model over the same window 5.919e-1 |
 </text>
 <text x="24" y="1046" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-model over bound 9.865e2 | window upper bound under premise BP1: not a point comparison, so no deviation, no relative deviation and no NRMSE is formed
+model over bound 9.865e2 | window upper bound under premise BP1: not a point comparison, so no deviation, no relative deviation and no whole-curve metric is formed
 </text>
 <text x="24" y="1065" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 E-036 | 1600 °C | window 24-300 h at temperature | bound 1.500e-4 (digitised, matrix-corrected fraction of the as-run calculated compact inventory) | model over the same window 5.919e-1 |
 </text>
 <text x="24" y="1084" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-model over bound 3.946e3 | window upper bound under premise BP1: not a point comparison, so no deviation, no relative deviation and no NRMSE is formed
+model over bound 3.946e3 | window upper bound under premise BP1: not a point comparison, so no deviation, no relative deviation and no whole-curve metric is formed
 </text>
 <text x="24" y="1103" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 E-037 | 1700 °C | window 24-300 h at temperature | bound 2.800e-3 (digitised, matrix-corrected fraction of the as-run calculated compact inventory) | model over the same window 7.729e-1 |
 </text>
 <text x="24" y="1122" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-model over bound 2.760e2 | window upper bound under premise BP1: not a point comparison, so no deviation, no relative deviation and no NRMSE is formed
+model over bound 2.760e2 | window upper bound under premise BP1: not a point comparison, so no deviation, no relative deviation and no whole-curve metric is formed
 </text>
 <text x="24" y="1141" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
 No Ag-110m row supports a point comparison, so the absolute deviation, the relative deviation in percent and the log-space root-mean-square deviation are not defined for Ag-110m; no number
@@ -1182,7 +1182,7 @@ shooting solution), and is positive; otherwise it is left empty. The early part 
 the step differ by a large factor, and the report states for each curve the time after which they agree within 10 percent (a reading aid, not a tolerance). Model: STRATO BTCS five-layer spherical finite difference,
 </text>
 <text x="24" y="1355" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-package version 1.0.1, commit 85ea748; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at the
+package version 1.0.1, commit 7b83700; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at the
 </text>
 <text x="24" y="1373" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 test temperature; kernel-only start; constant temperature; decay and generation are not in the solver. This is a numerical comparison, not an experimental validation.

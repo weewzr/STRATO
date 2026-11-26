@@ -3,7 +3,7 @@
   "provenance": {
     "solver": "STRATO BTCS five-layer spherical finite difference",
     "solver_package_version": "1.0.1",
-    "commit": "85ea748",
+    "commit": "7b83700",
     "label": "numerical solution of the stated model; not experimental validation",
     "release_measurements_sha256": "29f0d7bec6f40fb97c52c0bf7972782d7849a58f5f910527fe8efa8afa9ddda9",
     "arrhenius_sha256": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
@@ -2831,7 +2831,7 @@
       "source_location": "6.pdf Fig. 6; printed p. 384; idx 6",
       "status": "EXCEEDS REPORTED UPPER BOUND",
       "status_rule": "window_upper_bound_bp1",
-      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no NRMSE",
+      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no whole-curve metric",
       "comparison_class": "window upper bound under premise BP1",
       "comparison_denominator": "as-run calculated compact inventory",
       "evaluation_kind": "window upper bound under premise BP1 (inequality over the window)",
@@ -2853,7 +2853,7 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no NRMSE"
+          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no whole-curve metric"
         ],
         "diffusion_coefficients_m2_s": [1.2503921785549537e-13,1e-8,4.062559476131478e-14,9.228940631020239e-17,4.062559476131478e-14]
       },
@@ -2887,7 +2887,7 @@
       "source_location": "6.pdf Fig. 6; printed p. 384; idx 6",
       "status": "EXCEEDS REPORTED UPPER BOUND",
       "status_rule": "window_upper_bound_bp1",
-      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no NRMSE",
+      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no whole-curve metric",
       "comparison_class": "window upper bound under premise BP1",
       "comparison_denominator": "as-run calculated compact inventory",
       "evaluation_kind": "window upper bound under premise BP1 (inequality over the window)",
@@ -2909,7 +2909,7 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no NRMSE"
+          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no whole-curve metric"
         ],
         "diffusion_coefficients_m2_s": [1.2503921785549537e-13,1e-8,4.062559476131478e-14,9.228940631020239e-17,4.062559476131478e-14]
       },
@@ -2943,7 +2943,7 @@
       "source_location": "6.pdf Fig. 6; printed p. 384; idx 6",
       "status": "EXCEEDS REPORTED UPPER BOUND",
       "status_rule": "window_upper_bound_bp1",
-      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no NRMSE",
+      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no whole-curve metric",
       "comparison_class": "window upper bound under premise BP1",
       "comparison_denominator": "as-run calculated compact inventory",
       "evaluation_kind": "window upper bound under premise BP1 (inequality over the window)",
@@ -2965,7 +2965,7 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no NRMSE"
+          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no whole-curve metric"
         ],
         "diffusion_coefficients_m2_s": [1.2503921785549537e-13,1e-8,4.062559476131478e-14,9.228940631020239e-17,4.062559476131478e-14]
       },
@@ -2999,7 +2999,7 @@
       "source_location": "6.pdf Fig. 6; printed p. 384; idx 6",
       "status": "EXCEEDS REPORTED UPPER BOUND",
       "status_rule": "window_upper_bound_bp1",
-      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no NRMSE",
+      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no whole-curve metric",
       "comparison_class": "window upper bound under premise BP1",
       "comparison_denominator": "as-run calculated compact inventory",
       "evaluation_kind": "window upper bound under premise BP1 (inequality over the window)",
@@ -3021,7 +3021,7 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no NRMSE"
+          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no whole-curve metric"
         ],
         "diffusion_coefficients_m2_s": [1.2503921785549537e-13,1e-8,4.062559476131478e-14,9.228940631020239e-17,4.062559476131478e-14]
       },
@@ -3055,7 +3055,7 @@
       "source_location": "6.pdf Fig. 6; printed p. 384; idx 6",
       "status": "EXCEEDS REPORTED UPPER BOUND",
       "status_rule": "window_upper_bound_bp1",
-      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no NRMSE",
+      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no whole-curve metric",
       "comparison_class": "window upper bound under premise BP1",
       "comparison_denominator": "as-run calculated compact inventory",
       "evaluation_kind": "window upper bound under premise BP1 (inequality over the window)",
@@ -3077,7 +3077,7 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no NRMSE"
+          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no whole-curve metric"
         ],
         "diffusion_coefficients_m2_s": [1.2503921785549537e-13,1e-8,4.062559476131478e-14,9.228940631020239e-17,4.062559476131478e-14]
       },
@@ -3900,7 +3900,7 @@
       "source_location": "6.pdf Fig. 3; printed p. 382; idx 4",
       "status": "EXCEEDS REPORTED UPPER BOUND",
       "status_rule": "window_upper_bound_bp1",
-      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no NRMSE",
+      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no whole-curve metric",
       "comparison_class": "window upper bound under premise BP1",
       "comparison_denominator": "as-run calculated compact inventory",
       "evaluation_kind": "window upper bound under premise BP1 (inequality over the window)",
@@ -3922,7 +3922,7 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no NRMSE"
+          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no whole-curve metric"
         ],
         "diffusion_coefficients_m2_s": [1.678793071604177e-13,1e-8,2.691142804624656e-13,3.638806119652386e-15,2.691142804624656e-13]
       },
@@ -3956,7 +3956,7 @@
       "source_location": "6.pdf Fig. 3; printed p. 382; idx 4",
       "status": "EXCEEDS REPORTED UPPER BOUND",
       "status_rule": "window_upper_bound_bp1",
-      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no NRMSE",
+      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no whole-curve metric",
       "comparison_class": "window upper bound under premise BP1",
       "comparison_denominator": "as-run calculated compact inventory",
       "evaluation_kind": "window upper bound under premise BP1 (inequality over the window)",
@@ -3978,7 +3978,7 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no NRMSE"
+          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no whole-curve metric"
         ],
         "diffusion_coefficients_m2_s": [1.678793071604177e-13,1e-8,2.691142804624656e-13,3.638806119652386e-15,2.691142804624656e-13]
       },
@@ -4012,7 +4012,7 @@
       "source_location": "6.pdf Fig. 3; printed p. 382; idx 4",
       "status": "EXCEEDS REPORTED UPPER BOUND",
       "status_rule": "window_upper_bound_bp1",
-      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no NRMSE",
+      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no whole-curve metric",
       "comparison_class": "window upper bound under premise BP1",
       "comparison_denominator": "as-run calculated compact inventory",
       "evaluation_kind": "window upper bound under premise BP1 (inequality over the window)",
@@ -4034,7 +4034,7 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no NRMSE"
+          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no whole-curve metric"
         ],
         "diffusion_coefficients_m2_s": [1.678793071604177e-13,1e-8,2.691142804624656e-13,3.638806119652386e-15,2.691142804624656e-13]
       },
@@ -4068,7 +4068,7 @@
       "source_location": "6.pdf Fig. 3; printed p. 382; idx 4",
       "status": "EXCEEDS REPORTED UPPER BOUND",
       "status_rule": "window_upper_bound_bp1",
-      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no NRMSE",
+      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no whole-curve metric",
       "comparison_class": "window upper bound under premise BP1",
       "comparison_denominator": "as-run calculated compact inventory",
       "evaluation_kind": "window upper bound under premise BP1 (inequality over the window)",
@@ -4090,7 +4090,7 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no NRMSE"
+          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no whole-curve metric"
         ],
         "diffusion_coefficients_m2_s": [1.678793071604177e-13,1e-8,2.691142804624656e-13,3.638806119652386e-15,2.691142804624656e-13]
       },
@@ -4124,7 +4124,7 @@
       "source_location": "6.pdf Fig. 3; printed p. 382; idx 4",
       "status": "EXCEEDS REPORTED UPPER BOUND",
       "status_rule": "window_upper_bound_bp1",
-      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no NRMSE",
+      "status_reason": "window upper bound under premise BP1: matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no whole-curve metric",
       "comparison_class": "window upper bound under premise BP1",
       "comparison_denominator": "as-run calculated compact inventory",
       "evaluation_kind": "window upper bound under premise BP1 (inequality over the window)",
@@ -4146,7 +4146,7 @@
           "constant diffusion coefficients at the test temperature; heating ramps are not modelled",
           "no radioactive decay and no fission-product generation in the solver",
           "model fraction is a fraction of the particle's own inventory; measured fractions are fractions of the compact inventory unless the denominator column says otherwise",
-          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no NRMSE"
+          "window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no whole-curve metric"
         ],
         "diffusion_coefficients_m2_s": [2.871980919431712e-13,1e-8,4.4419687680746096e-13,7.324959578150807e-15,4.4419687680746096e-13]
       },
