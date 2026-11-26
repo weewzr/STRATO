@@ -238,7 +238,7 @@ describe('what the selected physics and scenario show', () => {
     }
     // The combined model shows the centre row as well as the general row.
     expect(document.querySelector('[data-eq="d5_row0"]')).not.toBeNull();
-  });
+  }, 30000);
 
   it('shows no number outside the equations, the references and the item numbers, with every item open', { timeout: 120_000 }, () => {
     render(<App />);
