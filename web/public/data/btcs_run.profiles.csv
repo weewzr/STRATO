@@ -1,19 +1,19 @@
 # label: PRECOMPUTED
 # kind: btcs_run_profiles
 # solver: STRATO BTCS five-layer spherical finite difference
-# generator: strato 1.0.1
+# generator: strato 2.0.0
 # converter: strato-webtools precomputed v2
-# strato_version: 1.0.1
-# commit: f86310b1b1844803761257676da06719035249f5
+# strato_version: 2.0.0
+# commit: d86e5824527019f991cceba6047ae89e8b7fc594
 # input_file: inputs/synthetic/synthetic_five_layer.toml
 # input_file_sha256: 257fe9933a4c1dee38a44545209bfafea7fc06945f389fad9aeb5f0d739afa93
 # command: cargo run --locked --release --bin strato-btcs -- inputs/synthetic/synthetic_five_layer.toml --out results/web-btcs --snapshots <fractions of the end time> --commit <commit> --parameter-source <source> --parameter-class <class>
 # rustc: rustc 1.100.0 (0ef1bc386 2026-11-09)
-# created_utc: 2026-11-26T09:31:09Z
+# created_utc: 2026-11-26T10:22:27Z
 # STRATO BTCS five-layer spherical finite difference: radial concentration profiles
 # label: numerical solution of the stated model; not experimental validation
-# solver_package_version: 1.0.1
-# commit: f86310b
+# solver_package_version: 2.0.0
+# commit: d86e582
 # case: synthetic-five-layer-release
 # species: synthetic
 # input_file: synthetic_five_layer.toml

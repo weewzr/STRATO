@@ -22,7 +22,7 @@ It is a mathematical derivation. The numbers quoted from scratch experiments are
 
 ### 0.1 The physical model
 
-The model is the one STRATO already fixed in its v1.0.0 derivation (`docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md`, Part III). Only the numerical method changes.
+The model is the one STRATO already fixed in its v1.0.0 derivation (`docs/archive/finite-volume/v1.0.0/STRATO_Full_Mathematical_Derivation.md`, Part III). Only the numerical method changes.
 
 - **Five layers.** One fission-product species diffuses radially through five concentric layers: kernel, buffer, IPyC, SiC and OPyC. The diffusivity is constant in each layer.
 - **Perfect contact.** At each of the four internal interfaces the concentration is continuous, which means a partition coefficient of one.

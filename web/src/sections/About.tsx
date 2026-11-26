@@ -39,20 +39,29 @@ const BUILD_CONTENTS: { part: string; here: boolean; phase: string }[] = [
 // with the mathematics typeset; documents without one are linked on GitHub only.
 const docs: { path: string; title: string; page?: string }[] = [
   {
+    path: 'docs/mathematics/btcs/00_original_documents.md',
+    title: 'Document 0: the original FTCS documents, an account and an algebra check',
+    page: 'docs/mathematics/btcs/00_original_documents.html',
+  },
+  {
     path: 'docs/mathematics/btcs/01_from_ftcs_to_five_layer_btcs.md',
     title: 'Document 1: from the explicit scheme to the five-layer BTCS scheme',
+    page: 'docs/mathematics/btcs/01_from_ftcs_to_five_layer_btcs.html',
   },
   {
     path: 'docs/mathematics/btcs/02_final_formulation.md',
     title: 'Document 2: the final BTCS formulation (normative)',
+    page: 'docs/mathematics/btcs/02_final_formulation.html',
   },
   {
     path: 'docs/mathematics/btcs/03_rust_pseudocode.md',
     title: 'Document 3: Rust pseudocode',
+    page: 'docs/mathematics/btcs/03_rust_pseudocode.html',
   },
   {
     path: 'docs/mathematics/btcs/04_equation_to_code_traceability.md',
     title: 'Document 4: equation to code traceability',
+    page: 'docs/mathematics/btcs/04_equation_to_code_traceability.html',
   },
   {
     path: 'docs/mathematics/STRATO_Phase2_Derivations.md',

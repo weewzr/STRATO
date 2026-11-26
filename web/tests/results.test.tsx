@@ -160,7 +160,7 @@ describe('solver version and verification status', () => {
   it('shows the method, the solver version and commit, the label and the catalogue status of the solver', () => {
     act(() => {
       const s = useStrato.getState();
-      s.setSolver({ state: 'ready', build: { abi: 2, crate: 'strato-wasm', wrapper_version: '0', strato_version: '1.0.1', commit: 'abc1234', dirty: false, wasm_bindgen: '0', btcs: { solver: RUN.solver, schema: 2, functions: [], export_functions: [], export_formats: [], capabilities: ['diffusion_btcs_layered'], label: 'COMPUTED v2.0', limits: { max_total_intervals: 1, min_intervals_per_layer: 1, max_steps: 1, max_profile_values: 1, max_profile_times: 1, max_series_modes: 1 } } } });
+      s.setSolver({ state: 'ready', build: { abi: 3, crate: 'strato-wasm', wrapper_version: '0', strato_version: '2.0.0', commit: 'abc1234', dirty: false, wasm_bindgen: '0', btcs: { solver: RUN.solver, schema: 2, functions: [], export_functions: [], export_formats: [], capabilities: ['diffusion_btcs_layered'], label: 'COMPUTED v2.0', limits: { max_total_intervals: 1, min_intervals_per_layer: 1, max_steps: 1, max_profile_values: 1, max_profile_times: 1, max_series_modes: 1 } } } });
     });
     render(<SolverStatus />);
     const el = screen.getByTestId('solver-status');

@@ -6,10 +6,10 @@ import type { WorkerMessage, WorkerRequest } from '../src/solver/protocol';
 import type { BuildInfo } from '../src/solver/types';
 
 const BUILD_INFO = {
-  abi: 2,
+  abi: 3,
   crate: 'strato-wasm',
-  wrapper_version: '0.1.0',
-  strato_version: '1.0.1',
+  wrapper_version: '2.0.0',
+  strato_version: '2.0.0',
   commit: 'abc1234',
   dirty: false,
   wasm_bindgen: '0.2.130',
@@ -18,7 +18,7 @@ const BUILD_INFO = {
       id: 'btcs_five_layer',
       method: 'BTCS five-layer spherical finite difference (nodal)',
       capability: 'diffusion_btcs_layered',
-      version: '1.0.1',
+      version: '2.0.0',
       commit: 'abc1234',
       label: 'COMPUTED v2.0',
       formulation: 'docs/mathematics/btcs/02_final_formulation.md',
@@ -50,7 +50,7 @@ class FakeWorker implements WorkerLike {
     this.onmessage?.({ data: msg } as MessageEvent<WorkerMessage>);
   }
   hello(): void {
-    this.emit({ kind: 'hello', abi: 2, build: BUILD_INFO });
+    this.emit({ kind: 'hello', abi: 3, build: BUILD_INFO });
   }
   reply(id: number, body: unknown): void {
     this.emit({ kind: 'response', id, ok: true, body, elapsed_ms: 1.5 });

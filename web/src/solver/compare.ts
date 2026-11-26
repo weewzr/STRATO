@@ -20,7 +20,7 @@ export interface ArrayComparison {
 
 /**
  * |a - b| <= rtol * max(scale, |a|, |b|). With scale 0 this is the per-value relative rule of
- * the parity tolerance; with a scale it is the rule of tests/phase1_regression.rs.
+ * the parity tolerance; with a scale it is the rule of tests/analytical_series_regression.rs.
  */
 export function within(a: number | null, b: number | null, rtol: number, scale = 0): boolean {
   if (a === null || b === null) return a === b;

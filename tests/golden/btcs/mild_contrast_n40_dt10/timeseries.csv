@@ -1,13 +1,13 @@
 # REGRESSION REFERENCE, NOT TRUTH.
-# These values were produced by the BTCS solver itself at commit 06420d4. A mismatch with a later run means that the code changed; the file is never edited by hand.
+# These values were produced by the BTCS solver itself at commit d86e582. A mismatch with a later run means that the code changed; the file is never edited by hand.
 # Why the values are believable: independent_check.csv beside this file compares the release fraction of this case with a reference that contains no BTCS code.
 # case: mild_contrast_n40_dt10
 # input: inputs/btcs_regression/synthetic_mild_contrast.toml
 # Comparison rule: |a - b| <= 1e-12 max(scale, |a|, |b|), scale = 1 for times and fractions, the initial inventory for mol, the largest concentration for mol/m^3.
 # STRATO BTCS five-layer spherical finite difference: time series
 # label: numerical solution of the stated model; not experimental validation
-# solver_package_version: 1.0.1
-# commit: 06420d4
+# solver_package_version: 2.0.0
+# commit: d86e582
 # case: synthetic-five-layer-mild-contrast
 # species: synthetic
 # input_file: synthetic_mild_contrast.toml

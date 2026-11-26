@@ -3,12 +3,12 @@
   "label": "INPUT",
   "kind": "input_case",
   "generator": "strato-webtools v1",
-  "strato_version": "1.0.1",
+  "strato_version": "2.0.0",
   "input_file": "inputs/synthetic/synthetic_five_layer.toml",
   "input_sha256": "257fe9933a4c1dee38a44545209bfafea7fc06945f389fad9aeb5f0d739afa93",
   "input_commit": "8c5d8a8591d28e254f7040ef03f6b725f50fa390",
   "command": "strato-webtools case inputs/synthetic/synthetic_five_layer.toml",
-  "created_utc": "2026-11-26T08:51:25Z",
+  "created_utc": "2026-11-26T10:20:50Z",
   "notes": [
     "SYNTHETIC NUMERICAL BENCHMARK - NOT LITERATURE TRISO DATA"
   ],

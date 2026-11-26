@@ -270,7 +270,7 @@ test.describe('downloads', () => {
     const parsed = parseCsv(ts.text);
     // The header is the library's provenance header: solver, version, commit, input digest, parameter source and class.
     expect(parsed.meta.label).toBe('numerical solution of the stated model; not experimental validation');
-    expect(parsed.meta.solver_package_version).toBe('1.0.1');
+    expect(parsed.meta.solver_package_version).toBe('2.0.0');
     expect(parsed.meta.commit).toMatch(/^[0-9a-f]{7}/);
     expect(parsed.meta.input_file).toBe('synthetic_five_layer.toml');
     expect(parsed.meta.input_sha256).toMatch(/^[0-9a-f]{64}$/);

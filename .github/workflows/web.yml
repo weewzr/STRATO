@@ -1,7 +1,7 @@
 name: Web demo
 
 # Web demonstration of STRATO (prompt/TECHNICAL_ARCHITECTURE.md Section 7). ci.yml and docs-pdf.yml
-# are unchanged; this workflow adds the web checks: generated data checks, the research catalogue
+# are separate workflows; this workflow adds the web checks: generated data checks, the research catalogue
 # check, the wasm wrapper tests (the BTCS interface), the
 # wasm build with its export and size check, the precomputed-data regeneration check (the BTCS
 # command line and the native wrapper run again, and their output must equal the committed files), lint, type check, unit tests, build, content check, browser tests (including the
@@ -112,7 +112,7 @@ jobs:
         if: steps.bindgen-cache.outputs.cache-hit != 'true'
         working-directory: .
         run: cargo install wasm-bindgen-cli --version 0.2.130 --locked
-      - name: Wrapper tests (the BTCS interface, its data export and the legacy functions)
+      - name: Wrapper tests (the BTCS interface and its data export)
         working-directory: .
         run: cargo test --locked --manifest-path crates/strato-wasm/Cargo.toml
       - name: Build the wasm module, check its exports and size
@@ -131,7 +131,7 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
-      # The tools workspace (crates/Cargo.toml) is not checked by ci.yml, which stays unchanged.
+      # The tools workspace (crates/Cargo.toml) is not checked by ci.yml.
       - name: Tools workspace format, lint and tests (crates/Cargo.toml)
         working-directory: .
         run: |

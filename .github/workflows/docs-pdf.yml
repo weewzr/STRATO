@@ -33,8 +33,8 @@ jobs:
         run: |
           set -e
           mkdir -p pdf-out
-          for md in docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md \
-                    docs/mathematics/v1.0.0/STRATO_Final_Deliverable.md \
+          for md in docs/archive/finite-volume/v1.0.0/STRATO_Full_Mathematical_Derivation.md \
+                    docs/archive/finite-volume/v1.0.0/STRATO_Final_Deliverable.md \
                     docs/mathematics/STRATO_Phase2_Derivations.md \
                     docs/mathematics/STRATO_Phase2_Pseudocode.md; do
             [ -f "$md" ] || continue

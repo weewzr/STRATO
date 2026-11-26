@@ -64,7 +64,7 @@ The index $i$ counts nodes only. Materials are always named. The interface indic
 ## 1. The continuous model (restated, not re-derived)
 
 This derivation uses the physical model that the repository already states in
-`docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md`, Part III. The radii come from the inputs (synthetic
+`docs/archive/finite-volume/v1.0.0/STRATO_Full_Mathematical_Derivation.md`, Part III. The radii come from the inputs (synthetic
 benchmark `inputs/synthetic/synthetic_five_layer.toml`, AGR-1 radii in `data/geometry/geometry.csv`).
 
 Inside each material, with constant $D$, the governing equation is

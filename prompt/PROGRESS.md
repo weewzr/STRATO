@@ -6,10 +6,10 @@ Update this file at the end of every phase and every session. The next session r
 
 | Item | Value |
 |---|---|
-| Current phase | Phase 5.5 done (2026-11-25). Its independent verification of `38769f7` did not pass (one major and three minor findings); the findings are corrected and every check re-run, and the independent verification of the corrections is still to come (see "Phase 5.5 record"). Phase 8 deployment preparation follows |
-| Work branch | `feat/strato-interactive-web-demo`, created 2026-11-24 from `main` at `e3a558f` |
+| Current phase | BTCS integration, first pull request (2026-11-26): the finite-volume solver is retired and version 2.0.0 carries the spherical BTCS finite-difference solver in the library, the wrapper, the web demonstration, the document site and CI. Web phases 1 to 5.5 and the Phase 8 deployment are as recorded below; the earlier statements in this file about the finite-volume solver describe version 1.x. See "BTCS integration record (2026-11-26)" |
+| Work branch | `feat/btcs-integration`, created from `main` at `36f1a98` and merged with the BTCS branches listed in the integration record; the coordinator merges it into `main` |
 | Latest commit on `main` | `3e38398` (2026-11-25, `ci(web): deploy the verified build of main to GitHub Pages`), merged into the work branch with a normal merge commit so that `main` can be fast-forwarded to it. The last commit touching `prompt/` on `main` is `510dac2` |
-| STRATO version | 1.0.1 (licence AGPL-3.0-only since commit `8c44fb7`) |
+| STRATO version | 2.0.0 (licence AGPL-3.0-only since commit `8c44fb7`) |
 
 ## Completed milestones (before the web demo)
 
@@ -71,7 +71,19 @@ Phases 1 to 8, including Phase 5.5 (research catalogue interface) added by owner
 
 ## Numerical method rebuild directive
 
-The owner has directed a rebuild of the numerical method of STRATO as a spherical BTCS (backward time, centred space) finite-difference solver written entirely in Rust, to be developed and verified in stages (baseline spherical diffusion, then generation, decay and temperature-dependent diffusivity). The directive is held by the coordinator and is not copied here. The finite-volume derivation documents now rendered on the site describe the method of v1.0 and will be archived once the new solver replaces it; no scientific document was rewritten by this stage, and the statuses of this file (VERIFIED for constant-diffusivity five-layer diffusion on the synthetic case with the v1.0 finite-volume solver, RESEARCHED for the rest, nothing VALIDATED) are unchanged until the new solver is verified.
+The owner directed a rebuild of the numerical method of STRATO as a spherical BTCS (backward time, centred space) finite-difference solver written entirely in Rust. The directive is held by the coordinator and is not copied here. Its first stage (baseline spherical diffusion) is integrated and verified numerically in version 2.0.0 (see the record below); generation, decay and temperature-dependent diffusivity in the BTCS scheme, and the comparison with release measurements, follow in the second integration. The statuses of this file are unchanged in kind: VERIFIED for constant-diffusivity five-layer diffusion on the synthetic case, now with the BTCS solver, RESEARCHED for the rest, nothing VALIDATED.
+
+## BTCS integration record (2026-11-26)
+
+**What changed.**
+- Merged into `feat/btcs-integration`, with normal merge commits: `docs/btcs-mathematics` (Documents 0 to 4), `feat/btcs-solver-completion` (the solver core, the independent regression check and the property tests), `feat/btcs-wasm` (the BTCS wrapper interface), `feat/btcs-web` (equation builder, wrapper switch, web tooling), `feat/rust-web-tooling`, `feat/rust-datasets` and `feat/physics-properties`.
+- The finite-volume solver, its command line, its plotting module, its verification example, the wrapper functions `validate_config`, `run_v1`, `analytical_release` and `compare_v1`, the golden files `tests/golden/v1.0/` and the Python derivation checks other than `sec1_synthetic_case.py` and `D5_parameter_register.py` are removed. The finite-volume derivation documents and their figures are archived in `docs/archive/finite-volume/`, whose README names the tags `v1.0.0` and `v1.0.1` and the last commit that holds the removed code.
+- The crate and the wrapper are 2.0.0 (wrapper ABI 3, results labelled `COMPUTED v2.0`, capability `diffusion_btcs_layered`). Every generated and precomputed data file was regenerated with the Rust tools from the BTCS solver. The document site lists BTCS Documents 0 to 4.
+- CI: `ci.yml` gates on `BTCS_REGRESSION_CHECK PASS` and runs the Python reference check of the analytical series; `web.yml` is unchanged in its deploy job.
+
+**Remains for the second integration.** `feat/data-integration` and its data layer, the AGR-1 comparison and the comparison panel of the website, generation, decay and temperature-dependent diffusion (`feat/btcs-physics`), removal of `D5_parameter_register.py` (and with it the last SymPy dependency in `requirements.lock.txt`), final native and WebAssembly parity and regression verification. In this pull request the experimental-comparison step of the equation builder stays a labelled placeholder.
+
+**Decisions taken here, for the owner.** The Phase 2 design documents (`docs/mathematics/STRATO_Phase2_*.md`) stay in place because the research catalogue and the registers link to them; they are written for the finite-volume form and are marked as design documents superseded mechanism by mechanism. Results are numerical verification only, not experimental validation.
 ## Phase 5.5 record (2026-11-25)
 
 **Before the interface.** (a) The coordinator's rule 4 decision: `scripts/web/check_catalogue.py` holds an explicit tuple of exactly the five overview pages (`regime-a.md`, `regime-b.md`, `regime-c.md`, `materials_studio_gallery.md`, `roadmap.md`), which rule 4 accepts without a catalogue row; every other file of `docs/research/` must still be named by a row, and rule 3 still checks their `[ref:...]` ids. Three tests added; `prompt/TECHNICAL_ARCHITECTURE.md` Sections 5.1 and 5.2 state it. Committed on its own. (b) `docs/research-catalogue` (`e886fa8`) merged with a normal merge commit. Both branches had created `mechanisms.csv` and `references.csv`: the mechanism rows are disjoint and were joined (builder rows first); the reference tables share one id, `iaea1997`, whose research-branch row (later, fuller) was kept, with the one use only the web branch named added to its notes (p. 436, measured interface partition ratios; register row V-1 cites the same page). (c) The catalogue JSON was regenerated; the check passes rules 1 to 9 (the three SKIP lines of Phase 2 are now PASS).

@@ -1,5 +1,5 @@
 # REGRESSION REFERENCE, NOT TRUTH.
-# These values were produced by the BTCS solver itself at commit ae797e6. A mismatch with a later run means that the code changed; the file is never edited by hand.
+# These values were produced by the BTCS solver itself at commit d86e582. A mismatch with a later run means that the code changed; the file is never edited by hand.
 # Why the values are believable: independent_check.csv beside this file compares the release fraction of this case with a reference that contains no BTCS code.
 # case: mild_contrast_n40_dt10
 # input: inputs/btcs_regression/synthetic_mild_contrast.toml

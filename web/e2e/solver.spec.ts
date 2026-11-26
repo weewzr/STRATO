@@ -72,7 +72,7 @@ test.describe('browser parity', () => {
     expect(run.status).toBe('ok');
     expect(run.label).toBe('COMPUTED v2.0');
     expect(run.solver.capability).toBe('diffusion_btcs_layered');
-    expect((hello as { abi: number }).abi).toBe(2);
+    expect((hello as { abi: number }).abi).toBe(3);
     const cmp = compareReplies(NATIVE, run, PARITY_RTOL);
     const record = { values: cmp.compared, identical: cmp.identical, failing_patterns: cmp.failures.map((f) => f.pattern), elapsed_ms };
     await info.attach('parity.json', { body: JSON.stringify(record, null, 2), contentType: 'application/json' });

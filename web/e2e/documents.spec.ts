@@ -5,19 +5,19 @@ import { test, expect, gotoSection, horizontalOverflow, waitForRun } from './fix
 // this file locally, run the same command first (web/README.md, "Documents").
 
 const DOCUMENTS = [
-  'docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.html',
-  'docs/mathematics/v1.0.0/STRATO_Final_Deliverable.html',
+  'docs/mathematics/btcs/00_original_documents.html',
+  'docs/mathematics/btcs/01_from_ftcs_to_five_layer_btcs.html',
+  'docs/mathematics/btcs/02_final_formulation.html',
+  'docs/mathematics/btcs/03_rust_pseudocode.html',
+  'docs/mathematics/btcs/04_equation_to_code_traceability.html',
   'docs/mathematics/STRATO_Phase2_Derivations.html',
   'docs/mathematics/STRATO_Phase2_Pseudocode.html',
-  'docs/mathematics/phase1/index.html',
-  'docs/mathematics/phase1/TRISO_Finite_Volume_Derivation.html',
-  'docs/mathematics/phase1/TRISO_Finite_Volume_Pseudocode.html',
   'data/reference/index.html',
   'data/reference/STRATO_Parameter_Register.html',
   'data/reference/B6_audit_log.html',
 ];
 
-const LISTS = ['docs/index.html', 'docs/mathematics/index.html', 'docs/mathematics/v1.0.0/index.html', 'tests/golden/v1.0/index.html'];
+const LISTS = ['docs/index.html', 'docs/mathematics/index.html', 'docs/mathematics/btcs/index.html'];
 
 const expectedCommit = (process.env.EXPECT_COMMIT ?? '').slice(0, 7);
 
@@ -67,8 +67,8 @@ test.describe('rendered documents', () => {
     await waitForRun(page);
   });
 
-  test('old addresses of the Jekyll site resolve and prompt/ is not published', async ({ page }) => {
-    for (const path of ['docs/mathematics/v1.0.0/', 'tests/golden/v1.0/', 'docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.html']) {
+  test('the document folders resolve and prompt/ is not published', async ({ page }) => {
+    for (const path of ['docs/mathematics/btcs/', 'data/reference/', 'docs/mathematics/btcs/02_final_formulation.html']) {
       const res = await page.request.get(`./${path}`);
       expect(res.status(), path).toBe(200);
       expect(await res.text(), path).toContain('<main id="main"');
@@ -82,7 +82,7 @@ test.describe('rendered documents at phone width', () => {
   test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
   test.setTimeout(180_000);
 
-  for (const path of ['docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.html', 'data/reference/STRATO_Parameter_Register.html', 'docs/index.html']) {
+  for (const path of ['docs/mathematics/btcs/02_final_formulation.html', 'data/reference/STRATO_Parameter_Register.html', 'docs/index.html']) {
     test(`${path} at 390 px: no sideways scroll`, async ({ page, problems }) => {
       void problems;
       await page.goto(`./${path}`);

@@ -28,7 +28,7 @@ vi.mock('../src/solver/pkg/strato_wasm.js', () => {
   };
   return {
     default: () => Promise.resolve(),
-    abi_version: () => 2,
+    abi_version: () => 3,
     build_info: btcs('build_info', { btcs: { capabilities: ['diffusion_btcs_layered'] } }),
     validate: btcs('validate', { schema: 2, ok: true, errors: [], warnings: [] }),
     run: btcs('run', { schema: 2, status: 'ok' }),
