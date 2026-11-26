@@ -33,6 +33,11 @@ function Ref({ children }: { children: ReactNode }) {
   return <span data-ref="">{children}</span>;
 }
 
+/** A heading that holds inline mathematics, as text for the link label (the link itself uses the heading as written): C_{\mathrm{init}} becomes C_init. */
+function plainHeading(section: string): string {
+  return section.replace(/\$([^$]*)\$/g, (_m, math: string) => math.replace(/\\mathrm\{([^}]*)\}/g, '$1').replace(/[{}\\]/g, ''));
+}
+
 function DocLink({ refTo, prefix }: { refTo: DocRef & { label?: string }; prefix?: string }) {
   return (
     <a href={docHref(refTo)}>
@@ -145,7 +150,7 @@ function ShownEq({ eq }: { eq: ShownEquation }) {
         </p>
       ) : null}
       <p className="shown-eq__source">
-        Source: <DocLink refTo={{ doc: eq.source.doc, section: eq.source.section }} />
+        Source: <DocLink refTo={{ doc: eq.source.doc, section: eq.source.section, label: plainHeading(eq.source.section) }} />
         {eq.source.tag ? null : ' (untagged line)'}
       </p>
     </figure>

@@ -260,6 +260,8 @@ const D5_EQ23 = eq('d5_step_diffusivity', 'Diffusivity used in a step: the value
 const D5_EQ26 = eq('d5_combined_balance', 'Flux balance of a node in the combined model', 'd5', '26', D5_41, L`V_i\,\frac{C_i^{j+1} - C_i^j}{\Delta t} = K_{i,\mathrm{outer}}^j\left(C_{i+1}^{j+1} - C_i^{j+1}\right) - K_{i,\mathrm{inner}}^j\left(C_i^{j+1} - C_{i-1}^{j+1}\right) + \bar Q_i^j - \lambda V_i\,C_i^{j+1}`);
 const D5_ROW0 = eq('d5_row0', 'Centre row of the system of a step', 'd5', null, D5_41, L`\left(1 + 6\,\mathrm{Fo}_{\mathrm{kernel}}^j + \kappa\right)C_0^{j+1} - 6\,\mathrm{Fo}_{\mathrm{kernel}}^jC_1^{j+1} = C_0^j + \Delta t\,\bar G_{\mathrm{kernel}}^j`, { note: 'The centre row of the combined model, printed after the general row in the document on generation, decay and temperature; the centre node has no weight and takes the pointwise source of the kernel.' });
 const D5_ROW = eq('d5_row', 'Row of the system of a step, with its right-hand side vector', 'd5', null, D5_41, L`L_i^jC_{i-1}^{j+1} + B_i^jC_i^{j+1} + U_i^jC_{i+1}^{j+1} = C_i^j + \Delta t\,g_i^j`, { note: 'The line that follows the flux balance of the combined model in the document on generation, decay and temperature: the row of the matrix and the right-hand side vector. The right-hand side gains the nodal source density multiplied by the time step.' });
+const D5_44 = '4.4 The release fraction, and the case $C_{\\mathrm{init}} = 0$ (decision 8)';
+const D5_EQ30 = eq('d5_release_fraction_generated', 'Release fraction of all material ever present, and the ratio of release to generation', 'd5', '30', D5_44, L`F_{\mathrm{gen}}^j = \frac{M_{\mathrm{rel}}^j}{M^0 + M_{\mathrm{gen}}^j} \quad \text{where } M^0 + M_{\mathrm{gen}}^j > 0, \qquad \beta^{j+1} = \frac{\Phi^{j+1}}{4\pi\sum_{i=1}^{N}\bar Q_i^j} \quad \text{where the denominator is } > 0`);
 const D5_EQ27 = eq('d5_combined_balance_sum', 'Balance of a step with the generated and the decayed amount', 'd5', '27', D5_42, L`M^{j+1} - M^j = -\Delta t\,\Phi^{j+1} + \left(M_{\mathrm{gen}}^{j+1} - M_{\mathrm{gen}}^j\right) - \left(M_{\mathrm{dec}}^{j+1} - M_{\mathrm{dec}}^j\right)`);
 
 // ---------------------------------------------------------------------------
@@ -846,7 +848,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       code: [CODE.tridiagonal, CODE.assemble, CODE.initial],
       pseudocode: [PSEUDO.assemble, PSEUDO.initial],
       derivation: [doc1(D1_10), doc2(D2_5), doc2(D2_6)],
-      note: 'The matrix is assembled again whenever the time step or a diffusivity changes. The right-hand side is the old profile; the start profile is uniform in the kernel with a value at the kernel surface that makes the initial inventory exact.',
+      note: 'The matrix is assembled again whenever the time step changes. The right-hand side is the old profile; the start profile is uniform in the kernel with a value at the kernel surface that makes the initial inventory exact.',
     },
     live: 'The size of the system is the number of nodes of the current run; the matrix itself is not shown in the simulation.',
   },
@@ -1032,7 +1034,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
     kind: 'mechanism',
     mechanism: 'generation',
     summary:
-      'A volumetric source adds to the flux balance of each node. Divided by the weight of the node it becomes a nodal source density, and the right-hand side vector gains that density multiplied by the time step; the matrix is unchanged.',
+      'A volumetric source adds to the flux balance of each node. Divided by the weight of the node it becomes a nodal source density, which enters the right-hand side vector as stated under the tridiagonal matrix assembly; the matrix is unchanged.',
     main: [D5_EQ3],
     parts: [
       part({
@@ -1147,7 +1149,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
     kind: 'mechanism',
     mechanism: 'diffusivity_temperature',
     summary:
-      'Each step uses one diffusivity per material, the value of the temperature law at the middle of the step. The conductances, the Fourier numbers, the rows and the release use these values, and the matrix and its factors are assembled again whenever the diffusivity or the time step differs from the previous step. No term is added.',
+      'Each step uses one diffusivity per material, the value of the temperature law at the middle of the step. The conductances, the Fourier numbers, the rows and the release use these values, and the matrix and its factors are assembled again whenever a diffusivity differs from the previous step. No term is added.',
     main: [D5_EQ23],
     parts: [
       part({
@@ -1300,7 +1302,7 @@ export function conditionsFor(stage: Stage): { equations: ShownEquation[]; note:
 /** What a source and decay change in the accounting, one sentence per mechanism (inline mathematics between dollar signs; Document 5, Sections 1.4 and 2). */
 function accountingNote(gen: boolean, dec: boolean): string {
   const g =
-    'With a source the generated amount is booked, and the release gains the source of the half-interval next to the outer surface, $\\bar Q_N^j$. For the approved kernel-only source $\\bar Q_N^j$ is zero, so the release is the baseline release.';
+    'With a source the generated amount is booked, and the release gains the source of the half-interval next to the outer surface, $\\bar Q_N^j$. For the approved kernel-only source $\\bar Q_N^j$ is zero, so the release is the baseline release. The release fraction $F^j$ needs $M^0 > 0$ and can exceed one with a source; for a fresh particle, as in every operating scenario, it is not reported, and $F_{\\mathrm{gen}}^j$ and $\\beta^{j+1}$ are reported instead.';
   const d = 'With decay the decayed amount is booked apart from the release, which is unchanged: the release is the flow through the outer surface only.';
   const both = ' The balance below is the general one: its generated amount is zero without a source and its decayed amount is zero without decay.';
   return `${gen ? g : ''}${gen && dec ? ' ' : ''}${dec ? d : ''}${both}`;
@@ -1325,6 +1327,14 @@ export function physicsAdditions(stage: Stage, physics: PhysicsId): { equations:
   const dec = physics === 'decay' || physics === 'combined';
   const tmp = physics === 'temperature' || physics === 'combined';
   switch (stage) {
+    case 1: {
+      const named: string[] = [];
+      if (gen) named.push('the generation source-term contribution');
+      if (dec) named.push('the radioactive decay contribution');
+      if (tmp) named.push('the temperature-dependent diffusion coefficients');
+      const list = named.length > 1 ? `${named.slice(0, -1).join(', ')} and ${named[named.length - 1]}` : named[0];
+      return { equations: [], note: `This is the baseline derivation: its assumptions of no source, no decay and a constant temperature belong to the baseline model. For the selected physics, ${list} ${named.length > 1 ? 'are' : 'is'} treated in ${named.length > 1 ? 'their own items' : 'its own item'} below.` };
+    }
     case 10: {
       const parts: string[] = [];
       if (gen) parts.push('the right-hand side vector gains the nodal source density multiplied by the time step');
@@ -1340,19 +1350,19 @@ export function physicsAdditions(stage: Stage, physics: PhysicsId): { equations:
       return {
         equations: [],
         note: tmp
-          ? 'The sweep is unchanged. It is applied to the matrix and the right-hand side vector of each step, which are assembled again whenever the diffusivity or the time step differs from the previous step.'
+          ? 'The sweep is unchanged. It is applied to the matrix and the right-hand side vector of each step, assembled as stated under the temperature-dependent diffusion coefficients.'
           : 'The sweep is unchanged. It is applied to the matrix and the right-hand side vector of the step, which the selected physics changes as stated with the assembled system.',
       };
     case 12:
       return {
-        equations: [...(gen ? [D5_EQ12] : []), ...(dec ? [D5_EQ19] : []), ...(gen || dec ? [D5_EQ27] : [])],
+        equations: [...(gen ? [D5_EQ12] : []), ...(dec ? [D5_EQ19] : []), ...(gen || dec ? [D5_EQ27] : []), ...(gen ? [D5_EQ30] : [])],
         note: gen || dec ? accountingNote(gen, dec) : 'With temperature dependence alone the rows and the release use the same stored conductances of the step, so the balance is that of the baseline.',
       };
     case 13: {
       const lines: string[] = [];
       if (gen) lines.push('Source: a zero source reproduces the baseline bit for bit, the generated amount is exact, and for a constant kernel-only source without decay the discrete steady state equals the exact one (proved in the document on generation, decay and temperature).');
       if (dec) lines.push('Decay: the matrix stays a non-singular M-matrix, and without a source the decaying solution follows the discrete decay factor (proved in the same document).');
-      if (tmp) lines.push('Temperature: without source and decay the norms do not grow for any temperature history, the time order is first, and a constant temperature gives the constant-diffusivity run (proved in the same document).');
+      if (tmp) lines.push('Temperature: without source and decay the norms do not grow for any temperature history, the time order is first (proved for a fixed grid; a proof outline with constants independent of the grid), and a constant temperature gives the constant-diffusivity run (proved in the same document).');
       if (physics === 'combined') lines.push('Combined: the balance holds in exact arithmetic (proved); the convergence orders with source, decay and temperature history are observed, not proved.');
       return { equations: [], note: lines.join(' ') };
     }

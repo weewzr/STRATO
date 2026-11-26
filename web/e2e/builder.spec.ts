@@ -100,6 +100,21 @@ test.describe('Numerical Interpretation at 1440 x 900', () => {
     await waitForRun(page);
   });
 
+  test('with a source the accounting reports F_gen and beta, not the release fraction, and item 1 says it is the baseline derivation', async ({ page, problems }) => {
+    void problems;
+    await gotoNumerical(page, [1, 13]);
+    await expect(page.getByTestId('num-item-1').getByTestId('physics-additions')).toHaveCount(0);
+    await expect(page.getByTestId('num-item-13').locator('[data-eq="d5_release_fraction_generated"]')).toHaveCount(0);
+    await page.getByTestId('physics-generation').click();
+    await expect(page.getByTestId('num-item-1').getByTestId('physics-additions')).toContainText('baseline derivation');
+    await expect(page.getByTestId('num-item-13').locator('[data-eq="d5_release_fraction_generated"]')).toBeVisible();
+    await expect(page.getByTestId('num-item-13').getByTestId('physics-additions')).toContainText('not reported');
+    await page.getByTestId('physics-decay').click();
+    await expect(page.getByTestId('num-item-13').locator('[data-eq="d5_release_fraction_generated"]')).toHaveCount(0);
+    await page.getByTestId('physics-baseline').click();
+    await waitForRun(page);
+  });
+
   test('a scenario writes its numerical treatment inside the items where it acts, and nowhere else', async ({ page, problems }) => {
     void problems;
     await gotoNumerical(page, [9, 10, 11, 12]);

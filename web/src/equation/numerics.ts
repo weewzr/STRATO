@@ -113,12 +113,12 @@ const SCENARIO_ITEM_NOTES: Record<ScenarioId, Partial<Record<ItemId, string>>> =
   },
   shutdown: {
     9: 'From the shutdown time the step-averaged generation is zero, so the right-hand side of each step is the concentration of the previous step.',
-    10: 'Decay continues after shutdown: its contribution stays on the diagonal of the matrix.',
+    10: 'Decay continues after shutdown: its contribution stays on the diagonal of the matrix. The decay number $\\kappa = \\lambda\\,\\Delta t$ changes with the time step, so the diagonal is reassembled with it.',
     11: 'The diffusivity at the temperature of the middle of the step changes with every cooldown step, so the matrix is reassembled at each of those steps, held once the temperature is held, and reassembled again when the time step changes.',
   },
   startup: {
     9: 'While the power rises, the step average of the generation changes the right-hand side at every step; it is constant once the prescribed rise has ended.',
-    11: 'The prescribed temperature rise changes the diffusivity at the middle of the step, and with it the matrix, at every step of the rise; both are constant once the rise has ended.',
+    11: 'The prescribed temperature rise changes the diffusivity at the middle of the step, and with it the matrix, at every step of the rise; both are constant once the rise has ended, after the one reassembly at the change of the time step.',
   },
   'control-rod': {
     9: 'The prescribed change of the fission-rate history enters only through the step-averaged generation on the right-hand side; no term is assembled for the control rod.',
@@ -126,7 +126,7 @@ const SCENARIO_ITEM_NOTES: Record<ScenarioId, Partial<Record<ItemId, string>>> =
   },
   refuelling: {
     9: 'After removal the step-averaged generation is zero, as in shutdown, so the right-hand side of each step is the concentration of the previous step.',
-    10: 'Decay continues in storage: its contribution stays on the diagonal of the matrix.',
+    10: 'Decay continues in storage: its contribution stays on the diagonal of the matrix. The decay number $\\kappa = \\lambda\\,\\Delta t$ changes with the time step, so the diagonal is reassembled with it.',
     11: 'The matrix follows the prescribed storage temperature history.',
   },
 };

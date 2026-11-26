@@ -54,7 +54,7 @@ function Item({ item }: { item: NumericalItem }) {
             ) : null}
             {scenario !== null && note !== null ? (
               <p className="scenario-note" data-testid={`scenario-note-${item.id}`} data-scenario={scenario}>
-                <strong>{SCENARIO_LABEL[scenario]}</strong> <StatusTag status={scenarioStatus(cap, scenario)} loading={loading} id={`scenario-note-status-${item.id}`} /> {note}
+                <strong>{SCENARIO_LABEL[scenario]}</strong> <StatusTag status={scenarioStatus(cap, scenario)} loading={loading} id={`scenario-note-status-${item.id}`} /> <RichText text={note} />
               </p>
             ) : null}
             {item.stages.map((s) => (

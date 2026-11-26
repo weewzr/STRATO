@@ -364,12 +364,13 @@ describe('every equation is the text of Document 1 or Document 2', () => {
     refuse('d5_step_diffusivity', find('d5_step_diffusivity').source.verbatim.replace('\\tfrac{1}{2}\\Delta t', '\\Delta t')); // end of the step instead of the middle
     refuse('d5_combined_balance_sum', find('d5_combined_balance_sum').source.verbatim.replace(' - \\left(M_{\\mathrm{dec}}^{j+1}', ' + \\left(M_{\\mathrm{dec}}^{j+1}')); // a sign changed
     refuse('d5_row', find('d5_row').source.verbatim.replace('\\Delta t\\,g_i^j', 'g_i^j')); // the time step dropped from the right-hand side
+    refuse('d5_release_fraction_generated', find('d5_release_fraction_generated').source.verbatim.replace('M^0 + M_{\\mathrm{gen}}^j}', 'M^0}')); // the generated amount dropped from the denominator
     // A tag of another equation, or a tag the document does not have, is refused.
     const e = find('d5_arrhenius');
     expect(() => checkSource({ ...e.source, tag: '23' }, e.latex, 'wrong tag')).toThrow();
     expect(() => checkSource({ ...e.source, tag: '9999' }, e.latex, 'absent tag')).toThrow();
     // The untouched copies pass.
-    for (const id of ['d5_decay_diagonal', 'd5_step_diffusivity', 'd5_combined_balance_sum', 'd5_row', 'd5_arrhenius']) {
+    for (const id of ['d5_decay_diagonal', 'd5_step_diffusivity', 'd5_combined_balance_sum', 'd5_row', 'd5_arrhenius', 'd5_release_fraction_generated']) {
       const x = find(id);
       expect(() => checkSource(x.source, x.latex, id, x.numberAs)).not.toThrow();
     }
@@ -598,6 +599,22 @@ describe('documentation and code anchors resolve', () => {
     expect(keys.filter((k, i) => keys.indexOf(k) !== i)).toEqual([]);
     // The flux condition (27) is the main equation of step four and is not repeated; the outer surface has no tag in the document.
     expect(conditionsFor(4)?.equations.map((e) => e.source.tag)).toEqual(['26', null, '38']);
+  });
+
+  it('no equation is shown twice for any physics selection, additions included, and the release fraction of a source is Equation 30', () => {
+    for (const p of ADDITION_PHYSICS) {
+      const shown = STAGES.flatMap((s) => [...STEP_DEFS[s].main, ...STEP_DEFS[s].implementation.equations, ...(conditionsFor(s)?.equations ?? []), ...physicsAdditions(s, p).equations]);
+      const ids = shown.map((e) => e.id);
+      expect(ids.filter((k, i) => ids.indexOf(k) !== i), p).toEqual([]);
+    }
+    const holds = (p: (typeof ADDITION_PHYSICS)[number]) => physicsAdditions(12, p).equations.some((e) => e.source.doc === 'd5' && e.source.tag === '30');
+    expect(holds('generation')).toBe(true);
+    expect(holds('combined')).toBe(true);
+    expect(holds('decay')).toBe(false);
+    expect(holds('temperature')).toBe(false);
+    expect(physicsAdditions(12, 'generation').note).toContain('not reported');
+    expect(physicsAdditions(1, 'baseline').note).toBeNull();
+    expect(physicsAdditions(1, 'combined').note).toContain('baseline derivation');
   });
 });
 

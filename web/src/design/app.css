@@ -185,7 +185,7 @@ h2[tabindex='-1']:focus {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-@media (max-width: 1023.98px) {
+@media (max-width: 1199.98px) {
   .header__subtitle {
     display: none;
   }
@@ -241,6 +241,24 @@ h2[tabindex='-1']:focus {
   gap: var(--space-2);
   margin-left: auto;
   flex: 0 0 auto;
+}
+
+/* Tablet width: the seven links and the tools do not fit beside the wordmark in one row, so the header takes a second row for the navigation and nothing is clipped or overlapped. */
+@media (min-width: 768px) and (max-width: 1099.98px) {
+  :root {
+    --header-height: 92px;
+  }
+  .header {
+    flex-wrap: wrap;
+    gap: 0 var(--space-5);
+    align-content: center;
+  }
+  .nav {
+    flex: 1 1 100%;
+  }
+  .nav__link {
+    padding: 0 var(--space-2);
+  }
 }
 
 /* Phone menu: the nav opens below the header as a vertical list. */
