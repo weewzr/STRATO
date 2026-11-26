@@ -331,6 +331,18 @@ fn a_non_detect_that_loses_its_class_fails() {
 }
 
 #[test]
+fn a_matrix_corrected_row_that_loses_its_denominator_fails() {
+    let mut t = real_texts();
+    t.release = mutate_line(
+        &t.release,
+        "E-033,",
+        ",calculated compact inventory",
+        ",not established",
+    );
+    assert_fails(&t, "DI.release.denominator");
+}
+
+#[test]
 fn a_digitised_row_without_reading_uncertainty_fails() {
     let mut t = real_texts();
     t.release = mutate_line(&t.release, "E-425,", ",rel_value_pct=0.5;time_h=0.2,", ",,");
