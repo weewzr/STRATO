@@ -638,10 +638,12 @@ mod tests {
             //  - backward error of the solve, |dA| <= kappa_t |A|, kappa_t = 4u + O(u^2)
             //    (see one_step_matches_dense_solve, item 1): 4u;
             //  - stored entries. The product dt K is rounded once and shared by the two rows that
-            //    use K_i (the same operands), which is a relative change u of K_i; each entry's
-            //    division by V rounds once more (u per off-diagonal entry; the one in L is
-            //    absorbed in V, the one in U stays: u |U||x_{i+1}|), and B = fl(fl(1 - l) - u)
-            //    has two roundings of positive terms (2u B |x_i|): 3u in all;
+            //    use K_i (the same operands), which is a relative change u of K_i (it defines
+            //    K' = P/(-dt)); against the exact-form row with K' and the same V, the stored L
+            //    and U carry one rounding each (u |L||x_{i-1}|, u |U||x_{i+1}|), and B =
+            //    fl(fl(1 - l) - u) has two roundings of positive terms plus the change of
+            //    |L| + |U|: gamma_2 B + u (|L| + |U|)/(1 - u) <= 3u B + O(u^2) B, so 3u in all
+            //    (no modified V is needed);
             //  - the shared dt K rounding against the K used in rhs here: u;
             //  - evaluating lhs here (3 roundings) and rhs (two flux terms of 2 roundings each
             //    and the final subtraction: 3 roundings): 6u.
