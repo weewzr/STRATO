@@ -280,7 +280,10 @@ mod tests {
         let lo = 1.0e6f64.mul_add(0.1, -hi);
         let err = |s: f64| ((s - hi) - lo).abs();
         assert!(err(acc.value()) < err(plain));
-        assert!(err(acc.value()) <= 2.0 * u * (hi + lo));
+        assert!(
+            err(acc.value()) <= 2.0 * u * (hi + lo),
+            "first-order bound 2 u sum|x_j| of Goldberg Theorem 8 (the O(N u^2) term is omitted)"
+        );
     }
 
     #[test]

@@ -206,6 +206,7 @@ pub const CHECK_COLUMNS: [Column; 17] = [
     ),
     ("passed", "Check passed (true or false)"),
 ];
+
 /// The CSV header line of a column table.
 pub fn header_line(columns: &[Column]) -> String {
     let mut s = columns.iter().map(|c| c.1).collect::<Vec<_>>().join(",");

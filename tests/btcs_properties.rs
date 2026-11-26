@@ -67,8 +67,9 @@
 //!   (a backward error `gamma_5 |A|` of the solve, as in the test of the production solve, and
 //!   `||A^-1||_inf <= 1`). With `eps = ||delta||_V / sqrt(W(C_old))`,
 //!   `||delta||_V <= ||delta||_inf sqrt(sum V_i)`, the triangle inequality in the weighted norm
-//!   gives `W(C_new) <= W(C_exact) (1 + eps)^2` and the allowed relative rise is
-//!   `(1 + 2 gamma_(N+1)) (1 + eps)^2 - 1`, evaluated at every step from the actual
+//!   gives `sqrt(W(C_new)) <= sqrt(W(C_exact)) + eps sqrt(W(C_old))`, and `W(C_exact) <=
+//!   W(C_old)` (P3 in exact arithmetic) gives `W(C_new) <= W(C_old) (1 + eps)^2`. The allowed
+//!   relative rise is `(1 + 2 gamma_(N+1)) (1 + eps)^2 - 1`, evaluated at every step from the actual
 //!   `C_old` and `C_new` (`||x||_inf` is the largest new value). No other constant enters.
 //! * P5: `m_i >= (B_i - |L_i|) - 4 u B_i` (derived in `numerical::tridiagonal` tests) and a
 //!   multiplier `|U_i| / m_i < 1`.

@@ -18,8 +18,10 @@
 //!   terms of these derivations are taken into the stated factors (see each comment); no
 //!   safety factor is applied anywhere. The bound expressions are themselves evaluated in
 //!   round-to-nearest and that evaluation (a few u relative) is taken as exact: where a
-//!   bound is evaluated, the observed value is at most 6e-2 of it (results file, table F), so
-//!   the omitted few-u relative error cannot change an outcome; it is not added to any bound.
+//!   bound is evaluated, the observed value is at most 0.4 of it (the multiple-of-dt check
+//!   about 0.4; P1 up to 0.25; the Kahan unit test about 0.25; table F of the results file at
+//!   most 1.3e-2), so the omitted few-u relative error cannot change an outcome; it is not
+//!   added to any bound.
 //! * A sign or a monotone sequence, which needs no tolerance: the error against the series
 //!   falls at every grid refinement (test A, B, C3), the Cauchy differences fall at every
 //!   step halving (D1, D2), the relative flux jump at each interface falls (E), the
@@ -364,8 +366,9 @@ fn homogeneous_sphere_vs_analytical_reference() {
     let times: Vec<f64> = taus.iter().map(|tau| tau * tau_scale).collect();
     // The series reports a bound of its own truncation error with every value
     // (`Estimate::error_bound`); the rounding of the series evaluation is not bounded by the
-    // module and is far below every error asserted on here (those are above 1e-8 relative to the value; F itself is at most 1, and the absolute
-    // release-rate errors are of order 1e-18 to 1e-21 mol/s, about 1e-6 of the rate).
+    // module and is far below every error asserted on here (those are above 1e-8 relative to
+    // the value; F itself is at most 1, and the absolute release-rate errors are of order
+    // 1e-18 to 1e-21 mol/s, which is 6e-4 to 1.6e-6 of the rate).
     let estimates: Vec<_> = times
         .iter()
         .map(|&t| sphere.release_fraction(t, 1e-14).unwrap())
@@ -731,9 +734,10 @@ struct BalanceBound {
 ///    `U' = P_i/V_i`, `B' = 1 + |L'| + |U'|`. Stored against exact-form: `L` and `U` each carry
 ///    one rounding (`|L - L'| <= u|L'|`, same for U); `B` carries two roundings of positive
 ///    terms against `1 + |L| + |U|` (`gamma_2 B`) and the change of `|L| + |U|` against
-///    `|L'| + |U'|` adds `u(|L| + |U|)/(1 - u) <= u B/(1 - u)^3`. So
-///    `|(A - A') x|_i <= max(u, gamma_2 + u/(1 - u)^3) (|A||x|)_i`, and
-///    `gamma_2 + u/(1 - u)^3 = 3u + O(u^2) <= 3u/(1 - 3u)`. No modified `V` is needed.
+///    `|L'| + |U'|` adds `u(|L| + |U|)/(1 - u) <= u B/(1 - u)^3`. So an off-diagonal entry
+///    differs by at most `u/(1 - u)` of its stored magnitude, the diagonal entry by at most
+///    `(2u + u^2)/(1 - u)^2 B + u B/(1 - u)^3 = (3u + 8u^2 + O(u^3)) B`, and
+///    `|(A - A') x|_i <= 3u/(1 - 3u) (|A||x|)_i`. No modified `V` is needed.
 /// 3. Solve. The computed `x` satisfies `(A + dA) x = c` with `|dA| <= kappa_t |A|`,
 ///    `kappa_t = 4u + O(u^2)` (derived in `numerical::tridiagonal::tests::thomas_matches_dense_f24`).
 ///    Together: `|rho_i| <= c_step (|A||x|)_i`, `c_step = kappa_t + 3u/(1 - 3u)` (about 7u),

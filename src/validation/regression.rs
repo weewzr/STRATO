@@ -37,39 +37,56 @@
 //! can be read; the leading-order estimate `D_1 / (1 - 2^-q)` replaces `e` and `u` is that whole
 //! estimate.
 //!
-//! *Cross term.* For an error expansion `a dt + b h^2 + c dt h^2`, the mixed difference of the
-//! four runs `(dt, h)`, `(dt/2, h)`, `(dt, h/2)`, `(dt/2, h/2)` is `c dt h^2 (1 - 1/2)(1 - 1/4)`,
-//! so `e_x = (8/3)(F_0 - F_t - F_h + F_th)`.
+//! *Cross term.* The error expansion is `F = F* + a dt + b h^2 + c dt h^2`. The time estimate is
+//! made at the fixed mesh `h`, so it is `e_t = (a + c h^2) dt` and already holds the cross term;
+//! the space estimate is made at the fixed step `dt`, so it is `e_h = (b + c dt) h^2` and holds
+//! it as well. The mixed difference of the four runs `(dt, h)`, `(dt/2, h)`, `(dt, h/2)`,
+//! `(dt/2, h/2)` is `c dt h^2 (1 - 1/2)(1 - 1/4)`, so `e_x = c dt h^2 = (8/3)(F_0 - F_t - F_h +
+//! F_th)`.
 //!
-//! The estimate of the numerical limit of the case is `F_lim = F_0 - e_t - e_h - e_x`.
+//! The estimate of the numerical limit of the case removes `e_t` and `e_h` and adds the cross term
+//! back, because it was subtracted twice: `F_lim = F_0 - e_t - e_h + e_x` (for an exact expansion
+//! this equals `F*`; the unit test `limit_of_an_exact_expansion_is_recovered` checks it). The
+//! first version of this module had `- e_x`; that sign was wrong and is corrected here, with the
+//! three `independent_check.csv` files regenerated for that reason.
 //!
 //! # What is measured, and what is a convention
 //!
-//! Measured and recorded in every check file: the observed orders (about 1 in time, 2.000 in
+//! Three parts of the check are asserted. (a) The observed orders round to the orders that
+//! Document 1 proves or observes: `|p_t - 1| < 1/2` in time and `|p_h - 2| < 1/2` in space, so a
+//! solver whose spatial error is only first order (for example a wrong diffusivity on one
+//! interval of a coating) fails. No rounding allowance is added to the `1/2`: the observed orders
+//! deviate from the integer by at most 0.07. (b) The limit estimate above. (c) The convention below.
+//!
+//! Measured and recorded in every check file: the observed orders (0.93 to 1.02 in time, 2.000 in
 //! space), the uncertainties `u`, and `|F_ref - F_lim|`. On the three cases `|F_ref - F_lim|` is
-//! between 0.01 % and 2.04 % of `|F_run - F_ref|`: the refinement analysis explains the difference
+//! between 0.01 % and 1.91 % of `|F_run - F_ref|`: the refinement analysis explains the difference
 //! between the run and the reference to that fraction, the rest is left unexplained. It is **not**
 //! proved to be a bound: the kernel-step start is not smooth, the time orders read 0.93 to 1.02
 //! rather than 1, and `u` (which only measures how much the estimate moves) is in several rows
 //! smaller than the remaining difference, so it is not a bound either.
 //!
-//! The pass/fail criterion of the generator is therefore a **convention**, not a derived
-//! tolerance:
+//! The pass/fail criterion of the generator on the limit estimate is a **convention**, not a
+//! derived tolerance:
 //!
 //! ```text
 //! |F_ref - F_lim| <= EXPLAINED_FRACTION |F_run - F_ref| + floor,   EXPLAINED_FRACTION = 0.05
 //! ```
 //!
 //! "The discretisation error that the refinements estimate explains the difference from the
-//! independent reference to within 5 %." The 5 % is a round number chosen above the 2.04 % that was
-//! measured; it is not derived from Document 1, and a smaller measured value would not justify
-//! lowering it. `floor` is the accuracy estimate of the reference (`ModalRelease::accuracy_floor`,
-//! or the tail bound plus `1e-15` of the homogeneous series); its documentation says the true
-//! error is about 10 to 20 times below it, so one times the floor is used. What the criterion
-//! protects against is a gross disagreement (an error in the BTCS run or in the reference that is
-//! much larger than the discretisation error); it does not certify the last digits of the run. A
-//! failed check refuses the file: nothing is written.
-//!//! Numerical verification only: agreement with these references is not experimental validation.
+//! independent reference to within 5 %." The 5 % is a round number that was chosen after the
+//! measurement, above the 1.91 % measured; it is not derived from Document 1, it is fixed
+//! (decision 49) and a smaller or larger measured value does not change it. The part of the check
+//! that discriminates a defect is the order assertion (a): under the mutation recorded in the
+//! results file the ratio test alone passed on the mild-contrast case. `floor` is the accuracy
+//! estimate of the reference (`ModalRelease::accuracy_floor`, or the tail bound plus `1e-15` of
+//! the homogeneous series); its documentation says the true error is about 10 to 20 times below
+//! it, so one times the floor is used. What the criterion protects against is a gross
+//! disagreement (an error in the BTCS run or in the reference that is much larger than the
+//! discretisation error); it does not certify the last digits of the run. A failed check refuses
+//! the file: nothing is written.
+//!
+//! Numerical verification only: agreement with these references is not experimental validation.
 
 use crate::{
     analytical::{
@@ -175,7 +192,7 @@ pub struct CheckRow {
     pub space_uncertainty: f64,
     /// Estimated cross term of the time and space errors (signed).
     pub cross_error: f64,
-    /// Estimated numerical limit `F_lim = F_run - e_t - e_h - e_x`.
+    /// Estimated numerical limit `F_lim = F_run - e_t - e_h + e_x`.
     pub f_limit: f64,
     /// `|F_ref - F_lim|`.
     pub limit_difference: f64,
@@ -184,10 +201,23 @@ pub struct CheckRow {
     /// `EXPLAINED_FRACTION |F_run - F_ref| + floor` (a convention; see the module documentation).
     pub tolerance: f64,
 }
+
 impl CheckRow {
-    /// The check passes if `limit_difference <= tolerance`.
-    pub fn passed(&self) -> bool {
+    /// The observed orders round to the orders of the scheme: `|p_t - 1| < 1/2` and
+    /// `|p_h - 2| < 1/2` (decision 49, part (a)). An order that could not be read (NaN) fails.
+    pub fn orders_round(&self) -> bool {
+        (self.time_order - 1.0).abs() < 0.5 && (self.space_order - 2.0).abs() < 0.5
+    }
+
+    /// The limit estimate agrees with the reference to the convention of the module
+    /// documentation: `limit_difference <= tolerance`.
+    pub fn limit_agrees(&self) -> bool {
         self.limit_difference <= self.tolerance
+    }
+
+    /// The check passes if the orders round to 1 and 2 and the limit estimate agrees.
+    pub fn passed(&self) -> bool {
+        self.orders_round() && self.limit_agrees()
     }
 }
 
@@ -260,6 +290,12 @@ fn estimate(f: [f64; 4], q: f64) -> Estimate {
         }
     }
 }
+
+/// Limit estimate `F_0 - e_t - e_h + e_x` of the module documentation.
+fn limit_estimate(f_run: f64, time_error: f64, space_error: f64, cross: f64) -> f64 {
+    f_run - time_error - space_error + cross
+}
+
 /// Runs the independent check of a case on its configuration.
 ///
 /// # Errors
@@ -370,7 +406,7 @@ pub fn independent_check(cfg: &Config, case: &Case) -> Result<CheckReport> {
         let cross = 8.0 / 3.0
             * (f_run - f_at(&fine_t.series, t)? - f_at(&fine_h.series, t)?
                 + f_at(&mixed.series, t)?);
-        let f_limit = f_run - time.error - space.error - cross;
+        let f_limit = limit_estimate(f_run, time.error, space.error, cross);
         rows.push(CheckRow {
             t,
             f_run,
@@ -436,10 +472,14 @@ pub fn generate(cfg: &Config, case: &Case, input_file: &str, commit: &str) -> Re
     let report = independent_check(cfg, case)?;
     if let Some(bad) = report.rows.iter().find(|r| !r.passed()) {
         bail!(
-            "independent check failed at t = {} s: |F_ref - F_limit| = {:e} > tolerance {:e}",
+            "independent check failed at t = {} s: observed orders {} (time) and {} (space), must round to 1 and 2: {}; |F_ref - F_limit| = {:e}, tolerance {:e}: {}",
             bad.t,
+            bad.time_order,
+            bad.space_order,
+            if bad.orders_round() { "ok" } else { "FAILED" },
             bad.limit_difference,
-            bad.tolerance
+            bad.tolerance,
+            if bad.limit_agrees() { "ok" } else { "FAILED" },
         );
     }
     let input = validate_input(cfg, &LIMITS)?;
@@ -456,7 +496,7 @@ pub fn generate(cfg: &Config, case: &Case, input_file: &str, commit: &str) -> Re
     let _ = writeln!(check, "# reference: {}", report.reference_text);
     let _ = writeln!(
         check,
-        "# check: |F_reference - F_limit| <= 0.05 |F_btcs - F_reference| + floor, where F_limit = F_btcs - e_time - e_space - e_cross is the limit estimated from the dt/2, dt/4, dt/8, 2n, 4n, 8n and (dt/2, 2n) refinements with the order read from the data. The 0.05 is a convention, not a derived tolerance; the orders, the uncertainties u of the estimates and the limit difference are measurements. See the module documentation of validation::regression."
+        "# check: (a) the observed orders round to 1 in time and 2 in space (|order - 1| < 0.5 and |order - 2| < 0.5); (b) |F_reference - F_limit| <= 0.05 |F_btcs - F_reference| + floor, where F_limit = F_btcs - e_time - e_space + e_cross is the limit estimated from the dt/2, dt/4, dt/8, 2n, 4n, 8n and (dt/2, 2n) refinements with the order read from the data (the cross term is added back because the time and space estimates each contain it). The 0.05 is a convention, not a derived tolerance; the orders, the uncertainties u of the estimates and the limit difference are measurements. See the module documentation of validation::regression."
     );
     if let (Some((ta, fa)), Some(diff)) = (case.anchor, report.anchor_difference) {
         let _ = writeln!(
@@ -491,6 +531,7 @@ pub fn generate(cfg: &Config, case: &Case, input_file: &str, commit: &str) -> Re
             r.passed()
         );
     }
+
     let ts = timeseries_csv(&prov, &run.series, run.meta.initial_inventory)?;
     let pr = profile_csv(&prov, &run.grid, &run.snapshots)?;
     Ok(Generated {
@@ -498,4 +539,76 @@ pub fn generate(cfg: &Config, case: &Case, input_file: &str, commit: &str) -> Re
         final_profile: format!("{banner}{pr}"),
         independent_check: check,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// An exact expansion `F = F* + a dt + b h^2 + c dt h^2` sampled the way the check samples a
+    /// case: the time estimate at the fixed mesh `h`, the space estimate at the fixed step `dt`,
+    /// and the four runs of the cross term.
+    fn synthetic(f_star: f64, a: f64, b: f64, c: f64, dt: f64, h: f64) -> (f64, f64, f64, f64) {
+        let f = |dt: f64, h: f64| f_star + a * dt + b * h * h + c * dt * h * h;
+        let time_runs = [0, 1, 2, 3].map(|k| f(dt / 2f64.powi(k), h));
+        let space_runs = [0, 1, 2, 3].map(|k| f(dt, h / 2f64.powi(k)));
+        let time = estimate(time_runs, 1.0);
+        let space = estimate(space_runs, 2.0);
+        let cross = 8.0 / 3.0 * (f(dt, h) - f(dt / 2.0, h) - f(dt, h / 2.0) + f(dt / 2.0, h / 2.0));
+        (
+            limit_estimate(f(dt, h), time.error, space.error, cross),
+            time.error,
+            space.error,
+            cross,
+        )
+    }
+
+    #[test]
+    fn limit_of_an_exact_expansion_is_recovered() {
+        // The cross term is large on purpose: c dt h^2 = 0.076 against F* = 0.4.
+        let (f_star, a, b, c, dt, h) = (0.4, 0.3, -0.7, 19.0, 0.1, 0.2);
+        let (lim, e_t, e_h, e_x) = synthetic(f_star, a, b, c, dt, h);
+        // Each estimate holds the cross term, as derived in the module documentation.
+        assert!((e_t - (a + c * h * h) * dt).abs() < 1e-15);
+        assert!((e_h - (b + c * dt) * h * h).abs() < 1e-15);
+        assert!((e_x - c * dt * h * h).abs() < 1e-15);
+        // Every quantity is O(1) or smaller and each is a handful of operations: a few times
+        // the unit roundoff of 1.1e-16 relative to 1, the largest value involved.
+        assert!(
+            (lim - f_star).abs() < 1e-14,
+            "limit {lim} differs from F* = {f_star}"
+        );
+        // The wrong sign of the first version is off by 2 c dt h^2 and is therefore detected.
+        let wrong = (lim - 2.0 * e_x) - f_star;
+        assert!((wrong + 2.0 * c * dt * h * h).abs() < 1e-14);
+        assert!(wrong.abs() > 1e-3);
+    }
+
+    #[test]
+    fn orders_must_round_to_one_and_two() {
+        let row = |p_t: f64, p_h: f64| CheckRow {
+            t: 1.0,
+            f_run: 0.0,
+            f_reference: 0.0,
+            abs_difference: 0.0,
+            time_error: 0.0,
+            time_order: p_t,
+            time_uncertainty: 0.0,
+            space_error: 0.0,
+            space_order: p_h,
+            space_uncertainty: 0.0,
+            cross_error: 0.0,
+            f_limit: 0.0,
+            limit_difference: 0.0,
+            reference_floor: 0.0,
+            tolerance: 0.0,
+        };
+        assert!(row(0.93, 2.0).passed());
+        assert!(row(1.02, 1.9994).passed());
+        // A first-order spatial defect, a zeroth-order time error and an unreadable order fail.
+        assert!(!row(1.0, 1.0).passed());
+        assert!(!row(0.4, 2.0).passed());
+        assert!(!row(1.0, f64::NAN).passed());
+        assert!(!row(f64::NAN, 2.0).passed());
+    }
 }
