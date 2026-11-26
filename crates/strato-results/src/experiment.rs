@@ -1336,4 +1336,180 @@ mod tests {
         }
         assert!(BP1_SOURCE_NOTE.contains("not an established fact"));
     }
+
+    // Fixtures for `candidates()`: no register row is a compatible point today (N = 0), so a
+    // synthetic record is built from a real row of a cell nuclide with the fields that decide
+    // compatibility set explicitly. The values are illustrative and never reach production output.
+    fn fixture_record(reg: &Register, t_end: f64, t_start: f64) -> (RowRecord, &'static Nuc, f64) {
+        let base = reg
+            .release
+            .rows
+            .iter()
+            .find(|r| {
+                row_nuclide(r).is_some_and(|n| {
+                    !is_matrix_corrected(n.id, &r.id) && !is_design_bound(n.id, &r.id)
+                }) && row_temperature(r).is_some()
+                    && !matches!(r.value_class, strato_data::release::ValueClass::NonDetect)
+                    && !matches!(r.value, ReleaseValue::UpperBound(_))
+            })
+            .expect("a register row of a cell nuclide at one temperature exists");
+        let nuc = row_nuclide(base).expect("some");
+        let t_c = row_temperature(base).expect("some");
+        let mut row = base.clone();
+        row.time_basis = "hours at temperature".into();
+        let value = 0.01;
+        let spec = strato_compare::status::RunSpec {
+            species: nuc.species,
+            element_label_only: false,
+            t_c,
+            window_start_h: t_start,
+            t_end_h: t_end,
+            time_source: "fixture".into(),
+        };
+        let rec = RowRecord {
+            row,
+            verdict: strato_compare::status::Verdict {
+                status: Status::ComparisonAvailable,
+                category: "fixture",
+                reason: "fixture".into(),
+                plan: Plan::Point { spec, value },
+            },
+            status: Status::ComparisonAvailable,
+            model: None,
+            eval: Eval::Point {
+                value,
+                dev: strato_compare::metrics::PointDeviation {
+                    signed: 0.0,
+                    absolute: 0.0,
+                    relative_percent: None,
+                    log10_ratio: None,
+                    normalised_residual: None,
+                },
+            },
+        };
+        (rec, nuc, t_c)
+    }
+
+    fn fixture_register() -> Register {
+        Register::load(&std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../data"))
+            .expect("the registers load")
+    }
+
+    fn compat_fields(c: &Candidate) -> (f64, bool, Option<f64>, f64, f64) {
+        match c {
+            Candidate::Compatible {
+                f_a,
+                resolved_a,
+                f_b,
+                slope_a_per_h,
+                slope_b_per_h,
+                ..
+            } => (*f_a, *resolved_a, *f_b, *slope_a_per_h, *slope_b_per_h),
+            Candidate::Excluded { id, reason } => panic!("{id} excluded: {reason}"),
+        }
+    }
+
+    #[test]
+    fn the_isothermal_path_takes_f_a_f_b_slope_and_flag_from_the_same_curve() {
+        let reg = fixture_register();
+        let radii = strato_compare::data::radii(&reg).expect("radii");
+        let settings = strato_compare::model::Settings {
+            intervals: [20, 15, 10, 20, 10],
+            dt_h: 5.0,
+        };
+        let mut runner = Runner::new(&reg, radii.clone(), settings).expect("runner");
+        let (t_end, t_start) = (20.0, 5.0);
+        let (rec, nuc, t_c) = fixture_record(&reg, t_end, t_start);
+        let got = candidates(
+            &[rec],
+            &mut runner,
+            nuc,
+            t_c,
+            ModelSource::Isothermal { radii: &radii },
+        )
+        .expect("candidates");
+        assert_eq!(got.len(), 1);
+        let (f_a, resolved, f_b, slope_a, slope_b) = compat_fields(&got[0]);
+        let curve = runner.get(nuc.species, t_c, t_end).expect("curve").clone();
+        let dt = 0.05;
+        let want_a = curve.at(t_end).expect("end") - curve.at(t_start).expect("start");
+        let want_r = curve.at_refined(t_end).expect("end") - curve.at_refined(t_start).expect("s");
+        assert_eq!(f_a, want_a);
+        assert_eq!(
+            resolved,
+            want_r > 0.0 && (want_a - want_r).abs() <= 0.05 * want_r
+        );
+        let want_slope =
+            (curve.at(t_end + dt).expect("p") - curve.at(t_end - dt).expect("m")) / (2.0 * dt);
+        assert_eq!(slope_a, want_slope);
+        // Method B on the same times, on the same coefficients.
+        let needs = Needs {
+            generation: false,
+            decay: false,
+            temperature_varies: false,
+            kernel_step_start: true,
+        };
+        let ts = [
+            t_start * 3600.0,
+            (t_end - dt) * 3600.0,
+            t_end * 3600.0,
+            (t_end + dt) * 3600.0,
+        ];
+        match method_b(needs, &radii.outer_m, &curve.d_m2_s, &ts) {
+            MethodB::Available(a) => {
+                let v = |k: usize| a.values[k];
+                if let (Some(e), Some(s)) = (v(2), v(0)) {
+                    assert_eq!(f_b, Some(e - s));
+                    if let (Some(p), Some(m)) = (v(3), v(1)) {
+                        assert_eq!(slope_b, (p - m) / (2.0 * dt));
+                    }
+                } else {
+                    assert_eq!(f_b, None);
+                }
+            }
+            MethodB::NotAvailable(_) => assert_eq!(f_b, None),
+        }
+    }
+
+    #[test]
+    fn the_ramp_path_reads_hold_times_and_needs_both_window_ends_resolved() {
+        let reg = fixture_register();
+        let radii = strato_compare::data::radii(&reg).expect("radii");
+        let settings = strato_compare::model::Settings {
+            intervals: [20, 15, 10, 20, 10],
+            dt_h: 5.0,
+        };
+        let mut runner = Runner::new(&reg, radii, settings).expect("runner");
+        let ec = EngineCurve {
+            key: "fixture".into(),
+            t_h: vec![0.0, 10.0, 20.0, 30.0],
+            f_a: vec![0.0, 0.1, 0.3, 0.6],
+            resolved: vec![true, true, false, true],
+            max_residual_over_bound: 0.0,
+            max_relative_residual: 0.0,
+            steps: 0,
+            assemblies: 0,
+            csv_rows: vec![],
+        };
+        let run = |runner: &mut Runner<'_>, t_end: f64, t_start: f64| {
+            let (rec, nuc, t_c) = fixture_record(&reg, t_end, t_start);
+            let got = candidates(&[rec], runner, nuc, t_c, ModelSource::Ramp(&ec)).expect("ok");
+            assert_eq!(got.len(), 1);
+            compat_fields(&got[0])
+        };
+        // Cumulative at a resolved sample: the piecewise-linear value and the central slope
+        // (0.1 over 0..10, 0.2 over 10..20: (0.101 - 0.0995) / 0.1 = 0.015 per hour).
+        let (f, r, f_b, slope, slope_b) = run(&mut runner, 10.0, 0.0);
+        assert!((f - 0.1).abs() < 1e-15 && r && f_b.is_none() && slope_b == 0.0);
+        assert!((slope - 0.015).abs() < 1e-12, "slope {slope}");
+        // An unresolved end sample makes the point unresolved.
+        let (f, r, _, _, _) = run(&mut runner, 20.0, 0.0);
+        assert!((f - 0.3).abs() < 1e-15 && !r);
+        // A window: difference of the two ends, resolved only when both ends are; the slope
+        // beyond the last sample is zero.
+        let (f, r, _, slope, _) = run(&mut runner, 30.0, 10.0);
+        assert!((f - 0.5).abs() < 1e-15 && r && slope == 0.0);
+        let (_, r, _, _, _) = run(&mut runner, 30.0, 20.0);
+        assert!(!r, "the window start sample is unresolved");
+    }
 }

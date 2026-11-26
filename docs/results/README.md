@@ -16,7 +16,9 @@ cargo run --release --locked --manifest-path crates/Cargo.toml -p strato-results
 ```
 
 - `run` writes `data/results/`. Options: `--repo <folder>` (default `.`), `--out <folder>`,
-  `--commit <hash>` (informational), `--quick` (coarse grids for tests of the program itself; a
+  `--commit <hash>` (informational; the committed set is generated with the hash of the source
+  commit the outputs are built from, which is the commit before the one that adds them),
+  `--quick` (coarse grids for tests of the program itself; a
   quick run is never committed).
 - `run --check` regenerates everything in memory and exits with status 1, naming every file that is
   missing, different or no longer produced. The lines that record the commit are ignored, because
@@ -72,8 +74,10 @@ run of the family (the exploration variant at 1197 degC is one family; the base 
 cycle variant and the heating variants are the other), so that every scenario, every lead-in and
 every normal-operation reference of a family run on the same grid. The Scenario 2 and Scenario 5
 runs therefore reproduce the Scenario 1 state at the end of irradiation exactly. The references of
-Scenario 3 and Scenario 4 differ from Scenario 1 only by their step boundaries (Scenario 4 splits
-the run at 310.1 d; Scenario 3 has its 24 h ramp segment). The steps of a segment are equal to the
+Scenario 3, Scenario 4 and the cycles variant differ from Scenario 1 only by their step boundaries
+(Scenario 4 splits the run at 310.1 d; Scenario 3 has its 24 h ramp segment; the cycles variant
+has the step boundaries of its cycles, and its Sr-90 released amount at 620.2 d differs from
+Scenario 1 by about 1.5e-6 relative). The steps of a segment are equal to the
 bit, and the matrix is assembled once per segment.
 
 ## Scenario 5 with a heating history: kernel-only comparison
