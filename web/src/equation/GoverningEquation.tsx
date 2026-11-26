@@ -3,7 +3,7 @@ import { useStrato } from '../state/store';
 import { BUILD_STATUSES, PHYSICS_IDS, STATUS_DEFINITION, STATUS_LABEL, mechanismsOf, physicsStatus, type PhysicsId } from './capability';
 import { StatusTag } from './StatusTag';
 import { useSideScroll } from './EquationBuilder';
-import { equationPieces, meaningsFor, PHYSICS_CHANGE, PHYSICS_LABEL, type Piece } from './physics';
+import { equationPieces, isTimed, meaningsFor, PHYSICS_CHANGE, PHYSICS_LABEL, type Piece } from './physics';
 import { Tex } from './Tex';
 import { useBuildCapability } from './useCapability';
 
@@ -44,7 +44,7 @@ export function GoverningEquation() {
   const ids = { group: useId(), legend: useId(), hint: useId() };
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const box = useRef<HTMLDivElement>(null);
-  const side = useSideScroll(box, `${physics}/${scenario}`);
+  const side = useSideScroll(box, `${physics}/${scenario ?? 'none'}`);
   const [legendOpen, setLegendOpen] = useState(false);
 
   // The live-region sentence: set while rendering when the selection differs from the one last rendered
@@ -70,7 +70,7 @@ export function GoverningEquation() {
   };
 
   return (
-    <div className="geq" data-testid="governing-equation" data-physics={physics} data-scenario={scenario}>
+    <div className="geq" data-testid="governing-equation" data-physics={physics} data-scenario={scenario ?? 'none'}>
       <div className={`eq-frame${side.more ? ' eq-frame--more' : ''}`}>
         <div
           className="geq__eq"
@@ -79,7 +79,7 @@ export function GoverningEquation() {
           {...(side.scrolls ? { tabIndex: 0, role: 'region', 'aria-label': 'Governing equation, scrolls sideways', 'aria-describedby': ids.hint } : { role: 'group', 'aria-label': 'Governing equation' })}
         >
           {pieces.map((p) => (
-            <EquationPiece key={p.id} piece={p} timed={scenario !== 'steady'} />
+            <EquationPiece key={p.id} piece={p} timed={isTimed(scenario)} />
           ))}
         </div>
         <span className="eq-fade" aria-hidden="true" />

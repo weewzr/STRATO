@@ -7,6 +7,7 @@ import { TermExplanations } from './TermExplanations';
 /** How the selected operating scenario enters the numerical scheme (directive Section 5); it follows the shared selection. */
 function ScenarioNumerics() {
   const scenario = useStrato((s) => s.selection.scenario);
+  if (scenario === null) return null;
   return (
     <div className="scenario-numerics" data-testid="scenario-numerics" data-scenario={scenario}>
       <h3 className="scenario-numerics__title">Selected scenario: {SCENARIO_LABEL[scenario]}</h3>

@@ -80,8 +80,8 @@ describe('store actions', () => {
     expect(useStrato.getState().caseId).toBe('synthetic_five_layer');
   });
 
-  it('start with the default selection: baseline physics, steady-state operation, nothing expanded', () => {
-    expect(useStrato.getState().selection).toEqual({ physics: 'baseline', scenario: 'steady', expanded: [] });
+  it('start with the default selection: baseline physics, no scenario, nothing expanded', () => {
+    expect(useStrato.getState().selection).toEqual({ physics: 'baseline', scenario: null, expanded: [] });
   });
 
   it('select and clear a layer', () => {

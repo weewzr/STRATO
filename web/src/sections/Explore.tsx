@@ -119,7 +119,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
                     : 'Solver: loading'}
               </span>
               <span className="strip__item" data-testid="strip-stage">
-                Physics: {PHYSICS_LABEL[physics]}; scenario: {SCENARIO_LABEL[scenario]}; simulation: {method === 'btcs' ? METHOD_1 : method === 'loading' ? 'solver loading' : 'solver not available'}
+                Physics: {PHYSICS_LABEL[physics]}; scenario: {scenario === null ? 'none' : SCENARIO_LABEL[scenario]}; simulation: {method === 'btcs' ? METHOD_1 : method === 'loading' ? 'solver loading' : 'solver not available'}
               </span>
               <Playback />
               {compact ? (

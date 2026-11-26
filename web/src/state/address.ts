@@ -12,7 +12,7 @@ const KEYS = ['physics', 'scenario', 'open'] as const;
 export function formatSelection(sel: Selection): string {
   const q = new URLSearchParams();
   if (sel.physics !== DEFAULT_SELECTION.physics) q.set('physics', sel.physics);
-  if (sel.scenario !== DEFAULT_SELECTION.scenario) q.set('scenario', sel.scenario);
+  if (sel.scenario !== null) q.set('scenario', sel.scenario);
   if (sel.expanded.length > 0) q.set('open', sel.expanded.join(','));
   return q.toString().replace(/%2C/g, ',');
 }

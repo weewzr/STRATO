@@ -94,9 +94,9 @@ describe('the capability object', () => {
     const cap = buildCapability(['diffusion_btcs_layered']);
     expect(cap.baseline).toBe('verified');
     for (const m of MECHANISMS) expect(cap.mechanisms[m]).toBe('planned');
-    expect(selectionSupport(cap, 'baseline', 'steady').supported).toBe(true);
-    expect(selectionSupport(cap, 'generation', 'steady')).toEqual({ supported: false, missing: ['fission-product generation'] });
-    expect(selectionSupport(cap, 'combined', 'steady').missing).toHaveLength(3);
+    expect(selectionSupport(cap, 'baseline', null).supported).toBe(true);
+    expect(selectionSupport(cap, 'generation', null)).toEqual({ supported: false, missing: ['fission-product generation'] });
+    expect(selectionSupport(cap, 'combined', null).missing).toHaveLength(3);
     expect(selectionSupport(cap, 'baseline', 'startup').missing).toEqual(['the startup scenario']);
   });
 
@@ -114,12 +114,12 @@ describe('the capability object', () => {
     const implemented = real(ALL_REPORTED);
     expect(implemented.mechanisms.generation).toBe('implemented');
     expect(isSimulable(implemented.mechanisms.generation)).toBe(false);
-    expect(selectionSupport(implemented, 'generation', 'steady').supported).toBe(false);
+    expect(selectionSupport(implemented, 'generation', null).supported).toBe(false);
     // Reported and recorded as verified: simulable, and the others stay planned.
     const verified = real(['diffusion_btcs_layered', 'generation'], ALL_VERIFIED);
     expect(verified.mechanisms).toEqual({ generation: 'verified', decay: 'planned', temperature: 'planned' });
-    expect(selectionSupport(verified, 'generation', 'steady').supported).toBe(true);
-    expect(selectionSupport(verified, 'combined', 'steady').missing).toEqual(['radioactive decay', 'temperature-dependent diffusion']);
+    expect(selectionSupport(verified, 'generation', null).supported).toBe(true);
+    expect(selectionSupport(verified, 'combined', null).missing).toEqual(['radioactive decay', 'temperature-dependent diffusion']);
     // A catalogue entry alone, without the wrapper's report, never makes a mechanism available.
     expect(real(['diffusion_btcs_layered'], ALL_VERIFIED).mechanisms.generation).toBe('planned');
   });

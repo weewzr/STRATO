@@ -12,6 +12,7 @@ import {
   PHYSICS_IDS,
   SCENARIO_IDS,
   scenarioStatus,
+  SCENARIO_NAME,
   selectionSupport,
   unsupportedMessage,
   WRAPPER_SCENARIO_ID,
@@ -22,7 +23,7 @@ import { GoverningEquation } from '../src/equation/GoverningEquation';
 import { equationPieces, equationTex, D_SCENARIO, G_SCENARIO } from '../src/equation/physics';
 import { renderTex } from '../src/equation/Tex';
 import { ScenarioPicker } from '../src/equation/ScenarioPicker';
-import { paramsFor, SCENARIO_KIND, SCENARIO_LABEL, SCENARIO_RULE, SCENARIOS } from '../src/equation/scenarios';
+import { NO_SCENARIO_TEXT, paramsFor, SCENARIO_KIND, SCENARIO_LABEL, SCENARIO_RULE, SCENARIOS } from '../src/equation/scenarios';
 import { CatalogueContext, type Catalogue } from '../src/research/catalogue';
 import { Explore } from '../src/sections/Explore';
 import { exploreHash, startAddressSync } from '../src/state/address';
@@ -39,7 +40,7 @@ const VERIFIED_MECHANISMS = fixtureCatalogue({ generation: 'VERIFIED', decay: 'V
 function withScenarios(base: Catalogue, status: 'VERIFIED' | 'IMPLEMENTED', ids: ScenarioId[]): Catalogue {
   const template = base.mechanisms[0];
   if (!template) throw new Error('no mechanism row to copy');
-  const rows = ids.filter((s) => s !== 'steady').map((s) => ({ ...template, mechanism_id: WRAPPER_SCENARIO_ID[s as Exclude<ScenarioId, 'steady'>], status }));
+  const rows = ids.map((s) => ({ ...template, mechanism_id: WRAPPER_SCENARIO_ID[s], status }));
   return { ...base, mechanisms: [...base.mechanisms, ...rows] };
 }
 const withCatalogue = (cat: Catalogue, ui: React.ReactElement) => <CatalogueContext.Provider value={cat}>{ui}</CatalogueContext.Provider>;
@@ -59,7 +60,8 @@ describe('the five scenario buttons', () => {
     ]);
     expect(radios.map((r) => r.dataset.testid)).toEqual(['scenario-steady', 'scenario-shutdown', 'scenario-startup', 'scenario-control-rod', 'scenario-refuelling']);
     expect(radios.map((r) => r.getAttribute('tabindex'))).toEqual(['0', '-1', '-1', '-1', '-1']);
-    expect(radios.map((r) => r.getAttribute('aria-checked'))).toEqual(['true', 'false', 'false', 'false', 'false']);
+    // No scenario is selected by default: the first button is the one tab stop, and none is checked.
+    expect(radios.map((r) => r.getAttribute('aria-checked'))).toEqual(['false', 'false', 'false', 'false', 'false']);
   });
 
   it('sit directly beneath the physics controls: block A, then block B, in the page', () => {
@@ -161,14 +163,21 @@ describe('the explanation of the selected scenario', () => {
     // Steady-state operation: constant conditions, and explicitly not a stationary concentration field.
     expect(text('steady')).toMatch(/constant prescribed operating conditions/i);
     expect(text('steady')).toMatch(/does not impose that the time derivative of C is zero/);
-    expect(text('steady')).toMatch(/constant conditions do not make the concentration field stationary/);
+    // The reason: the run starts from its initial state and reaches the balance only over times longer than the irradiation
+    // (not "because the species is still being generated, diffusing and decaying": a stationary field is exactly such a balance).
+    expect(text('steady')).toMatch(/Constant conditions do not make the field stationary: the run starts from its initial state \(a fresh particle holds no inventory\)/);
+    expect(text('steady')).toMatch(/approaches a balance of generation, release and decay only over times longer than the irradiation, so C\(r,t\) keeps changing/);
+    expect(text('steady')).not.toMatch(/still being generated/);
     expect(text('shutdown')).toMatch(/Radioactive decay continues after shutdown/);
     expect(text('shutdown')).toMatch(/temperature follows a prescribed cooldown/);
-    expect(text('startup')).toMatch(/generation and the temperature both increase/);
+    expect(text('startup')).toMatch(/prescribed generation and temperature histories both rise from their starting values as power is raised/);
     expect(text('control-rod')).toMatch(/prescribed changes of the fission-rate history and of the temperature history/);
     expect(text('control-rod')).toMatch(/No control-rod term enters the equation/);
-    // Refuelling: shown as removal and storage; the rest is a future scenario.
-    expect(text('refuelling')).toMatch(/removal of the particle from the reactor and its storage/);
+    // The initial states: shutdown and fuel removal start from the end of normal operation, startup from a fresh particle.
+    expect(text('shutdown')).toMatch(/Starting from the state at the end of normal operation/);
+    expect(text('startup')).toMatch(/Starting from a fresh particle/);
+    // Refuelling: shown as fuel removal and storage; the rest is a future scenario.
+    expect(text('refuelling')).toMatch(/^Fuel removal, starting from the state at the end of normal operation: the particle leaves the reactor and is stored/);
     expect(text('refuelling')).toMatch(/future scenario/);
     expect(text('refuelling')).toMatch(/Mechanical refuelling is not simulated/);
   });
@@ -176,7 +185,7 @@ describe('the explanation of the selected scenario', () => {
   it('is shown with the selected scenario, with the prescribed-input label, and follows the selection', async () => {
     const user = userEvent.setup();
     render(<ScenarioPicker />);
-    expect(screen.getByTestId('scenario-explanation').textContent).toContain(SCENARIO_LABEL.steady);
+    expect(screen.getByTestId('scenario-explanation').textContent).toBe(NO_SCENARIO_TEXT);
     for (const s of SCENARIO_IDS) {
       await user.click(screen.getByTestId(`scenario-${s}`));
       const box = screen.getByTestId('scenario-explanation');
@@ -214,7 +223,7 @@ describe('the rule that couples a scenario to the physics', () => {
     expect(SCENARIO_RULE.match(/\./g)).toHaveLength(1);
   });
 
-  it('selects the combined model with every scenario except steady-state operation, and announces it', async () => {
+  it('selects the combined model with every scenario (steady-state operation too), and announces it', async () => {
     const user = userEvent.setup();
     render(
       <>
@@ -222,40 +231,46 @@ describe('the rule that couples a scenario to the physics', () => {
         <ScenarioPicker />
       </>,
     );
-    expect(useStrato.getState().selection).toMatchObject({ physics: 'baseline', scenario: 'steady' });
+    expect(useStrato.getState().selection).toMatchObject({ physics: 'baseline', scenario: null });
     await user.click(screen.getByTestId('scenario-shutdown'));
     expect(useStrato.getState().selection).toMatchObject({ physics: 'combined', scenario: 'shutdown' });
     expect(screen.getByTestId('physics-combined').getAttribute('aria-checked')).toBe('true');
     expect(screen.getByTestId('scenario-announce').textContent).toMatch(/Shutdown and cooldown selected\..*The combined model is selected, because this scenario requires it/);
-    // Choosing another physics returns to steady-state operation, also announced.
+    // Choosing another physics clears the scenario, also announced.
     await user.click(screen.getByTestId('physics-decay'));
-    expect(useStrato.getState().selection).toMatchObject({ physics: 'decay', scenario: 'steady' });
-    expect(screen.getByTestId('scenario-steady').getAttribute('aria-checked')).toBe('true');
-    expect(screen.getByTestId('scenario-announce').textContent).toMatch(/Steady-state operation selected, because the physics chosen is not the combined model/);
-    // Steady-state operation keeps whatever physics is selected.
+    expect(useStrato.getState().selection).toMatchObject({ physics: 'decay', scenario: null });
+    expect(screen.getByTestId('scenario-picker').querySelector('[aria-checked="true"]')).toBeNull();
+    expect(screen.getByTestId('scenario-announce').textContent).toMatch(/No operating scenario selected, because the physics chosen is not the combined model/);
+    // Steady-state operation follows the same rule: it selects the combined model.
     await user.click(screen.getByTestId('physics-generation'));
     await user.click(screen.getByTestId('scenario-steady'));
-    expect(useStrato.getState().selection).toMatchObject({ physics: 'generation', scenario: 'steady' });
+    expect(useStrato.getState().selection).toMatchObject({ physics: 'combined', scenario: 'steady' });
   });
 });
 
 describe('status and enabled state come from the capability object', () => {
-  it('for the wrapper of this build: steady-state operation follows the baseline, every other scenario is planned', () => {
+  it('for the wrapper of this build (baseline only): all five scenarios are planned, steady-state operation too', () => {
     const cap = buildCapability(['diffusion_btcs_layered']);
-    expect(cap.scenarios).toEqual({ steady: 'verified', shutdown: 'planned', startup: 'planned', 'control-rod': 'planned', refuelling: 'planned' });
-    expect(scenarioStatus(cap, 'steady', 'baseline')).toBe('verified');
-    // The status shown with steady-state operation includes the physics selected.
-    expect(scenarioStatus(cap, 'steady', 'generation')).toBe('planned');
-    for (const s of NON_STEADY) expect(scenarioStatus(cap, s, 'combined')).toBe('planned');
-    expect(selectionSupport(cap, 'baseline', 'steady').supported).toBe(true);
-    for (const s of NON_STEADY) expect(selectionSupport(cap, 'combined', s).missing).toContain(`the ${SCENARIO_LABEL[s].toLowerCase()} scenario`);
+    // The baseline run is not Scenario 1 (constant generation from a fresh particle): it never makes a scenario verified.
+    expect(cap.scenarios).toEqual({ steady: 'planned', shutdown: 'planned', startup: 'planned', 'control-rod': 'planned', refuelling: 'planned' });
+    for (const s of SCENARIO_IDS) expect(scenarioStatus(cap, s), s).toBe('planned');
+    expect(selectionSupport(cap, 'baseline', null).supported).toBe(true);
+    for (const s of SCENARIO_IDS) expect(selectionSupport(cap, 'combined', s).missing, s).toContain(`the ${SCENARIO_NAME[s]} scenario`);
   });
 
   it('shows these statuses on the buttons', () => {
     act(() => useStrato.getState().setCapabilities(['diffusion_btcs_layered']));
     render(<ScenarioPicker />);
-    expect(screen.getByTestId('scenario-status-steady').textContent).toBe('Verified');
-    for (const s of NON_STEADY) expect(screen.getByTestId(`scenario-status-${s}`).textContent).toBe('Planned');
+    for (const s of SCENARIO_IDS) expect(screen.getByTestId(`scenario-status-${s}`).textContent, s).toBe('Planned');
+  });
+
+  it('turns steady-state operation on only when the wrapper reports its scenario with the mechanisms it needs', () => {
+    const only = buildCapability([...REPORTED_MECHANISMS, WRAPPER_SCENARIO_ID.steady], withScenarios(VERIFIED_MECHANISMS, 'VERIFIED', ['steady']));
+    expect(only.scenarios.steady).toBe('verified');
+    expect(selectionSupport(only, 'combined', 'steady')).toEqual({ supported: true, missing: [] });
+    // Without the generation mechanism the scenario is not simulable, and the page names what is missing.
+    const noGeneration = buildCapability(['diffusion_btcs_layered', WRAPPER_SCENARIO_ID.steady], withScenarios(VERIFIED_MECHANISMS, 'VERIFIED', ['steady']));
+    expect(selectionSupport(noGeneration, 'combined', 'steady').missing).toContain('fission-product generation');
   });
 
   it('follows a fake wrapper that reports scenarios: implemented, then verified, without an edit to the page logic', () => {
@@ -266,7 +281,7 @@ describe('status and enabled state come from the capability object', () => {
     // Reported and recorded as verified, together with the three mechanisms: simulable; the others stay planned.
     const cat = withScenarios(VERIFIED_MECHANISMS, 'VERIFIED', ['startup', 'shutdown']);
     const verified = buildCapability([...REPORTED_MECHANISMS, WRAPPER_SCENARIO_ID.startup, WRAPPER_SCENARIO_ID.shutdown], cat);
-    expect(verified.scenarios).toEqual({ steady: 'verified', shutdown: 'verified', startup: 'verified', 'control-rod': 'planned', refuelling: 'planned' });
+    expect(verified.scenarios).toEqual({ steady: 'planned', shutdown: 'verified', startup: 'verified', 'control-rod': 'planned', refuelling: 'planned' });
     expect(selectionSupport(verified, 'combined', 'startup')).toEqual({ supported: true, missing: [] });
     expect(selectionSupport(verified, 'combined', 'control-rod').missing).toEqual(['the control-rod insertion scenario']);
     // A catalogue row alone, without the wrapper's report, never makes a scenario available.
@@ -292,14 +307,14 @@ describe('status and enabled state come from the capability object', () => {
   });
 
   it('for a scenario the build cannot solve, the simulation and the results say so concisely and show nothing', () => {
-    for (const s of NON_STEADY) {
+    for (const s of SCENARIO_IDS) {
       act(() => {
         useStrato.getState().setCapabilities(['diffusion_btcs_layered']);
         useStrato.getState().setSelection({ scenario: s });
       });
       const { unmount } = render(<Explore compact={false} onOpenControls={() => undefined} />);
       const sim = screen.getByTestId('unsupported-simulation').textContent ?? '';
-      expect(sim, s).toContain(`the ${SCENARIO_LABEL[s].toLowerCase()} scenario`);
+      expect(sim, s).toContain(`the ${SCENARIO_NAME[s]} scenario`);
       expect(sim, s).toMatch(/does not implement/);
       expect(screen.getByTestId('unsupported-results').textContent, s).toMatch(/no result is shown for this selection/);
       expect(screen.queryByTestId('particle'), s).toBeNull();
@@ -311,11 +326,13 @@ describe('status and enabled state come from the capability object', () => {
     expect(msg).toContain('a, b and c');
   });
 
-  it('runs the baseline with steady-state operation and substitutes nothing for any other scenario', () => {
+  it('runs the baseline, labelled as baseline diffusion with no scenario, and substitutes nothing for any scenario', () => {
     act(() => useStrato.getState().setCapabilities(['diffusion_btcs_layered']));
     const { unmount } = render(<Explore compact={false} onOpenControls={() => undefined} />);
     expect(screen.getByTestId('block-d').dataset.supported).toBe('true');
-    expect(screen.getByTestId('strip-stage').textContent).toContain('scenario: Steady-state operation');
+    const stage = screen.getByTestId('strip-stage').textContent ?? '';
+    expect(stage).toContain('Physics: Baseline diffusion; scenario: none');
+    expect(stage).not.toContain('Steady-state operation');
     unmount();
   });
 });
@@ -333,6 +350,7 @@ describe('keyboard operation and the address', () => {
     await user.keyboard('{ArrowRight}');
     expect(useStrato.getState().selection.scenario).toBe('steady');
     await user.keyboard('{ArrowLeft}');
+    // (wraps round the five buttons)
     expect(useStrato.getState().selection.scenario).toBe('refuelling');
     await user.keyboard('{Home}');
     expect(useStrato.getState().selection.scenario).toBe('steady');
@@ -341,6 +359,27 @@ describe('keyboard operation and the address', () => {
     screen.getByTestId('scenario-shutdown').focus();
     await user.keyboard('{Enter}');
     expect(useStrato.getState().selection.scenario).toBe('shutdown');
+  });
+
+  it('brings the checked button back into view after a selection made with the keyboard or the pointer', async () => {
+    const user = userEvent.setup();
+    const calls: (string | undefined)[] = [];
+    const original = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = function (this: HTMLElement) {
+      calls.push(this.dataset.testid);
+    };
+    try {
+      render(<ScenarioPicker />);
+      // Rendering alone (or an address change) does not scroll.
+      expect(calls).toEqual([]);
+      screen.getByTestId('scenario-steady').focus();
+      await user.keyboard('{ArrowRight}');
+      expect(calls).toContain('scenario-shutdown');
+      await user.click(screen.getByTestId('scenario-startup'));
+      expect(calls).toContain('scenario-startup');
+    } finally {
+      Element.prototype.scrollIntoView = original;
+    }
   });
 
   it('writes the selection to the address and reads it back (round trip)', async () => {
@@ -353,7 +392,7 @@ describe('keyboard operation and the address', () => {
     expect(window.location.hash).toBe(exploreHash(useStrato.getState().selection));
     // The address names the scenario: following it sets the selection.
     act(() => {
-      useStrato.getState().setSelection({ scenario: 'steady', physics: 'baseline' });
+      useStrato.getState().setSelection({ scenario: null, physics: 'baseline' });
     });
     expect(window.location.hash).toBe('#/explore');
     act(() => {

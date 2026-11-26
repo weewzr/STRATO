@@ -12,7 +12,7 @@ const goTo = (hash: string) => {
 };
 
 describe('selection state', () => {
-  it('starts as baseline physics, steady-state operation, nothing expanded', () => {
+  it('starts as baseline physics, no scenario, nothing expanded', () => {
     expect(useStrato.getState().selection).toEqual(DEFAULT_SELECTION);
   });
 
@@ -22,8 +22,8 @@ describe('selection state', () => {
         it(`holds ${physics} / ${scenario} / ${expanded.length ? 'expanded' : 'collapsed'} and survives a round trip through the address`, () => {
           useStrato.getState().setSelection({ physics, scenario, expanded });
           const sel = useStrato.getState().selection;
-          // The one coupling rule: a scenario other than steady-state operation requires the combined model.
-          expect(sel).toEqual({ physics: scenario === 'steady' ? physics : 'combined', scenario, expanded });
+          // The one coupling rule: every scenario requires the combined model.
+          expect(sel).toEqual({ physics: 'combined', scenario, expanded });
           expect(parseSelection(formatSelection(sel))).toEqual(sel);
           expect(parseSelection(exploreHash(sel).split('?')[1] ?? '')).toEqual(sel);
         });
@@ -46,9 +46,12 @@ describe('selection state', () => {
     const s = useStrato.getState();
     s.setSelection({ scenario: 'shutdown' });
     expect(useStrato.getState().selection).toMatchObject({ physics: 'combined', scenario: 'shutdown' });
-    // Another physics than the combined model returns to steady-state operation.
+    // Another physics than the combined model clears the scenario.
     s.setSelection({ physics: 'decay' });
-    expect(useStrato.getState().selection).toMatchObject({ physics: 'decay', scenario: 'steady' });
+    expect(useStrato.getState().selection).toMatchObject({ physics: 'decay', scenario: null });
+    // Steady-state operation requires the combined model like every other scenario.
+    s.setSelection({ scenario: 'steady' });
+    expect(useStrato.getState().selection).toMatchObject({ physics: 'combined', scenario: 'steady' });
     // The combined model keeps the scenario; a scenario named with a different physics wins.
     s.setSelection({ scenario: 'startup' });
     s.setSelection({ physics: 'combined' });
@@ -63,7 +66,7 @@ describe('selection state', () => {
     expect(useStrato.getState().selection).toBe(before);
     expect(normaliseSelection({ physics: 'nonsense', scenario: 'later', expanded: ['x', 'numerical', 'numerical'] })).toEqual({
       physics: 'baseline',
-      scenario: 'steady',
+      scenario: null,
       expanded: ['numerical'],
     });
   });
@@ -86,7 +89,8 @@ describe('selection in the address', () => {
   it('leaves out every default part: the default view is a bare #/explore', () => {
     expect(formatSelection(DEFAULT_SELECTION)).toBe('');
     expect(exploreHash(DEFAULT_SELECTION)).toBe('#/explore');
-    expect(exploreHash({ physics: 'generation', scenario: 'steady', expanded: [] })).toBe('#/explore?physics=generation');
+    expect(exploreHash({ physics: 'generation', scenario: null, expanded: [] })).toBe('#/explore?physics=generation');
+    expect(exploreHash({ physics: 'combined', scenario: 'steady', expanded: [] })).toBe('#/explore?physics=combined&scenario=steady');
     expect(exploreHash({ physics: 'combined', scenario: 'startup', expanded: ['numerical'] })).toBe('#/explore?physics=combined&scenario=startup&open=numerical');
     expect(hasSelectionKeys('physics=decay')).toBe(true);
     expect(hasSelectionKeys('x=1')).toBe(false);
@@ -146,6 +150,6 @@ describe('selection type', () => {
     const sel: Selection = DEFAULT_SELECTION;
     expect(PHYSICS_IDS).toEqual(['baseline', 'generation', 'decay', 'temperature', 'combined']);
     expect(SCENARIO_IDS).toEqual(['steady', 'shutdown', 'startup', 'control-rod', 'refuelling']);
-    expect(sel.scenario).toBe('steady');
+    expect(sel.scenario).toBeNull();
   });
 });

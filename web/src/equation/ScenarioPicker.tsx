@@ -1,7 +1,7 @@
-import { useId, useRef, useState, type KeyboardEvent } from 'react';
+import { useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useStrato } from '../state/store';
 import { SCENARIO_IDS, mechanismsOf, scenarioStatus, type ScenarioId } from './capability';
-import { paramsFor, SCENARIO_KIND, SCENARIO_LABEL, SCENARIO_RESET, SCENARIO_RULE, SCENARIOS, scenarioChange } from './scenarios';
+import { NO_SCENARIO_TEXT, paramsFor, SCENARIO_KIND, SCENARIO_LABEL, SCENARIO_RESET, SCENARIO_RULE, SCENARIOS, scenarioChange } from './scenarios';
 import { StatusTag } from './StatusTag';
 import { Tex } from './Tex';
 import { useBuildCapability } from './useCapability';
@@ -23,15 +23,31 @@ export function ScenarioPicker() {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
 
   // The live-region sentence: set while rendering when the selection differs from the one last rendered.
-  const [seen, setSeen] = useState<{ scenario: ScenarioId; physics: string } | null>(null);
+  const [seen, setSeen] = useState<{ scenario: ScenarioId | null; physics: string } | null>(null);
   const [message, setMessage] = useState('');
   if (seen === null || seen.scenario !== scenario || seen.physics !== physics) {
     setSeen({ scenario, physics });
-    if (seen !== null) {
-      // Steady-state operation reached together with a change of physics: the physics chosen reset the scenario.
-      if (seen.scenario !== scenario) setMessage(scenario === 'steady' && seen.physics !== physics ? SCENARIO_RESET : scenarioChange(scenario, seen.physics !== physics));
+    if (seen !== null && seen.scenario !== scenario) {
+      // No scenario any more: the physics chosen cleared it.
+      setMessage(scenario === null ? SCENARIO_RESET : scenarioChange(scenario, seen.physics !== physics));
     }
   }
+
+  // A selection can move the row (the term list above it changes with the physics). After the render that
+  // follows a selection made here, the checked button is brought back into view, clear of the sticky bars.
+  const moved = useRef(false);
+  useLayoutEffect(() => {
+    if (!moved.current) return;
+    moved.current = false;
+    const bring = () => refs.current[scenario === null ? 0 : SCENARIO_IDS.indexOf(scenario)]?.scrollIntoView?.({ block: 'nearest' });
+    bring();
+    const frame = requestAnimationFrame(bring);
+    return () => cancelAnimationFrame(frame);
+  }, [scenario, physics]);
+  const choose = (id: ScenarioId) => {
+    if (id !== scenario) moved.current = true;
+    setSelection({ scenario: id });
+  };
 
   const onKey = (e: KeyboardEvent<HTMLButtonElement>, id: ScenarioId) => {
     const i = SCENARIO_IDS.indexOf(id);
@@ -42,15 +58,15 @@ export function ScenarioPicker() {
     if (e.key === 'End') next = SCENARIO_IDS.length - 1;
     if (next === null) return;
     e.preventDefault();
-    setSelection({ scenario: SCENARIO_IDS[next] as ScenarioId });
-    refs.current[next]?.focus();
+    choose(SCENARIO_IDS[next] as ScenarioId);
+    refs.current[next]?.focus({ preventScroll: true });
   };
 
-  const info = SCENARIOS[scenario];
-  const params = paramsFor(scenario, mechanismsOf(physics));
+  const info = scenario === null ? null : SCENARIOS[scenario];
+  const params = scenario === null ? [] : paramsFor(scenario, mechanismsOf(physics));
 
   return (
-    <section className="block block--b" data-block="B" aria-labelledby={ids.title} data-testid="block-b" data-scenario={scenario}>
+    <section className="block block--b" data-block="B" aria-labelledby={ids.title} data-testid="block-b" data-scenario={scenario ?? 'none'}>
       <div className="block__head block__head--row">
         <h2 id={ids.title} className="block__title">
           Operating scenarios
@@ -59,7 +75,7 @@ export function ScenarioPicker() {
       <div className="physics scenarios" role="radiogroup" aria-label="Operating scenario" data-testid="scenario-picker">
         {SCENARIO_IDS.map((id, i) => {
           const checked = id === scenario;
-          const status = scenarioStatus(cap, id, physics);
+          const status = scenarioStatus(cap, id);
           return (
             <button
               key={id}
@@ -69,11 +85,11 @@ export function ScenarioPicker() {
               type="button"
               role="radio"
               aria-checked={checked}
-              tabIndex={checked ? 0 : -1}
+              tabIndex={checked || (scenario === null && i === 0) ? 0 : -1}
               className={`physics__btn${checked ? ' is-current' : ''}`}
               data-testid={`scenario-${id}`}
               data-status={loading ? 'loading' : status}
-              onClick={() => setSelection({ scenario: id })}
+              onClick={() => choose(id)}
               onKeyDown={(e) => onKey(e, id)}
             >
               <span className="physics__name">{SCENARIO_LABEL[id]}</span>
@@ -88,11 +104,19 @@ export function ScenarioPicker() {
       <p className="visually-hidden" role="status" aria-live="polite" data-testid="scenario-announce">
         {message}
       </p>
-      <div className="scenario" data-testid="scenario-explanation" data-scenario={scenario}>
-        <h3 className="scenario__title">
-          {SCENARIO_LABEL[scenario]} <span className="scenario__kind">{SCENARIO_KIND}</span>
-        </h3>
-        <p className="scenario__text">{info.explanation.join(' ')}</p>
+      <div className="scenario" data-testid="scenario-explanation" data-scenario={scenario ?? 'none'}>
+        {scenario === null || info === null ? (
+          <p className="scenario__text" data-testid="no-scenario">
+            {NO_SCENARIO_TEXT}
+          </p>
+        ) : (
+          <>
+            <h3 className="scenario__title">
+              {SCENARIO_LABEL[scenario]} <span className="scenario__kind">{SCENARIO_KIND}</span>
+            </h3>
+            <p className="scenario__text">{info.explanation.join(' ')}</p>
+          </>
+        )}
         {params.length > 0 ? (
           <ul className="geq__terms scenario__params" aria-label="Symbols of the selected scenario" data-testid="scenario-params">
             {params.map((p) => (

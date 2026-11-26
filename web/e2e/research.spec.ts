@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Page } from '@playwright/test';
-import { expect, gotoNumerical, gotoSection, horizontalOverflow, solverRequests, test } from './fixtures';
+import { expect, gotoNumerical, gotoSection, horizontalOverflow, solverRequests, test, waitForRun } from './fixtures';
 
 const catalogueJson = JSON.parse(readFileSync(fileURLToPath(new URL('../src/generated/research_catalogue.json', import.meta.url)), 'utf8')) as {
   data: { mechanisms: { mechanism_id: string; species: string; material_domain: string; status: string }[] };
@@ -98,6 +98,9 @@ test.describe('catalogue switches by keyboard', () => {
 
   test('a pending switch takes focus, stays off under Space and Enter, and sends no solver request', async ({ page, problems }) => {
     void problems;
+    // The initial run request is sent once the solver is ready: wait for its answer before counting requests.
+    await gotoSection(page, 'explore');
+    await waitForRun(page);
     await gotoResearch(page, 'ag_trapping_detrapping');
     const before = await solverRequests(page);
     const sw = page.locator('[data-section="research"] [role="switch"]').first();
@@ -114,6 +117,7 @@ test.describe('catalogue switches by keyboard', () => {
   test('the last step of the builder lists the catalogue rows behind one disclosure, with disabled switches', async ({ page, problems }) => {
     void problems;
     await gotoNumerical(page);
+    await waitForRun(page);
     await page.getByTestId('stage-17').click();
     const toggle = page.getByTestId('stage6-toggle');
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');

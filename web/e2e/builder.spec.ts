@@ -53,7 +53,7 @@ test.describe('progressive equation builder at 1440 x 900', () => {
       if (s === 14 || PREVIEWS.includes(s)) await expect(page.getByTestId('preview-banner')).toBeVisible();
       else if (s === 13) await expect(page.getByTestId('live-note')).toContainText('not experimental validation');
       else await expect(page.getByTestId('live-note')).toContainText('Live: the simulation below solves these equations with the verified finite-difference BTCS Rust solver');
-      await expect(page.getByTestId('strip-stage')).toHaveText('Physics: Baseline diffusion; scenario: Steady-state operation; simulation: Method A: BTCS');
+      await expect(page.getByTestId('strip-stage')).toHaveText('Physics: Baseline diffusion; scenario: none; simulation: Method A: BTCS');
       expect(await simulationSnapshot(page)).toEqual(before);
     }
     await page.waitForTimeout(400);

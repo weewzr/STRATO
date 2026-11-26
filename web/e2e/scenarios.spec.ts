@@ -23,9 +23,9 @@ test.describe('scenario row at 1440 x 900', () => {
     const physics = await page.getByTestId('physics-picker').boundingBox();
     const scen = await group.boundingBox();
     expect(scen?.y ?? 0).toBeGreaterThan((physics?.y ?? 0) + (physics?.height ?? 0));
-    // Baseline only today: steady-state operation is verified, every other scenario is planned.
-    await expect(page.getByTestId('scenario-status-steady')).toHaveText('Verified');
-    for (const s of SCENARIOS.slice(1)) await expect(page.getByTestId(`scenario-status-${s}`)).toHaveText('Planned');
+    // Baseline only today: no scenario is selected, and all five (steady-state operation too) are planned, because the baseline run is not a scenario.
+    for (const s of SCENARIOS) await expect(page.getByTestId(`scenario-status-${s}`)).toHaveText('Planned');
+    await expect(group.locator('[aria-checked="true"]')).toHaveCount(0);
     await expect(page.getByTestId('scenario-rule')).toContainText('choosing one selects the combined model');
   });
 
@@ -33,11 +33,15 @@ test.describe('scenario row at 1440 x 900', () => {
     void problems;
     await gotoSection(page, 'explore');
     await waitForRun(page);
+    await page.getByTestId('numerical-toggle').click();
     const before = await solverRequests(page);
-    for (const s of SCENARIOS.slice(1)) {
+    for (const s of SCENARIOS) {
       await page.getByTestId(`scenario-${s}`).click();
       await expect(page.getByTestId('physics-combined')).toHaveAttribute('aria-checked', 'true');
       await expect(page.getByTestId('governing-equation')).toHaveAttribute('data-scenario', s);
+      // The Numerical Interpretation says that no simulation runs, not that one does.
+      await expect(page.getByTestId('live-note')).toContainText('No simulation runs for the selected physics or scenario');
+      await expect(page.getByTestId('live-note')).not.toContainText('Live: the simulation below solves');
       // The same four pieces as the combined model, with the two symbols changed and highlighted.
       expect(await page.locator('[data-testid="equation-governing"] [data-piece]').evaluateAll((e) => e.map((p) => (p as HTMLElement).dataset.piece))).toEqual([
         'lhs',
@@ -46,10 +50,15 @@ test.describe('scenario row at 1440 x 900', () => {
         'decay',
       ]);
       const eq = page.getByTestId('equation-governing');
-      await expect(eq.locator('.geq-hi--scenario')).toHaveCount(2);
+      // Steady-state operation holds G and T constant: nothing changes. The others change G and D(r,T) only.
+      await expect(eq.locator('.geq-hi--scenario')).toHaveCount(s === 'steady' ? 0 : 2);
       const annotations = await eq.locator('annotation[encoding="application/x-tex"]').allTextContents();
-      expect(annotations.join(' ')).toContain('G(r,t)');
-      expect(annotations.join(' ')).toContain('D(r,T(t))');
+      if (s === 'steady') {
+        expect(annotations.join(' ')).not.toContain('G(r,t)');
+      } else {
+        expect(annotations.join(' ')).toContain('G(r,t)');
+        expect(annotations.join(' ')).toContain('D(r,T(t))');
+      }
       expect(annotations.join(' ')).not.toMatch(/rod|refuel|\\rho/i);
       await expect(page.locator('.katex-error')).toHaveCount(0);
       await expect(page.getByTestId('scenario-explanation')).toContainText(`${LABELS[SCENARIOS.indexOf(s)]}`);
@@ -59,19 +68,40 @@ test.describe('scenario row at 1440 x 900', () => {
     }
     await page.waitForTimeout(300);
     expect(await solverRequests(page)).toBe(before);
-    // Steady-state operation with the baseline physics runs the baseline: nothing else is substituted.
+    // The baseline physics clears the scenario and runs the baseline, labelled as such: nothing else is substituted.
     await page.getByTestId('physics-baseline').click();
-    await expect(page.getByTestId('scenario-steady')).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByTestId('scenario-picker').locator('[aria-checked="true"]')).toHaveCount(0);
     await waitForRun(page);
     await expect(page.getByTestId('particle')).toBeVisible();
-    await expect(page.getByTestId('strip-stage')).toContainText('scenario: Steady-state operation');
+    await expect(page.getByTestId('strip-stage')).toContainText('Physics: Baseline diffusion; scenario: none');
+    await expect(page.getByTestId('live-note')).toContainText('Live: the simulation below solves these equations');
   });
 
-  test('steady-state operation says that the concentration field is not assumed stationary', async ({ page, problems }) => {
+  test('steady-state operation says that the concentration field is not assumed stationary, and why', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
-    await expect(page.getByTestId('scenario-explanation')).toContainText('does not impose that the time derivative of C is zero');
-    await expect(page.getByTestId('scenario-explanation')).toContainText('constant conditions do not make the concentration field stationary');
+    await page.getByTestId('scenario-steady').click();
+    const text = page.getByTestId('scenario-explanation');
+    await expect(text).toContainText('does not impose that the time derivative of C is zero');
+    await expect(text).toContainText('the run starts from its initial state (a fresh particle holds no inventory)');
+    await expect(text).toContainText('only over times longer than the irradiation');
+    await expect(text).not.toContainText('still being generated');
+  });
+
+  test('the focused scenario button stays inside the viewport after a keyboard selection', async ({ page, problems }) => {
+    void problems;
+    await gotoSection(page, 'explore');
+    const first = page.getByTestId('scenario-steady');
+    await first.scrollIntoViewIfNeeded();
+    await first.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(page.getByTestId('scenario-shutdown')).toBeFocused();
+    await page.waitForTimeout(400);
+    const vp = page.viewportSize();
+    const box = await page.getByTestId('scenario-shutdown').boundingBox();
+    const status = await page.locator('.status').boundingBox();
+    expect(box?.y ?? -1).toBeGreaterThanOrEqual(0);
+    expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual((status?.y ?? vp?.height ?? 0) + 1);
   });
 
   test('the scenario is written to the address, survives navigation, and a copied address reproduces it', async ({ page, problems }) => {
@@ -90,9 +120,9 @@ test.describe('scenario row at 1440 x 900', () => {
     await page.reload();
     await expect(page.getByTestId('scenario-refuelling')).toHaveAttribute('aria-checked', 'true');
     await expect(page.getByTestId('physics-combined')).toHaveAttribute('aria-checked', 'true');
-    // Another physics returns to steady-state operation, and the address follows.
+    // Another physics clears the scenario, and the address follows.
     await page.getByTestId('physics-decay').click();
-    await expect(page.getByTestId('scenario-steady')).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByTestId('scenario-picker').locator('[aria-checked="true"]')).toHaveCount(0);
     await expect(page).toHaveURL(/#\/explore\?physics=decay$/);
   });
 
@@ -127,13 +157,12 @@ test.describe('scenario row at 1440 x 900', () => {
       const text = await page.locator('[data-section="explore"]').innerText();
       expect(claimsIn(text), s).toEqual([]);
       await expect(page.getByTestId('scenario-numerics')).toContainText(LABELS[SCENARIOS.indexOf(s)] ?? '');
-      if (s !== 'steady') {
-        await expect(page.getByTestId('scenario-params').locator('li')).toHaveCount(4);
-        await expect(page.getByTestId('scenario-params')).toContainText('Unit:');
-      }
+      await expect(page.getByTestId('scenario-params').locator('li')).toHaveCount(s === 'steady' ? 2 : 4);
+      await expect(page.getByTestId('scenario-params')).toContainText('Unit:');
     }
     await expect(page.getByTestId('scenario-explanation')).toContainText('future scenario');
     await expect(page.getByTestId('scenario-explanation')).toContainText('Mechanical refuelling is not simulated');
+    await expect(page.getByTestId('scenario-explanation')).toContainText('Fuel removal');
   });
 });
 
@@ -167,6 +196,15 @@ for (const vp of [
           expect(b?.height ?? 0, s).toBeGreaterThanOrEqual(44);
           expect(b?.width ?? 0, s).toBeGreaterThanOrEqual(44);
         }
+        // After a keyboard selection the focused button is still inside the viewport and clear of the status line.
+        await page.getByTestId('scenario-steady').focus();
+        await page.keyboard.press('ArrowRight');
+        await expect(page.getByTestId('scenario-shutdown')).toBeFocused();
+        await page.waitForTimeout(400);
+        const kb = await page.getByTestId('scenario-shutdown').boundingBox();
+        const bar = await page.locator('.status').boundingBox();
+        expect(kb?.y ?? -1).toBeGreaterThanOrEqual(0);
+        expect((kb?.y ?? 0) + (kb?.height ?? 0)).toBeLessThanOrEqual(Math.min(vp.height, bar?.y ?? vp.height) + 1);
         if (dir) {
           await page.getByTestId('scenario-startup').click();
           await page.getByTestId('numerical-toggle').click();

@@ -18,7 +18,8 @@ export type { Stage };
  */
 export interface Selection {
   physics: PhysicsId;
-  scenario: ScenarioId;
+  /** The selected operating scenario; null while none is selected (the default). */
+  scenario: ScenarioId | null;
   /** Ids of the expanded numerical regions (today only 'numerical', the Numerical Interpretation region). */
   expanded: string[];
 }
@@ -180,12 +181,12 @@ export function inputKey(cfg: CaseConfig): string {
 }
 
 /** A selection that holds only valid parts: anything else becomes the default; the expanded ids are unique and in a fixed order. */
-export function normaliseSelection(sel: { physics?: string | undefined; scenario?: string | undefined; expanded?: readonly string[] | undefined }): Selection {
+export function normaliseSelection(sel: { physics?: string | undefined; scenario?: string | null | undefined; expanded?: readonly string[] | undefined }): Selection {
   const physics = PHYSICS_IDS.includes(sel.physics as PhysicsId) ? (sel.physics as PhysicsId) : DEFAULT_SELECTION.physics;
   const scenario = SCENARIO_IDS.includes(sel.scenario as ScenarioId) ? (sel.scenario as ScenarioId) : DEFAULT_SELECTION.scenario;
   const expanded = EXPANDABLE_IDS.filter((id) => (sel.expanded ?? []).includes(id));
-  // The one rule that couples the controls (equation/scenarios.ts, SCENARIO_RULE): a scenario other than
-  // steady-state operation requires the combined model, so the scenario wins over the physics it is held with.
+  // The one rule that couples the controls (equation/scenarios.ts, SCENARIO_RULE): every scenario
+  // requires the combined model, so the scenario wins over the physics it is held with.
   return { physics: requiresCombined(scenario) ? 'combined' : physics, scenario, expanded };
 }
 
@@ -290,7 +291,7 @@ export const useStrato = create<StratoState>()((set, get) => ({
   setStage: (stage) => set({ stage }),
 
   setSelection: (patch) => {
-    // Choosing a physics that is not the combined model (without naming a scenario) returns to steady-state operation.
+    // Choosing a physics that is not the combined model (without naming a scenario) clears the scenario.
     const merged = { ...get().selection, ...patch };
     if (patch.physics !== undefined && patch.scenario === undefined && patch.physics !== 'combined') merged.scenario = DEFAULT_SCENARIO;
     const next = normaliseSelection(merged);

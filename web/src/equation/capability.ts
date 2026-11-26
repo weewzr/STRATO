@@ -18,7 +18,8 @@ export const PHYSICS_IDS: readonly PhysicsId[] = ['baseline', 'generation', 'dec
 export type ScenarioId = 'steady' | 'shutdown' | 'startup' | 'control-rod' | 'refuelling';
 export const SCENARIO_IDS: readonly ScenarioId[] = ['steady', 'shutdown', 'startup', 'control-rod', 'refuelling'];
 export const DEFAULT_PHYSICS: PhysicsId = 'baseline';
-export const DEFAULT_SCENARIO: ScenarioId = 'steady';
+/** No scenario is selected by default: the page then runs the physics selected with constant inputs (the baseline run is "Baseline diffusion", never a scenario). */
+export const DEFAULT_SCENARIO: ScenarioId | null = null;
 
 export type BuildStatus = 'implemented' | 'verified' | 'planned';
 export const BUILD_STATUSES: readonly BuildStatus[] = ['implemented', 'verified', 'planned'];
@@ -36,10 +37,12 @@ export const WRAPPER_ID: Record<Mechanism, string> = { generation: 'generation',
 
 /**
  * The identifier under which the wrapper reports each scenario of the scenario engine (it is also the id of
- * the scenario's row in the research catalogue). Steady-state operation has none: constant prescribed
- * conditions are what every run of the solver is, so it follows the physics selected.
+ * the scenario's row in the research catalogue). Steady-state operation is Scenario 1 of the science design
+ * (constant generation at the reference conditions, from a fresh particle): the baseline run is not that
+ * scenario, so it needs its own report from the wrapper like every other scenario.
  */
-export const WRAPPER_SCENARIO_ID: Record<Exclude<ScenarioId, 'steady'>, string> = {
+export const WRAPPER_SCENARIO_ID: Record<ScenarioId, string> = {
+  steady: 'scenario_normal_operation',
   shutdown: 'scenario_shutdown_cooldown',
   startup: 'scenario_startup',
   'control-rod': 'scenario_control_rod_insertion',
@@ -51,9 +54,8 @@ export interface BuildCapability {
   baseline: BuildStatus;
   mechanisms: Record<Mechanism, BuildStatus>;
   /**
-   * Scenario support. Steady-state operation (constant prescribed conditions) follows the baseline; every
-   * other scenario needs the scenario engine, so its status is what the wrapper reports under
-   * WRAPPER_SCENARIO_ID (planned while it reports nothing, as the wrapper of this build does).
+   * Scenario support: what the wrapper reports under WRAPPER_SCENARIO_ID for each of the five scenarios
+   * (planned while it reports nothing, as the wrapper of this build does).
    */
   scenarios: Record<ScenarioId, BuildStatus>;
 }
@@ -68,11 +70,11 @@ export function buildCapability(reported: readonly string[], catalogue: Catalogu
   const baseline = statusOfReport(reported.includes(BTCS_CAPABILITY), isAvailable(BTCS_CAPABILITY, reported, catalogue));
   const mechanisms = {} as Record<Mechanism, BuildStatus>;
   for (const m of MECHANISMS) mechanisms[m] = statusOfReport(reported.includes(WRAPPER_ID[m]), isAvailable(WRAPPER_ID[m], reported, catalogue));
-  const scenario = (id: Exclude<ScenarioId, 'steady'>): BuildStatus => statusOfReport(reported.includes(WRAPPER_SCENARIO_ID[id]), isAvailable(WRAPPER_SCENARIO_ID[id], reported, catalogue));
+  const scenario = (id: ScenarioId): BuildStatus => statusOfReport(reported.includes(WRAPPER_SCENARIO_ID[id]), isAvailable(WRAPPER_SCENARIO_ID[id], reported, catalogue));
   return {
     baseline,
     mechanisms,
-    scenarios: { steady: baseline, shutdown: scenario('shutdown'), startup: scenario('startup'), 'control-rod': scenario('control-rod'), refuelling: scenario('refuelling') },
+    scenarios: { steady: scenario('steady'), shutdown: scenario('shutdown'), startup: scenario('startup'), 'control-rod': scenario('control-rod'), refuelling: scenario('refuelling') },
   };
 }
 
@@ -100,11 +102,11 @@ export function physicsStatus(cap: BuildCapability, physics: PhysicsId): BuildSt
 
 /**
  * The status shown on a scenario button: the weakest of the scenario's own status and that of the physics
- * selected. A scenario other than steady-state operation always runs with the combined model (see
- * state/store.ts), so its status includes the three mechanisms.
+ * selected. Every scenario runs with the combined model (see state/store.ts), so its status includes the
+ * three mechanisms.
  */
-export function scenarioStatus(cap: BuildCapability, scenario: ScenarioId, physics: PhysicsId): BuildStatus {
-  return weakest([cap.scenarios[scenario], physicsStatus(cap, scenario === 'steady' ? physics : 'combined')]);
+export function scenarioStatus(cap: BuildCapability, scenario: ScenarioId): BuildStatus {
+  return weakest([cap.scenarios[scenario], physicsStatus(cap, 'combined')]);
 }
 
 export interface SelectionSupport {
@@ -128,11 +130,11 @@ export const SCENARIO_NAME: Record<ScenarioId, string> = {
 };
 
 /** Whether the build can run the selection; never substitutes another model (the page shows nothing instead). */
-export function selectionSupport(cap: BuildCapability, physics: PhysicsId, scenario: ScenarioId): SelectionSupport {
+export function selectionSupport(cap: BuildCapability, physics: PhysicsId, scenario: ScenarioId | null): SelectionSupport {
   const missing: string[] = [];
   if (!isSimulable(cap.baseline)) missing.push('the baseline BTCS model');
   for (const m of mechanismsOf(physics)) if (!isSimulable(cap.mechanisms[m])) missing.push(MECHANISM_NAME[m]);
-  if (scenario !== 'steady' && !isSimulable(cap.scenarios[scenario])) missing.push(`the ${SCENARIO_NAME[scenario]} scenario`);
+  if (scenario !== null && !isSimulable(cap.scenarios[scenario])) missing.push(`the ${SCENARIO_NAME[scenario]} scenario`);
   return { supported: missing.length === 0, missing };
 }
 

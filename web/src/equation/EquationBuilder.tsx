@@ -23,6 +23,7 @@ import {
   type TermId,
 } from './terms';
 import { RichText, Tex } from './Tex';
+import { useSelectionSupport } from './useCapability';
 
 // Block A of the Explore page: the progressive equation builder for the BTCS solver
 // (prompt/DESIGN_SPECIFICATION.md Section 3). Display only. Selecting a step never changes the
@@ -468,6 +469,7 @@ function useWide(query: string): boolean {
  */
 function Banner({ stage, method, catalogue }: { stage: Stage; method: SimulationMethod; catalogue: Catalogue }) {
   const def = STEP_DEFS[stage];
+  const support = useSelectionSupport();
   if (def.kind === 'preview') {
     const status = def.mechanism ? statusOf(catalogue, def.mechanism) : undefined;
     return (
@@ -502,6 +504,13 @@ function Banner({ stage, method, catalogue }: { stage: Stage; method: Simulation
     return (
       <p className="live-note" data-testid="live-note">
         Numerical verification checks that the code solves its own equations. It is not experimental validation. The checks of the solver and their results are under Verify; the tests are in tests/btcs_verification.rs.
+      </p>
+    );
+  }
+  if (method === 'btcs' && !support.supported) {
+    return (
+      <p className="live-note live-note--pending" data-testid="live-note">
+        No simulation runs for the selected physics or scenario: the solver in this build does not implement it. These are the BTCS equations of the selection.
       </p>
     );
   }

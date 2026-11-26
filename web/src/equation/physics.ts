@@ -35,15 +35,18 @@ export interface Piece {
 
 const mark = (cls: string, tex: string) => String.raw`\htmlClass{${cls}}{${tex}}`;
 
+/** True when the scenario changes G and D(r,T) in time; no scenario and steady-state operation hold them constant. */
+export const isTimed = (scenario: ScenarioId | null): boolean => scenario !== null && scenario !== 'steady';
+
 /**
  * The pieces of the equation for a physics selection and an operating scenario, left to right; the baseline
  * pieces come first and are always present. Steady-state operation (constant prescribed conditions) changes
  * nothing: G and T are constants. Every other scenario changes existing symbols only, G to G(r,t) and D(r,T)
  * to D(r,T(t)), and only where the mechanism is part of the selection; it never adds a term.
  */
-export function equationPieces(physics: PhysicsId, scenario: ScenarioId = 'steady'): Piece[] {
+export function equationPieces(physics: PhysicsId, scenario: ScenarioId | null = null): Piece[] {
   const on = (m: Mechanism) => physics === m || physics === 'combined';
-  const timed = scenario !== 'steady';
+  const timed = isTimed(scenario);
   const dSymbol = !on('temperature') ? D_CONSTANT : timed ? D_SCENARIO : D_TEMPERATURE;
   const dShown = !on('temperature') ? D_CONSTANT : mark(timed ? 'geq-hi geq-hi--scenario' : 'geq-hi geq-hi--temperature', dSymbol);
   const gSymbol = timed ? G_SCENARIO : 'G';
@@ -70,7 +73,7 @@ export function equationPieces(physics: PhysicsId, scenario: ScenarioId = 'stead
 }
 
 /** The whole equation as one TeX string (structural tests and the accessible name). */
-export function equationTex(physics: PhysicsId, scenario: ScenarioId = 'steady'): string {
+export function equationTex(physics: PhysicsId, scenario: ScenarioId | null = null): string {
   return equationPieces(physics, scenario)
     .map((p) => p.tex)
     .join(' ');
@@ -139,7 +142,7 @@ export const TERM_MEANINGS: readonly TermMeaning[] = [
     symbol: 'G',
     name: 'Fission-product generation',
     meaning:
-      'The rate at which the species is born by fission, per unit volume; in the particle it is a source in the kernel only. Until a cited fission-rate density is registered, its value will be a user input, not a measured quantity (Document 5).',
+      'The rate at which the species is born by fission, per unit volume; in the particle it is a source in the kernel only. Its value is a reference derived from published AGR-1 burnup (calculated), or a user input; it is not a measured quantity.',
     unit: String.raw`\mathrm{mol\ m^{-3}\ s^{-1}}`,
     mechanism: 'generation',
   },

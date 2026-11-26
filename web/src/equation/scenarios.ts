@@ -21,14 +21,15 @@ export const SCENARIO_KIND = 'Prescribed-input simulation, not a validated react
 
 /**
  * The one rule that couples the two controls (never silent; stated on the page in this sentence): every scenario
- * except steady-state operation changes G and D(r,T) in time and, after shutdown, needs decay, so it requires
- * all three mechanisms. Choosing one selects the combined model; choosing another physics selects steady-state operation.
+ * is a prescribed history of the generation G and of the temperature (steady-state operation: constant ones, from
+ * a fresh particle) with decay continuing, so it requires all three mechanisms. Choosing a scenario selects the
+ * combined model; choosing another physics clears the scenario.
  */
 export const SCENARIO_RULE =
-  'Rule: every scenario except steady-state operation needs generation, decay and temperature-dependent diffusion, so choosing one selects the combined model, and choosing another physics returns to steady-state operation.';
+  'Rule: every scenario needs generation, decay and temperature-dependent diffusion, so choosing one selects the combined model, and choosing another physics clears the scenario.';
 
-/** A scenario other than steady-state operation requires the combined model. */
-export const requiresCombined = (scenario: ScenarioId): boolean => scenario !== 'steady';
+/** Every scenario requires the combined model; no scenario at all requires nothing. */
+export const requiresCombined = (scenario: ScenarioId | null): boolean => scenario !== null;
 
 /** A symbol that the page defines with the scenario: its name, meaning (from Document 5, Sections 0 to 3) and unit. */
 export interface ScenarioParam {
@@ -92,8 +93,8 @@ export const SCENARIOS: Record<ScenarioId, ScenarioInfo> = {
   steady: {
     explanation: [
       'Constant prescribed operating conditions: the generation G and the particle temperature T are held constant in time.',
-      'This does not impose that the time derivative of C is zero: constant conditions do not make the concentration field stationary, because the species is still being generated, diffusing and decaying, so C(r,t) keeps changing.',
-      'The equation and its symbols are those of the physics selected above.',
+      'This does not impose that the time derivative of C is zero.',
+      'Constant conditions do not make the field stationary: the run starts from its initial state (a fresh particle holds no inventory), and the concentration approaches a balance of generation, release and decay only over times longer than the irradiation, so C(r,t) keeps changing.',
     ],
     params: [
       { ...G_TIMED, id: 'G', symbol: 'G', name: 'Fission-product generation, constant in time', meaning: 'The generation rate density in the kernel, held at one prescribed value.' },
@@ -106,7 +107,7 @@ export const SCENARIOS: Record<ScenarioId, ScenarioInfo> = {
   },
   shutdown: {
     explanation: [
-      'Generation is reduced or ends at shutdown, and the temperature follows a prescribed cooldown.',
+      'Starting from the state at the end of normal operation, generation is reduced or ends at shutdown, and the temperature follows a prescribed cooldown.',
       'Radioactive decay continues after shutdown, so the inventory keeps falling, while diffusion slows as the particle cools.',
       'G becomes G(r,t), falling from its operating value, and D(r,T) becomes D(r,T(t)); the equation gains no term.',
     ],
@@ -118,7 +119,7 @@ export const SCENARIOS: Record<ScenarioId, ScenarioInfo> = {
   },
   startup: {
     explanation: [
-      'Reactor power rises, so the generation and the temperature both increase with time from their starting values.',
+      'Starting from a fresh particle, the prescribed generation and temperature histories both rise from their starting values as power is raised.',
       'The rising temperature raises the diffusivities, while the generation feeds the kernel.',
       'G becomes G(r,t) and D(r,T) becomes D(r,T(t)); the equation gains no term.',
     ],
@@ -147,7 +148,7 @@ export const SCENARIOS: Record<ScenarioId, ScenarioInfo> = {
   },
   refuelling: {
     explanation: [
-      'Shown as the removal of the particle from the reactor and its storage: generation ends and the temperature falls to a storage value, while diffusion and decay continue.',
+      'Fuel removal, starting from the state at the end of normal operation: the particle leaves the reactor and is stored, so generation ends and the temperature falls to a storage value, while diffusion and decay continue.',
       'Mechanical refuelling is not simulated, and reinsertion or irradiation in several passes is a future scenario, because no registered input history supports it.',
       'G becomes G(r,t) and D(r,T) becomes D(r,T(t)), as for shutdown; the equation gains no term.',
     ],
@@ -165,12 +166,15 @@ export function paramsFor(scenario: ScenarioId, active: readonly Mechanism[]): S
 }
 
 /** What the page announces when the scenario changes (the live-region sentence). */
-export function scenarioChange(scenario: ScenarioId, physicsChanged: boolean): string {
-  const tail = physicsChanged ? ' The combined model is selected, because this scenario requires it.' : '';
+export function scenarioChange(scenario: ScenarioId, physicsChanged: boolean): string {  const tail = physicsChanged ? ' The combined model is selected, because this scenario requires it.' : '';
   return `${SCENARIO_LABEL[scenario]} selected. ${SCENARIO_KIND}${tail}`;
 }
 
-/** What the page announces when choosing a physics returned the scenario to steady-state operation. */
-export const SCENARIO_RESET = 'Steady-state operation selected, because the physics chosen is not the combined model.';
+/** What the page announces when choosing a physics cleared the scenario. */
+export const SCENARIO_RESET = 'No operating scenario selected, because the physics chosen is not the combined model.';
+
+/** Shown in block B while no scenario is selected. */
+export const NO_SCENARIO_TEXT =
+  'No operating scenario is selected: the physics chosen above runs with constant inputs, and the simulation is labelled by that physics, not by a scenario. Choose a scenario to see its prescribed histories.';
 
 export { SCENARIO_IDS };
