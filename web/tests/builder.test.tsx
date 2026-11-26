@@ -20,7 +20,7 @@ function withCatalogue(cat: Catalogue, ui: React.ReactElement) {
 /** Text of an element without KaTeX output, equation and section references and step numbers. */
 function plainText(el: HTMLElement): string {
   const copy = el.cloneNode(true) as HTMLElement;
-  copy.querySelectorAll('.katex, [data-ref], .stage-num, .stage-select, [hidden]').forEach((n) => n.remove());
+  copy.querySelectorAll('.katex, [data-ref], .stage-num, .stage-select, [hidden], [data-testid="live-numbers"]').forEach((n) => n.remove());
   return copy.textContent ?? '';
 }
 

@@ -53,7 +53,7 @@ function RowTime() {
   if (t === undefined) return null;
   return (
     <span className="figure__time" data-testid="particle-time" data-value={String(t)}>
-      at the time <Sci value={t} unit="s" digits={4} />
+      at time <Sci value={t} unit="s" digits={4} />
     </span>
   );
 }

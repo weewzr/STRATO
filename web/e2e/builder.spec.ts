@@ -118,7 +118,8 @@ test.describe('progressive equation builder at 1440 x 900', () => {
       await pickStage(page, s);
       const text = await page.getByTestId('block-a').evaluate((el) => {
         const c = el.cloneNode(true) as HTMLElement;
-        c.querySelectorAll('.katex, [data-ref], .stage-num, .stage-select, [hidden]').forEach((n) => n.remove());
+        // The numbers of the current run ("Live values") come from the wrapper; they are not text of the builder.
+        c.querySelectorAll('.katex, [data-ref], .stage-num, .stage-select, [hidden], [data-testid="live-numbers"]').forEach((n) => n.remove());
         return c.textContent ?? '';
       });
       expect(text, `step ${s}`).not.toMatch(/\d/);

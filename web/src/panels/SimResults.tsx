@@ -8,6 +8,7 @@ import { statusOf, useCatalogue } from '../research/catalogue';
 import { StatusChip } from '../research/StatusChip';
 import type { RunResponse } from '../solver/types';
 import { inputKey, useStrato } from '../state/store';
+import { TableBox } from '../sections/common';
 import { Badge, Sci } from './Badge';
 
 // Block B results of the BTCS solver: the release readout, the inventory balance with its residual
@@ -55,38 +56,47 @@ function Updating({ stale }: { stale: boolean }) {
  * verification status read from the research catalogue (never typed here). Shown whenever the
  * module has loaded, with or without a run, so that no result appears without it.
  */
-export function SolverStatus() {
+export function SolverStatus({ compact = false }: { compact?: boolean }) {
   const build = useStrato((s) => s.solver.build);
   const state = useStrato((s) => s.solver.state);
   const error = useStrato((s) => s.solver.error);
   const run = useStrato((s) => s.run);
   const catalogue = useCatalogue();
+  const testId = compact ? 'solver-status-line' : 'solver-status';
+  const cls = `solver-status${compact ? ' solver-status--compact' : ''}`;
   if (state === 'failed') {
     return (
-      <p className="solver-status solver-status--failed" role="alert" data-testid="solver-status" data-state="failed">
-        Solver: not available. {METHOD_1} did not load, so the page shows no result ({error ?? 'no reason given'}).
+      <p className={`${cls} solver-status--failed`} role="alert" data-testid={testId} data-state="failed">
+        Solver: not available. {METHOD_1} did not load, so the page shows no result{compact ? '' : ` (${error ?? 'no reason given'})`}.
       </p>
     );
   }
   if (state !== 'ready' || !build) {
     return (
-      <p className="solver-status" role="status" data-testid="solver-status" data-state="loading">
+      <p className={cls} role="status" data-testid={testId} data-state="loading">
         Solver: loading {METHOD_1}.
       </p>
     );
   }
   const solver = run?.solver ?? build.btcs.solver;
   const status = statusOf(catalogue, BTCS_CAPABILITY);
+  const chip = status ? <StatusChip status={status} mechanism={BTCS_CAPABILITY} compact /> : 'unknown';
+  if (compact) {
+    return (
+      <p className={cls} data-testid={testId} data-state="ready">
+        <strong>{METHOD_1}</strong>, solver version <span data-testid="solver-version-line">{solver.version}</span>, build{' '}
+        <code>{solver.commit}</code>, <Badge label={solver.label} /> {chip}
+      </p>
+    );
+  }
   return (
-    <p className="solver-status" data-testid="solver-status" data-state="ready">
+    <p className={cls} data-testid={testId} data-state="ready">
       <strong>{METHOD_1}</strong>: solver version <span data-testid="solver-version">{solver.version}</span>, built from commit{' '}
       <code data-testid="solver-commit">{solver.commit}</code>, results labelled <Badge label={solver.label} />. Verification status in the
-      research catalogue: {status ? <StatusChip status={status} mechanism={BTCS_CAPABILITY} compact /> : 'unknown'}, numerical verification of the
-      stated model, not experimental validation. Scope: {solver.scope}.
+      research catalogue: {chip}, numerical verification of the stated model, not experimental validation. Scope: {solver.scope}.
     </p>
   );
 }
-
 /** Release fraction at the end time: Method 1, with Method 2 at the same time when the series resolves it. */
 export function ReleaseReadout() {
   const { run, stale } = useCurrentRun();
@@ -245,6 +255,7 @@ export function BalancePanel() {
 
 function LayerTable({ profile, names }: { profile: RunResponse['profiles'][number]; names: string[] }) {
   return (
+    <TableBox label="Inventory by layer">
     <table className="table table--compact layer-table" data-testid="layer-table">
       <caption className="table__caption">By layer at the end of the simulation (sums over the grid intervals of each layer, from the wrapper)</caption>
       <thead>
@@ -275,6 +286,7 @@ function LayerTable({ profile, names }: { profile: RunResponse['profiles'][numbe
         ))}
       </tbody>
     </table>
+    </TableBox>
   );
 }
 

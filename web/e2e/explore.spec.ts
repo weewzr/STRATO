@@ -104,7 +104,7 @@ test.describe('placeholders', () => {
   });
 
   // Web phase 3: Run now runs the solver; the mechanism switches still send nothing (Section 3.2).
-  test('the mechanism switches send nothing and stay off; Run sends exactly one solver request', async ({ page, problems }) => {
+  test('the mechanism switches send nothing and stay off; Run sends the check of the inputs and one run', async ({ page, problems }) => {
     void problems;
     const requests: string[] = [];
     await gotoSection(page, 'explore');
@@ -121,7 +121,8 @@ test.describe('placeholders', () => {
     expect(await solverRequests(page)).toBe(before);
     expect(requests).toEqual([]);
     await page.getByTestId('strip-run').click();
-    await expect.poll(() => solverRequests(page)).toBe(before + 1);
+    // Run asks the wrapper to validate the inputs (shown beside the controls) and then to run them.
+    await expect.poll(() => solverRequests(page)).toBe(before + 2);
     await waitForRun(page);
     await expect(page.getByTestId('status-result')).toHaveText('Result COMPUTED v2.0');
     expect(requests).toEqual([]);

@@ -98,12 +98,12 @@ export function legendTicks(scale: ColourScale): { position: number; label: stri
   if (scale === 'linear')
     return [
       { position: 0, label: '0' },
-      { position: 0.5, label: 'half of the top' },
+      { position: 0.5, label: '½ top' },
       { position: 1, label: 'top' },
     ];
   const ticks: { position: number; label: string }[] = [];
   const sup = (n: number) => String(n).replace(/\d/g, (k) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[Number(k)] ?? k);
-  for (let d = LOG_DECADES; d > 0; d -= 3) ticks.push({ position: 1 - d / LOG_DECADES, label: `10⁻${sup(d)} of the top` });
+  for (let d = LOG_DECADES; d > 0; d -= 3) ticks.push({ position: 1 - d / LOG_DECADES, label: `10⁻${sup(d)} top` });
   ticks.push({ position: 1, label: 'top' });
   return ticks;
 }

@@ -811,6 +811,19 @@ select.field__input {
   column-gap: var(--space-5);
   row-gap: var(--space-1);
 }
+/* The solver in use: the method, its version and its verification status (one line in the head of block B). */
+.solver-status {
+  margin: var(--space-3) 0 0;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+.solver-status--compact {
+  margin: 0;
+}
+.solver-status--failed {
+  color: var(--text);
+  font-weight: 600;
+}
 /* Block A: the eyebrow and the page title share one line from tablet width on. */
 @media (min-width: 768px) {
   .block__head--a {

@@ -73,6 +73,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           <p className="block__context" data-testid="simulation-case">
             Simulation case: {entry?.title ?? caseId}, not AGR-1 data.
           </p>
+          <SolverStatus compact />
         </div>
         <div className="strip" role="group" aria-label="Simulation strip" data-testid="sim-strip">
           <button
@@ -104,7 +105,6 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
             </button>
           ) : null}
         </div>
-        <SolverStatus />
         <div className="sim">
           <div className="sim__particle">{entry ? <ParticleView config={config} provenance={entry.provenance} /> : null}</div>
           <div className="sim__side">
@@ -118,6 +118,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           <BalancePanel />
           <DiagnosticsPanel />
         </div>
+        <SolverStatus />
       </section>
 
       {/* C: controls */}
