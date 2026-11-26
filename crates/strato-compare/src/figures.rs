@@ -447,7 +447,10 @@ pub struct Placed {
 }
 
 /// The interval a stated reading uncertainty allows around a value.
-fn reading_interval(u: &strato_data::release::ReadingUncertainty, y: f64) -> Option<(f64, f64)> {
+pub fn reading_interval(
+    u: &strato_data::release::ReadingUncertainty,
+    y: f64,
+) -> Option<(f64, f64)> {
     use strato_data::release::{ReadingUncertainty as U, ValueReading as V};
     let U::Stated { value: Some(v), .. } = u else {
         return None;
@@ -835,9 +838,9 @@ fn deviation_figure(
             .configure_mesh()
             .x_desc("Time at temperature (h)")
             .y_desc(if relative {
-                "Relative deviation of the model from the measurement (percent)"
+                "Relative deviation (percent)"
             } else {
-                "Absolute deviation of the model from the measurement (dimensionless)"
+                "Absolute deviation (dimensionless)"
             })
             .x_labels(8)
             .x_label_formatter(&|v| format!("{v:.0}"))
@@ -899,7 +902,7 @@ fn deviation_figure(
         chart
             .configure_mesh()
             .x_desc("Time at temperature (h)")
-            .y_desc("Modelled fraction released over reported upper bound (dimensionless)")
+            .y_desc("Model over reported upper bound (dimensionless)")
             .x_labels(8)
             .x_label_formatter(&|v| format!("{v:.0}"))
             .y_label_formatter(&sci)

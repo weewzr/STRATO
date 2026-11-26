@@ -798,6 +798,18 @@ pub fn comparison_json(
                     "reading_uncertainty",
                     J::s(reading_text(&r.row.reading_uncertainty)),
                 ),
+                (
+                    "reading_interval",
+                    match &r.row.value {
+                        ReleaseValue::Point(p)
+                        | ReleaseValue::Digitised(p)
+                        | ReleaseValue::UpperBound(p) => {
+                            crate::figures::reading_interval(&r.row.reading_uncertainty, p.value)
+                                .map_or(J::Null, |(lo, hi)| J::Arr(vec![J::Num(lo), J::Num(hi)]))
+                        }
+                        _ => J::Null,
+                    },
+                ),
                 ("reported_measurement_uncertainty", J::Null),
                 ("denominator", J::s(r.row.denominator.as_str())),
                 ("source", J::s(&r.row.source)),
