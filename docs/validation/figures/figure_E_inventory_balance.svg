@@ -531,7 +531,7 @@ Relative balance residual (solid) and its derived bound (dashed), 1600 °C
 <line opacity="1" stroke="#EBEBEB" stroke-width="1" x1="868" y1="103" x2="1541" y2="103"/>
 <line opacity="1" stroke="#EBEBEB" stroke-width="1" x1="868" y1="103" x2="1541" y2="103"/>
 <text x="788" y="255" dy="0.76em" text-anchor="middle" font-family="sans-serif" font-size="12.903225806451614" opacity="1" fill="#191919" transform="rotate(270, 788, 255)">
-|M + M released - M initial| / M initial (dimensionless)
+Relative balance residual of the inventory (dimensionless)
 </text>
 <text x="1205" y="452" dy="-0.5ex" text-anchor="middle" font-family="sans-serif" font-size="12.903225806451614" opacity="1" fill="#191919">
 Time at temperature (h)
@@ -801,13 +801,13 @@ Time at temperature (h)
 <polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="2" points="1504,149 1505,149 1506,149 1507,149 1508,149 "/>
 <polyline fill="none" opacity="1" stroke="#0072B2" stroke-width="3" points="40,489 74,489 "/>
 <text x="84" y="480" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
-Remaining inventory M / M0
+Remaining inventory over initial inventory (dimensionless)
 </text>
 <polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="800,489 810,489 "/>
 <polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="816,489 826,489 "/>
 <polyline fill="none" opacity="1" stroke="#D55E00" stroke-width="3" points="832,489 834,489 "/>
 <text x="844" y="480" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#191919">
-Cumulative release M released / M0
+Cumulative release over initial inventory (dimensionless)
 </text>
 <polyline fill="none" opacity="1" stroke="#191919" stroke-width="3" points="40,515 42,515 "/>
 <polyline fill="none" opacity="1" stroke="#191919" stroke-width="3" points="47,515 49,515 "/>
@@ -833,7 +833,7 @@ Sr-90 residual (solid) and bound (dashed)
 The residual is the observed value; the bound is the derived a-posteriori rounding bound of the solver (decision 6), shown beside it and never tightened. Model: STRATO BTCS five-layer spherical finite difference,
 </text>
 <text x="24" y="590" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-package version 1.0.1, commit e56497225849397d8961bb0d032f885ecfb8fc0e; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets
+package version 1.0.1, commit df8b0b4851d05789a537a40a9ff33510f9ac866a; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets
 </text>
 <text x="24" y="608" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 C16-T2 and C16-BUF), evaluated at the test temperature; kernel-only start; constant temperature; decay and generation are not in the solver. This is a numerical comparison, not an experimental validation.

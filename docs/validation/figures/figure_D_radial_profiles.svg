@@ -438,7 +438,7 @@ OPyC
 Concentrations at or below 1e-12 of the initial value are not drawn (log scale; the outer node is zero by the absorbing boundary). The profile at the node closest to each requested time is shown; values are the
 </text>
 <text x="24" y="538" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-numerical solution of the stated model. Model: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit e56497225849397d8961bb0d032f885ecfb8fc0e; registered AGR1-B-M16 geometry; published
+numerical solution of the stated model. Model: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit df8b0b4851d05789a537a40a9ff33510f9ac866a; registered AGR1-B-M16 geometry; published
 </text>
 <text x="24" y="556" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at the test temperature; kernel-only start; constant temperature; decay and generation
