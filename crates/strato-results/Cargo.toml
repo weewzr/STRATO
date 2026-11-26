@@ -23,3 +23,6 @@ strato = { path = "../.." }
 strato-data = { path = "../strato-data" }
 # The comparison program: rows, statuses, runs and the verification studies it already has.
 strato-compare = { path = "../strato-compare" }
+# The scenario definitions, the diffusivity laws and the one Method B function, shared with the
+# WebAssembly wrapper.
+strato-scenarios = { path = "../strato-scenarios" }

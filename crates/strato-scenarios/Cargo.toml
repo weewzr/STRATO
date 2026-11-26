@@ -1,0 +1,19 @@
+[package]
+name = "strato-scenarios"
+version = "0.1.0"
+description = "The scenario definitions, the register-based diffusivity laws, the nuclide data and the one Method B function of STRATO, shared by the results pipeline and the WebAssembly wrapper. A library over the verified solver and the typed registers; no file access of its own, no dependency beyond them."
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+name = "strato_scenarios"
+path = "src/lib.rs"
+
+[dependencies]
+# The verified solver with the scenario engine and the analytical module.
+strato = { path = "../.." }
+# Typed readers of the registers and of the scenario files.
+strato-data = { path = "../strato-data" }
+anyhow = "1"

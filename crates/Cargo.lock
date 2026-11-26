@@ -448,6 +448,16 @@ dependencies = [
  "strato",
  "strato-compare",
  "strato-data",
+ "strato-scenarios",
+]
+
+[[package]]
+name = "strato-scenarios"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "strato",
+ "strato-data",
 ]
 
 [[package]]

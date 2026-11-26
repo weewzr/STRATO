@@ -60,21 +60,9 @@ pub const NUCS: [Nuc; 3] = [
     },
 ];
 
-/// The temperatures of the main experimental comparison per nuclide (science design 2.1).
-pub fn exp_temperatures(nuc_id: &str) -> &'static [f64] {
-    match nuc_id {
-        "ag110m" | "sr90" => &[1600.0, 1700.0],
-        _ => &[1600.0, 1700.0, 1800.0],
-    }
-}
-
-/// The irradiation-phase exploration temperatures (science design 2.2: IRR-361, IRR-059,
-/// IRR-136, IRR-097).
-pub const EXPL_IRRADIATION_C: [f64; 4] = [955.0, 1028.0, 1136.0, 1197.0];
-/// The heating-test exploration temperatures: every hold temperature of a registered history.
-pub const EXPL_HEATING_C: [f64; 11] = [
-    400.0, 1000.0, 1075.0, 1150.0, 1250.0, 1300.0, 1375.0, 1450.0, 1600.0, 1700.0, 1800.0,
-];
+// The temperatures of the main experimental comparison and of model exploration are shared with
+// the WebAssembly wrapper and live in `strato-scenarios`.
+pub use strato_scenarios::support::{exp_temperatures, EXPL_HEATING_C, EXPL_IRRADIATION_C};
 
 /// Seconds per hour.
 const H: f64 = 3600.0;
