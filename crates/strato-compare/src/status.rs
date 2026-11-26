@@ -536,7 +536,7 @@ pub fn classify(reg: &Register, row: &ReleaseRow) -> Verdict {
             status: Status::ComparisonAvailable,
             category: "window_upper_bound_bp1",
             reason: format!(
-                "{WINDOW_BOUND_CLASS}: matrix-corrected fraction of the {WINDOW_BOUND_DENOMINATOR} over the window from about {WINDOW_START_H} h at temperature to the end of the {PLATEAU_H} h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no NRMSE"
+                "{WINDOW_BOUND_CLASS}: matrix-corrected fraction of the {WINDOW_BOUND_DENOMINATOR} over the window from about {WINDOW_START_H} h at temperature to the end of the {PLATEAU_H} h plateau (or the test end if shorter); the model release over the same window must not exceed it; the correction is the source's attempt and cannot separate particle release from matrix release (Collin et al. 2016, manuscript p. 6); not a point comparison, no whole-curve metric"
             ),
             plan: Plan::Inequality {
                 spec: RunSpec {

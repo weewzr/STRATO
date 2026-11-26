@@ -504,7 +504,7 @@ pub fn deviation_csv(prov: &Prov, records: &[RowRecord]) -> String {
         "Excess of the model over a bound (dimensionless)",
     ];
     let mut csv = Csv::new(
-        &prov.header("deviation of the model from the measurement versus time; upper bounds, among them the window upper bounds under premise BP1 (E-010..E-014 and E-033..E-037, model value over the window), carry the bound, the model value, the log10 ratio and the excess, with no deviation and no NRMSE; rows whose denominator is not established would carry the measured value, the model value and the log10 ratio for scale only"),
+        &prov.header("deviation of the model from the measurement versus time; upper bounds, among them the window upper bounds under premise BP1 (E-010..E-014 and E-033..E-037, model value over the window), carry the bound, the model value, the log10 ratio and the excess, with no deviation and no whole-curve metric; rows whose denominator is not established would carry the measured value, the model value and the log10 ratio for scale only"),
         &cols,
     );
     let mut items: Vec<&RowRecord> = records
@@ -746,7 +746,7 @@ fn row_assumptions(r: &RowRecord, m: &crate::compare::ModelValue) -> Vec<String>
         a.push(ELEMENT_ONLY_STATEMENT.to_string());
     }
     if r.is_window_bound() {
-        a.push("window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no NRMSE".to_string());
+        a.push("window upper bound under premise BP1: the measured value is the matrix-corrected fraction of the as-run calculated compact inventory over the window from about 24 h at temperature to the end of the 300 h plateau (or the test end if shorter); it counts any release from outside the SiC after about 24 h, so it bounds the release through intact coatings only if the source's premise holds; it is not a point comparison, enters no aggregate and no whole-curve metric".to_string());
     }
     if matches!(r.eval, Eval::Provisional { .. }) {
         a.push("provisional: the denominator is not established, so this model value is shown for scale only; no deviation, relative deviation or aggregate is formed from it".to_string());

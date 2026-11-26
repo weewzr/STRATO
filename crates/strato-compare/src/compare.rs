@@ -4,7 +4,7 @@
 //! the solver; bound rows become WITHIN or EXCEEDS REPORTED UPPER BOUND from the inequality; point
 //! rows get the deviations of section 13. The ten intact matrix-corrected rows are window upper
 //! bounds under premise BP1 (decisions 67 and 68): they are inequalities over their window, never
-//! point comparisons, and no NRMSE is formed. Rows whose denominator is not established get a model
+//! point comparisons, and no whole-curve metric is formed. Rows whose denominator is not established get a model
 //! value for scale only (a provisional value): no deviation is formed for it, and it never enters a
 //! status or an aggregate.
 

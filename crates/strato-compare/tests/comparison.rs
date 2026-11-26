@@ -173,7 +173,7 @@ fn a_matrix_corrected_row_without_an_established_denominator_is_shown_for_scale_
 
 #[test]
 fn the_ten_window_rows_are_bounds_and_no_row_is_a_point_comparison() {
-    // Decisions 67 and 68: N = 0 for every set of points, so no NRMSE and no aggregate of points.
+    // Decisions 67 and 68: N = 0 for every set of points, so no whole-curve metric and no aggregate of points.
     let reg = register();
     let g = radii(&reg).unwrap();
     let mut runner = Runner::new(

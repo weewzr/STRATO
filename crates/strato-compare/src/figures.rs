@@ -1718,7 +1718,7 @@ pub fn deviation_lines(records: &[RowRecord], species: Species) -> Vec<String> {
                 source: crate::status::BoundSource::WindowUnderBp1,
             } => {
                 out.push(format!(
-                    "{} | {} \u{b0}C | window {}-{} h at temperature | bound {} (digitised, matrix-corrected fraction of the as-run calculated compact inventory) | model over the same window {} | model over bound {} | {}: not a point comparison, so no deviation, no relative deviation and no NRMSE is formed",
+                    "{} | {} \u{b0}C | window {}-{} h at temperature | bound {} (digitised, matrix-corrected fraction of the as-run calculated compact inventory) | model over the same window {} | model over bound {} | {}: not a point comparison, so no deviation, no relative deviation and no whole-curve metric is formed",
                     r.row.id,
                     m.spec.t_c,
                     m.spec.window_start_h,
@@ -2023,7 +2023,7 @@ fn nuclide_figure(
                 .map_err(pe)?;
             chart
                 .draw_series(std::iter::once(Text::new(
-                    "no row is a point comparison; no NRMSE is formed (see the lines below)",
+                    "no row is a point comparison; no whole-curve metric is formed (see the lines below)",
                     (210.0, (top + bottom) / 2.0 - 0.4),
                     ts_pos(14, HPos::Center, VPos::Center),
                 )))
