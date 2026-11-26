@@ -11,6 +11,7 @@ use strato_data::Register;
 use crate::compare::{datasets, run_rows, Dataset, RowRecord};
 use crate::data::{default_set, evaluate, radii, Radii, Species};
 use crate::figures::{self, Inputs, TEMPERATURES};
+use crate::json::J;
 use crate::model::{Curve, Runner, Settings};
 use crate::outputs::{self, Prov};
 use crate::report::{self, ReportInput};
@@ -107,6 +108,7 @@ pub fn generate(opts: &Options) -> Result<Outcome, String> {
     };
 
     let mut set_notes = Vec::new();
+    let mut regions: Vec<J> = Vec::new();
     for s in Species::ALL {
         let d = default_set(&reg, s)?;
         let rows: Vec<String> = d
@@ -115,6 +117,20 @@ pub fn generate(opts: &Options) -> Result<Outcome, String> {
             .zip(["kernel", "buffer", "IPyC", "SiC", "OPyC"])
             .map(|(ids, name)| format!("{name}: {}", ids.join("+")))
             .collect();
+        for ((ids, (class, phase)), name) in d
+            .ids
+            .iter()
+            .zip(d.classes.iter())
+            .zip(["kernel", "buffer", "IPyC", "SiC", "OPyC"])
+        {
+            regions.push(J::obj(vec![
+                ("element", J::s(s.label())),
+                ("region", J::s(name)),
+                ("register_rows", J::Arr(ids.iter().map(J::s).collect())),
+                ("coefficient_class", J::s(class)),
+                ("phase_of_use", J::s(phase)),
+            ]));
+        }
         let classes: Vec<String> = d
             .classes
             .iter()
@@ -259,7 +275,7 @@ pub fn generate(opts: &Options) -> Result<Outcome, String> {
     )?;
     write(
         &out.join("comparison.json"),
-        &outputs::comparison_json(&prov, &records, &sets, &geometry, &set_notes),
+        &outputs::comparison_json(&prov, &records, &sets, &geometry, &set_notes, regions),
     )?;
 
     // Figures.

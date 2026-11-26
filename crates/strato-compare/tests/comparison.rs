@@ -304,6 +304,8 @@ fn generated_files_carry_provenance_and_no_private_paths() {
     }
     let j = std::fs::read_to_string(opts.data_out.join("comparison.json")).unwrap();
     assert!(j.contains("\"decay_and_generation_in_solver\": false"));
+    // Decision 16: the class of the coefficient of every region of every element is stated.
+    assert_eq!(j.matches("\"coefficient_class\"").count(), 15);
     assert!(j.contains("Experimental Comparison: Data Interpretation and Limitations"));
     assert!(!j.contains(":\\\\"));
     let report = std::fs::read_to_string(opts.report_out.as_ref().unwrap()).unwrap();

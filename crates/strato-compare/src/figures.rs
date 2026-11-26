@@ -835,9 +835,9 @@ fn deviation_figure(
             .configure_mesh()
             .x_desc("Time at temperature (h)")
             .y_desc(if relative {
-                "|F model - F measured| / F measured (percent)"
+                "Relative deviation of the model from the measurement (percent)"
             } else {
-                "|F model - F measured| (dimensionless)"
+                "Absolute deviation of the model from the measurement (dimensionless)"
             })
             .x_labels(8)
             .x_label_formatter(&|v| format!("{v:.0}"))
@@ -899,7 +899,7 @@ fn deviation_figure(
         chart
             .configure_mesh()
             .x_desc("Time at temperature (h)")
-            .y_desc("F model / reported upper bound (dimensionless)")
+            .y_desc("Modelled fraction released over reported upper bound (dimensionless)")
             .x_labels(8)
             .x_label_formatter(&|v| format!("{v:.0}"))
             .y_label_formatter(&sci)
@@ -1226,7 +1226,7 @@ pub fn figure_e(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
         chart
             .configure_mesh()
             .x_desc("Time at temperature (h)")
-            .y_desc("|M + M released - M initial| / M initial (dimensionless)")
+            .y_desc("Relative balance residual of the inventory (dimensionless)")
             .x_labels(8)
             .x_label_formatter(&|v| format!("{v:.0}"))
             .y_label_formatter(&sci)
@@ -1243,14 +1243,14 @@ pub fn figure_e(path: &Path, inp: &Inputs<'_>) -> Result<(), String> {
     }
     let mut items = vec![
         entry(
-            "Remaining inventory M / M0",
+            "Remaining inventory over initial inventory (dimensionless)",
             Glyph::Line {
                 c: BLUE,
                 dash: None,
             },
         ),
         entry(
-            "Cumulative release M released / M0",
+            "Cumulative release over initial inventory (dimensionless)",
             Glyph::Line {
                 c: VERMILION,
                 dash: Some((10, 6)),

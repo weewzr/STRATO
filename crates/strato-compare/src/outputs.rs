@@ -749,6 +749,7 @@ pub fn comparison_json(
     sets: &[Dataset],
     geometry: &crate::data::Radii,
     set_notes: &[(String, String)],
+    coefficient_regions: Vec<J>,
 ) -> String {
     let mut counts: BTreeMap<Status, usize> = BTreeMap::new();
     for r in records {
@@ -979,6 +980,7 @@ pub fn comparison_json(
                     .collect(),
             ),
         ),
+        ("coefficient_regions", J::Arr(coefficient_regions)),
         ("status_counts", J::Obj(status_counts)),
         ("status_rules", cats),
         ("datasets", J::Arr(datasets)),
