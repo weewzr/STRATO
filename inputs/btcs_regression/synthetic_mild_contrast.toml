@@ -1,0 +1,48 @@
+# SYNTHETIC NUMERICAL BENCHMARK - NOT LITERATURE TRISO DATA
+# Mild diffusivity contrast (ratios between neighbouring layers at most 10), chosen by the
+# author of the BTCS regression suite so that the Sturm-Liouville series is accurate far
+# below the discretisation error of the run. The values are not measurements.
+case_name = "synthetic-five-layer-mild-contrast"
+species = "synthetic"
+temperature_k = 1000.0
+
+[[regions]]
+name = "Kernel"
+outer_radius_m = 2.0e-4
+diffusivity_m2_s = 3.0e-11
+cells = 40
+
+[[regions]]
+name = "Buffer"
+outer_radius_m = 3.0e-4
+diffusivity_m2_s = 1.0e-10
+cells = 40
+
+[[regions]]
+name = "IPyC"
+outer_radius_m = 3.5e-4
+diffusivity_m2_s = 3.0e-11
+cells = 40
+
+[[regions]]
+name = "SiC"
+outer_radius_m = 4.0e-4
+diffusivity_m2_s = 1.0e-11
+cells = 40
+
+[[regions]]
+name = "OPyC"
+outer_radius_m = 4.5e-4
+diffusivity_m2_s = 3.0e-11
+cells = 40
+
+[initial]
+kernel_concentration_mol_m3 = 1.0
+
+[time]
+dt_s = 1.0e1
+end_time_s = 2.0e3
+output_every_steps = 10
+
+[output]
+directory = "results/btcs-regression-mild-contrast"
