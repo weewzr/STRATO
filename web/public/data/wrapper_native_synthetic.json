@@ -6,12 +6,12 @@
   "generator": "strato 1.0.1",
   "converter": "strato-webtools precomputed v2",
   "strato_version": "1.0.1",
-  "commit": "c749f173e3a00393befb296618953818dfeac1a4",
+  "commit": "f86310b1b1844803761257676da06719035249f5",
   "input_file": "inputs/synthetic/synthetic_five_layer.toml",
   "input_file_sha256": "257fe9933a4c1dee38a44545209bfafea7fc06945f389fad9aeb5f0d739afa93",
   "command": "cargo run --locked --release --manifest-path crates/strato-wasm/Cargo.toml --example native_btcs_run -- inputs/synthetic/synthetic_five_layer.toml",
   "rustc": "rustc 1.100.0 (0ef1bc386 2026-11-09)",
-  "created_utc": "2026-11-26T08:55:09Z",
+  "created_utc": "2026-11-26T09:31:09Z",
   "note": "run reply of the native wrapper (x86_64), the reference of the browser parity test.",
   "data": {
     "analytical": {
@@ -626,7 +626,7 @@
     },
     "engine": {
       "abi": 2,
-      "commit": "c749f17",
+      "commit": "f86310b",
       "solver": "btcs_five_layer",
       "strato_version": "1.0.1"
     },
@@ -28881,7 +28881,7 @@
     "schema": 2,
     "solver": {
       "capability": "diffusion_btcs_layered",
-      "commit": "c749f17",
+      "commit": "f86310b",
       "formulation": "docs/mathematics/btcs/02_final_formulation.md",
       "id": "btcs_five_layer",
       "label": "COMPUTED v2.0",
