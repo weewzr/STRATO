@@ -88,8 +88,30 @@ describe('the running computation is described from the capability of the build'
     const text = screen.getByTestId('active-model').textContent ?? '';
     expect(text).toContain('Method A: BTCS');
     expect(text).toContain('no generation and no decay');
-    expect(text).toContain('fission-product generation, radioactive decay and temperature-dependent diffusion are not computed by this build');
+    // The sentence starts with a capital letter (the earlier text began it in lower case).
+    expect(text).toContain('. Fission-product generation, radioactive decay and temperature-dependent diffusion are not computed by this build');
+    expect(text).toContain('Running computation');
     expect(screen.getByTestId('active-model').dataset.computed).toBe('');
+  });
+
+  it('says that nothing runs, and names the solver of the build, when the selection is not computed', () => {
+    act(() => {
+      useStrato.getState().setSolver({ state: 'ready' });
+      useStrato.getState().setCapabilities([BTCS_CAPABILITY]);
+    });
+    render(<ActiveModel supported={false} />);
+    const text = screen.getByTestId('active-model').textContent ?? '';
+    expect(text).toContain('Solver of this build: Method A: BTCS');
+    expect(text).not.toContain('Running computation');
+  });
+
+  it('derives the baseline phrase from the capability object', () => {
+    act(() => {
+      useStrato.getState().setSolver({ state: 'ready' });
+      useStrato.getState().setCapabilities(['some_other_capability']);
+    });
+    render(<ActiveModel />);
+    expect(screen.getByTestId('active-model').textContent).toContain('It implements no model of this page');
   });
 
   it('says nothing before the wrapper has reported', () => {

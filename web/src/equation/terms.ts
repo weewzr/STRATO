@@ -1004,7 +1004,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
     short: 'Release fraction',
     kind: 'step',
     mechanism: null,
-    summary: 'The release fraction is the quantity that a comparison with measured release sets beside the measurement. The comparison itself is under Compare and Validate; no measurement is shown here.',
+    summary: 'The release fraction is the quantity that a comparison with measured release sets beside the measurement. An experimental comparison will appear under Validate; none is available in this build, and no measurement is shown here.',
     main: [F28],
     parts: [
       part({
@@ -1014,7 +1014,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
         latex: String.raw`F^j = \frac{M_{\mathrm{rel}}^j}{M^0}`,
         meaning: 'The quantity of the model that a comparison sets beside a measured release fraction. A measured value is fixed data; the computed value changes with the inputs.',
         units: [U_F, U_MREL, U_M],
-        assumptions: ['No measurement is shown on this page and no agreement is claimed.', 'A comparison needs the data, the diffusivity rows and the assumptions stated beside every result; they are under Compare and Validate.'],
+        assumptions: ['No measurement is shown on this page and no agreement is claimed.', 'A comparison needs the data, the diffusivity rows and the assumptions stated beside every result; Validate gives its status.'],
         derivation: doc2(D2_7),
       }),
     ],

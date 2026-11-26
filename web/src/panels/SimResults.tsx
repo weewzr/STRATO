@@ -239,7 +239,7 @@ export function BalancePanel() {
         </tbody>
       </table>
       <p className="result-panel__note" data-testid="bal-statement">
-        {b.statement} {b.generated_and_decayed_note}
+        {/[.!?]\s*$/.test(b.statement) ? b.statement : `${b.statement}.`} {b.generated_and_decayed_note}
       </p>
       {last ? <LayerTable profile={last} names={run.grid.layer_names} /> : null}
     </section>

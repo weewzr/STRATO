@@ -140,7 +140,9 @@ describe('what the selected physics and scenario show', () => {
       expect(screen.getByTestId(`num-status-${id}`).dataset.status).toBe('planned');
     }
     expect(screen.getByTestId('numerical-status').dataset.supported).toBe('false');
-    expect(screen.getByTestId('numerical-status').textContent).toMatch(/No simulation runs for this selection: the solver in this build does not implement fission-product generation, radioactive decay and temperature-dependent diffusion/);
+    expect(screen.getByTestId('numerical-status').textContent).toMatch(/^No simulation runs for this selection; Live simulation gives the reason\./);
+    // The full reason is stated once, in Live simulation and Results; the interpretation only points to it.
+    expect(screen.getByTestId('numerical-status').textContent).not.toMatch(/does not implement/);
     // The statuses come from the wrapper's report: a build that reports a mechanism at the live status labels it so.
     act(() => useStrato.getState().setCapabilities([BTCS_CAPABILITY, 'generation']));
     expect(screen.getByTestId('num-status-9').dataset.status).not.toBe('planned');

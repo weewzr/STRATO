@@ -264,7 +264,7 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
         </p>
       ) : (
         <p id={`${ids.run}-unsupported`} className="field__hint" data-testid="run-unsupported">
-          Run is off for this selection. {unsupportedMessage(support)}
+          Run is off for this selection; Live simulation gives the reason.
         </p>
       )}
       <p className="visually-hidden" role="status" aria-live="polite" data-testid="announce">

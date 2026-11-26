@@ -22,7 +22,7 @@
 //   11    Rust solution algorithm                 12    Rust BTCS solution algorithm
 //   12    Inventory and release                   13    Inventory and release accounting
 //   14    Experimental comparisons (placeholder)  13    (its content, the release fraction, belongs to the accounting;
-//                                                         the comparison itself is under Compare and Validate)
+//                                                         an experimental comparison is not available in this build; see Validate)
 //   13    Numerical verification                  14    Numerical verification and convergence
 //
 // Items nine to eleven had no derivation before: they are written from Document 5.

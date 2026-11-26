@@ -1,7 +1,7 @@
 import { useId } from 'react';
 import { useStrato } from '../state/store';
 import { simulationMethod } from './availability';
-import { missingList, scenarioStatus, STATUS_DEFINITION } from './capability';
+import { scenarioStatus, STATUS_DEFINITION } from './capability';
 import { StepBody } from './EquationBuilder';
 import { effectivePhysics, itemExpandId, itemStatus, itemVisible, NOTATION, NUMERICAL_ITEMS, scenarioNote, type NumericalItem } from './numerics';
 import { SCENARIO_LABEL } from './scenarios';
@@ -33,11 +33,8 @@ function Item({ item }: { item: NumericalItem }) {
           onClick={() => setExpanded(itemExpandId(item.id), !open)}
           data-testid={`num-toggle-${item.id}`}
         >
-          <span className="num-item__num stage-num" aria-hidden="true">
+          <span className="num-item__num stage-num" data-testid={`num-number-${item.id}`}>
             {item.id}
-          </span>
-          <span className="visually-hidden">
-            Item <span className="stage-num">{item.id}</span>:{' '}
           </span>
           <span className="num-item__title">{item.title}</span>
           {item.mechanism !== null ? <StatusTag status={status} loading={loading} id={`num-status-${item.id}`} /> : null}
@@ -113,7 +110,7 @@ export function NumericalInterpretation() {
                   ? 'The solver of this page does not offer the BTCS capability at the live status, so the simulation shows no result.'
                   : support.supported
                     ? 'The simulation solves these equations with the verified finite-difference BTCS Rust solver.'
-                    : `No simulation runs for this selection: the solver in this build does not implement ${missingList(support)}. The equations and explanations remain.`}
+                    : 'No simulation runs for this selection; Live simulation gives the reason. The equations and explanations remain.'}
             </p>
             <p className="numerical__notation" data-testid="numerical-notation">
               <RichText text={NOTATION} />

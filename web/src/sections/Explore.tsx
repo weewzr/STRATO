@@ -89,7 +89,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           </p>
           <SolverStatus compact />
         </div>
-        <ActiveModel />
+        <ActiveModel supported={support.supported} />
         <p className="block__note">
           The simulation uses the synthetic five-layer verification case,{' '}
           <a href={repoFile('inputs/synthetic/synthetic_five_layer.toml')}>
@@ -147,7 +147,11 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           <h3 id={ids.c} className="controls-block__title">
             Numerical controls
           </h3>
-          <p className="block__context">Inputs of the solver, each checked by the solver itself; a change reruns {METHOD_1} after a short pause.</p>
+          <p className="block__context" data-testid="controls-context">
+            {support.supported
+              ? `Inputs of the solver, each checked by the solver itself; a change reruns ${METHOD_1} after a short pause.`
+              : 'Inputs are kept; they are checked and run when a selection that this build computes is chosen.'}
+          </p>
           {compact ? (
             <div className="controls-summary" data-testid="controls-summary">
               <p className="controls-summary__text" role="status">
@@ -173,7 +177,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           <h2 id={ids.e} className="block__title">
             Results
           </h2>
-          <p className="block__context">Model output only; no experimental data are shown here. The comparison with experiments is under Compare and Validate.</p>
+          <p className="block__context">Model output only; no experimental data are shown here. Experimental comparisons will appear under Validate; none is available in this build.</p>
         </div>
         {support.supported ? (
           <>

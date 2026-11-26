@@ -41,6 +41,14 @@ async function expectNothingSubstituted(page: Page, name: string) {
   // The solver and the physics of the running computation stay identified in D.
   await expect(page.getByTestId('active-model')).toContainText('Method A: BTCS');
   await expect(page.getByTestId('active-model')).toContainText('not computed by this build');
+  // Nothing is running, so nothing says that a computation runs or that a change reruns it (finding of the science verifier).
+  await expect(page.getByTestId('active-model')).toContainText('Solver of this build');
+  await expect(page.getByTestId('active-model')).not.toContainText('Running computation');
+  await expect(page.getByTestId('controls-context')).not.toContainText('reruns');
+  await expect(page.getByTestId('controls-context')).not.toContainText('checked by the solver itself');
+  await expect(page.getByTestId('controls-context')).toContainText('Inputs are kept');
+  // Every sentence starts with a capital letter.
+  expect(await page.getByTestId('active-model').innerText()).not.toMatch(/[.!?]\s+[a-z]/);
   for (const id of ['particle', 'release-readout', 'profile-figure', 'release-figure', 'balance-panel', 'diagnostics-panel', 'active-model-results']) {
     await expect(page.getByTestId(id), id).toHaveCount(0);
   }
@@ -69,6 +77,12 @@ for (const vp of [
           expect(await page.locator('[data-testid="equation-governing"] [data-piece]').evaluateAll((e) => e.map((p) => (p as HTMLElement).dataset.piece))).toEqual(['lhs', 'operator']);
           await expect(page.getByTestId('active-model')).toContainText('Method A: BTCS, solver version');
           await expect(page.getByTestId('active-model')).toContainText('no generation and no decay');
+          await expect(page.getByTestId('active-model')).toContainText('Running computation');
+          await expect(page.getByTestId('controls-context')).toContainText('reruns');
+          expect(await page.getByTestId('active-model').innerText()).not.toMatch(/[.!?]\s+[a-z]/);
+          expect(await page.getByTestId('block-e').innerText()).not.toMatch(/Compare and Validate/);
+          await expect(page.getByTestId('num-number-1')).toBeVisible();
+          await expect(page.getByTestId('num-item-1')).not.toContainText('Item 1');
           await expect(page.getByTestId('active-model-results')).toContainText('Method A: BTCS');
           await expect(page.getByTestId('particle')).toBeVisible();
           await expect(page.getByTestId('release-readout')).toBeVisible();
