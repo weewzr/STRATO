@@ -1,6 +1,6 @@
 # Brick-by-brick roadmap
 
-STRATO grows one verified physical mechanism at a time. This page lists the nine bricks of the development sequence, what each adds, what has to be researched, derived, implemented and verified before its status may advance, and its present status. A status describes a mechanism, not a number, and uses the five levels of the research-status system: PENDING, RESEARCHED, IMPLEMENTED, VERIFIED, VALIDATED. Per-mechanism statuses are held in `data/research/mechanisms.csv`. The brick status below summarises the rows of that file on 2026-11-24. For bricks 1 to 3 these are the rows of the equation builder's mechanisms, whose statuses rest on the v1.0 verification (brick 1) and the Phase 2 derivations (bricks 2 and 3); brick 3 also holds the PENDING row for interface partition coefficients, which are not in the model. A brick status changes only when its evidence changes and the file records it.
+STRATO grows one verified physical mechanism at a time. This page lists the nine bricks of the development sequence, what each adds, what has to be researched, derived, implemented and verified before its status may advance, and its present status. A status describes a mechanism, not a number, and uses the five levels of the research-status system: PENDING, RESEARCHED, IMPLEMENTED, VERIFIED, VALIDATED. Per-mechanism statuses are held in `data/research/mechanisms.csv`. The brick status below summarises the rows of that file on 2026-11-24. For bricks 1 to 3 these are the rows of the equation builder's mechanisms, whose statuses rest on the BTCS verification (brick 1) and the Phase 2 derivations (bricks 2 and 3); brick 3 also holds the PENDING row for interface partition coefficients, which are not in the model. A brick status changes only when its evidence changes and the file records it.
 
 Every future phase on this page is described only as planned. No phase is dated and no result is promised. Nothing is VALIDATED: no computed model-to-measurement comparison exists yet, and no experimental-agreement figure is written anywhere until such comparisons are computed at each temperature from the public data (AGR-1 safety tests, CRP-6 cases) after Phase 2.2 is implemented and verified.
 
@@ -29,8 +29,8 @@ Every future phase on this page is described only as planned. No phase is dated 
 
 ## Brick 1: baseline demonstration
 
-- **Adds.** The governing equation of STRATO v1.0, layered spherical diffusion with a constant diffusivity per layer, shown first, with the live simulation of the verified synthetic case under it.
-- **Evidence.** v1.0 verification: the finite-volume solution against the exact series and the regression tests (`tests/finite_volume_vs_analytical.rs`, `tests/phase1_regression.rs`, golden files in `tests/golden/v1.0/`), and the derivation in `docs/mathematics/v1.0.0/`.
+- **Adds.** The governing equation of STRATO, layered spherical diffusion with a constant diffusivity per layer, shown first, with the live simulation of the verified synthetic case under it, solved by Method A (finite-difference BTCS) and, where it applies, by Method B (the analytical Sturm-Liouville solution).
+- **Evidence.** BTCS verification: the finite-difference solution against the analytical series, the observed orders, the balance and the regression tests (`tests/btcs_verification.rs`, `tests/btcs_regression.rs`, `tests/btcs_properties.rs`, golden files in `tests/golden/btcs/`), and the formulation in `docs/mathematics/btcs/`.
 - **Status.** VERIFIED for the synthetic five-layer case (`inputs/synthetic/synthetic_five_layer.toml`) only. The synthetic diffusivities are test values, not material data; the AGR-1 particle is shown as geometry only and is never combined with them.
 - **To advance to VALIDATED.** Not applicable to a synthetic case. Validation comes with brick 3.
 
@@ -38,7 +38,7 @@ Every future phase on this page is described only as planned. No phase is dated 
 
 - **Adds.** Fission-product generation from the fission rate density with cumulative yields, radioactive decay, and the inventory balance (start plus generated, minus decayed, minus released, minus remaining).
 - **Researched.** Derivation (P21.1), (P21.8), (P21.42), (P21.58) in `docs/mathematics/STRATO_Phase2_Derivations.md`, pseudocode in `docs/mathematics/STRATO_Phase2_Pseudocode.md`, half-lives in `data/nuclear/decay.csv`, yields in `data/nuclear/fission_yields.csv`. First nuclides chosen by the owner: Cs-137 and Sr-90, then Kr-85 with its precursor-delay caveat; I-131 deferred because no PyC or SiC iodine diffusivity is registered; Ag-110m later (activation products deferred). See [caesium](species-cs.md), [strontium](species-sr.md), [krypton](species-kr.md), [iodine](species-i.md).
-- **Still to do before IMPLEMENTED.** Rust code for the unsplit Backward Euler step with implicit decay and the exact step-average source, kernel-only source by default, through the full v1.0 regression suite.
+- **Still to do before IMPLEMENTED.** Rust code for the unsplit Backward Euler step with implicit decay and the exact step-average source, kernel-only source by default, through the full BTCS regression suite.
 - **Still to do before VERIFIED.** The Phase 2.1 verification cases (conservation of the inventory balance, convergence, limiting cases) passing, and independent review.
 - **Status.** RESEARCHED (derived and registered; no solver code).
 
@@ -54,7 +54,7 @@ Every future phase on this page is described only as planned. No phase is dated 
 ## Brick 4: silver trapping and detrapping
 
 - **Adds.** A trapped-silver population in SiC coupled to the mobile one ([entry](ag_trapping_detrapping.md)).
-- **Before RESEARCHED.** Measured or computed trap densities and energies for silver in AGR-1 SiC (none found), registered with sources, and a derivation of the coupled system on STRATO's spherical finite-volume mesh.
+- **Before RESEARCHED.** Measured or computed trap densities and energies for silver in AGR-1 SiC (none found), registered with sources, and a derivation of the coupled system on STRATO's spherical finite-difference grid.
 - **Before IMPLEMENTED and VERIFIED.** Bricks 2 and 3 for Ag-110m first (activation source, decay, temperature dependence); then code with conservation and limiting-case tests.
 - **Status.** PENDING.
 

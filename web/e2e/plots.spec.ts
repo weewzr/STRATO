@@ -8,15 +8,16 @@ import type { CompareOk, RunOk } from '../src/solver/types';
 import { expect, gotoSection, horizontalOverflow, solverRequests, test, waitForRun } from './fixtures';
 
 // Web phase 5: the scientific graphs (prompt/TESTING_AND_VALIDATION.md Section 3, row 5). The plotted
-// arrays equal the wrapper's values; the plotted difference curve is the series compare_v1 returned
-// (nothing is subtracted in the browser); downloads reproduce the plotted values; the comparison and
-// validation toggles are independent; every plot carries its label.
+// arrays equal the wrapper's values; the plotted difference curve is the series compare returned
+// (nothing is subtracted in the browser); downloads are the files the wrapper's export wrote and
+// reproduce the plotted values; the comparison and validation toggles are independent; every plot
+// carries its label and names its axes in full with their units.
 
 const read = (...p: string[]) => JSON.parse(readFileSync(join(process.cwd(), ...p), 'utf8')) as Record<string, unknown>;
 const CASE = read('src', 'generated', 'synthetic_five_layer.case.json') as { data: { config: { regions: { diffusivity_m2_s: number }[] } } };
 const NATIVE = (read('public', 'data', 'wrapper_native_synthetic.json') as { data: RunOk }).data;
-const COMPARISON = read('public', 'data', 'comparison_fv_vs_analytical.json') as { data: { time_s: number[]; abs_error: (number | null)[] } };
-const CONVERGENCE = read('public', 'data', 'convergence_study.json') as { data: { spatial_observed_orders: string; temporal_observed_orders: string } };
+const COMPARISON = read('public', 'data', 'btcs_vs_analytical.json') as { data: { t_s: number[]; abs_difference: (number | null)[] } };
+const CHECK = read('public', 'data', 'btcs_independent_check.json') as { data: { time_order: number[]; space_order: number[] } };
 
 interface Drawn {
   id: string;
@@ -88,8 +89,8 @@ test.describe('block B plots', () => {
     await waitForRun(page);
     const last = NATIVE.profiles.length - 1;
     const profile = await drawn(page, 'profile-plot');
-    // WebAssembly against the native wrapper: Code B, the mesh and the profiles are bit-identical (Phase 3 record).
-    expect(identical(trace(profile, 'profile').x, NATIVE.mesh.cell_centroids_m)).toBe(true);
+    // WebAssembly against the native wrapper: Method A, the grid and the profiles are bit-identical.
+    expect(identical(trace(profile, 'profile').x, NATIVE.grid.node_radii_m)).toBe(true);
     expect(identical(trace(profile, 'profile').y, NATIVE.profiles[last]!.c_mol_per_m3)).toBe(true);
     expect(identical(trace(profile, 'profile-start').y, NATIVE.profiles[0]!.c_mol_per_m3)).toBe(true);
     const release = await drawn(page, 'release-plot');
@@ -98,7 +99,7 @@ test.describe('block B plots', () => {
     const c = trace(release, 'release-c');
     const ok = [compareArrays('series t', c.x, NATIVE.analytical!.times_s, PARITY_RTOL), compareArrays('series F', c.y, NATIVE.analytical!.release_fraction, PARITY_RTOL)];
     expect(ok.every((r) => r.ok && r.sameLength), JSON.stringify(ok)).toBe(true);
-    // No pointwise difference of Code B and Code C is drawn for the live run.
+    // No pointwise difference of the two methods is drawn for the live run.
     expect(release.map((t) => t.id).sort()).toEqual(['release-b', 'release-c', 'release-cursor']);
 
     // Step back ten rows: both plots follow the playback row.
@@ -114,19 +115,23 @@ test.describe('block B plots', () => {
     expect(await solverRequests(page)).toBe(before);
   });
 
-  test('every plot shows its result label, axes with units and a caption with source and commits', async ({ page, problems }) => {
+  test('every plot shows its result label, axes named in full with units and a caption with source and commits', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     await waitForRun(page);
     for (const id of ['profile-figure', 'release-figure']) {
       const fig = page.getByTestId(id);
-      await expect(fig.locator('.figure__head .badge')).toHaveText('COMPUTED v1.0');
-      await expect(fig.locator('figcaption')).toContainText('Source: STRATO v1.0.1 Rust solver in WebAssembly, build');
+      await expect(fig.locator('.figure__head .badge')).toHaveText('COMPUTED v2.0');
+      await expect(fig.locator('figcaption')).toContainText('Source: Method A: BTCS, solver version');
       await expect(fig.locator('figcaption')).toContainText('Page build');
     }
-    await expect(page.getByTestId('profile-plot').locator('.xtitle')).toHaveText('Radius r (m)');
-    await expect(page.getByTestId('profile-plot').locator('.ytitle')).toContainText('mol m');
-    await expect(page.getByTestId('release-plot').locator('.xtitle')).toHaveText('Time t (s)');
+    await expect(page.getByTestId('profile-plot').locator('.xtitle')).toHaveText('Radius (m)');
+    await expect(page.getByTestId('profile-plot').locator('.ytitle')).toHaveText('Concentration (mol/m³)');
+    await expect(page.getByTestId('release-plot').locator('.xtitle')).toHaveText('Time (s)');
+    await expect(page.getByTestId('release-plot').locator('.ytitle')).toHaveText('Release fraction (dimensionless)');
+    // The legend of the release plot names the two methods.
+    await expect(page.getByTestId('release-plot').locator('.legend')).toContainText('Method A: BTCS');
+    await expect(page.getByTestId('release-plot').locator('.legend')).toContainText('Method B: Sturm–Liouville');
   });
 
   test('display options change the plot only: no input, no run', async ({ page, problems }) => {
@@ -141,11 +146,14 @@ test.describe('block B plots', () => {
     await expect.poll(async () => (await drawn(page, 'profile-plot')).map((t) => t.id)).toEqual(['profile']);
     const layout = await page.getByTestId('release-plot-graph').evaluate((el) => (el as unknown as { layout: { yaxis: { type: string } } }).layout.yaxis.type);
     expect(layout).toBe('log');
+    // Switching Method B off removes its curve only.
+    await page.getByTestId('release-method-2').uncheck();
+    await expect.poll(async () => (await drawn(page, 'release-plot')).map((t) => t.id).sort()).toEqual(['release-b', 'release-cursor']);
     expect(await page.getByTestId('block-b').getAttribute('data-input-key')).toBe(key);
     expect(await solverRequests(page)).toBe(before);
   });
 
-  test('a figure saved as SVG carries the source line with version and commits', async ({ page, problems }) => {
+  test('a figure saved as SVG carries the source line with the method, version and commits', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     await waitForRun(page);
@@ -153,8 +161,8 @@ test.describe('block B plots', () => {
     const { name, text } = await download(page, 'release-plot-svg');
     expect(name).toMatch(/^strato-release-[0-9a-f]{7}\.svg$/);
     expect(text).toContain('<svg');
-    expect(text).toContain('STRATO v1.0.1');
-    expect(text).toContain('COMPUTED v1.0');
+    expect(text).toContain('Method A: BTCS');
+    expect(text).toContain('COMPUTED v2.0');
     expect(text).toContain('page build');
   });
 });
@@ -182,11 +190,11 @@ test.describe('phone layout of the plots', () => {
 test.describe('comparison', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('the plotted difference is the series compare_v1 returned; toggles are independent of validation', async ({ page, problems }) => {
+  test('the plotted difference is the series compare returned; toggles are independent of validation', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     await waitForRun(page);
-    // A faster SiC: the same change the wrapper test uses (crates/strato-wasm/tests/parity.rs).
+    // A faster SiC: the same change the wrapper's compare test uses.
     const field = page.getByTestId('d-field-3');
     await field.fill('4e-14');
     await field.press('Tab');
@@ -201,9 +209,9 @@ test.describe('comparison', () => {
     const modified = structuredClone(baseline);
     modified.regions[3]!.diffusivity_m2_s = 4e-14;
     const reply = (await callWorker(page, 'compare', {
-      schema: 1,
-      baseline: { schema: 1, config: baseline, mechanisms: ['diffusion_layered'] },
-      modified: { schema: 1, config: modified, mechanisms: ['diffusion_layered'] },
+      schema: 2,
+      baseline: { schema: 2, config: baseline, mechanisms: ['diffusion_btcs_layered'] },
+      modified: { schema: 2, config: modified, mechanisms: ['diffusion_btcs_layered'] },
     })) as CompareOk;
     expect(reply.status).toBe('ok');
     const d = trace(traces, 'compare-difference');
@@ -249,38 +257,45 @@ test.describe('comparison', () => {
 test.describe('downloads', () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
-  test('the run and comparison downloads reproduce the plotted values and carry their header', async ({ page, problems }) => {
+  test('the run downloads are written by the wrapper, carry their provenance header and reproduce the plotted values', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     await waitForRun(page);
     const release = await drawn(page, 'release-plot');
     const profile = await drawn(page, 'profile-plot');
+    const shownBound = Number(await page.getByTestId('bal-bound').getAttribute('data-value'));
     await nav(page, 'Data');
     const ts = await download(page, 'dl-run-time-series-csv');
     expect(ts.name).toMatch(/^strato-run-timeseries-[0-9a-f]{7}\.csv$/);
     const parsed = parseCsv(ts.text);
-    expect(parsed.meta.label).toBe('COMPUTED v1.0');
-    expect(parsed.meta.strato_version).toBe('1.0.1');
-    expect(parsed.meta.solver_commit).toMatch(/^[0-9a-f]{7}/);
-    expect(parsed.meta.page_commit).toMatch(/^[0-9a-f]{7}/);
-    expect(parsed.meta.case_file).toBe('inputs/synthetic/synthetic_five_layer.toml');
-    expect(parsed.meta.created_utc).toMatch(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
-    expect(JSON.parse(parsed.meta.inputs ?? 'null')).toHaveProperty('regions');
-    expect(parsed.meta.units).toContain('time_s=s');
-    expect(identical(parsed.columns.time_s!, trace(release, 'release-b').x)).toBe(true);
-    expect(identical(parsed.columns.release_fraction_fv!, trace(release, 'release-b').y)).toBe(true);
-    const series = parsed.columns.release_fraction_series!.filter((v) => v !== null);
-    expect(identical(series, trace(release, 'release-c').y)).toBe(true);
+    // The header is the library's provenance header: solver, version, commit, input digest, parameter source and class.
+    expect(parsed.meta.label).toBe('numerical solution of the stated model; not experimental validation');
+    expect(parsed.meta.solver_package_version).toBe('1.0.1');
+    expect(parsed.meta.commit).toMatch(/^[0-9a-f]{7}/);
+    expect(parsed.meta.input_file).toBe('synthetic_five_layer.toml');
+    expect(parsed.meta.input_sha256).toMatch(/^[0-9a-f]{64}$/);
+    expect(parsed.meta.parameter_source).toBe('synthetic benchmark, not literature data');
+    expect(parsed.meta.parameter_class).toBe('synthetic benchmark');
+    // The columns carry the full physical name with the unit.
+    expect(parsed.names).toContain('Time (s)');
+    expect(parsed.names).toContain('Release fraction (dimensionless)');
+    expect(identical(parsed.columns['Time (s)']!, trace(release, 'release-b').x)).toBe(true);
+    expect(identical(parsed.columns['Release fraction (dimensionless)']!, trace(release, 'release-b').y)).toBe(true);
+    // The rounding bound of the mass-balance residual on the page is the value in the file: one quantity, one value.
+    const bounds = parsed.columns['Derived a-posteriori rounding bound of the mass-balance residual (mol)']!;
+    expect(bounds[bounds.length - 1]).toBe(shownBound);
 
     const pr = parseCsv((await download(page, 'dl-run-profiles-csv')).text);
-    expect(identical(pr.columns.centroid_m!, trace(profile, 'profile').x)).toBe(true);
-    const lastName = pr.names[pr.names.length - 1]!;
-    expect(identical(pr.columns[lastName]!, trace(profile, 'profile').y)).toBe(true);
+    const times = pr.columns['Time (s)']!;
+    const lastTime = times[times.length - 1];
+    const rows = times.map((t, i) => (t === lastTime ? i : -1)).filter((i) => i >= 0);
+    expect(identical(rows.map((i) => pr.columns['Concentration (mol/m^3)']![i]!), trace(profile, 'profile').y)).toBe(true);
+    expect(identical(rows.map((i) => pr.columns['Radius (m)']![i]!), trace(profile, 'profile').x)).toBe(true);
 
-    const js = JSON.parse((await download(page, 'dl-run-full-reply-json')).text) as { label: string; solver_commit: string; data: RunOk; units: Record<string, string> };
-    expect(js.label).toBe('COMPUTED v1.0');
-    expect(identical(js.data.release_fraction, trace(release, 'release-b').y)).toBe(true);
-    expect(js.units.time_s).toBe('s');
+    const js = JSON.parse((await download(page, 'dl-run-run-json')).text) as { provenance: { solver_package_version?: string; package_version?: string; parameter_class: string }; label: string; series: { release_fraction: number[] } };
+    expect(js.provenance.parameter_class).toBe('synthetic benchmark');
+    expect(js.label).toContain('not experimental validation');
+    expect(identical(js.series.release_fraction, trace(release, 'release-b').y)).toBe(true);
 
     // The comparison: offered only after the Compare section has run it.
     await expect(page.getByTestId('dl-comparison')).toHaveAttribute('data-available', 'false');
@@ -290,11 +305,17 @@ test.describe('downloads', () => {
     await expect.poll(async () => (await drawn(page, 'compare-plot')).map((t) => t.id)).toContain('compare-difference');
     const traces = await drawn(page, 'compare-plot');
     await nav(page, 'Data');
-    const cmp = parseCsv((await download(page, 'dl-comparison-curves-csv')).text);
-    expect(cmp.meta.kind).toBe('comparison');
-    expect(identical(cmp.columns.difference_current_minus_baseline!, trace(traces, 'compare-difference').y)).toBe(true);
-    expect(identical(cmp.columns.release_fraction_baseline!, trace(traces, 'compare-baseline').y)).toBe(true);
-    expect(identical(cmp.columns.release_fraction_current!, trace(traces, 'compare-modified').y)).toBe(true);
+    const cmp = await download(page, 'dl-comparison-comparison-csv');
+    expect(cmp.name).toMatch(/^strato-comparison-[0-9a-f]{7}\.csv$/);
+    const pc = parseCsv(cmp.text);
+    // The file starts with the library's provenance header and carries the full names with the units.
+    expect(pc.meta.label).toBe('numerical solution of the stated model; not experimental validation');
+    expect(pc.meta.input_sha256).toMatch(/^[0-9a-f]{64}$/);
+    expect(pc.meta.baseline_input_sha256).toMatch(/^[0-9a-f]{64}$/);
+    expect(pc.meta.parameter_source).toBeTruthy();
+    expect(identical(pc.columns['Release fraction of the baseline run (dimensionless)']!, trace(traces, 'compare-baseline').y)).toBe(true);
+    expect(identical(pc.columns['Release fraction of the run with the current inputs (dimensionless)']!, trace(traces, 'compare-modified').y)).toBe(true);
+    expect(identical(pc.columns['Release fraction of the current inputs minus release fraction of the baseline (dimensionless)']!, trace(traces, 'compare-difference').y)).toBe(true);
   });
 
   test('the parameter table can be searched', async ({ page, problems }) => {
@@ -314,17 +335,27 @@ test.describe('verification panel', () => {
     void problems;
     await gotoSection(page, 'verify');
     const diff = await drawn(page, 'verify-bc-difference-plot');
-    expect(identical(diff[0]!.y, COMPARISON.data.abs_error)).toBe(true);
-    expect(identical(diff[0]!.x, COMPARISON.data.time_s)).toBe(true);
-    for (const id of ['verify-bc-release', 'verify-bc-difference', 'verify-spatial', 'verify-temporal', 'verify-balance']) {
+    expect(identical(diff[0]!.y, COMPARISON.data.abs_difference)).toBe(true);
+    expect(identical(diff[0]!.x, COMPARISON.data.t_s)).toBe(true);
+    for (const id of ['verify-bc-release', 'verify-bc-difference', 'verify-check', 'verify-balance']) {
       await expect(page.getByTestId(id).locator('.figure__head .badge')).toHaveText('PRECOMPUTED');
       await expect(page.getByTestId(id).locator('figcaption')).toContainText('commit');
+      await expect(page.getByTestId(id).locator('figcaption')).toContainText('solver version');
     }
-    await drawn(page, 'verify-spatial-plot');
-    await drawn(page, 'verify-temporal-plot');
-    await expect(page.getByTestId('orders-spatial')).toHaveAttribute('data-value', CONVERGENCE.data.spatial_observed_orders);
-    await expect(page.getByTestId('orders-temporal')).toHaveAttribute('data-value', CONVERGENCE.data.temporal_observed_orders);
-    await expect(page.getByTestId('verify-temporal')).toContainText('Section 6.7');
-    await expect(page.getByTestId('verify-temporal').locator('a', { hasText: 'Section 6.7' })).toHaveAttribute('href', /#67-observed-order-of-accuracy-and-convergence$/);
+    await drawn(page, 'verify-check-plot');
+    await drawn(page, 'verify-balance-plot');
+    for (const [i, o] of CHECK.data.time_order.entries()) await expect(page.getByTestId(`orders-temporal-${i}`)).toHaveAttribute('data-value', String(o));
+    for (const [i, o] of CHECK.data.space_order.entries()) await expect(page.getByTestId(`orders-spatial-${i}`)).toHaveAttribute('data-value', String(o));
+    await expect(page.getByTestId('observed-orders')).toContainText('Observed order in time (dimensionless)');
+    await expect(page.getByTestId('observed-orders')).toContainText('Observed order in space (dimensionless)');
+    await expect(page.getByTestId('observed-orders')).toContainText('Release fraction by Method A: BTCS (dimensionless)');
+    await expect(page.getByTestId('observed-orders')).not.toContainText('BTCSagainst');
+    // Every column must be visible without sideways scrolling (the table sits in a box that scrolls).
+    const fit = await page.getByTestId('observed-orders').evaluate((t) => {
+      const box = t.closest('.table-box') as HTMLElement;
+      return { table: t.scrollWidth, box: box.clientWidth };
+    });
+    expect(fit.table).toBeLessThanOrEqual(fit.box);
+    await expect(page.getByTestId('solver-status')).toContainText('VERIFIED');
   });
 });

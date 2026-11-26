@@ -107,7 +107,7 @@ export function Playback() {
         value={usable ? tIndex : 0}
         disabled={!usable}
         aria-label="Output time"
-        aria-valuetext={t === undefined ? 'no run' : `t = ${sciText(t, 4)} s (${readableDuration(t)}), output ${tIndex + 1} of ${rows}`}
+        aria-valuetext={t === undefined ? 'no run' : `time ${sciText(t, 4)} s (${readableDuration(t)}), output ${tIndex + 1} of ${rows}`}
         data-testid="pb-slider"
         onChange={(e) => setPlayback({ tIndex: Number(e.target.value), playing: false })}
       />
@@ -116,7 +116,7 @@ export function Playback() {
           'no run'
         ) : (
           <>
-            <i>t</i> = <Sci value={t} unit="s" digits={4} /> <span className="muted">({readableDuration(t)})</span>
+            Time <Sci value={t} unit="s" digits={4} /> <span className="muted">({readableDuration(t)})</span>
           </>
         )}
       </span>

@@ -313,6 +313,77 @@ pub fn timeseries_csv(
     Ok(s)
 }
 
+/// Columns of the comparison CSV.
+pub const COMPARISON_COLUMNS: [Column; 4] = [
+    ("t_s", "Time (s)"),
+    (
+        "release_fraction_baseline",
+        "Release fraction of the baseline run (dimensionless)",
+    ),
+    (
+        "release_fraction_current",
+        "Release fraction of the run with the current inputs (dimensionless)",
+    ),
+    (
+        "release_fraction_difference",
+        "Release fraction of the current inputs minus release fraction of the baseline (dimensionless)",
+    ),
+];
+
+/// Comparison of two runs as CSV, with the provenance header of the run with the current inputs
+/// and the input digest of the baseline. The difference is the current minus the baseline
+/// release fraction at each output time the two runs share; the two time grids must be bit
+/// identical and the difference is never interpolated.
+///
+/// # Errors
+///
+/// Different output times, or a non-finite value.
+pub fn comparison_csv(
+    current: &Provenance,
+    baseline: &Provenance,
+    baseline_series: &TimeSeries,
+    current_series: &TimeSeries,
+) -> Result<String> {
+    if baseline_series.len() != current_series.len()
+        || baseline_series
+            .iter()
+            .zip(current_series)
+            .any(|(b, c)| b.0.to_bits() != c.0.to_bits())
+    {
+        bail!(
+            "the baseline and current runs have different output times; the difference is defined only on a common time grid and is never interpolated"
+        );
+    }
+    let mut s = comment_header(current, "comparison of the current inputs with a baseline");
+    let _ = writeln!(s, "# baseline_input_sha256: {}", baseline.input_sha256);
+    let _ = writeln!(
+        s,
+        "# baseline_parameter_source: {}",
+        one_line(&baseline.parameter_source)
+    );
+    let _ = writeln!(
+        s,
+        "# baseline_parameter_class: {}",
+        one_line(&baseline.parameter_class)
+    );
+    let _ = writeln!(
+        s,
+        "# difference: release fraction of the current inputs minus release fraction of the baseline, at the output times both runs share"
+    );
+    s.push_str(&header_line(&COMPARISON_COLUMNS));
+    for ((t, b), (_, c)) in baseline_series.iter().zip(current_series) {
+        let _ = writeln!(
+            s,
+            "{},{},{},{}",
+            num(*t)?,
+            num(b.release_fraction)?,
+            num(c.release_fraction)?,
+            num(c.release_fraction - b.release_fraction)?
+        );
+    }
+    Ok(s)
+}
+
 fn class_and_region(grid: &Grid, i: usize) -> (&'static str, String) {
     match grid.node_class(i) {
         NodeClass::Centre => ("centre", Region::Kernel.name().to_string()),

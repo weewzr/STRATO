@@ -64,7 +64,7 @@ test.describe('keyboard at 1280 px', () => {
   test('the diffusivity slider and fields work from the keyboard', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
-    const slider = page.getByLabel('D1, logarithmic slider');
+    const slider = page.getByLabel('Kernel diffusivity (m²/s), logarithmic slider');
     await slider.focus();
     await page.keyboard.press('End');
     await expect(page.getByTestId('d-field-0')).toHaveValue('1e-8');

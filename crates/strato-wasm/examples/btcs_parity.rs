@@ -2,9 +2,10 @@
 //!
 //! Three subcommands, run from the repository root:
 //!
-//!     btcs_parity requests            prints the battery of requests as JSON:
+//!     btcs_parity requests [NAME...]  prints the battery of requests as JSON:
 //!                                     {name: {"function": "run" | ..., "input": "<text>"}}
-//!     btcs_parity native              runs the battery natively and prints {name: reply}
+//!     btcs_parity native [NAME...]    runs the battery natively and prints {name: reply}
+//!                                     (with names, only those cases of the battery)
 //!     btcs_parity compare N.json W.json
 //!                                     compares a native reply file with a reply file produced
 //!                                     by the WebAssembly module for the same requests
@@ -80,7 +81,35 @@ fn battery() -> Vec<(&'static str, &'static str, String)> {
         "/time/dt_s",
         json!(5000.0),
     );
-    out.push(("run_coarse_large_dt", "run", req(coarse).to_string()));
+    out.push((
+        "run_coarse_large_dt",
+        "run",
+        req(coarse.clone()).to_string(),
+    ));
+    // A small comparison and its export, in the battery file that the browser parity test reads.
+    let coarse_modified = with(
+        coarse.clone(),
+        "/regions/3/diffusivity_m2_s",
+        json!(4.0e-14),
+    );
+    out.push((
+        "compare_coarse_sic_diffusivity",
+        "compare",
+        json!({"schema": 2,
+               "baseline": {"schema": 2, "config": coarse.clone()},
+               "modified": {"schema": 2, "config": coarse_modified.clone()}})
+        .to_string(),
+    ));
+    out.push((
+        "export_comparison_csv",
+        "export_run",
+        json!({"schema": 2, "format": "comparison_csv",
+               "config": coarse_modified, "baseline_config": coarse,
+               "input_file": "synthetic_five_layer.toml",
+               "parameter_source": "synthetic benchmark input with values changed by the user in the web controls",
+               "parameter_class": "user-supplied value, no source class recorded"})
+        .to_string(),
+    ));
     let mut fine = base.clone();
     for r in fine["regions"].as_array_mut().unwrap() {
         r["cells"] = json!(100);
@@ -113,10 +142,38 @@ fn battery() -> Vec<(&'static str, &'static str, String)> {
     out.push((
         "run_rejected_steps",
         "run",
-        req(with(base, "/time/dt_s", json!(1.0))).to_string(),
+        req(with(base.clone(), "/time/dt_s", json!(1.0))).to_string(),
     ));
+    for (name, format) in [
+        ("export_timeseries_csv", "timeseries_csv"),
+        ("export_profiles_csv", "profiles_csv"),
+    ] {
+        out.push((
+            name,
+            "export_run",
+            json!({"schema": 2, "config": base.clone(), "format": format,
+                   "input_file": "synthetic_five_layer.toml",
+                   "parameter_source": "synthetic benchmark, not literature data",
+                   "parameter_class": "synthetic benchmark"})
+            .to_string(),
+        ));
+    }
     out.push(("build_info", "build_info", String::new()));
     out
+}
+
+/// The battery, or only the cases named on the command line.
+fn selected(names: &[String]) -> Vec<(&'static str, &'static str, String)> {
+    let all = battery();
+    if names.is_empty() {
+        return all;
+    }
+    for n in names {
+        assert!(all.iter().any(|c| c.0 == n), "no case named {n}");
+    }
+    all.into_iter()
+        .filter(|c| names.iter().any(|n| n == c.0))
+        .collect()
 }
 
 fn call(function: &str, input: &str) -> String {
@@ -124,6 +181,7 @@ fn call(function: &str, input: &str) -> String {
         "validate" => strato_wasm::validate(input),
         "run" => strato_wasm::run(input),
         "compare" => strato_wasm::compare(input),
+        "export_run" => strato_wasm::export_run(input),
         "build_info" => strato_wasm::build_info(),
         other => panic!("unknown function {other}"),
     }
@@ -146,8 +204,26 @@ struct Tally {
 
 /// Fields that come from the independent Sturm-Liouville series, or from a difference with it.
 /// The label only classifies a failure for the report; it never excuses one.
+/// A `compare` reply holds two runs, `.baseline` and `.modified`, each with its own series.
 fn is_series_derived(pattern: &str) -> bool {
-    pattern.starts_with(".analytical.") || pattern.starts_with(".diagnostics.analytical_comparison")
+    let p = pattern
+        .strip_prefix(".baseline")
+        .or_else(|| pattern.strip_prefix(".modified"))
+        .unwrap_or(pattern);
+    p.starts_with(".analytical.") || p.starts_with(".diagnostics.analytical_comparison")
+}
+
+/// The series accuracy floor of the native reply that a leaf belongs to: that of the run itself, or
+/// for a `compare` reply that of the run (`.baseline` or `.modified`) the leaf lies in.
+fn floor_at(native: &Value, path: &str) -> f64 {
+    let run = if path.starts_with(".baseline") {
+        &native["baseline"]
+    } else if path.starts_with(".modified") {
+        &native["modified"]
+    } else {
+        native
+    };
+    run["analytical"]["accuracy_floor"].as_f64().unwrap_or(0.0)
 }
 
 fn pattern(path: &str) -> String {
@@ -176,19 +252,19 @@ fn fail(t: &mut Tally, path: &str, a: String, b: String, rel: f64) {
 
 /// The absolute allowance added to the per-value rule for one leaf: the series accuracy floor of
 /// the case for series-derived values, except for the two numbers that define the floor.
-fn extra_allowance(path: &str, floor: f64) -> f64 {
+fn extra_allowance(path: &str, native: &Value) -> f64 {
     let pat = pattern(path);
     if is_series_derived(&pat)
         && !pat.ends_with(".accuracy_floor")
         && !pat.ends_with(".min_flux_ratio")
     {
-        floor
+        floor_at(native, path)
     } else {
         0.0
     }
 }
 
-fn walk(path: &str, a: &Value, b: &Value, floor: f64, t: &mut Tally) {
+fn walk(path: &str, a: &Value, b: &Value, native: &Value, t: &mut Tally) {
     match (a, b) {
         (Value::Number(x), Value::Number(y)) => {
             let (x, y) = (
@@ -202,7 +278,7 @@ fn walk(path: &str, a: &Value, b: &Value, floor: f64, t: &mut Tally) {
             }
             let rel = (x - y).abs() / x.abs().max(y.abs());
             t.worst_rel = t.worst_rel.max(rel);
-            if (x - y).abs() > PARITY_RTOL * x.abs().max(y.abs()) + extra_allowance(path, floor) {
+            if (x - y).abs() > PARITY_RTOL * x.abs().max(y.abs()) + extra_allowance(path, native) {
                 fail(t, path, format!("{x:e}"), format!("{y:e}"), rel);
             }
         }
@@ -217,13 +293,13 @@ fn walk(path: &str, a: &Value, b: &Value, floor: f64, t: &mut Tally) {
                 );
             }
             for (i, (p, q)) in x.iter().zip(y).enumerate() {
-                walk(&format!("{path}[{i}]"), p, q, floor, t);
+                walk(&format!("{path}[{i}]"), p, q, native, t);
             }
         }
         (Value::Object(x), Value::Object(y)) => {
             for k in x.keys().chain(y.keys().filter(|k| !x.contains_key(*k))) {
                 match (x.get(k), y.get(k)) {
-                    (Some(p), Some(q)) => walk(&format!("{path}.{k}"), p, q, floor, t),
+                    (Some(p), Some(q)) => walk(&format!("{path}.{k}"), p, q, native, t),
                     _ => fail(
                         t,
                         &format!("{path}.{k} (key)"),
@@ -250,7 +326,7 @@ fn main() -> ExitCode {
     match args.first().map(String::as_str) {
         Some("requests") => {
             let mut m = Map::new();
-            for (name, function, input) in battery() {
+            for (name, function, input) in selected(&args[1..]) {
                 m.insert(name.into(), json!({"function": function, "input": input}));
             }
             println!("{}", Value::Object(m));
@@ -258,7 +334,7 @@ fn main() -> ExitCode {
         }
         Some("native") => {
             let mut m = Map::new();
-            for (name, function, input) in battery() {
+            for (name, function, input) in selected(&args[1..]) {
                 let text = call(function, &input);
                 m.insert(
                     name.into(),
@@ -288,8 +364,7 @@ fn main() -> ExitCode {
                     continue;
                 };
                 let mut t = Tally::default();
-                let floor = nv["analytical"]["accuracy_floor"].as_f64().unwrap_or(0.0);
-                walk("", nv, wv, floor, &mut t);
+                walk("", nv, wv, nv, &mut t);
                 let status = if t.failures.is_empty() {
                     "PASS"
                 } else {
@@ -330,7 +405,7 @@ fn main() -> ExitCode {
             }
         }
         _ => {
-            eprintln!("usage: btcs_parity requests | native | compare NATIVE.json WASM.json");
+            eprintln!("usage: btcs_parity requests [NAME...] | native [NAME...] | compare NATIVE.json WASM.json");
             ExitCode::FAILURE
         }
     }

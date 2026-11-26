@@ -2,7 +2,7 @@
 
 Live: https://weewzr.github.io/STRATO/
 
-An equation-first page for the verified STRATO v1.0 solver: the governing equation with a staged builder at the top, the live simulation directly under it (particle cross-section and 3D cutaway, radial profile, release fraction, inventory balance, numerical diagnostics), then the controls, an explanation of each active term and the research catalogue. Every number the page shows comes from the Rust solver compiled to WebAssembly (`crates/strato-wasm`, run in a worker) or from verified precomputed native output with a provenance header; no scientific equation is written in TypeScript.
+An equation-first page for the verified STRATO BTCS solver (Method A: BTCS, with Method B: Sturm–Liouville beside it): the governing equation with a staged builder at the top, the live simulation directly under it (particle cross-section and 3D cutaway, radial profile, release fraction, inventory balance, numerical diagnostics), then the controls, an explanation of each active term and the research catalogue. Every number the page shows comes from the Rust solver compiled to WebAssembly (`crates/strato-wasm`, run in a worker) or from verified precomputed native output with a provenance header; no scientific equation is written in TypeScript.
 
 What the demonstration can and cannot do today:
 
@@ -22,13 +22,12 @@ The site also carries the derivation and register documents, rendered from the r
 | `web/tests/`, `web/e2e/` | Vitest unit and component tests; Playwright browser tests |
 | `crates/strato-wasm/` | WebAssembly wrapper of the verified library (own workspace and lock file) |
 | `crates/strato-docsite/` | Tools workspace member: renders the documents into the build and checks every link of the built site |
-| `scripts/web/` | Generators and checks of the web data (to be ported to Rust in migration stage R1) |
+| `crates/strato-webtools/` | Tools workspace member: the generators of the web data files, the research catalogue check and the WebAssembly build check, one command-line tool (`strato-webtools`) |
 
 ## Requirements
 
 - Node.js 24 with npm (the lock file is `web/package-lock.json`).
 - Rust stable with the `wasm32-unknown-unknown` target, and the wasm-bindgen CLI at the version pinned in `crates/strato-wasm/Cargo.lock` (0.2.130): `cargo install wasm-bindgen-cli --version 0.2.130 --locked`.
-- Python 3.11 or later for the existing generators in `scripts/web/` (standard library only).
 - For the browser tests: `npx playwright install chromium`, or an installed Microsoft Edge with `PW_CHANNEL=msedge`.
 
 ## Build and test
@@ -36,20 +35,21 @@ The site also carries the derivation and register documents, rendered from the r
 Run from the repository root unless stated. These are the steps of `.github/workflows/web.yml`, in its order.
 
 ```sh
-# Generated data equal a fresh regeneration; research catalogue check and its fixture tests
-python3 -I -X utf8 scripts/web/generate_data.py case inputs/synthetic/synthetic_five_layer.toml --check
-python3 -I -X utf8 scripts/web/generate_data.py catalogue --check
-python3 -I -X utf8 scripts/web/generate_data.py colormaps --check
-python3 -I -X utf8 scripts/web/generate_data.py geometry --check
-python3 -I -X utf8 scripts/web/check_catalogue.py
-python3 -I -X utf8 scripts/web/tests/test_check_catalogue.py
-python3 -I -X utf8 scripts/web/tests/test_catalogue_blocks.py
+# The web tools (one Rust command-line tool; its tests run in the tools-workspace step below)
+cargo build --locked --release --manifest-path crates/Cargo.toml -p strato-webtools
+TOOL=crates/target/release/strato-webtools
 
-# WebAssembly wrapper: native parity with tests/golden/v1.0, then the module with its export and size check
+# Generated data equal a fresh regeneration; research catalogue check
+$TOOL case inputs/synthetic/synthetic_five_layer.toml --check
+$TOOL catalogue --check
+$TOOL colormaps --check
+$TOOL geometry --check
+$TOOL check-catalogue
+
+# WebAssembly wrapper: native tests of the BTCS interface, then the module with its export and size check
 cargo test --locked --manifest-path crates/strato-wasm/Cargo.toml
-sh scripts/web/build_wasm.sh
-sh scripts/web/precompute.sh --check
-python3 -I -X utf8 scripts/web/generate_data.py figures --check
+$TOOL build-wasm
+$TOOL precomputed --check
 
 # Interface
 cd web
@@ -63,7 +63,7 @@ cd ..
 # Documents and links (tools workspace)
 cargo fmt --manifest-path crates/Cargo.toml --all --check
 cargo clippy --locked --manifest-path crates/Cargo.toml --all-targets -- -D warnings
-cargo test --locked --manifest-path crates/Cargo.toml
+cargo test --locked --manifest-path crates/Cargo.toml     # includes the strato-webtools tests
 cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-docsite -- build --repo . --out web/dist
 cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-docsite -- check-links web/dist --base /STRATO/
 
@@ -74,7 +74,7 @@ EXPECT_COMMIT=$(git rev-parse HEAD) npx playwright test --project=chromium
 npx playwright test --project=performance   # frame-rate tests, on their own with one worker
 ```
 
-On Windows use `python` for `python3` and run `python -I -X utf8 scripts/web/build_wasm.py` and `python -I -X utf8 scripts/web/generate_data.py precomputed --check` for the two shell wrappers. `npm run dev` serves the interface with hot reload at http://localhost:5173/STRATO/ (the documents are not served there; build them into `web/dist` and use `npm run preview`).
+On Windows the tool is `crates\target\release\strato-webtools.exe`. Without `--check` each generator subcommand writes its files instead (`case <input.toml>`, `catalogue`, `colormaps`, `geometry`, `precomputed`); `build-wasm --check` checks an existing wasm build without rebuilding it. `--root <folder>` names the repository when the tool is not run inside it, and `SOURCE_DATE_EPOCH` fixes the `created_utc` field for a repeatable run. `npm run dev` serves the interface with hot reload at http://localhost:5173/STRATO/ (the documents are not served there; build them into `web/dist` and use `npm run preview`).
 
 Environment variables of the browser tests: `EXPECT_COMMIT` (the build stamp the self-test and the document pages must show), `PW_CHANNEL` (`msedge` for an installed Edge), `SHOTS_DIR` (write screenshots), `LIMITS_OUT` and `PARITY_OUT` (write the timing and parity records as JSON).
 

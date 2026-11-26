@@ -1,13 +1,20 @@
 // Mechanism availability (prompt/TECHNICAL_ARCHITECTURE.md Section 4): a lookup, not physics.
-// A mechanism is live only when the Rust wrapper reports it in build_info().capabilities AND its
+// A mechanism is live only when the Rust wrapper reports it in build_info().btcs.capabilities AND its
 // research status in the generated catalogue is the live status. Switches, stage live updates and
 // solver requests all ask this function; no component decides availability by itself.
 import { CATALOGUE, statusOf, type Catalogue, type MechanismRow } from '../research/catalogue';
 import { LIVE_STATUS } from '../research/status';
-import { STAGE_DEFS, STAGES, type Stage } from './terms';
+import { LAST_SOLVED_STEP, PREVIEW_STAGES, STEP_DEFS, type Stage } from './terms';
 
-export function isAvailable(id: string, capabilities: readonly string[], catalogue: Catalogue = CATALOGUE): boolean {
-  return capabilities.includes(id) && statusOf(catalogue, id) === LIVE_STATUS;
+/**
+ * Capability id of the BTCS solver (coordinator decision 10: diffusion_btcs_layered), also the
+ * mechanism id of its catalogue row. The builder's equations are those of this solver, so the page
+ * calls them live only when the wrapper reports the capability and the row has the live status.
+ */
+export const BTCS_CAPABILITY = 'diffusion_btcs_layered';
+
+export function isAvailable(id: string, capabilities: readonly string[], catalogue: Catalogue = CATALOGUE, statusRow: string = id): boolean {
+  return capabilities.includes(id) && statusOf(catalogue, statusRow) === LIVE_STATUS;
 }
 
 /**
@@ -19,18 +26,27 @@ export function isRowAvailable(row: MechanismRow, capabilities: readonly string[
   return row.solver_capability !== '' && row.status === LIVE_STATUS && isAvailable(row.solver_capability, capabilities, catalogue);
 }
 
+/** unavailable: the solver has loaded but does not report the BTCS capability at the live status. */
+export type SimulationMethod = 'loading' | 'unavailable' | 'btcs';
+
+/** Which solver the simulation in block B runs, as far as the wrapper's capabilities say. */
+export function simulationMethod(capabilities: readonly string[], catalogue: Catalogue = CATALOGUE): SimulationMethod {
+  if (capabilities.length === 0) return 'loading';
+  return isAvailable(BTCS_CAPABILITY, capabilities, catalogue) ? 'btcs' : 'unavailable';
+}
+
 /**
- * The highest builder stage whose mechanisms are all available, or 0 when none is (before the wasm
- * module reports its capabilities). The simulation in block B solves this stage; a higher displayed
- * stage is an equation preview only.
+ * The highest builder step whose equations the simulation in block B solves, or 0 when none is:
+ * the BTCS steps one to twelve when the wrapper runs the BTCS solver, then each preview whose
+ * mechanism is available, in order.
  */
 export function solvedStage(capabilities: readonly string[], catalogue: Catalogue = CATALOGUE): Stage | 0 {
-  let solved: Stage | 0 = 0;
-  for (const s of STAGES) {
-    const m = STAGE_DEFS[s].mechanism;
-    const ok = m === null ? solved === s - 1 && solved > 0 : isAvailable(m, capabilities, catalogue);
-    if (!ok) break;
-    solved = s;
+  if (simulationMethod(capabilities, catalogue) !== 'btcs') return 0;
+  let solved: Stage = LAST_SOLVED_STEP;
+  for (const s of PREVIEW_STAGES) {
+    const m = STEP_DEFS[s].mechanism;
+    if (m !== null && isAvailable(m, capabilities, catalogue)) solved = s;
+    else break;
   }
   return solved;
 }

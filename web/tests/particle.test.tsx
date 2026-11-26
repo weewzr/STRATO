@@ -1,5 +1,5 @@
 // Web phase 4: colour mapping, playback state, the particle view and the AGR-1 reference view.
-// The fixture is the native wrapper response written by scripts/web/generate_data.py precomputed.
+// The fixture is the native wrapper response written by strato-webtools precomputed (the BTCS run).
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -8,7 +8,7 @@ import { DEFAULT_CASE } from '../src/data/case';
 import { readableDuration } from '../src/format';
 import colormaps from '../src/generated/colormaps.json';
 import reference from '../src/generated/agr1_reference.json';
-import { cellColours, cellOfBins, colourOf, LOG_DECADES, scalePosition, table, tableIndex } from '../src/particle/colormap';
+import { bandOfBins, colourOf, LOG_DECADES, nodeColours, scalePosition, scaleTop, table, tableIndex } from '../src/particle/colormap';
 import { ParticleView } from '../src/particle/ParticleView';
 import { ReferenceParticle } from '../src/particle/ReferenceParticle';
 import type { RunOk } from '../src/solver/types';
@@ -63,23 +63,27 @@ describe('colour mapping of a known profile', () => {
     expect(tableIndex(0.5)).toBe(128);
   });
 
-  it('cellColours applies the map to every cell of a returned profile', () => {
+  it('nodeColours applies the map to every node of a returned profile, on a scale topped by the returned maximum', () => {
     const row = 50;
-    const colours = cellColours(RUN, row, 'cividis', 'log');
+    const colours = nodeColours(RUN, row, 'cividis', 'log');
     const values = RUN.profiles[row]!.c_mol_per_m3;
     expect(colours).toHaveLength(values.length);
-    values.forEach((c, i) => expect(colours[i]).toEqual(colourOf('cividis', c, RUN.inputs.initial.kernel_concentration_mol_m3, 'log')));
+    expect(colours).toHaveLength(RUN.grid.nodes);
+    // the top of the scale is a number the wrapper returned (the largest of its per-row maxima), not a computed one
+    expect(RUN.max_concentration_mol_m3).toContain(scaleTop(RUN));
+    values.forEach((c, i) => expect(colours[i]).toEqual(colourOf('cividis', c, scaleTop(RUN), 'log')));
   });
 
-  it('cellOfBins finds the cell that contains each radius bin', () => {
-    expect(cellOfBins([0, 1, 3, 4], 8)).toEqual([0, 0, 1, 1, 1, 1, 2, 2]);
-    const bins = cellOfBins(RUN.mesh.cell_faces_m, 1024);
-    const faces = RUN.mesh.cell_faces_m;
-    const outer = faces[faces.length - 1]!;
-    bins.forEach((cell, k) => {
+  it('bandOfBins finds the node band that contains each radius bin, from the ring edges the wrapper returned', () => {
+    expect(bandOfBins([0, 1, 3, 4], 8)).toEqual([0, 0, 1, 1, 1, 1, 2, 2]);
+    const edges = RUN.grid.ring_edges_m;
+    expect(edges).toHaveLength(RUN.grid.nodes + 1);
+    const bins = bandOfBins(edges, 1024);
+    const outer = edges[edges.length - 1]!;
+    bins.forEach((band, k) => {
       const r = ((k + 0.5) / 1024) * outer;
-      expect(r).toBeGreaterThanOrEqual(faces[cell]!);
-      expect(r).toBeLessThanOrEqual(faces[cell + 1]!);
+      expect(r).toBeGreaterThanOrEqual(edges[band]!);
+      expect(r).toBeLessThanOrEqual(edges[band + 1]!);
     });
   });
 });
@@ -112,10 +116,10 @@ describe('particle view', () => {
     expect(screen.getByTestId('xsec').dataset.mode).toBe('schematic');
   });
 
-  it('with a run is labelled COMPUTED v1.0, shows the row time and the wrapper share of the selected layer', () => {
+  it('with a run is labelled COMPUTED v2.0, shows the row time and the wrapper share of the selected layer', () => {
     withRun();
     render(<ParticleView config={DEFAULT_CASE.config} provenance={DEFAULT_CASE.provenance} />);
-    expect(screen.getByTestId('particle').querySelector('.badge')?.textContent).toBe('COMPUTED v1.0');
+    expect(screen.getByTestId('particle').querySelector('.badge')?.textContent).toBe('COMPUTED v2.0');
     expect(screen.getByTestId('xsec').dataset.mode).toBe('computed');
     const last = RUN.profiles.length - 1;
     expect(Number(screen.getByTestId('particle-time').dataset.value)).toBe(RUN.profiles[last]!.t_s);
@@ -141,11 +145,11 @@ describe('particle view', () => {
     render(<ParticleView config={DEFAULT_CASE.config} provenance={DEFAULT_CASE.provenance} />);
     const caption = () => screen.getByTestId('particle-figure').querySelector('figcaption')?.textContent ?? '';
     expect(useStrato.getState().view.logColour).toBe(true);
-    expect(caption()).toContain('logarithmic colour scale over 6 decades up to the kernel start concentration');
-    expect(caption()).toContain('below 10⁻⁶ c0 take the lowest colour');
+    expect(caption()).toContain('logarithmic colour scale over 6 decades up to the largest nodal concentration of the run');
+    expect(caption()).toContain('at or below 10⁻⁶ of it take the lowest colour');
     expect(caption()).not.toContain('from 0 to');
     fireEvent.change(screen.getByTestId('colour-scale'), { target: { value: 'linear' } });
-    expect(caption()).toContain('linear colour scale from 0 to the kernel start concentration');
+    expect(caption()).toContain('linear colour scale from 0 to the largest nodal concentration of the run');
   });
 });
 

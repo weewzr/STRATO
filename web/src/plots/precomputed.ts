@@ -1,4 +1,4 @@
-// Loads the precomputed native output in web/public/data/ (written by scripts/web/generate_data.py,
+// Loads the precomputed native output in web/public/data/ (written by strato-webtools precomputed,
 // each file with a provenance header; prompt/TECHNICAL_ARCHITECTURE.md Section 5) with a plain fetch,
 // once per file. The values are shown as they are in the file.
 import { useEffect, useState } from 'react';

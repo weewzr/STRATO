@@ -1,21 +1,27 @@
-// Links from the builder to the derivation documents and to the code, at the build commit.
+// Links from the builder to the BTCS mathematics documents and to the code of the BTCS solver.
 import { repoFile } from '../build';
 
-export type DocId = 'v1' | 'p2' | 'pseudo';
+/** The four BTCS documents (docs/mathematics/btcs): derivation, final formulation, pseudocode, traceability. */
+export type DocId = 'd1' | 'd2' | 'd3' | 'd4';
 
-export const DOCS: Record<DocId, { path: string; title: string }> = {
-  v1: { path: 'docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md', title: 'v1.0 full mathematical derivation' },
-  p2: { path: 'docs/mathematics/STRATO_Phase2_Derivations.md', title: 'Phase 2 derivations' },
-  pseudo: { path: 'docs/mathematics/STRATO_Phase2_Pseudocode.md', title: 'Phase 2 pseudocode' },
+export const DOCS: Record<DocId, { path: string; title: string; short: string }> = {
+  d1: { path: 'docs/mathematics/btcs/01_from_ftcs_to_five_layer_btcs.md', title: 'BTCS Document 1, from the explicit scheme to the five-layer BTCS derivation', short: 'D1' },
+  d2: { path: 'docs/mathematics/btcs/02_final_formulation.md', title: 'BTCS Document 2, final five-layer formulation', short: 'D2' },
+  d3: { path: 'docs/mathematics/btcs/03_rust_pseudocode.md', title: 'BTCS Document 3, Rust-oriented pseudocode', short: 'D3' },
+  d4: { path: 'docs/mathematics/btcs/04_equation_to_code_traceability.md', title: 'BTCS Document 4, equation-to-code traceability', short: 'D4' },
 };
 
-/** A section of a derivation document, named by its heading text exactly as written there. */
+/** A section of a BTCS document, named by its heading text exactly as written there. */
 export interface DocRef {
   doc: DocId;
   section: string;
 }
 
-/** A line of the Rust source at tag v1.0.1 (frozen); the link test checks that the line holds the symbol. */
+/**
+ * A line of a Rust source file of the BTCS solver (branch feat/btcs-solver). The link test checks
+ * that the line holds the symbol, in the working tree when the file is there and otherwise in the
+ * branch tip, so a moved definition is found before it is published.
+ */
 export interface CodeRef {
   path: string;
   line: number;
@@ -37,4 +43,9 @@ export function docHref(ref: DocRef): string {
 
 export function codeHref(ref: CodeRef): string {
   return `${repoFile(ref.path)}#L${ref.line}`;
+}
+
+/** The number printed beside an equation: a Document 1 number is written D1.n, a Document 2 number as it is (F10). */
+export function displayTag(doc: DocId, tag: string): string {
+  return doc === 'd1' ? `D1.${tag}` : tag;
 }

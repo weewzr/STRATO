@@ -1,5 +1,5 @@
 // Typed access to the generated research catalogue (web/src/generated/research_catalogue.json,
-// written by scripts/web/generate_data.py catalogue from data/research/*.csv). Every research status
+// written by strato-webtools catalogue from data/research/*.csv). Every research status
 // the page shows comes from here.
 import { createContext, useContext } from 'react';
 import catalogueJson from '../generated/research_catalogue.json';

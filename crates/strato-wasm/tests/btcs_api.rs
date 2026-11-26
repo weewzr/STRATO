@@ -231,15 +231,32 @@ fn balance_terms_and_residual_bound() {
     // operations in the solver (it changed when the Thomas stepper was recoded in the F24 form),
     // so it is asserted only through the derived bound above (|eps| <= bound, already checked
     // per row and for the maximum), never against a printed value. The bound itself is derived
-    // from the inputs (n = 40, dt = 200 s: final bound 2.62e-8, solver-core-results.md, section F).
+    // from the inputs. It is the bound the solver derives during the run itself (no safety factor),
+    // the one the exports and the command line give, so the page shows one value: every row is
+    // bit-equal to the library run's own `balance_residual_bound`.
     assert!(max_rel.is_finite() && max_rel >= 0.0, "{max_rel:e}");
+    let cfg = Config::load(path("inputs/synthetic/synthetic_five_layer.toml")).unwrap();
+    let lib = btcs_run(&cfg, &LIMITS, &[100_000.0]).unwrap();
+    assert_eq!(lib.series.len(), bound.len());
+    for (i, (_, d)) in lib.series.iter().enumerate() {
+        assert_eq!(
+            bound[i].to_bits(),
+            d.balance_residual_bound.to_bits(),
+            "row {i}"
+        );
+    }
     let fb = b["tolerance"]["final_bound_relative"].as_f64().unwrap();
-    assert!(equals_printed(fb, 2.62e-8), "{fb:e}");
+    assert_eq!(
+        b["final"]["residual_bound_mol"].as_f64().unwrap().to_bits(),
+        bound[last].to_bits()
+    );
+    // Observed value of this case (n = 40, dt = 200 s): final bound 1.148e-8 relative to the start inventory.
+    assert!(equals_printed(fb, 1.148e-8), "{fb:e}");
 }
 
 #[test]
 fn the_bound_reproduces_the_recorded_values_at_n20() {
-    // Recorded for n = 20, dt = 200 s: final bound 6.56e-9. The observed residual is a rounding
+    // Observed for n = 20, dt = 200 s: final bound 2.870e-9. The observed residual is a rounding
     // quantity and is only required to stay within that derived bound.
     let mut cfg = synthetic_config_value();
     for r in cfg["regions"].as_array_mut().unwrap() {
@@ -253,7 +270,7 @@ fn the_bound_reproduces_the_recorded_values_at_n20() {
         max_rel.is_finite() && max_rel >= 0.0 && max_rel <= fb,
         "{max_rel:e} vs {fb:e}"
     );
-    assert!(equals_printed(fb, 6.56e-9), "{fb:e}");
+    assert!(equals_printed(fb, 2.870e-9), "{fb:e}");
 }
 
 #[test]
@@ -372,8 +389,8 @@ fn requested_profile_times_use_the_nearest_step_and_are_never_interpolated() {
     // Too many times, bad times.
     let many: Vec<f64> = (0..1001).map(|i| i as f64).collect();
     for (times, needle) in [
-        (json!(many), "MAX_PROFILE_TIMES"),
-        (json!([-1.0]), "non-negative"),
+        (json!(many), "profile times were requested"),
+        (json!([-1.0]), "at least 0 s"),
     ] {
         let r = json!({"schema": 2, "config": synthetic_config_value(), "profile_times_s": times})
             .to_string();
@@ -394,7 +411,7 @@ fn requested_profile_times_use_the_nearest_step_and_are_never_interpolated() {
     assert!(out["errors"][0]
         .as_str()
         .unwrap()
-        .contains("MAX_PROFILE_VALUES"));
+        .contains("stored concentration values"));
 }
 
 #[test]
@@ -438,7 +455,7 @@ fn the_series_is_the_library_series_and_the_comparison_is_reported() {
             .as_array()
             .unwrap()
             .iter()
-            .any(|m| m.as_str().unwrap().contains("MAX_SERIES_MODES")));
+            .any(|m| m.as_str().unwrap().contains("Method B is not computed")));
     }
 }
 
@@ -482,7 +499,10 @@ fn validate_reports_plan_grid_and_limits() {
     .unwrap();
     assert_eq!(w["ok"], true);
     assert_eq!(w["plan"]["steps"], 667);
-    assert!(w["warnings"][0].as_str().unwrap().contains("will use dt"));
+    assert!(w["warnings"][0]
+        .as_str()
+        .unwrap()
+        .contains("will use a time step"));
 }
 
 fn assert_rejected(req: &str, needle: &str) {
@@ -498,6 +518,33 @@ fn assert_rejected(req: &str, needle: &str) {
     // validate agrees for the same request.
     let val: Value = serde_json::from_str(&strato_wasm::validate(req)).unwrap();
     assert_eq!(val["ok"], false, "validate accepted {req}");
+    // The page shows these messages as they are (decisions 30 and 52): the rules of the inputs name
+    // each quantity in full with its unit and contain no identifier of the code. Messages about the
+    // form of the request itself are not shown to a reader of the page and are exempt.
+    let form = [
+        "config:",
+        "request:",
+        "missing field",
+        "unknown field",
+        "unsupported request schema",
+    ];
+    if !form.iter().any(|f| needle.starts_with(f)) {
+        for e in errors {
+            let e = e.as_str().unwrap();
+            for ident in [
+                "MAX_",
+                "_s",
+                "_m",
+                "_k",
+                "output_every",
+                "dt ",
+                "t_end",
+                "ceil(",
+            ] {
+                assert!(!e.contains(ident), "identifier {ident:?} in message {e:?}");
+            }
+        }
+    }
 }
 
 #[test]
@@ -506,27 +553,27 @@ fn invalid_inputs_are_rejected_with_messages() {
     let cases: Vec<(Value, &str)> = vec![
         (
             with(base.clone(), "/regions", json!([])),
-            "exactly five physical regions",
+            "Exactly five layers are required, but 0 were given",
         ),
         (
             with(base.clone(), "/species", json!("  ")),
-            "species must not be empty",
+            "The name of the species must not be empty",
         ),
         (
             with(base.clone(), "/temperature_k", json!(0.0)),
-            "temperature_k",
+            "Temperature (K) is 0; it must be a finite number larger than 0 K",
         ),
         (
             with(base.clone(), "/regions/2/outer_radius_m", json!(3.0e-4)),
-            "invalid region IPyC",
+            "Outer radius of the IPyC layer (m) is 3e-4; it must be a finite number larger than 3e-4 m, the outer radius of the layer inside it",
         ),
         (
             with(base.clone(), "/regions/1/diffusivity_m2_s", json!(0.0)),
-            "invalid region Buffer",
+            "Diffusivity of the Buffer layer (m²/s) is 0; it must be a finite number larger than 0 m²/s",
         ),
         (
             with(base.clone(), "/regions/4/cells", json!(0)),
-            "invalid region OPyC",
+            "Number of grid intervals in the OPyC layer (dimensionless) is 0; it must be a whole number of at least 1",
         ),
         (with(base.clone(), "/regions/4/cells", json!(-3)), "config:"),
         (
@@ -535,11 +582,11 @@ fn invalid_inputs_are_rejected_with_messages() {
         ),
         (
             with(base.clone(), "/time/dt_s", json!(0.0)),
-            "invalid time controls",
+            "Time step (s) is 0; it must be a finite number larger than 0 s",
         ),
         (
             with(base.clone(), "/time/output_every_steps", json!(0)),
-            "invalid time controls",
+            "Number of time steps between two output rows (dimensionless) is 0; it must be a whole number of at least 1",
         ),
         (
             with(
@@ -547,7 +594,7 @@ fn invalid_inputs_are_rejected_with_messages() {
                 "/initial/kernel_concentration_mol_m3",
                 json!(-1.0),
             ),
-            "nonnegative",
+            "Initial concentration in the kernel (mol/m³) is -1; it must be a finite number larger than 0 mol/m³",
         ),
         (
             with(
@@ -555,11 +602,11 @@ fn invalid_inputs_are_rejected_with_messages() {
                 "/initial/kernel_concentration_mol_m3",
                 json!(0.0),
             ),
-            "kernel concentration must be finite and positive",
+            "Initial concentration in the kernel (mol/m³) is 0; it must be a finite number larger than 0 mol/m³",
         ),
         (
             with(base.clone(), "/regions/0/cells", json!(2001)),
-            "MAX_TOTAL_INTERVALS",
+            "above the limit of 2000 grid intervals",
         ),
         (
             with(
@@ -567,17 +614,17 @@ fn invalid_inputs_are_rejected_with_messages() {
                 "/regions/0/cells",
                 json!(18446744073709551615u64),
             ),
-            "MAX_TOTAL_INTERVALS",
+            "above the limit of 2000 grid intervals",
         ),
-        (with(base.clone(), "/time/dt_s", json!(1.0)), "MAX_STEPS"),
-        (with(base.clone(), "/time/dt_s", json!(5e-324)), "MAX_STEPS"),
+        (with(base.clone(), "/time/dt_s", json!(1.0)), "above the limit of 20000 time steps"),
+        (with(base.clone(), "/time/dt_s", json!(5e-324)), "above the limit of 20000 time steps"),
         (
             with(
                 with(base.clone(), "/time/dt_s", json!(10.0)),
                 "/time/output_every_steps",
                 json!(1),
             ),
-            "MAX_PROFILE_VALUES",
+            "stored concentration values",
         ),
     ];
     for (cfg, needle) in cases {
@@ -777,4 +824,149 @@ fn build_info_reports_abi_2_and_the_btcs_capability() {
         .unwrap()
         .iter()
         .any(|f| f == "run_v1"));
+}
+
+// ---------------------------------------------------------------------------------------
+// export_run: the data files of a run, written by the library's export
+// ---------------------------------------------------------------------------------------
+
+fn export(format: &str) -> Value {
+    let req = json!({"schema": 2, "config": synthetic_config_value(), "format": format,
+        "input_file": "synthetic_five_layer.toml",
+        "parameter_source": "synthetic benchmark, not literature data",
+        "parameter_class": "synthetic benchmark"});
+    serde_json::from_str(&strato_wasm::export_run(&req.to_string())).unwrap()
+}
+
+#[test]
+fn export_time_series_csv_carries_the_provenance_header_and_the_run_values() {
+    let v = export("timeseries_csv");
+    assert_eq!(v["status"], "ok", "{v}");
+    assert_eq!(v["label"], "COMPUTED v2.0");
+    assert_eq!(v["media_type"], "text/csv");
+    let text = v["text"].as_str().unwrap();
+    assert!(text.contains("# solver_package_version: "));
+    assert!(text.contains(&format!("# commit: {}", strato_wasm::BUILD_COMMIT)));
+    assert!(text.contains("# input_sha256: "));
+    assert!(text.contains("# parameter_source: synthetic benchmark, not literature data"));
+    assert!(text.contains("# parameter_class: synthetic benchmark"));
+    assert!(text.contains("Release fraction (dimensionless)"));
+    // The last row holds the release fraction that `run` returns, bit for bit (both are the
+    // shortest round-trip text of the same solver value).
+    let run = run_ok(&request(synthetic_config_value()));
+    let last = text.lines().last().unwrap();
+    let cell: f64 = last.split(',').nth(3).unwrap().parse().unwrap();
+    let expected = *floats(&run["release_fraction"]).last().unwrap();
+    assert_eq!(cell, expected);
+    // The rounding bound of the last row is the bound that `run` returns (one value for the page,
+    // the export and the command line).
+    let bound: f64 = last.split(',').nth(7).unwrap().parse().unwrap();
+    assert_eq!(
+        bound.to_bits(),
+        floats(&run["balance_residual_bound_mol"])
+            .last()
+            .unwrap()
+            .to_bits()
+    );
+}
+
+#[test]
+fn the_comparison_export_is_a_csv_with_the_provenance_header_and_the_difference_from_rust() {
+    let current = with(
+        synthetic_config_value(),
+        "/regions/3/diffusivity_m2_s",
+        json!(1.0e-13),
+    );
+    let req = |format: &str, baseline: Option<Value>| {
+        let mut r = json!({"schema": 2, "format": format, "config": current.clone(),
+            "parameter_source": "synthetic benchmark, not literature data",
+            "parameter_class": "synthetic benchmark"});
+        if let Some(b) = baseline {
+            r["baseline_config"] = b;
+        }
+        serde_json::from_str::<Value>(&strato_wasm::export_run(&r.to_string())).unwrap()
+    };
+    let v = req("comparison_csv", Some(synthetic_config_value()));
+    assert_eq!(v["status"], "ok", "{v}");
+    assert_eq!(v["media_type"], "text/csv");
+    let text = v["text"].as_str().unwrap();
+    assert!(text.contains("comparison of the current inputs with a baseline"));
+    assert!(text.contains("# parameter_source: synthetic benchmark, not literature data"));
+    assert!(text.contains("# input_sha256: "));
+    assert!(text.contains("# baseline_input_sha256: "));
+    // Without the baseline's own source and class the header records the library default for them.
+    assert!(text.contains("# baseline_parameter_source: "));
+    assert!(text.contains("# baseline_parameter_class: "));
+    let mut own = json!({"schema": 2, "format": "comparison_csv", "config": current.clone(),
+        "baseline_config": synthetic_config_value(),
+        "baseline_parameter_source": "baseline source row",
+        "baseline_parameter_class": "baseline class"});
+    own["parameter_source"] = json!("current source row");
+    own["parameter_class"] = json!("current class");
+    let o: Value = serde_json::from_str(&strato_wasm::export_run(&own.to_string())).unwrap();
+    assert_eq!(o["status"], "ok", "{o}");
+    let ot = o["text"].as_str().unwrap();
+    assert!(ot.contains("# parameter_source: current source row\n"));
+    assert!(ot.contains("# parameter_class: current class\n"));
+    assert!(ot.contains("# baseline_parameter_source: baseline source row\n"));
+    assert!(ot.contains("# baseline_parameter_class: baseline class\n"));
+    let rows: Vec<&str> = text.lines().filter(|l| !l.starts_with('#')).collect();
+    assert_eq!(
+        rows[0],
+        "Time (s),Release fraction of the baseline run (dimensionless),Release fraction of the run with the current inputs (dimensionless),Release fraction of the current inputs minus release fraction of the baseline (dimensionless)"
+    );
+    let base = run_ok(&request(synthetic_config_value()));
+    let cur = run_ok(&request(current.clone()));
+    let n = rows.len() - 1;
+    assert_eq!(n, floats(&base["times_s"]).len());
+    let last: Vec<f64> = rows[n].split(',').map(|c| c.parse().unwrap()).collect();
+    let fb = *floats(&base["release_fraction"]).last().unwrap();
+    let fc = *floats(&cur["release_fraction"]).last().unwrap();
+    assert_eq!(last[1].to_bits(), fb.to_bits());
+    assert_eq!(last[2].to_bits(), fc.to_bits());
+    assert_eq!(last[3].to_bits(), (fc - fb).to_bits());
+    // Runs with different output times are not compared, and never interpolated.
+    let other = with(
+        synthetic_config_value(),
+        "/time/output_every_steps",
+        json!(20),
+    );
+    let r = req("comparison_csv", Some(other));
+    assert_eq!(r["status"], "rejected", "{r}");
+    assert!(r["errors"][0]
+        .as_str()
+        .unwrap()
+        .contains("different output times"));
+    // The format needs the baseline, and the baseline is used by no other format.
+    assert_eq!(req("comparison_csv", None)["status"], "rejected");
+    assert_eq!(
+        req("timeseries_csv", Some(synthetic_config_value()))["status"],
+        "rejected"
+    );
+}
+
+#[test]
+fn export_profiles_and_run_json_are_written_and_the_format_is_checked() {
+    let p = export("profiles_csv");
+    assert_eq!(p["status"], "ok", "{p}");
+    assert!(p["text"]
+        .as_str()
+        .unwrap()
+        .contains("Concentration (mol/m^3)"));
+    let j = export("run_json");
+    assert_eq!(j["status"], "ok", "{j}");
+    assert_eq!(j["media_type"], "application/json");
+    let parsed: Value = serde_json::from_str(j["text"].as_str().unwrap()).unwrap();
+    assert!(parsed.is_object());
+    let bad = export("xlsx");
+    assert_eq!(bad["status"], "rejected");
+    assert!(bad["errors"][0]
+        .as_str()
+        .unwrap()
+        .contains("unknown export format"));
+    // A configuration that the solver rejects is rejected by the export with the same message.
+    let req = json!({"schema": 2, "format": "timeseries_csv",
+        "config": with(synthetic_config_value(), "/time/dt_s", json!(0.0))});
+    let v: Value = serde_json::from_str(&strato_wasm::export_run(&req.to_string())).unwrap();
+    assert_eq!(v["status"], "rejected");
 }

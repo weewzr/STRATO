@@ -1,0 +1,27 @@
+# label: PRECOMPUTED
+# kind: btcs_independent_check
+# solver: STRATO BTCS five-layer spherical finite difference
+# generator: strato 1.0.1
+# converter: strato-webtools precomputed v2
+# strato_version: 1.0.1
+# commit: f86310b1b1844803761257676da06719035249f5
+# input_file: inputs/synthetic/synthetic_five_layer.toml
+# input_file_sha256: 257fe9933a4c1dee38a44545209bfafea7fc06945f389fad9aeb5f0d739afa93
+# command: copy of tests/golden/btcs/s5_n40_dt200/independent_check.csv
+# rustc: rustc 1.100.0 (0ef1bc386 2026-11-09)
+# created_utc: 2026-11-26T09:31:09Z
+# REGRESSION REFERENCE, NOT TRUTH.
+# These values were produced by the BTCS solver itself at commit ae797e6. A mismatch with a later run means that the code changed; the file is never edited by hand.
+# Why the values are believable: independent_check.csv beside this file compares the release fraction of this case with a reference that contains no BTCS code.
+# case: s5_n40_dt200
+# input: inputs/synthetic/synthetic_five_layer.toml
+# Comparison rule: |a - b| <= 1e-12 max(scale, |a|, |b|), scale = 1 for times and fractions, the initial inventory for mol, the largest concentration for mol/m^3.
+# reference: multilayer Sturm-Liouville eigenfunction series (analytical::sturm_liouville), 10 modes, accuracy floor 3.997129786795436e-12
+# check: (a) the observed orders round to 1 in time and 2 in space (|order - 1| < 0.5 and |order - 2| < 0.5); (b) |F_reference - F_limit| <= 0.05 |F_btcs - F_reference| + floor, where F_limit = F_btcs - e_time - e_space + e_cross is the limit estimated from the dt/2, dt/4, dt/8, 2n, 4n, 8n and (dt/2, 2n) refinements with the order read from the data (the cross term is added back because the time and space estimates each contain it). The 0.05 is a convention, not a derived tolerance; the orders, the uncertainties u of the estimates and the limit difference are measurements. See the module documentation of validation::regression.
+# separate-language anchor: F(2e5 s) = 4.325556390930383e-1 from the Python oracle pinned in tests/finite_volume_vs_analytical.rs; |series - anchor| = 4.625189120588402e-13
+# numerical solution of the stated model; not experimental validation
+Time (s),Release fraction computed by BTCS (dimensionless),Release fraction of the independent reference (dimensionless),Absolute difference of the release fractions (dimensionless),Estimated time-discretisation error of the BTCS run (dimensionless),Observed order in time (dimensionless),Uncertainty of the time-error estimate (dimensionless),Estimated space-discretisation error of the BTCS run (dimensionless),Observed order in space (dimensionless),Uncertainty of the space-error estimate (dimensionless),Estimated cross term of the time and space errors (dimensionless),Estimated numerical limit of the release fraction (dimensionless),Absolute difference of the reference and the estimated limit (dimensionless),Accuracy floor of the independent reference (dimensionless),Convention fraction of the difference plus reference floor (dimensionless),Limit difference divided by tolerance (dimensionless),Check passed (true or false)
+2e4,6.535241291671755e-3,6.263902211739669e-3,2.713390799320859e-4,2.447461330971732e-4,9.867904801477422e-1,5.657258145578756e-7,2.698436780172265e-5,1.9995432563692783e0,5.346308968451341e-10,-3.601140511344525e-7,6.263150676721724e-3,7.515350179451014e-7,3.997129786795436e-12,1.3566957993734083e-5,5.539451204110743e-2,true
+5e4,7.580053201810895e-2,7.572821318351808e-2,7.23188345908704e-5,3.828617100034787e-5,1.0115758264134596e0,7.419862263491339e-8,3.3904890582760654e-5,1.9998539498134507e0,2.363163831287096e-10,-2.8774847393719938e-8,7.572831218167844e-2,9.899816036385012e-8,3.997129786795436e-12,3.615945726673307e-6,2.737822076077703e-2,true
+1e5,2.1280543186298717e-1,2.128698512122137e-1,6.441934922651882e-5,-8.067140789874107e-5,9.986016338059283e-1,1.965057896957667e-8,1.6247647330872762e-5,1.999931143219544e0,1.9001383799732707e-10,2.166194512653874e-8,2.1286987728550016e-1,2.607328647430407e-8,3.997129786795436e-12,3.2209714584557276e-6,8.09485175842096e-3,true
+2e5,4.324291045714141e-1,4.3255563909257577e-1,1.2653452116168085e-4,-1.215404828356877e-4,9.996425439980436e-1,7.477268026967465e-9,-4.983107237287396e-6,1.9999834519223083e0,6.004172159457255e-10,2.076326962215565e-8,4.325556489247567e-1,9.832180902780152e-9,3.997129786795436e-12,6.3267300552138294e-6,1.554069925059865e-3,true

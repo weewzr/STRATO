@@ -60,12 +60,12 @@ describe('research statuses are never typed into a component', () => {
 describe('generated case data', () => {
   it('carries the provenance header', () => {
     expect(caseJson.label).toBe('INPUT');
-    expect(caseJson.generator).toMatch(/^scripts\/web\/generate_data\.py v\d+$/);
+    expect(caseJson.generator).toMatch(/^strato-webtools v\d+$/);
     expect(caseJson.input_file).toBe('inputs/synthetic/synthetic_five_layer.toml');
     expect(caseJson.input_sha256).toMatch(/^[0-9a-f]{64}$/);
     expect(caseJson.input_commit).toMatch(/^[0-9a-f]{40}$/);
     expect(caseJson.strato_version).toMatch(/^\d+\.\d+\.\d+$/);
-    expect(caseJson.command).toContain('generate_data.py case');
+    expect(caseJson.command).toContain('strato-webtools case');
   });
 
   it('agrees value for value with the downloadable CSV written by the same generator', () => {

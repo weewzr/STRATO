@@ -3,14 +3,15 @@ import { join } from 'node:path';
 import type { Page } from '@playwright/test';
 import { expect, gotoSection, horizontalOverflow, solverRequests, test, waitForRun } from './fixtures';
 
-// Web phase 2: the staged equation builder in the running build (prompt/TESTING_AND_VALIDATION.md
-// Sections 3, 3.1, 3.2 and 3.3).
+// The progressive equation builder for the BTCS solver in the running build
+// (prompt/TESTING_AND_VALIDATION.md Sections 3, 3.1, 3.2 and 3.3).
 
 const catalogue = JSON.parse(readFileSync(join(process.cwd(), 'src', 'generated', 'research_catalogue.json'), 'utf8')) as {
   data: { mechanisms: { mechanism_id: string; status: string }[] };
 };
 const statusOf = (id: string) => catalogue.data.mechanisms.find((m) => m.mechanism_id === id)?.status;
-const STAGES = [1, 2, 3, 4, 5, 6] as const;
+const STAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] as const;
+const PREVIEWS: readonly number[] = [15, 16, 17];
 
 async function pickStage(page: Page, s: number) {
   await page.getByTestId(`stage-${s}`).click();
@@ -27,14 +28,14 @@ async function simulationSnapshot(page: Page) {
   };
 }
 
-test.describe('staged equation builder at 1440 x 900', () => {
+test.describe('progressive equation builder at 1440 x 900', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('stages 2 to 6 show the preview banner, leave the simulation unchanged and send no request', async ({ page, problems }) => {
+  test('every step leaves the simulation unchanged and sends no request; steps one to twelve are live and the others are labelled', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
-    // Web phase 3: the solver has run stage 1 before the stages are changed; selecting a stage
-    // must leave the inputs, the result and the solver request count as they are.
+    // The solver has run before the steps are changed; selecting a step must leave the inputs, the
+    // result and the solver request count as they are.
     await waitForRun(page);
     const before = await simulationSnapshot(page);
     const sentBefore = await solverRequests(page);
@@ -44,17 +45,41 @@ test.describe('staged equation builder at 1440 x 900', () => {
     page.on('request', (r) => {
       if (!['font', 'image'].includes(r.resourceType())) requests.push(`${r.resourceType()} ${r.url()}`);
     });
-    await expect(page.getByTestId('preview-banner')).toHaveCount(0);
-    for (const s of [2, 3, 4, 5, 6]) {
+    // The wrapper of this build runs the BTCS solver: the page says so for steps one to twelve.
+    await expect(page.getByTestId('live-note')).toContainText('Live: the simulation below solves these equations with the verified finite-difference BTCS Rust solver');
+    for (const s of STAGES.filter((n) => n !== 1)) {
       await pickStage(page, s);
-      await expect(page.getByTestId('preview-banner')).toContainText('Equation preview only: the simulation below solves stage 1.');
-      await expect(page.getByTestId('strip-stage')).toHaveText(`Equation shown: stage ${s}; simulation: stage 1`);
+      if (s === 14 || PREVIEWS.includes(s)) await expect(page.getByTestId('preview-banner')).toBeVisible();
+      else if (s === 13) await expect(page.getByTestId('live-note')).toContainText('not experimental validation');
+      else await expect(page.getByTestId('live-note')).toContainText('Live: the simulation below solves these equations with the verified finite-difference BTCS Rust solver');
+      await expect(page.getByTestId('strip-stage')).toHaveText(`Step ${s} shown; simulation: Method A: BTCS`);
       expect(await simulationSnapshot(page)).toEqual(before);
     }
     await page.waitForTimeout(400);
     expect(await solverRequests(page)).toBe(sentBefore);
     await expect(page.getByTestId('block-b')).toHaveAttribute('data-input-key', keyBefore ?? '');
     expect(requests).toEqual([]);
+  });
+
+  test('Tab from the last part of a step moves into the card of that part, and keyboard focus is never lost', async ({ page, problems }) => {
+    void problems;
+    await gotoSection(page, 'explore');
+    const buttons = page.locator('.eq-term-btn');
+    const n = await buttons.count();
+    expect(n).toBeGreaterThan(1);
+    await buttons.nth(n - 1).focus();
+    const where = () => page.evaluate(() => ({ tag: document.activeElement?.tagName ?? '', inCard: document.activeElement?.closest('[data-testid="term-card"]') !== null }));
+    await page.keyboard.press('Tab');
+    const first = await where();
+    expect(first.tag).not.toBe('BODY');
+    expect(first.inCard).toBe(true);
+    // Through the links of the card and out of it: focus is on an element every time, never on the page body.
+    for (let i = 0; i < 4; i++) {
+      await page.keyboard.press('Tab');
+      expect((await where()).tag, `Tab press ${i + 2}`).not.toBe('BODY');
+    }
+    await page.keyboard.press('Shift+Tab');
+    expect((await where()).tag).not.toBe('BODY');
   });
 
   test('every research status shown equals the generated catalogue', async ({ page, problems }) => {
@@ -73,7 +98,7 @@ test.describe('staged equation builder at 1440 x 900', () => {
     }
   });
 
-  test('KaTeX typesets every stage without an error, numbered on the right', async ({ page, problems }) => {
+  test('KaTeX typesets every step without an error, each equation numbered with the number of its document', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     for (const s of STAGES) {
@@ -81,22 +106,22 @@ test.describe('staged equation builder at 1440 x 900', () => {
       await expect(page.locator('.katex-error')).toHaveCount(0);
       const eq = page.getByTestId('equation');
       await expect(eq.locator('.katex-display').first()).toBeVisible();
-      const tag = eq.locator('.katex-tag').first();
-      await expect(tag).toBeVisible();
-      const eqBox = await eq.boundingBox();
-      const tagBox = await tag.boundingBox();
-      if (!eqBox || !tagBox) throw new Error('no box');
-      expect(tagBox.x + tagBox.width).toBeGreaterThan(eqBox.x + eqBox.width * 0.75);
+      const tag = (await eq.getAttribute('data-tag')) ?? '';
+      const numbers = tag.split(' ').filter(Boolean);
+      // Every equation of a tagged step carries its number; an untagged line carries none.
+      expect(await eq.locator('.katex-tag').count(), `step ${s} numbers ${tag}`).toBe(numbers.length);
+      const first = eq.locator('.katex-tag').first();
+      if (numbers.length > 0) await expect(first).toBeVisible();
     }
   });
 
-  test('the switches stay disabled and the switch of the stage is marked', async ({ page, problems }) => {
+  test('the switches stay disabled and the switch of the preview is marked', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     for (const [s, id] of [
-      [2, 'source'],
-      [3, 'decay'],
-      [4, 'arrhenius'],
+      [15, 'source'],
+      [16, 'decay'],
+      [17, 'arrhenius'],
     ] as const) {
       await pickStage(page, s);
       const sw = page.getByTestId(`mech-${id}`);
@@ -107,36 +132,55 @@ test.describe('staged equation builder at 1440 x 900', () => {
     }
   });
 
-  test('block A shows no number apart from equation numbers, references and stage numbers', async ({ page, problems }) => {
+  test('block A shows no number apart from equation numbers, references and step numbers', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     for (const s of STAGES) {
       await pickStage(page, s);
       const text = await page.getByTestId('block-a').evaluate((el) => {
         const c = el.cloneNode(true) as HTMLElement;
-        c.querySelectorAll('.katex, [data-ref], .stage-num, .stage-select, [hidden]').forEach((n) => n.remove());
+        // The numbers of the current run ("Live values") come from the wrapper; they are not text of the builder.
+        c.querySelectorAll('.katex, [data-ref], .stage-num, .stage-select, [hidden], [data-testid="live-numbers"]').forEach((n) => n.remove());
         return c.textContent ?? '';
       });
-      expect(text, `stage ${s}`).not.toMatch(/\d/);
+      expect(text, `step ${s}`).not.toMatch(/\d/);
     }
   });
 
-  test('the term card opens on hover and the term is outlined in the equation', async ({ page, problems }) => {
+  test('the part card opens on hover and the part is outlined in the equation', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
-    await pickStage(page, 3);
+    await pickStage(page, 16);
     await page.getByTestId('term-decay').hover();
     await expect(page.getByTestId('term-card')).toContainText('Radioactive decay');
     await expect(page.getByTestId('equation')).toHaveAttribute('data-active-term', 'decay');
     const outline = await page.locator('[data-testid="equation"] .eq-term--decay').evaluate((e) => getComputedStyle(e).outlineStyle);
     expect(outline).toBe('dashed');
+    // A part of a BTCS step is outlined the same way.
+    await pickStage(page, 6);
+    await page.getByTestId('term-second_new').hover();
+    const outline6 = await page.locator('[data-testid="equation"] .eq-term--second_new').evaluate((e) => getComputedStyle(e).outlineStyle);
+    expect(outline6).toBe('dashed');
+  });
+
+  test('the code links of the implementation disclosure point at the solver files, and the placeholder step links none', async ({ page, problems }) => {
+    void problems;
+    await gotoSection(page, 'explore');
+    await pickStage(page, 11);
+    await page.getByTestId('more-implementation').click();
+    const links = await page.getByTestId('more-panel-implementation').locator('a').evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).href));
+    expect(links.some((h) => /src\/numerical\/tridiagonal\.rs#L\d+$/.test(h))).toBe(true);
+    expect(links.some((h) => /03_rust_pseudocode\.md#ps-10-/.test(h))).toBe(true);
+    await pickStage(page, 14);
+    await page.getByTestId('more-implementation').click();
+    expect(await page.getByTestId('more-panel-implementation').locator('a').evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).href).filter((h) => h.endsWith('.rs')))).toEqual([]);
   });
 });
 
 test.describe('keyboard', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('the stage picker is one tab stop moved with the arrow keys; the disclosure panels open with Enter', async ({ page, problems }) => {
+  test('the step picker is one tab stop moved with the arrow keys; the disclosure panels open with Enter', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     await page.getByTestId('stage-1').focus();
@@ -144,9 +188,9 @@ test.describe('keyboard', () => {
     await page.keyboard.press('ArrowDown');
     await expect(page.getByTestId('stage-3')).toBeFocused();
     await expect(page.getByTestId('stage-3')).toHaveAttribute('aria-checked', 'true');
-    // Tab leaves the radio group (one tab stop) and reaches the first term.
+    // Tab leaves the radio group (one tab stop) and reaches the first part.
     await page.keyboard.press('Tab');
-    await expect(page.getByTestId('term-lhs')).toBeFocused();
+    await expect(page.getByTestId('term-rate')).toBeFocused();
     await expect(page.getByTestId('term-card')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(page.getByTestId('term-card')).toHaveCount(0);
@@ -158,13 +202,13 @@ test.describe('keyboard', () => {
 });
 
 for (const reducedMotion of ['no-preference', 'reduce'] as const) {
-  test.describe(`new-term highlight, reduced motion ${reducedMotion}`, () => {
+  test.describe(`preview highlight, reduced motion ${reducedMotion}`, () => {
     test.use({ viewport: { width: 1440, height: 900 }, reducedMotion });
 
     test('fades in only when motion is allowed', async ({ page, problems }) => {
       void problems;
       await gotoSection(page, 'explore');
-      await pickStage(page, 2);
+      await pickStage(page, 16);
       const dur = await page.locator('[data-testid="equation"] .eq-new').first().evaluate((e) => getComputedStyle(e).animationDuration);
       if (reducedMotion === 'reduce') expect(parseFloat(dur)).toBe(0);
       else expect(parseFloat(dur)).toBeGreaterThan(0);
@@ -172,7 +216,7 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
   });
 }
 
-/** The builder stage whose typeset equation is the tallest (measured, not assumed). */
+/** The builder step whose typeset equation is the tallest (measured, not assumed). */
 async function tallestStage(page: Page): Promise<number> {
   let best = 1;
   let height = 0;
@@ -192,13 +236,13 @@ for (const colorScheme of ['light', 'dark'] as const) {
     test.describe(`fold with the builder, ${colorScheme}, reduced motion ${reducedMotion}`, () => {
       test.use({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, colorScheme, reducedMotion });
 
-      test('stage 1 and the stage with the tallest equation keep A and the top of B in the first screen', async ({ page, problems }) => {
+      test('every step keeps A and the top of B in the first screen', async ({ page, problems }) => {
         void problems;
         await gotoSection(page, 'explore');
         await page.evaluate(() => document.fonts.ready);
         const tallest = await tallestStage(page);
-        expect(tallest).toBeGreaterThanOrEqual(5);
-        for (const s of [1, tallest]) {
+        expect(tallest).toBeGreaterThanOrEqual(1);
+        for (const s of STAGES) {
           await pickStage(page, s);
           await page.mouse.move(0, 0);
           await page.evaluate(() => window.scrollTo(0, 0));
@@ -206,10 +250,10 @@ for (const colorScheme of ['light', 'dark'] as const) {
           const headerBottom = await page.locator('header.header').evaluate((el) => el.getBoundingClientRect().bottom);
           for (const id of ['block-a', 'stage-picker', 'equation', 'particle', 'release-readout']) {
             const box = await page.getByTestId(id).boundingBox();
-            expect(box, `${id} at stage ${s}`).not.toBeNull();
+            expect(box, `${id} at step ${s}`).not.toBeNull();
             if (!box) continue;
-            expect(box.y, `${id} top at stage ${s}`).toBeGreaterThanOrEqual(headerBottom - 0.5);
-            expect(box.y + box.height, `${id} bottom at stage ${s}`).toBeLessThanOrEqual(footerTop + 0.5);
+            expect(box.y, `${id} top at step ${s}`).toBeGreaterThanOrEqual(headerBottom - 0.5);
+            expect(box.y + box.height, `${id} bottom at step ${s}`).toBeLessThanOrEqual(footerTop + 0.5);
           }
         }
       });
@@ -218,10 +262,12 @@ for (const colorScheme of ['light', 'dark'] as const) {
 }
 
 /** Pairs of an equation number and an equation glyph run that overlap inside block A's equation box. */
-async function tagOverlaps(page: Page): Promise<string[]> {
-  return page.getByTestId('equation').evaluate((box) => {
+async function tagOverlaps(page: Page, testId = 'equation'): Promise<string[]> {
+  return page.getByTestId(testId).evaluate((box) => {
     const hits: string[] = [];
-    if (box.querySelectorAll('.katex-tag').length === 0) hits.push('no katex-tag found: the selector no longer matches KaTeX');
+    const tags = box.querySelectorAll('.katex-tag').length;
+    // A step whose lines are all untagged has no number to cover anything.
+    if (box.hasAttribute('data-tag') && tags === 0 && (box.getAttribute('data-tag') ?? '') !== '') hits.push('no katex-tag found: the selector no longer matches KaTeX');
     for (const html of Array.from(box.querySelectorAll('.katex-display > .katex > .katex-html'))) {
       // KaTeX 0.19 names the parts katex-tag and katex-base.
       const tag = html.querySelector(':scope > .katex-tag');
@@ -248,7 +294,7 @@ for (const vp of [
   test.describe(`equation numbers at ${vp.width} px`, () => {
     test.use({ viewport: { width: vp.width, height: vp.height }, isMobile: vp.isMobile, hasTouch: vp.hasTouch });
 
-    test('no equation number covers the equation at any stage', async ({ page, problems }) => {
+    test('no equation number covers the equation at any step', async ({ page, problems }) => {
       void problems;
       await gotoSection(page, 'explore');
       await page.evaluate(() => document.fonts.ready);
@@ -256,7 +302,19 @@ for (const vp of [
         if (vp.width < 768) await page.getByTestId('stage-select').selectOption(String(s));
         else await pickStage(page, s);
         await expect(page.getByTestId('equation-builder')).toHaveAttribute('data-stage', String(s));
-        expect(await tagOverlaps(page), `stage ${s}`).toEqual([]);
+        expect(await tagOverlaps(page), `step ${s}`).toEqual([]);
+        // The equations of the open disclosures are shown with their numbers too.
+        for (const panel of ['implementation', 'conditions', 'balance']) {
+          const toggle = page.getByTestId(`more-${panel}`);
+          if ((await toggle.count()) === 0 || !(await toggle.isEnabled())) continue;
+          await toggle.click();
+          await expect(page.getByTestId(`more-panel-${panel}`)).toBeVisible();
+          await page.evaluate(() => document.fonts.ready);
+          // The builder places the numbers after the box is resized; wait two frames for it.
+          await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+          expect(await tagOverlaps(page, `more-panel-${panel}`), `step ${s} ${panel}`).toEqual([]);
+          await toggle.click();
+        }
       }
     });
   });
@@ -265,7 +323,7 @@ for (const vp of [
 test.describe('builder on a 390 px phone (device emulation)', () => {
   test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3 });
 
-  test('stage select, equation scrolling inside its own box, no sideways page scroll', async ({ page, problems }) => {
+  test('step select, equation scrolling inside its own box, no sideways page scroll', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     for (const s of STAGES) {
@@ -274,8 +332,19 @@ test.describe('builder on a 390 px phone (device emulation)', () => {
       expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
       const overflowX = await page.getByTestId('equation').evaluate((e) => getComputedStyle(e).overflowX);
       expect(overflowX).toBe('auto');
+      // A box that holds more than it shows says so, in words a screen reader also gets; a box that fits says nothing.
+      const scrolls = await page.getByTestId('equation').evaluate((e) => e.scrollWidth > e.clientWidth + 1);
+      await expect(page.getByTestId('equation-scroll-hint')).toHaveCount(scrolls ? 1 : 0);
+      if (scrolls) {
+        await expect(page.getByTestId('equation-scroll-hint')).toContainText('Scroll sideways');
+        await expect(page.getByTestId('equation')).toHaveAttribute('aria-label', /scrolls sideways/);
+      }
     }
-    // Tapping a term opens its card in the flow.
+    // Step 10 (the matrix) is wider than a phone: it must show the hint.
+    await page.getByTestId('stage-select').selectOption('10');
+    await expect(page.getByTestId('equation-scroll-hint')).toBeVisible();
+    // Tapping a part opens its card in the flow.
+    await page.getByTestId('stage-select').selectOption('16');
     await page.getByTestId('term-decay').tap();
     await expect(page.getByTestId('term-card')).toBeVisible();
     expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);

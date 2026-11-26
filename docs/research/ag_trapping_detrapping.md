@@ -82,7 +82,7 @@ The authors call the correction approximate and based on qualitative arguments [
 
 - A measured or computed trap density and trap energy for silver in the AGR-1 SiC microstructure. None was found.
 - Atomistic energies of silver at pore surfaces and triple junctions in models that represent the polycrystalline coating (gallery items `ms-ag-pore-surface`, `ms-ag-triple-junction`).
-- A derivation of Concept 1 on STRATO's spherical finite-volume mesh with its own conservation and limiting-case checks (zero trap density must return the present equation).
+- A derivation of Concept 1 on STRATO's spherical finite-difference grid with its own conservation and limiting-case checks (zero trap density must return the present equation).
 - A test of whether Concept 2 is consistent with Concept 1 in the limit of fast exchange; not derived here.
 - Comparison with AGR-1 Ag-110m retention after Phase 2.2.
 

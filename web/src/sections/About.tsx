@@ -1,11 +1,14 @@
 import { BUILD, REPO_URL, repoFile } from '../build';
+import { METHOD_1, METHOD_2 } from '../methods';
 import { Badge } from '../panels/Badge';
 import type { ResultLabel } from '../solver/types';
 import { SectionHeading, TableBox } from './common';
 
 const LABELS: { label: ResultLabel; meaning: string }[] = [
-  { label: 'COMPUTED v1.0', meaning: 'Produced in this page view by the verified v1.0 solver from the inputs shown.' },
-  { label: 'COMPUTED v2.0', meaning: 'Produced by the reviewed Phase 2 implementation. Not available: Phase 2 is not implemented.' },
+  {
+    label: 'COMPUTED v2.0',
+    meaning: `Produced in this page view by ${METHOD_1} (BTCS finite differences), the verified solver, from the inputs shown. The value is a numerical solution of the stated model, not an experimental measurement.`,
+  },
   { label: 'PRECOMPUTED', meaning: 'Produced earlier by the native STRATO binary; the file records commit, input hash and command.' },
   { label: 'ILLUSTRATIVE', meaning: 'A schematic or animation that is not derived from solver output.' },
   { label: 'MEASURED', meaning: 'An experimental value from the repository data, with its source and uncertainty.' },
@@ -21,7 +24,7 @@ const BUILD_CONTENTS: { part: string; here: boolean; phase: string }[] = [
   { part: 'Particle cross-section drawn to the input radii, one colour per layer (ILLUSTRATIVE)', here: true, phase: '1' },
   { part: 'Staged equation builder (KaTeX, numbered equations) and the research status of each mechanism', here: true, phase: '2' },
   {
-    part: 'STRATO v1.0 solver in the browser (Rust compiled to WebAssembly, in a worker): release fraction, inventory balance with its residual, layer inventories and numerical diagnostics of every run; precomputed native output with provenance',
+    part: `${METHOD_1} in the browser (Rust compiled to WebAssembly, in a worker): release fraction, inventory balance with its residual, layer inventories and numerical diagnostics of every run, with ${METHOD_2} beside it; precomputed native output with provenance`,
     here: true,
     phase: '3',
   },
@@ -36,14 +39,20 @@ const BUILD_CONTENTS: { part: string; here: boolean; phase: string }[] = [
 // with the mathematics typeset; documents without one are linked on GitHub only.
 const docs: { path: string; title: string; page?: string }[] = [
   {
-    path: 'docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md',
-    title: 'Full Mathematical Derivation (v1.0)',
-    page: 'docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.html',
+    path: 'docs/mathematics/btcs/01_from_ftcs_to_five_layer_btcs.md',
+    title: 'Document 1: from the explicit scheme to the five-layer BTCS scheme',
   },
   {
-    path: 'docs/mathematics/v1.0.0/STRATO_Final_Deliverable.md',
-    title: 'Final Deliverable: equations, pseudocode and Rust code (v1.0)',
-    page: 'docs/mathematics/v1.0.0/STRATO_Final_Deliverable.html',
+    path: 'docs/mathematics/btcs/02_final_formulation.md',
+    title: 'Document 2: the final BTCS formulation (normative)',
+  },
+  {
+    path: 'docs/mathematics/btcs/03_rust_pseudocode.md',
+    title: 'Document 3: Rust pseudocode',
+  },
+  {
+    path: 'docs/mathematics/btcs/04_equation_to_code_traceability.md',
+    title: 'Document 4: equation to code traceability',
   },
   {
     path: 'docs/mathematics/STRATO_Phase2_Derivations.md',
@@ -66,12 +75,10 @@ export function About() {
         About STRATO and this demonstration
       </SectionHeading>
 
-      <h2>The v1.0 model</h2>
+      <h2>The model</h2>
       <p>
         The particle is five concentric spherical layers: kernel, buffer, inner pyrolytic carbon (IPyC), silicon carbide (SiC) and outer
-        pyrolytic carbon (OPyC). In layer <i>i</i> the concentration <i>c</i>(<i>r</i>, <i>t</i>) obeys spherical diffusion with a constant
-        diffusivity <i>D</i>
-        <sub>i</sub>:
+        pyrolytic carbon (OPyC). In each layer the concentration obeys spherical diffusion with a constant diffusivity of that layer:
       </p>
       <p className="eq-plain" role="math" aria-label="partial c over partial t equals one over r squared times partial over partial r of r squared D i partial c over partial r">
         ∂<i>c</i>/∂<i>t</i> = (1/<i>r</i>
@@ -80,25 +87,27 @@ export function About() {
         <sub>i</sub> ∂<i>c</i>/∂<i>r</i>)
       </p>
       <p>
-        The centre is symmetric, interfaces are in perfect contact, the outer surface is a perfect sink and the start inventory is uniform in
-        the kernel. The release fraction <i>F</i>(<i>t</i>) is the share of the start inventory that has left through the outer surface. The
-        staged equation builder on the Explore page typesets and numbers these equations, and the simulation under it solves them with the
-        verified Rust solver compiled to WebAssembly.
+        The centre is symmetric, interfaces are in perfect contact, the outer surface is a perfect sink and the initial inventory is uniform
+        in the kernel. The release fraction is the share of the initial inventory that has left through the outer surface. The staged
+        equation builder on the Explore page typesets and numbers these equations, and the simulation under it solves them with the verified
+        Rust solver compiled to WebAssembly.
       </p>
       <p>
-        STRATO solves the problem two independent ways. Code B is a conservative finite-volume method with exact shell volumes and Backward
-        Euler time stepping. Code C is a multilayer Sturm-Liouville eigenfunction series. Each checks the other.
+        STRATO solves the problem in two ways, and the page offers exactly these two. {METHOD_1} is a finite-difference method: spherical
+        central differences in space on a grid with nodes on the layer interfaces, and Backward Euler time stepping. {METHOD_2} is the
+        multilayer Sturm-Liouville eigenfunction series. It applies where the problem is the one it solves: a constant diffusivity per layer,
+        no source, no decay and a constant temperature. Each checks the other.
       </p>
 
       <h2>What is implemented</h2>
       <ul className="prose-list">
         <li>
-          Solved by v1.0: diffusion through the five layers at constant temperature, with a constant diffusivity per layer and the start
-          inventory in the kernel. Released and verified on a synthetic case.
+          Solved by {METHOD_1}: diffusion through the five layers at constant temperature, with a constant diffusivity per layer and the
+          initial inventory in the kernel. Verified on a synthetic case.
         </li>
         <li>
-          Derived and specified, not implemented: radioactive decay, fission-product generation, inventory accounting,
-          temperature-dependent diffusivity and temperature histories (Phase 2, v2.0).
+          Shown as labelled previews, not solved: fission-product generation, radioactive decay and temperature-dependent diffusivity. The
+          comparison with experimental measurements is a placeholder.
         </li>
       </ul>
       <p>

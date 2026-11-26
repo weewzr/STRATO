@@ -33,7 +33,7 @@ export function StatusLegend({ id, title = 'Research status of a mechanism', row
       </dl>
       <p className="status-legend__note">
         Shown as a word and a shape, never by colour alone. A research status describes a mechanism; the labels on numbers and figures
-        (for example COMPUTED v1.0 or PRECOMPUTED) describe a result.
+        (for example COMPUTED v2.0 or PRECOMPUTED) describe a result.
       </p>
     </section>
   );

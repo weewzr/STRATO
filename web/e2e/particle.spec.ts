@@ -21,10 +21,10 @@ const reference = json('src', 'generated', 'agr1_reference.json') as {
 
 /**
  * The expected colour, worked out here independently of the page code: the position on the scale
- * (linear c / c0, or log10(c / c0) / 6 + 1, clipped to [0, 1]) picks the nearest of the 256 entries.
+ * (linear c / top, or log10(c / top) / 6 + 1, clipped to [0, 1], top being the largest nodal concentration of the run) picks the nearest of the 256 entries.
  */
-function expectedColour(map: 'cividis' | 'viridis', c: number, c0: number, scale: 'log' | 'linear'): number[] {
-  let t = c <= 0 ? 0 : scale === 'linear' ? c / c0 : Math.log10(c / c0) / 6 + 1;
+function expectedColour(map: 'cividis' | 'viridis', c: number, top: number, scale: 'log' | 'linear'): number[] {
+  let t = c <= 0 ? 0 : scale === 'linear' ? c / top : Math.log10(c / top) / 6 + 1;
   t = Math.min(1, Math.max(0, t));
   return colormaps.data[map].rgb8[Math.round(t * 255)]!;
 }
@@ -142,18 +142,19 @@ test.describe('particle colouring and layer shares', () => {
         { x, y },
       );
     const size = Number(await page.getByTestId('xsec-canvas').getAttribute('width'));
-    const faces = NATIVE.mesh.cell_faces_m;
-    const outer = faces[faces.length - 1]!;
+    const edges = NATIVE.grid.ring_edges_m;
+    const outer = edges[edges.length - 1]!;
+    const top = Math.max(...NATIVE.max_concentration_mol_m3);
     for (const scale of ['log', 'linear'] as const) {
       await page.getByTestId('colour-scale').selectOption(scale);
       for (const map of ['cividis', 'viridis'] as const) {
         await page.getByTestId('colour-map').selectOption(map);
-        // A pixel in the middle of a cell, away from its edges: cell 0 at the centre, and cell 60 (buffer).
+        // A pixel in the middle of a node band, away from its edges: node 0 at the centre, and node 60 (buffer).
         for (const cell of [0, 60]) {
-          const mid = cell === 0 ? 0 : ((faces[cell]! + faces[cell + 1]!) / 2 / outer) * (size / 2);
+          const mid = cell === 0 ? 0 : ((edges[cell]! + edges[cell + 1]!) / 2 / outer) * (size / 2);
           const px = await read(Math.floor(size / 2 + mid), Math.floor(size / 2));
           const c = NATIVE.profiles[last]!.c_mol_per_m3[cell]!;
-          const want = expectedColour(map, c, NATIVE.inputs.initial.kernel_concentration_mol_m3, scale);
+          const want = expectedColour(map, c, top, scale);
           expect(px, `${scale} ${map} cell ${cell}`).toEqual(want);
         }
       }
@@ -174,7 +175,7 @@ test.describe('particle colouring and layer shares', () => {
         const p = NATIVE.profiles[target]!;
         expect(within(share, p.layer_share![layer]!, PARITY_RTOL), `share ${target} ${layer}`).toBe(true);
         expect(within(inv, p.layer_inventory_mol[layer]!, PARITY_RTOL), `inventory ${target} ${layer}`).toBe(true);
-        await expect(page.getByTestId('inspector-share').locator('.badge')).toHaveText('COMPUTED v1.0');
+        await expect(page.getByTestId('inspector-share').locator('.badge')).toHaveText('COMPUTED v2.0');
         await page.getByTestId(`inspect-${layer}`).click();
       }
       const t = Number(await page.getByTestId('pb-time').getAttribute('data-value'));

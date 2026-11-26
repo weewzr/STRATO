@@ -1,56 +1,49 @@
 import { useMemo, type ReactNode } from 'react';
-import { repoFile } from '../build';
+import { METHOD_1, METHOD_2 } from '../methods';
 import {
-  codeBCDifferenceFigure,
-  codeBCReleaseFigure,
-  convergenceFigure,
+  checkFigure,
+  methodDifferenceFigure,
+  methodReleaseFigure,
   residualFigure,
-  studyIndices,
+  type CheckDoc,
   type ComparisonDoc,
-  type ConvergenceDoc,
-  type GuidesDoc,
   type PrecomputedHeader,
-  type SyntheticRunDoc,
+  type RunDoc,
 } from '../plots/figures';
 import { Plot } from '../plots/Plot';
 import { precomputedUrl, usePrecomputed } from '../plots/precomputed';
 import { usePlotTheme } from '../plots/theme';
 import { useStrato } from '../state/store';
 import { Badge, Sci } from './Badge';
+import { TableBox } from '../sections/common';
 
-// The verification panel of the Verify section (web phase 5; prompt/DESIGN_SPECIFICATION.md Section
-// 8.3): Code B against Code C, the convergence study with its observed orders, and the balance
-// residual, from the precomputed output of the native program (label PRECOMPUTED, with its provenance
-// header), and the live run's own diagnostics from the wrapper (COMPUTED v1.0). The pointwise difference
-// |F_B − F_C| is shown only here, from the native file (coordinator decision of 2026-11-25).
-
-const DERIVATION = 'docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md';
+// The verification panels of the Verify section (web phase 5; prompt/DESIGN_SPECIFICATION.md Section
+// 8.3): Method A against Method B, the independent check with its observed orders in time and in
+// space, and the balance residual with its derived rounding bound, from the precomputed output of the
+// native program (label PRECOMPUTED, with its provenance header), and the live run's own diagnostics
+// from the wrapper (COMPUTED v2.0). The pointwise difference between the two methods is shown only
+// here, from the native file (coordinator decision of 2026-11-25). Numerical verification only.
 
 /** The provenance header of a precomputed file, as it is in the file. */
 export function ProvenanceNote({ doc, file }: { doc: PrecomputedHeader; file: string }) {
   return (
     <span className="figure__source" data-testid={`prov-${file}`}>
-      Source: <code>{file}</code> ({doc.label}), written by {doc.generator} from the native program{' '}
-      {doc.strato_version ? `STRATO v${doc.strato_version}` : ''} at commit <code>{doc.commit.slice(0, 7)}</code>
+      Source: <code>{file}</code> ({doc.label}), written by {doc.converter} from the native program {doc.solver}, solver version{' '}
+      {doc.strato_version}, at commit <code>{doc.commit.slice(0, 7)}</code>
       {doc.input_file ? (
         <>
           {' '}
           on <code>{doc.input_file}</code>
-          {doc.input_sha256 ? (
+          {doc.input_file_sha256 ? (
             <>
               {' '}
-              (SHA-256 <code className="hash">{doc.input_sha256.slice(0, 12)}</code>)
+              (SHA-256 <code className="hash">{doc.input_file_sha256.slice(0, 12)}</code>)
             </>
           ) : null}
         </>
       ) : null}
       ; command <code>{doc.command}</code>
-      {doc.rustc ? (
-        <>
-          , {doc.rustc}
-        </>
-      ) : null}
-      ; written {doc.created_utc}. <a href={precomputedUrl(file)}>Open the file</a>.
+      {doc.rustc ? <>, {doc.rustc}</> : null}; written {doc.created_utc}. <a href={precomputedUrl(file)}>Open the file</a>.
     </span>
   );
 }
@@ -58,12 +51,24 @@ export function ProvenanceNote({ doc, file }: { doc: PrecomputedHeader; file: st
 function Loading({ error, what }: { error: string | null; what: string }) {
   return (
     <p className="plotfig__empty" role={error ? 'alert' : 'status'}>
-      {error ? `The precomputed ${what} could not be loaded (${error}).` : `Loading the precomputed ${what}…`}
+      {error ? `The precomputed ${what} could not be loaded (${error}). No other source of numbers is used.` : `Loading the precomputed ${what}…`}
     </p>
   );
 }
 
-function Fig({ number, testId, children, caption, label }: { number: number; testId: string; children: ReactNode; caption: ReactNode; label: 'PRECOMPUTED' | 'COMPUTED v1.0' }) {
+function Fig({
+  number,
+  testId,
+  children,
+  caption,
+  label,
+}: {
+  number: number;
+  testId: string;
+  children: ReactNode;
+  caption: ReactNode;
+  label: 'PRECOMPUTED' | 'COMPUTED v2.0';
+}) {
   return (
     <figure className="figure plotfig" data-testid={testId}>
       <div className="figure__head">
@@ -78,18 +83,18 @@ function Fig({ number, testId, children, caption, label }: { number: number; tes
 }
 
 function exportSource(doc: PrecomputedHeader, file: string): string {
-  return `${file} (${doc.label}), native STRATO v${doc.strato_version} at commit ${doc.commit.slice(0, 7)}, ${doc.command}; synthetic five-layer verification case, not physical data.`;
+  return `${file} (${doc.label}), native ${doc.solver}, solver version ${doc.strato_version} at commit ${doc.commit.slice(0, 7)}, ${doc.command}; synthetic five-layer verification case, not physical data.`;
 }
 
-export function CodeBCPanel() {
-  const { doc, error } = usePrecomputed<ComparisonDoc>('comparison_fv_vs_analytical.json');
-  const run = usePrecomputed<SyntheticRunDoc>('synthetic_run.json');
+/** Method A against Method B: the two release fractions and their pointwise difference. */
+export function MethodComparisonPanel() {
+  const { doc, error } = usePrecomputed<ComparisonDoc>('btcs_vs_analytical.json');
   const theme = usePlotTheme();
-  const summary = run.doc?.data.summary ?? null;
-  const floor = summary ? Number(summary.analytical_accuracy_floor_abs) : null;
-  const release = useMemo(() => (doc ? codeBCReleaseFigure(doc, theme) : null), [doc, theme]);
-  const diff = useMemo(() => (doc ? codeBCDifferenceFigure(doc, floor, theme) : null), [doc, floor, theme]);
-  if (!doc || !release || !diff) return <Loading error={error} what="comparison of Code B and Code C" />;
+  const floor = doc ? doc.data.analytical.accuracy_floor : null;
+  const release = useMemo(() => (doc ? methodReleaseFigure(doc, theme) : null), [doc, theme]);
+  const diff = useMemo(() => (doc ? methodDifferenceFigure(doc, floor, theme) : null), [doc, floor, theme]);
+  if (!doc || !release || !diff) return <Loading error={error} what={`comparison of ${METHOD_1} and ${METHOD_2}`} />;
+  const a = doc.data.analytical;
   return (
     <div className="plot-grid plot-grid--two">
       <Fig
@@ -98,13 +103,18 @@ export function CodeBCPanel() {
         label="PRECOMPUTED"
         caption={
           <>
-            Release fraction of the verified synthetic case from the finite-volume solution (Code B, solid) and the exact eigenfunction series
-            (Code C, dashed), as the native program wrote them (<code>comparison_fv_vs_analytical.csv</code>, equal to{' '}
-            <code>tests/golden/v1.0/</code>). <ProvenanceNote doc={doc} file="comparison_fv_vs_analytical.json" />
+            Release fraction of the verified synthetic case from {METHOD_1} (blue line) and {METHOD_2} (red line), the {a.name}, as the native
+            program wrote them (<code>btcs_vs_analytical.csv</code>). <ProvenanceNote doc={doc} file="btcs_vs_analytical.json" />
           </>
         }
       >
-        <Plot figure={release} testId="verify-bc-release-plot" height={280} label="Release fraction against time of the verified case from Code B and Code C, precomputed by the native program." exportInfo={{ name: `strato-verify-release-${doc.commit.slice(0, 7)}`, source: exportSource(doc, 'comparison_fv_vs_analytical.json') }} />
+        <Plot
+          figure={release}
+          testId="verify-bc-release-plot"
+          height={280}
+          label={`Release fraction against time of the verified case from ${METHOD_1} and ${METHOD_2}, precomputed by the native program.`}
+          exportInfo={{ name: `strato-verify-release-${doc.commit.slice(0, 7)}`, source: exportSource(doc, 'btcs_vs_analytical.json') }}
+        />
       </Fig>
       <Fig
         number={2}
@@ -112,102 +122,104 @@ export function CodeBCPanel() {
         label="PRECOMPUTED"
         caption={
           <>
-            Pointwise difference |<i>F</i>
-            <sub>B</sub> − <i>F</i>
-            <sub>C</sub>| of the verified case at every output time, as the native program computed and wrote it (column{' '}
-            <code>abs_error</code>); a discretisation error of Code B, not a defect. The dotted line is the series' accuracy floor
-            {summary ? (
-              <>
-                {' '}
-                ({summary.analytical_accuracy_floor_abs}, valid from <i>t</i> = {summary.analytical_valid_from_s} s, {summary.analytical_modes}{' '}
-                modes; largest difference {summary.max_abs_error_vs_analytical}, final {summary.final_abs_error_vs_analytical}, as printed by
-                the program)
-              </>
-            ) : null}
-            . This plot is shown only from the native file: for inputs changed on Explore, the page shows the two curves and the largest and
-            final difference that the solver returns, because the pointwise difference of two nearly equal numbers depends on their last
-            digits, which differ between the browser build and the native build. <ProvenanceNote doc={doc} file="comparison_fv_vs_analytical.json" />
+            Absolute difference of the release fractions of {METHOD_1} and {METHOD_2} of the verified case at every output time, as the Rust
+            tool computed it from the native reply (column <code>Absolute difference of the release fractions (dimensionless)</code>); a
+            discretisation error of {METHOD_1}, not a defect. The thin grey horizontal line is the accuracy floor of {METHOD_2} ({a.accuracy_floor},
+            valid from the time {a.valid_from_s} s, {a.modes} eigenmodes; largest difference {a.max_abs_difference}, final difference{' '}
+            {a.final_abs_difference}). This plot is shown only from the native file: for inputs changed on Explore, the page shows the two
+            curves and the largest and final difference that the solver returns, because the pointwise difference of two nearly equal
+            numbers depends on their last digits, which differ between the browser build and the native build.{' '}
+            <ProvenanceNote doc={doc} file="btcs_vs_analytical.json" />
           </>
         }
       >
-        <Plot figure={diff} testId="verify-bc-difference-plot" height={280} label="Pointwise difference between Code B and Code C against time, logarithmic axis, precomputed by the native program." exportInfo={{ name: `strato-verify-difference-${doc.commit.slice(0, 7)}`, source: exportSource(doc, 'comparison_fv_vs_analytical.json') }} />
+        <Plot
+          figure={diff}
+          testId="verify-bc-difference-plot"
+          height={280}
+          label={`Absolute difference between ${METHOD_1} and ${METHOD_2} against time, logarithmic axis, precomputed by the native program.`}
+          exportInfo={{ name: `strato-verify-difference-${doc.commit.slice(0, 7)}`, source: exportSource(doc, 'btcs_vs_analytical.json') }}
+        />
       </Fig>
     </div>
   );
 }
 
+/** The independent check: observed orders in time and in space, and the differences from the reference. */
 export function ConvergencePanel() {
-  const { doc, error } = usePrecomputed<ConvergenceDoc>('convergence_study.json');
-  const guides = usePrecomputed<GuidesDoc>('convergence_guides.json');
+  const { doc, error } = usePrecomputed<CheckDoc>('btcs_independent_check.json');
   const theme = usePlotTheme();
-  const spatial = useMemo(() => (doc ? convergenceFigure(doc, guides.doc, 'spatial', theme) : null), [doc, guides.doc, theme]);
-  const temporal = useMemo(() => (doc ? convergenceFigure(doc, guides.doc, 'temporal', theme) : null), [doc, guides.doc, theme]);
-  if (!doc || !spatial || !temporal) return <Loading error={error} what="convergence study" />;
-  // First and last level of each study, selected from the file (no value is typed here).
-  const p = doc.data.points;
-  const si = studyIndices(doc, 'spatial');
-  const ti = studyIndices(doc, 'temporal');
-  const first = (ix: number[]) => ix[0] ?? 0;
-  const last = (ix: number[]) => ix[ix.length - 1] ?? 0;
-  const spatialOrders = doc.data.spatial_observed_orders.split(',').join(', ');
-  const temporalOrders = doc.data.temporal_observed_orders.split(',').join(', ');
-  const guideNote = guides.doc ? (
-    <>
-      {' '}
-      The dashed guide line (<code>convergence_guides.json</code>, label {guides.doc.label}, written by <code>generate_data.py figures</code>) has
-      the reference slope and passes through the coarsest point; it is a reading aid, not a result.
-    </>
-  ) : null;
+  const fig = useMemo(() => (doc ? checkFigure(doc, theme) : null), [doc, theme]);
+  if (!doc || !fig) return <Loading error={error} what="independent check" />;
+  const d = doc.data;
+  const h = d.column_headers;
+  const columns: { key: 't_s' | 'f_btcs' | 'f_reference' | 'abs_difference' | 'time_order' | 'space_order'; testId?: string }[] = [
+    { key: 't_s' },
+    { key: 'f_btcs' },
+    { key: 'f_reference' },
+    { key: 'abs_difference' },
+    { key: 'time_order', testId: 'orders-temporal' },
+    { key: 'space_order', testId: 'orders-spatial' },
+  ];
   return (
     <>
-      <dl className="orders" data-testid="observed-orders">
-        <dt>Observed spatial orders, cells doubled</dt>
-        <dd data-testid="orders-spatial" data-value={doc.data.spatial_observed_orders}>
-          {spatialOrders}
-        </dd>
-        <dt>Observed temporal orders, step halved</dt>
-        <dd data-testid="orders-temporal" data-value={doc.data.temporal_observed_orders}>
-          {temporalOrders}
-        </dd>
-        <dt>Exact final release fraction (series)</dt>
-        <dd>{doc.data.exact_final_release_fraction}</dd>
-      </dl>
-      <p className="muted">
-        As the native program printed them (<Badge label="PRECOMPUTED" />
-        ). Expected: about 2 in space and about 1 in time.
-      </p>
+      <TableBox label="Independent check of the release fraction">
+        <table className="table check-table" data-testid="observed-orders">
+          <caption className="table__caption">
+            <strong>Table 1.</strong> The independent check of the regression suite for the verified case: the release fraction computed by {METHOD_1}{' '}
+            against a reference that contains no BTCS code, and the orders of accuracy observed from refined runs. Expected: about 1 in time and
+            about 2 in space (<Badge label="PRECOMPUTED" />, copied from <code>tests/golden/btcs/s5_n40_dt200/independent_check.csv</code>). The
+            file calls itself a regression reference, not truth.
+          </caption>
+          <thead>
+            <tr>
+              {columns.map((c) => (
+                <th key={c.key} scope="col" className="num-col">
+                  {c.key === 'f_btcs' ? `Release fraction by ${METHOD_1} (dimensionless)` : h[c.key]}
+                </th>
+              ))}
+              <th scope="col">{h.passed}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {d.t_s.map((t, i) => (
+              <tr key={t}>
+                {columns.map((c) => {
+                  const v = d[c.key][i];
+                  return (
+                    <td key={c.key} className="num-col num" data-testid={c.testId ? `${c.testId}-${i}` : undefined} data-value={String(v)}>
+                      {v === undefined ? '–' : <Sci value={v} digits={c.key.endsWith('order') ? 4 : 5} />}
+                    </td>
+                  );
+                })}
+                <td data-value={String(d.passed[i])}>{d.passed[i] ? 'yes' : 'no'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </TableBox>
       <div className="plot-grid plot-grid--two">
         <Fig
           number={3}
-          testId="verify-spatial"
+          testId="verify-check"
           label="PRECOMPUTED"
           caption={
             <>
-              Spatial refinement: error of the final release fraction against the exact series for {p.total_cells[first(si)]} to{' '}
-              {p.total_cells[last(si)]} cells at a step of {p.dt_s[first(si)]} s, on log-log axes; observed orders {spatialOrders}.
-              {guideNote} <ProvenanceNote doc={doc} file="convergence_study.json" />
+              Absolute difference of the release fraction computed by {METHOD_1} from the independent reference, and of the reference from the
+              numerical limit estimated by refining the time step and the grid, at the four checkpoint times, on log-log axes. The reference is{' '}
+              {METHOD_2} (the multilayer Sturm-Liouville series). The check passes when the reference lies within the stated convention of the
+              estimated limit; that convention (5 percent of the difference plus the accuracy floor of the reference) is a labelled convention, not a
+              derived bound. <ProvenanceNote doc={doc} file="btcs_independent_check.json" />
             </>
           }
         >
-          <Plot figure={spatial} testId="verify-spatial-plot" height={280} label="Error of the final release fraction against the total cell count, log-log, with a guide line of slope 2." exportInfo={{ name: `strato-verify-spatial-${doc.commit.slice(0, 7)}`, source: exportSource(doc, 'convergence_study.json') }} />
-        </Fig>
-        <Fig
-          number={4}
-          testId="verify-temporal"
-          label="PRECOMPUTED"
-          caption={
-            <>
-              Temporal refinement: error of the final release fraction against the exact series for steps of {p.dt_s[first(ti)]} to{' '}
-              {p.dt_s[last(ti)]} s on {p.total_cells[first(ti)]} cells, on log-log axes; observed orders {temporalOrders}. They fall below 1
-              because each error is measured against the exact series and so also contains the fixed spatial error of the{' '}
-              {p.total_cells[first(ti)]}-cell mesh, which matters more as the time error shrinks; against a reference on the same mesh the
-              observed order is first order, as the derivation shows (
-              <a href={`${repoFile(DERIVATION)}#67-observed-order-of-accuracy-and-convergence`}>derivation, Section 6.7</a>).{guideNote}{' '}
-              <ProvenanceNote doc={doc} file="convergence_study.json" />
-            </>
-          }
-        >
-          <Plot figure={temporal} testId="verify-temporal-plot" height={280} label="Error of the final release fraction against the time step, log-log, with a guide line of slope 1." exportInfo={{ name: `strato-verify-temporal-${doc.commit.slice(0, 7)}`, source: exportSource(doc, 'convergence_study.json') }} />
+          <Plot
+            figure={fig}
+            testId="verify-check-plot"
+            height={300}
+            label="Absolute differences of the BTCS release fraction and of the estimated numerical limit from the independent reference at four checkpoint times, log-log."
+            exportInfo={{ name: `strato-verify-check-${doc.commit.slice(0, 7)}`, source: exportSource(doc, 'btcs_independent_check.json') }}
+          />
         </Fig>
       </div>
     </>
@@ -215,36 +227,42 @@ export function ConvergencePanel() {
 }
 
 export function BalancePanelVerify() {
-  const { doc, error } = usePrecomputed<SyntheticRunDoc>('synthetic_run.json');
+  const { doc, error } = usePrecomputed<RunDoc>('btcs_run.json');
   const live = useStrato((s) => s.run);
   const theme = usePlotTheme();
   const fig = useMemo(() => (doc ? residualFigure(doc, theme) : null), [doc, theme]);
   if (!doc || !fig) return <Loading error={error} what="native run" />;
+  const s = doc.data.summary;
   return (
     <Fig
-      number={5}
+      number={4}
       testId="verify-balance"
       label="PRECOMPUTED"
       caption={
         <>
-          Inventory balance residual <i>M</i> + <i>M</i>
-          <sub>rel</sub> − <i>M</i>
-          <sup>0</sup> of the native run at every output time, as the program wrote it; zero in exact arithmetic, so what remains is
-          round-off. Largest at the end of the run as printed: {doc.data.summary.max_final_balance_residual_mol ?? '–'} mol.{' '}
+          Mass-balance residual of the native run at every output time with its derived a-posteriori rounding bound, as the program wrote
+          them; the residual is zero in exact arithmetic, so what remains is rounding. Largest relative residual as printed:{' '}
+          {s.worst_balance_residual_relative ?? '–'}, against a final relative bound of {s.final_balance_residual_bound_relative ?? '–'}.{' '}
           {live ? (
             <span data-testid="verify-live-residual">
-              The run now on Explore reports a largest |residual| of{' '}
+              The run now on Explore reports a largest relative residual of{' '}
               <span data-value={String(live.balance.max_abs_residual_relative)}>
                 <Sci value={live.balance.max_abs_residual_relative} digits={3} />
               </span>{' '}
-              of the start inventory (<Badge label={live.label} />, from the WebAssembly solver build <code>{live.engine.commit}</code>).
+              (<Badge label={live.label} />, from the WebAssembly solver build <code>{live.engine.commit}</code>).
             </span>
           ) : null}{' '}
-          <ProvenanceNote doc={doc} file="synthetic_run.json" />
+          <ProvenanceNote doc={doc} file="btcs_run.json" />
         </>
       }
     >
-      <Plot figure={fig} testId="verify-balance-plot" height={260} label="Inventory balance residual of the native run against time." exportInfo={{ name: `strato-verify-balance-${doc.commit.slice(0, 7)}`, source: exportSource(doc, 'synthetic_run.json') }} />
+      <Plot
+        figure={fig}
+        testId="verify-balance-plot"
+        height={260}
+        label="Mass-balance residual of the native run and its derived rounding bound against time."
+        exportInfo={{ name: `strato-verify-balance-${doc.commit.slice(0, 7)}`, source: exportSource(doc, 'btcs_run.json') }}
+      />
     </Fig>
   );
 }

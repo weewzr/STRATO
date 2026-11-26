@@ -2,11 +2,11 @@
   "schema": 1,
   "label": "CATALOGUE",
   "kind": "research_catalogue",
-  "generator": "scripts/web/generate_data.py v1",
+  "generator": "strato-webtools v1",
   "strato_version": "1.0.1",
-  "commit": "9ec52b13ff6bdd3490028b81d6033079f7c1611e",
-  "command": "python -I -X utf8 scripts/web/generate_data.py catalogue",
-  "created_utc": "2026-11-25T02:29:53Z",
+  "commit": "c749f173e3a00393befb296618953818dfeac1a4",
+  "command": "strato-webtools catalogue",
+  "created_utc": "2026-11-26T08:51:25Z",
   "note": "CATALOGUE marks a data file of research statuses and references; it is not a result label.",
   "entry_format": "blocks-1: the entry files of docs/research/ as heading, paragraph, list, table and display-maths blocks with inline spans; text copied, nothing computed",
   "inputs": [
@@ -16,7 +16,7 @@
     },
     {
       "path": "data/research/mechanisms.csv",
-      "sha256": "3331cb54a7ada38caf277525c8e6b25200c6c1812b00d55a87afd9f593c6928b"
+      "sha256": "5e2d997a67ecb1ca97b0e95978982aa70613a8f4c87b85d6919e31ee3aec881f"
     },
     {
       "path": "data/research/references.csv",
@@ -36,7 +36,7 @@
     },
     {
       "path": "docs/research/ag_trapping_detrapping.md",
-      "sha256": "1b46edb58b5a85b46ca700b54548af81cd658d1d83105cf5aabc0589b168bad0"
+      "sha256": "1a7af05be839044873b0bd0b9d17b47b8f034cafea9c56b39325e1202c4fe06c"
     },
     {
       "path": "docs/research/coating_degradation_failure.md",
@@ -68,7 +68,7 @@
     },
     {
       "path": "docs/research/roadmap.md",
-      "sha256": "8fbe0444b8b2ad86974c1daf46f9110affa83e1dec72047fdfabb85dc4fe08d8"
+      "sha256": "841ec3e0e52a4407bef8dfd082671e4c526e09304506bfbd2996f32ef40736f9"
     },
     {
       "path": "docs/research/species-ag.md",
@@ -111,7 +111,7 @@
   "data": {
     "mechanisms": [
       {
-        "mechanism_id": "diffusion_layered",
+        "mechanism_id": "diffusion_btcs_layered",
         "name": "Five-layer diffusion, constant diffusivity per layer",
         "regime": [
           "baseline"
@@ -121,40 +121,63 @@
         "species": "all",
         "material_domain": "synthetic_five_layer",
         "status": "VERIFIED",
-        "status_basis": "STRATO v1.0 solves the layered equation by finite volume (Code B) and by an eigenfunction series (Code C); the tests show second-order convergence in space, first-order convergence in time, a balance residual at round-off level and agreement of the two codes on the synthetic five-layer case. Verification only: no comparison with measurements exists.",
+        "status_basis": "The BTCS solver (result label COMPUTED v2.0) solves the layered equation by the spherical backward-time central-space finite-difference scheme (Method A) and is compared with the Sturm-Liouville analytical solution (Method B). Conservation in exact arithmetic and positivity are proved for the scheme as specified; the tests show second-order convergence in space, first-order convergence in time, a balance residual within its derived rounding bound and agreement with the analytical solution on the synthetic five-layer case. Numerical verification only: no comparison with measurements exists.",
         "evidence": [
-          "tests/phase1_regression.rs",
-          "tests/finite_volume_vs_analytical.rs",
-          "examples/verify.rs",
-          "tests/golden/v1.0/verify_stdout.txt",
-          "docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md"
+          "tests/btcs_verification.rs",
+          "tests/btcs_regression.rs",
+          "tests/btcs_properties.rs",
+          "tests/btcs_cli.rs",
+          "crates/strato-wasm/tests/btcs_api.rs",
+          "tests/golden/btcs/README.md",
+          "docs/mathematics/btcs/02_final_formulation.md"
         ],
         "validation_ids": [],
         "equation_ids": [
-          "2.6",
-          "2.7",
-          "3.1",
-          "3.2",
-          "3.3",
-          "3.4",
-          "3.5",
-          "5.9",
-          "5.14",
-          "5.15"
+          "F1",
+          "F2",
+          "F3",
+          "F4",
+          "F5",
+          "F6",
+          "F7",
+          "F8",
+          "F9",
+          "F10",
+          "F11",
+          "F12",
+          "F13",
+          "F14",
+          "F15",
+          "F16",
+          "F17",
+          "F18",
+          "F19",
+          "F20",
+          "F21",
+          "F22",
+          "F23",
+          "F24",
+          "F25",
+          "F26",
+          "F27",
+          "F28",
+          "F29",
+          "F30",
+          "F31"
         ],
         "coupled": false,
-        "solver_capability": "diffusion_layered",
+        "solver_capability": "diffusion_btcs_layered",
         "required_parameters": [
           "layer outer radii (registered: inputs/synthetic/synthetic_five_layer.toml)",
           "layer diffusivities (registered: inputs/synthetic/synthetic_five_layer.toml)",
           "kernel start concentration (registered: inputs/synthetic/synthetic_five_layer.toml)"
         ],
-        "missing_work": "A comparison with measured release needs temperature-dependent diffusivity (web phase 6.2) and the validation of web phase 7.",
+        "missing_work": "A comparison with measured release needs temperature-dependent diffusivity, generation and decay, and the comparison with the published release measurements.",
         "reference_ids": [
           "gelbard2003"
         ],
         "entry": "",
-        "status_date": "2026-11-24"
+        "status_date": "2026-11-26"
       },
       {
         "mechanism_id": "generation",
@@ -348,7 +371,7 @@
         "species": "all",
         "material_domain": "interface",
         "status": "PENDING",
-        "status_basis": "Not in the model: STRATO v1.0 and the Phase 2 derivations assume perfect contact with no partition coefficient (assumption A2).",
+        "status_basis": "Not in the model: STRATO and the Phase 2 derivations assume perfect contact with no partition coefficient (assumption A2).",
         "evidence": [],
         "validation_ids": [],
         "equation_ids": [],
@@ -391,7 +414,7 @@
           "Ag-110m decay constant (registered: data/nuclear/decay.csv Ag-110m)",
           "SiC porosity, pore size and grain size for the effective form (missing)"
         ],
-        "missing_work": "No measured or computed trap density or trap energy for Ag in AGR-1 SiC was found. Needs atomistic trap energies at pores and triple junctions, a derivation of the coupled system on the spherical finite-volume mesh with conservation and limiting-case checks, and comparison with AGR-1 Ag-110m retention after Phase 2.2.",
+        "missing_work": "No measured or computed trap density or trap energy for Ag in AGR-1 SiC was found. Needs atomistic trap energies at pores and triple junctions, a derivation of the coupled system on the spherical finite-difference grid with conservation and limiting-case checks, and comparison with AGR-1 Ag-110m retention after Phase 2.2.",
         "reference_ids": [
           "longhurst2004",
           "miller2018",
@@ -5565,7 +5588,7 @@
               [
                 {
                   "t": "text",
-                  "v": "A derivation of Concept 1 on STRATO's spherical finite-volume mesh with its own conservation and limiting-case checks (zero trap density must return the present equation)."
+                  "v": "A derivation of Concept 1 on STRATO's spherical finite-difference grid with its own conservation and limiting-case checks (zero trap density must return the present equation)."
                 }
               ],
               [
@@ -14270,7 +14293,7 @@
               },
               {
                 "t": "text",
-                "v": ". The brick status below summarises the rows of that file on 2026-11-24. For bricks 1 to 3 these are the rows of the equation builder's mechanisms, whose statuses rest on the v1.0 verification (brick 1) and the Phase 2 derivations (bricks 2 and 3); brick 3 also holds the PENDING row for interface partition coefficients, which are not in the model. A brick status changes only when its evidence changes and the file records it."
+                "v": ". The brick status below summarises the rows of that file on 2026-11-24. For bricks 1 to 3 these are the rows of the equation builder's mechanisms, whose statuses rest on the BTCS verification (brick 1) and the Phase 2 derivations (bricks 2 and 3); brick 3 also holds the PENDING row for interface partition coefficients, which are not in the model. A brick status changes only when its evidence changes and the file records it."
               }
             ]
           },
@@ -14679,7 +14702,7 @@
                 },
                 {
                   "t": "text",
-                  "v": " The governing equation of STRATO v1.0, layered spherical diffusion with a constant diffusivity per layer, shown first, with the live simulation of the verified synthetic case under it."
+                  "v": " The governing equation of STRATO, layered spherical diffusion with a constant diffusivity per layer, shown first, with the live simulation of the verified synthetic case under it, solved by Method A (finite-difference BTCS) and, where it applies, by Method B (the analytical Sturm-Liouville solution)."
                 }
               ],
               [
@@ -14694,11 +14717,11 @@
                 },
                 {
                   "t": "text",
-                  "v": " v1.0 verification: the finite-volume solution against the exact series and the regression tests ("
+                  "v": " BTCS verification: the finite-difference solution against the analytical series, the observed orders, the balance and the regression tests ("
                 },
                 {
                   "t": "code",
-                  "v": "tests/finite_volume_vs_analytical.rs"
+                  "v": "tests/btcs_verification.rs"
                 },
                 {
                   "t": "text",
@@ -14706,7 +14729,15 @@
                 },
                 {
                   "t": "code",
-                  "v": "tests/phase1_regression.rs"
+                  "v": "tests/btcs_regression.rs"
+                },
+                {
+                  "t": "text",
+                  "v": ", "
+                },
+                {
+                  "t": "code",
+                  "v": "tests/btcs_properties.rs"
                 },
                 {
                   "t": "text",
@@ -14714,15 +14745,15 @@
                 },
                 {
                   "t": "code",
-                  "v": "tests/golden/v1.0/"
+                  "v": "tests/golden/btcs/"
                 },
                 {
                   "t": "text",
-                  "v": "), and the derivation in "
+                  "v": "), and the formulation in "
                 },
                 {
                   "t": "code",
-                  "v": "docs/mathematics/v1.0.0/"
+                  "v": "docs/mathematics/btcs/"
                 },
                 {
                   "t": "text",
@@ -14917,7 +14948,7 @@
                 },
                 {
                   "t": "text",
-                  "v": " Rust code for the unsplit Backward Euler step with implicit decay and the exact step-average source, kernel-only source by default, through the full v1.0 regression suite."
+                  "v": " Rust code for the unsplit Backward Euler step with implicit decay and the exact step-average source, kernel-only source by default, through the full BTCS regression suite."
                 }
               ],
               [
@@ -15146,7 +15177,7 @@
                 },
                 {
                   "t": "text",
-                  "v": " Measured or computed trap densities and energies for silver in AGR-1 SiC (none found), registered with sources, and a derivation of the coupled system on STRATO's spherical finite-volume mesh."
+                  "v": " Measured or computed trap densities and energies for silver in AGR-1 SiC (none found), registered with sources, and a derivation of the coupled system on STRATO's spherical finite-difference grid."
                 }
               ],
               [

@@ -1,4 +1,5 @@
-// Request/response wrapper around the solver worker (prompt/TECHNICAL_ARCHITECTURE.md Section 4):
+// Request/response wrapper around the solver worker (prompt/TECHNICAL_ARCHITECTURE.md Section 4),
+// for the BTCS interface of the wrapper only:
 // hello handshake (requests wait until the worker reports that it is listening), one id per
 // request, a time-out per request, replacement of a worker that trapped or timed out, and
 // "latest wins" for runs so that a stale reply is dropped by its id. It passes JSON text and
@@ -6,7 +7,7 @@
 import { filterRequestedMechanisms } from '../equation/availability';
 import type { ErrorMessage, HelloMessage, RequestKind, ResponseMessage, WorkerMessage, WorkerRequest } from './protocol';
 import { REQUEST_TIMEOUT_MS } from './tolerances';
-import type { BuildInfo, CompareReply, RunReply, ValidateReply } from './types';
+import type { BuildInfo, CompareReply, ExportFormat, ExportReply, RunReply, ValidateReply } from './types';
 
 /** The part of the Worker interface the client uses (a fake in the unit tests). */
 export interface WorkerLike {
@@ -161,23 +162,24 @@ export class SolverClient {
   }
 
   /**
-   * Runs a configuration. Only mechanisms for which isAvailable() is true are sent; the others
-   * are dropped and reported. A reply that a newer run has overtaken rejects with reason 'stale'.
+   * Runs a configuration with the BTCS solver. Only mechanisms for which isAvailable() is true are
+   * sent; the others are dropped and reported. A reply that a newer run has overtaken rejects with
+   * reason 'stale'. A rejected configuration comes back as the wrapper's own reply, with its own messages.
    */
-  async runV1(config: unknown, mechanisms: readonly string[], capabilities: readonly string[]): Promise<Reply<RunReply> & { dropped: string[] }> {
+  async run(config: unknown, mechanisms: readonly string[], capabilities: readonly string[]): Promise<Reply<RunReply> & { dropped: string[] }> {
     const { send, dropped } = filterRequestedMechanisms(mechanisms, capabilities);
     const ticket = ++this.latestRun;
-    const reply = await this.request<RunReply>('run_v1', { schema: 1, config, mechanisms: send });
+    const reply = await this.request<RunReply>('run', { schema: 2, config, mechanisms: send });
     if (ticket !== this.latestRun) throw new SolverError('stale', 'overtaken by a newer run');
     return { ...reply, dropped };
   }
 
   /**
-   * Runs the baseline and the current configuration through compare_v1, which returns both runs and
-   * their difference computed in Rust. Mechanisms are filtered as for runV1, for both halves. Latest
-   * wins, separately from runV1: a reply that a newer comparison has overtaken rejects with 'stale'.
+   * Runs the baseline and the current configuration through compare, which returns both runs and
+   * their difference computed in Rust. Mechanisms are filtered as for run, for both halves. Latest
+   * wins, separately from run: a reply that a newer comparison has overtaken rejects with 'stale'.
    */
-  async compareV1(
+  async compare(
     baseline: unknown,
     modified: unknown,
     mechanisms: readonly string[],
@@ -186,18 +188,45 @@ export class SolverClient {
     const { send, dropped } = filterRequestedMechanisms(mechanisms, capabilities);
     const ticket = ++this.latestCompare;
     const reply = await this.request<CompareReply>('compare', {
-      schema: 1,
-      baseline: { schema: 1, config: baseline, mechanisms: send },
-      modified: { schema: 1, config: modified, mechanisms: send },
+      schema: 2,
+      baseline: { schema: 2, config: baseline, mechanisms: send },
+      modified: { schema: 2, config: modified, mechanisms: send },
     });
     if (ticket !== this.latestCompare) throw new SolverError('stale', 'overtaken by a newer comparison');
     return { ...reply, dropped };
   }
 
+  /** The wrapper's check of a configuration: the same rules as run, nothing is solved. */
   validate(config: unknown): Promise<Reply<ValidateReply>> {
-    return this.request<ValidateReply>('validate', { schema: 1, config });
+    return this.request<ValidateReply>('validate', { schema: 2, config });
   }
 
+  /**
+   * A data file of a run, written by the library's export with its provenance header. The text is
+   * saved unchanged. `source` and `parameterClass` are the source row and class of the parameters.
+   */
+  exportRun(
+    config: unknown,
+    format: ExportFormat,
+    provenance: { inputFile: string; parameterSource: string; parameterClass: string },
+    /** The baseline configuration of the format comparison_csv; config is then the current one. */
+    baselineConfig?: unknown,
+    /** Source row and class of the baseline's parameters, written to the comparison header. */
+    baselineProvenance?: { parameterSource: string; parameterClass: string },
+  ): Promise<Reply<ExportReply>> {
+    return this.request<ExportReply>('export_run', {
+      schema: 2,
+      config,
+      format,
+      input_file: provenance.inputFile,
+      parameter_source: provenance.parameterSource,
+      parameter_class: provenance.parameterClass,
+      ...(baselineConfig === undefined ? {} : { baseline_config: baselineConfig }),
+      ...(baselineProvenance === undefined
+        ? {}
+        : { baseline_parameter_source: baselineProvenance.parameterSource, baseline_parameter_class: baselineProvenance.parameterClass }),
+    });
+  }
   close(): void {
     this.closed = true;
     this.failAll(new SolverError('closed', 'client closed'));

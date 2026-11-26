@@ -189,7 +189,7 @@ This is **verification**: it shows that the code solves its equations correctly.
 | `docs/development/` | Provenance, Phase 2 review package and the list of v1.0 to v2.0 changes |
 | `scripts/` | Python derivation checks, figure scripts and parameter-register tools (versions pinned in `requirements.lock.txt`) |
 | `web/` | Web demonstration (React, TypeScript, KaTeX, Plotly, three.js); see [`web/README.md`](web/README.md) |
-| `crates/` | WebAssembly wrapper of the solver (`strato-wasm`) and the tools workspace (`Cargo.toml`, with `strato-docsite`, which renders the documents into the site) |
+| `crates/` | WebAssembly wrapper of the solver (`strato-wasm`) and the tools workspace (`Cargo.toml`, with `strato-docsite`, which renders the documents into the site, and `strato-webtools`, which generates the web data files and runs the catalogue and wasm build checks) |
 | `prompt/` | Instruction package for the web demo |
 
 ## Documentation

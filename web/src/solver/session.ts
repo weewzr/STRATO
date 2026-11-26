@@ -1,7 +1,9 @@
-// Connects the solver client to the store (web phase 3): records build_info().capabilities,
-// runs the current inputs once the worker is ready and again after every change (debounced),
-// and stores the wrapper's reply as it is; from web phase 5 it also runs compare_v1 when the Compare
-// section asks for it. Nothing here computes a value.
+// Connects the solver client to the store: records build_info().btcs.capabilities, validates the
+// current inputs with the wrapper and runs them once the worker is ready and again after every
+// change (debounced), and stores the wrapper's reply as it is; it also runs compare when the
+// Compare section asks for it. Every request goes to a BTCS function of the wrapper; a failure to
+// load the solver is stored as a failure, and no other source of numbers exists. Nothing here
+// computes a value.
 import { comparisonKey, inputKey, useStrato } from '../state/store';
 import { SolverClient, SolverError, type WorkerFactory } from './client';
 import { RUN_DEBOUNCE_MS } from './tolerances';
@@ -9,8 +11,8 @@ import { RUN_DEBOUNCE_MS } from './tolerances';
 let client: SolverClient | null = null;
 let timer: ReturnType<typeof setTimeout> | null = null;
 
-/** The mechanism ids a v1.0 run asks for: the layered diffusion of builder stage 1. */
-const RUN_MECHANISMS = ['diffusion_layered'];
+/** The mechanism ids a run asks for: the layered diffusion of the BTCS solver (builder steps 1 to 12). */
+const RUN_MECHANISMS = ['diffusion_btcs_layered'];
 
 export function solverClient(): SolverClient | null {
   return client;
@@ -20,14 +22,46 @@ function stampRequests(): void {
   if (typeof document !== 'undefined' && client) document.documentElement.dataset.solverRequests = String(client.sent);
 }
 
+/** Asks the wrapper whether the current inputs are valid; its own messages are stored and shown. */
+async function validateNow(): Promise<void> {
+  if (!client) return;
+  const s = useStrato.getState();
+  const key = inputKey(s.config);
+  try {
+    const reply = await client.validate(s.config);
+    const body = reply.body;
+    useStrato.getState().setValidation({
+      key,
+      state: body.ok ? 'ok' : 'rejected',
+      errors: body.errors,
+      warnings: body.warnings,
+      plan: body.plan,
+      grid: body.grid,
+      limits: body.limits,
+    });
+  } catch (e) {
+    if (e instanceof SolverError && (e.reason === 'closed' || e.reason === 'stale')) return;
+    useStrato.getState().setValidation({
+      key,
+      state: 'error',
+      errors: [e instanceof Error ? e.message : String(e)],
+      warnings: [],
+      plan: null,
+      grid: null,
+      limits: null,
+    });
+  }
+}
+
 async function runNow(): Promise<void> {
   if (!client) return;
   const s = useStrato.getState();
   const config = s.config;
   const key = inputKey(config);
   s.setRunning();
+  void validateNow();
   try {
-    const pending = client.runV1(config, RUN_MECHANISMS, s.capabilities);
+    const pending = client.run(config, RUN_MECHANISMS, s.capabilities);
     stampRequests();
     const reply = await pending;
     const info = { elapsedMs: reply.elapsedMs, requestId: reply.requestId, inputKey: key, dropped: reply.dropped };
@@ -52,8 +86,8 @@ function schedule(delay: number): void {
 let compareTimer: ReturnType<typeof setTimeout> | null = null;
 
 /**
- * Compares the current inputs with the baseline through compare_v1 (web phase 5). Asked for only by
- * the Compare section, so the Explore page sends no comparison request. The reply is stored as it is.
+ * Compares the current inputs with the baseline through compare. Asked for only by the Compare
+ * section, so the Explore page sends no comparison request. The reply is stored as it is.
  */
 async function compareNow(): Promise<void> {
   if (!client) return;
@@ -64,7 +98,7 @@ async function compareNow(): Promise<void> {
   const key = comparisonKey(baseline, current);
   s.setComparison({ status: 'running' });
   try {
-    const pending = client.compareV1(baseline, current, RUN_MECHANISMS, s.capabilities);
+    const pending = client.compare(baseline, current, RUN_MECHANISMS, s.capabilities);
     stampRequests();
     const reply = await pending;
     const set = useStrato.getState().setComparison;
@@ -98,7 +132,8 @@ export function startSolver(factory: WorkerFactory = defaultFactory): SolverClie
     onHello: (build) => {
       const s = useStrato.getState();
       s.setSolver({ state: 'ready', build, error: null });
-      s.setCapabilities(build.capabilities);
+      // The BTCS capabilities only: there is no other list to read.
+      s.setCapabilities(build.btcs.capabilities);
       if (runOnHello) schedule(0);
     },
     onLoadFailed: (error) => useStrato.getState().setSolver({ state: 'failed', error }),

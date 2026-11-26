@@ -27,13 +27,16 @@ use strato::{
     config::Config,
     numerical::{
         btcs::{self, Limits, Stepper},
-        btcs_report::{balance_bound_history, interface_flux_report, layer_shares, ring_edges},
+        btcs_report::{interface_flux_report, layer_shares, ring_edges},
         coefficients::Coefficients,
         diagnostics::{check_matrix_structure, check_series, check_step_properties},
         grid::{Grid, NodeClass, ValidatedInput},
         inventory::inventory,
     },
-    postprocessing::comparison::{layers_from_config, MAX_MODES},
+    postprocessing::{
+        comparison::{layers_from_config, MAX_MODES},
+        export::{comparison_csv, profile_csv, run_json, timeseries_csv, Provenance},
+    },
 };
 
 /// Schema version of every request and response object of the BTCS interface.
@@ -92,6 +95,8 @@ pub fn build_info_value() -> Value {
         "solver": solver_value(),
         "schema": SCHEMA_BTCS,
         "functions": ["validate", "run", "compare"],
+        "export_functions": ["export_run"],
+        "export_formats": EXPORT_FORMATS,
         "capabilities": CAPABILITIES_BTCS,
         "label": LABEL_BTCS,
         "limits": limits_value(),
@@ -188,9 +193,98 @@ pub struct Plan {
     pub output_rows: usize,
 }
 
+/// A value as the page shows it: zero as `0`, a whole number below 10^15 in full, anything else
+/// in scientific notation.
+fn value_text(x: f64) -> String {
+    if x == 0.0 {
+        "0".into()
+    } else if x.is_finite() && x.fract() == 0.0 && x.abs() < 1e15 {
+        format!("{x}")
+    } else {
+        format!("{x:e}")
+    }
+}
+
+/// Every violated input rule of `Config::validate` and `btcs::validate_input`, each as one
+/// sentence with the full name of the quantity, its unit, the value given and the rule.
+fn describe_input_problems(cfg: &Config) -> Vec<String> {
+    let mut out = Vec::new();
+    if cfg.regions.len() != 5 {
+        out.push(format!(
+            "Exactly five layers are required, but {} were given",
+            cfg.regions.len()
+        ));
+        return out;
+    }
+    if cfg.species.trim().is_empty() {
+        out.push("The name of the species must not be empty".into());
+    }
+    if !(cfg.temperature_k.is_finite() && cfg.temperature_k > 0.0) {
+        out.push(format!(
+            "Temperature (K) is {}; it must be a finite number larger than 0 K",
+            value_text(cfg.temperature_k)
+        ));
+    }
+    let mut last = 0.0;
+    for r in &cfg.regions {
+        let name = &r.name;
+        if r.outer_radius_m.is_finite() && r.outer_radius_m > last {
+            last = r.outer_radius_m;
+        } else {
+            out.push(format!(
+                "Outer radius of the {name} layer (m) is {}; it must be a finite number larger than {} m, the outer radius of the layer inside it (0 m at the centre)",
+                value_text(r.outer_radius_m),
+                value_text(last)
+            ));
+        }
+        if !(r.diffusivity_m2_s.is_finite() && r.diffusivity_m2_s > 0.0) {
+            out.push(format!(
+                "Diffusivity of the {name} layer (m²/s) is {}; it must be a finite number larger than 0 m²/s",
+                value_text(r.diffusivity_m2_s)
+            ));
+        }
+        if r.cells == 0 {
+            out.push(format!(
+                "Number of grid intervals in the {name} layer (dimensionless) is 0; it must be a whole number of at least 1"
+            ));
+        }
+    }
+    let t = &cfg.time;
+    if !(t.dt_s.is_finite() && t.dt_s > 0.0) {
+        out.push(format!(
+            "Time step (s) is {}; it must be a finite number larger than 0 s",
+            value_text(t.dt_s)
+        ));
+    }
+    if !(t.end_time_s.is_finite() && t.end_time_s > 0.0) {
+        out.push(format!(
+            "Simulation duration (s) is {}; it must be a finite number larger than 0 s",
+            value_text(t.end_time_s)
+        ));
+    }
+    if t.output_every_steps == 0 {
+        out.push("Number of time steps between two output rows (dimensionless) is 0; it must be a whole number of at least 1".into());
+    }
+    let c0 = cfg.initial.kernel_concentration_mol_m3;
+    if !(c0.is_finite() && c0 > 0.0) {
+        out.push(format!(
+            "Initial concentration in the kernel (mol/m³) is {}; it must be a finite number larger than 0 mol/m³",
+            value_text(c0)
+        ));
+    }
+    out
+}
+
 /// `Config::validate`, the library's BTCS input rules (PS-01) and the wrapper limits, in this
 /// order, before any other library call.
 pub fn check_config(cfg: &Config) -> Result<(ValidatedInput, Plan), Vec<String>> {
+    // The input rules are stated first, in words that name each quantity in full with its unit
+    // and its value, because the page shows these messages as they are. They cover the rules of
+    // `Config::validate` and of `btcs::validate_input`, which stay as the final guard.
+    let problems = describe_input_problems(cfg);
+    if !problems.is_empty() {
+        return Err(problems);
+    }
     cfg.validate().map_err(|e| vec![format!("{e:#}")])?;
     // validate() guarantees at least one interval per layer; saturate so that a huge value
     // cannot overflow the sum the library takes.
@@ -200,13 +294,14 @@ pub fn check_config(cfg: &Config) -> Result<(ValidatedInput, Plan), Vec<String>>
         .fold(0usize, |a, r| a.saturating_add(r.cells));
     if total > MAX_TOTAL_INTERVALS {
         return Err(vec![format!(
-            "total interval count {total} exceeds the wrapper limit MAX_TOTAL_INTERVALS = {MAX_TOTAL_INTERVALS}"
+            "The total number of grid intervals in all layers is {total}, above the limit of {MAX_TOTAL_INTERVALS} grid intervals"
         )]);
     }
     let ratio = (cfg.time.end_time_s / cfg.time.dt_s).ceil();
     if ratio.is_nan() || ratio > MAX_STEPS_BTCS as f64 {
         return Err(vec![format!(
-            "step count ceil(end_time_s / dt_s) = {ratio:e} exceeds the wrapper limit MAX_STEPS = {MAX_STEPS_BTCS}"
+            "The number of time steps (the simulation duration divided by the time step, rounded up) is {}, above the limit of {MAX_STEPS_BTCS} time steps",
+            value_text(ratio)
         )]);
     }
     let input = btcs::validate_input(cfg, &LIMITS).map_err(|e| vec![format!("{e:#}")])?;
@@ -260,13 +355,14 @@ fn prepare_value(request: Value) -> Result<Prepared, Vec<String>> {
         Some(times) => {
             if times.len() > MAX_PROFILE_TIMES {
                 return Err(vec![format!(
-                    "{} requested profile times, more than the wrapper limit MAX_PROFILE_TIMES = {MAX_PROFILE_TIMES}",
+                    "{} profile times were requested, above the limit of {MAX_PROFILE_TIMES} profile times",
                     times.len()
                 )]);
             }
             if times.iter().any(|t| !t.is_finite() || *t < 0.0) {
                 return Err(vec![
-                    "profile_times_s must be finite and non-negative".into()
+                    "Every requested profile time (s) must be a finite number of at least 0 s"
+                        .into(),
                 ]);
             }
             let mut map: BTreeMap<usize, Vec<f64>> = BTreeMap::new();
@@ -286,13 +382,13 @@ fn prepare_value(request: Value) -> Result<Prepared, Vec<String>> {
     let values = profile_steps.len().saturating_mul(plan.nodes);
     if values > MAX_PROFILE_VALUES_BTCS {
         return Err(vec![format!(
-            "{} profiles of {} nodes give {values} profile values, more than the wrapper limit MAX_PROFILE_VALUES = {MAX_PROFILE_VALUES_BTCS}; {}",
+            "{} concentration profiles of {} grid nodes each give {values} stored concentration values, above the limit of {MAX_PROFILE_VALUES_BTCS} values; {}",
             profile_steps.len(),
             plan.nodes,
             if requested {
                 "request fewer profile times"
             } else {
-                "raise output_every_steps or request profile_times_s"
+                "raise the number of time steps between two output rows or request profile times"
             }
         )]);
     }
@@ -452,9 +548,18 @@ fn run_prepared(p: &Prepared) -> Result<Value, Vec<String>> {
     let stepper = Stepper::new(grid, input.d, dt).map_err(|e| vec![format!("{e:#}")])?;
     let coeff = stepper.assembly().coeff.clone();
 
-    let bounds = balance_bound_history(input, grid, m0).map_err(|e| vec![format!("{e:#}")])?;
     let row_steps = output_steps(input);
     debug_assert_eq!(row_steps.len(), result.series.len());
+    // The rounding bound of the balance residual is the one the solver derived during this very run
+    // (`balance_residual_bound` of each output row, in mol): the page, the exports and the command
+    // line show one value. It is kept in mol and relative to the initial inventory, indexed by
+    // step; only the steps of the output rows are filled.
+    let mut bounds_mol = vec![f64::NAN; input.steps + 1];
+    let mut bounds = vec![f64::NAN; input.steps + 1];
+    for (&s, row) in row_steps.iter().zip(&result.series) {
+        bounds_mol[s] = row.1.balance_residual_bound;
+        bounds[s] = row.1.balance_residual_bound / m0;
+    }
 
     // Profiles.
     let mut profiles = Vec::with_capacity(p.profile_steps.len());
@@ -518,7 +623,7 @@ fn run_prepared(p: &Prepared) -> Result<Value, Vec<String>> {
         .map(|(_, d)| d.release_rate.map_or(Value::Null, |x| json!(x)))
         .collect();
     let residual_col = col(&|d| d.balance_residual);
-    let bound_col: Vec<f64> = row_steps.iter().map(|&s| bounds[s] * m0).collect();
+    let bound_col: Vec<f64> = row_steps.iter().map(|&s| bounds_mol[s]).collect();
     let max_abs_residual = residual_col.iter().fold(0.0f64, |a, x| a.max(x.abs()));
     let worst_over_bound = rows
         .iter()
@@ -542,12 +647,12 @@ fn run_prepared(p: &Prepared) -> Result<Value, Vec<String>> {
         let bound = series_mode_bound(cfg, t_min);
         if !(bound.is_finite() && bound <= super::MAX_SERIES_MODES as f64) {
             Err(format!(
-                "series not computed: the earliest output time {t_min:e} s needs up to {bound:.3e} eigenmodes, more than the wrapper limit MAX_SERIES_MODES = {}; a larger output interval (dt x output_every_steps) needs fewer",
+                "Method B is not computed: the earliest output time ({t_min:e} s) needs up to {bound:.3e} eigenmodes of the series, above the limit of {} eigenmodes; a larger time between two output rows (the time step times the number of time steps between output rows) needs fewer",
                 super::MAX_SERIES_MODES
             ))
         } else {
             ModalRelease::new(&layers_from_config(cfg), 45.0 / t_min, MAX_MODES)
-                .map_err(|e| format!("series not available: {e:#}"))
+                .map_err(|e| format!("Method B is not available: {e:#}"))
         }
     };
     let (analytical, analytical_cmp) = match series {
@@ -560,7 +665,7 @@ fn run_prepared(p: &Prepared) -> Result<Value, Vec<String>> {
                 .collect();
             if resolved_rows.is_empty() {
                 messages.push(format!(
-                    "series (capped at {MAX_MODES} modes) resolves only t >= {valid:.3e} s, later than every output time"
+                    "Method B (the series, capped at {MAX_MODES} eigenmodes) resolves only times of at least {valid:.3e} s, which is later than every output time"
                 ));
                 (Value::Null, Value::Null)
             } else {
@@ -570,7 +675,7 @@ fn run_prepared(p: &Prepared) -> Result<Value, Vec<String>> {
                 let final_diff = diffs.last().copied().unwrap_or(f64::NAN);
                 if max_diff < 3.0 * floor {
                     messages.push(
-                        "BTCS and series differences are within 3x of the series accuracy floor; they are not resolved".into(),
+                        "The differences between Method A and Method B are within three times the accuracy floor of Method B; they are not resolved".into(),
                     );
                 }
                 (
@@ -666,7 +771,7 @@ fn run_prepared(p: &Prepared) -> Result<Value, Vec<String>> {
                 "remaining_mol": last.inventory,
                 "released_mol": last.cumulative_release,
                 "residual_mol": last.balance_residual,
-                "residual_bound_mol": bounds[input.steps] * m0,
+                "residual_bound_mol": bounds_mol[input.steps],
             },
             "max_abs_residual_mol": max_abs_residual,
             "max_abs_residual_relative": max_abs_residual / m0,
@@ -726,6 +831,170 @@ pub fn run(request_json: &str) -> String {
     match result {
         Ok(v) => v.to_string(),
         Err(errors) => rejected(errors).to_string(),
+    }
+}
+
+// ---------------------------------------------------------------------------------------
+// Export (data download)
+// ---------------------------------------------------------------------------------------
+
+/// The export formats of `export_run`, the builders of `postprocessing::export`. The format
+/// `comparison_csv` needs `baseline_config` besides `config`.
+pub const EXPORT_FORMATS: [&str; 4] = [
+    "timeseries_csv",
+    "profiles_csv",
+    "run_json",
+    "comparison_csv",
+];
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ExportRequest {
+    schema: u32,
+    config: Value,
+    #[serde(default)]
+    profile_times_s: Option<Vec<f64>>,
+    format: String,
+    /// File name recorded in the provenance header (the library keeps the last path component).
+    #[serde(default)]
+    input_file: Option<String>,
+    /// Source row of the parameters (decision 31); without it the header says that none is recorded.
+    #[serde(default)]
+    parameter_source: Option<String>,
+    /// Class of the parameters (decision 31).
+    #[serde(default)]
+    parameter_class: Option<String>,
+    /// The baseline configuration of the format `comparison_csv`; `config` is the current one.
+    #[serde(default)]
+    baseline_config: Option<Value>,
+    /// Source row of the baseline's parameters (comparison export only).
+    #[serde(default)]
+    baseline_parameter_source: Option<String>,
+    /// Class of the baseline's parameters (comparison export only).
+    #[serde(default)]
+    baseline_parameter_class: Option<String>,
+}
+
+fn export_value(request: Value) -> Result<Value, Vec<String>> {
+    let req: ExportRequest =
+        serde_json::from_value(request).map_err(|e| vec![format!("request: {e}")])?;
+    if !EXPORT_FORMATS.contains(&req.format.as_str()) {
+        return Err(vec![format!(
+            "unknown export format {:?}; expected one of {}",
+            req.format,
+            EXPORT_FORMATS.join(", ")
+        )]);
+    }
+    let comparison = req.format == "comparison_csv";
+    if comparison != req.baseline_config.is_some() {
+        return Err(vec![if comparison {
+            "The comparison export needs the baseline configuration".to_string()
+        } else {
+            "A baseline configuration is used only by the comparison export".to_string()
+        }]);
+    }
+    let mut run_request = json!({"schema": req.schema, "config": req.config});
+    if comparison {
+        // Only the series of both runs is written: no profile is stored.
+        run_request["profile_times_s"] = json!([0.0]);
+    } else if let Some(times) = req.profile_times_s {
+        run_request["profile_times_s"] = json!(times);
+    }
+    let p = prepare_value(run_request)?;
+    let dt = p.input.dt;
+    let times: Vec<f64> = p
+        .profile_steps
+        .iter()
+        .map(|(s, _)| *s as f64 * dt)
+        .collect();
+    let result = btcs::run_input(&p.input, &times).map_err(|e| vec![format!("{e:#}")])?;
+    let mut prov = Provenance::new(
+        &p.cfg,
+        &p.input,
+        req.input_file.as_deref().unwrap_or(""),
+        BUILD_COMMIT,
+    );
+    if req.parameter_source.is_some() || req.parameter_class.is_some() {
+        let source = req
+            .parameter_source
+            .unwrap_or_else(|| prov.parameter_source.clone());
+        let class = req
+            .parameter_class
+            .unwrap_or_else(|| prov.parameter_class.clone());
+        prov = prov.with_parameter_source(&source, &class);
+    }
+    let (text, media_type) = match req.format.as_str() {
+        "timeseries_csv" => (
+            timeseries_csv(&prov, &result.series, result.meta.initial_inventory),
+            "text/csv",
+        ),
+        "profiles_csv" => (
+            profile_csv(&prov, &result.grid, &result.snapshots),
+            "text/csv",
+        ),
+        "comparison_csv" => (Ok(String::new()), "text/csv"),
+        _ => (run_json(&prov, &p.input, &result), "application/json"),
+    };
+    let text = if comparison {
+        let base = prepare_value(
+            json!({"schema": req.schema, "config": req.baseline_config, "profile_times_s": [0.0]}),
+        )?;
+        let base_result =
+            btcs::run_input(&base.input, &[0.0]).map_err(|e| vec![format!("{e:#}")])?;
+        let mut base_prov = Provenance::new(
+            &base.cfg,
+            &base.input,
+            req.input_file.as_deref().unwrap_or(""),
+            BUILD_COMMIT,
+        );
+        if req.baseline_parameter_source.is_some() || req.baseline_parameter_class.is_some() {
+            let source = req
+                .baseline_parameter_source
+                .unwrap_or_else(|| base_prov.parameter_source.clone());
+            let class = req
+                .baseline_parameter_class
+                .unwrap_or_else(|| base_prov.parameter_class.clone());
+            base_prov = base_prov.with_parameter_source(&source, &class);
+        }
+        comparison_csv(&prov, &base_prov, &base_result.series, &result.series)
+    } else {
+        text
+    };
+    let text = text.map_err(|e| vec![format!("{e:#}")])?;
+    Ok(json!({
+        "schema": SCHEMA_BTCS,
+        "status": "ok",
+        "label": LABEL_BTCS,
+        "engine": engine(),
+        "format": req.format,
+        "media_type": media_type,
+        "text": text,
+    }))
+}
+
+/// The text of a data file of a run, written by the library's export (the CSV time series, the
+/// CSV profiles, the JSON of the whole run or the CSV comparison of two runs), each with its provenance header: solver
+/// version and commit, input digest, parameter source and class. The page saves the text
+/// unchanged. Request: `{schema: 2, config, profile_times_s?, format, input_file?,
+/// parameter_source?, parameter_class?}`, `format` one of [`EXPORT_FORMATS`].
+pub fn export_run(request_json: &str) -> String {
+    let result = placeholder_check(request_json).and_then(|()| {
+        let v: Value =
+            serde_json::from_str(request_json).map_err(|e| vec![format!("request: {e}")])?;
+        export_value(v)
+    });
+    match result {
+        Ok(v) => v.to_string(),
+        Err(errors) => rejected(errors).to_string(),
+    }
+}
+
+fn placeholder_check(raw: &str) -> Result<(), Vec<String>> {
+    let errors = placeholder_errors(raw);
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(errors)
     }
 }
 
@@ -889,13 +1158,13 @@ pub fn validate(input_text: &str) -> String {
         if let Some(times) = &profile_times {
             if times.len() > MAX_PROFILE_TIMES || times.iter().any(|t| !t.is_finite() || *t < 0.0) {
                 return Err(vec![format!(
-                    "profile_times_s must hold at most {MAX_PROFILE_TIMES} finite non-negative times"
+                    "The profile times (s) must be at most {MAX_PROFILE_TIMES} finite numbers of at least 0 s"
                 )]);
             }
         }
         if plan.dt_s != cfg.time.dt_s {
             warnings.push(format!(
-                "the solver will use dt = {:e} s ({} steps of t_end / ceil(t_end / dt)), not the requested {:e} s",
+                "The solver will use a time step of {:e} s ({} equal steps), not the requested time step of {:e} s, because the simulation duration is divided into a whole number of equal steps",
                 plan.dt_s, plan.steps, cfg.time.dt_s
             ));
         }
@@ -903,7 +1172,7 @@ pub fn validate(input_text: &str) -> String {
             let values = plan.output_rows.saturating_mul(plan.nodes);
             if values > MAX_PROFILE_VALUES_BTCS {
                 return Err(vec![format!(
-                    "{} output rows of {} nodes give {values} profile values, more than the wrapper limit MAX_PROFILE_VALUES = {MAX_PROFILE_VALUES_BTCS}; raise output_every_steps or request profile_times_s",
+                    "{} output rows of {} grid nodes each give {values} stored concentration values, above the limit of {MAX_PROFILE_VALUES_BTCS} values; raise the number of time steps between two output rows or request profile times",
                     plan.output_rows, plan.nodes
                 )]);
             }
