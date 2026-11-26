@@ -142,6 +142,15 @@ pub fn b_series_json(
                     "withheld_reason_codes",
                     J::Arr(a.withheld.iter().map(|c| c.map_or(J::Null, J::s)).collect()),
                 ),
+                (
+                    "withheld_reason_legend",
+                    J::obj(
+                        crate::methodb::WITHHELD_LEGEND
+                            .iter()
+                            .map(|(c, t)| (*c, J::s(*t)))
+                            .collect(),
+                    ),
+                ),
                 ("valid_from_h", J::Num(a.valid_from_s / H)),
                 ("accuracy_floor", J::Num(a.accuracy_floor)),
                 ("modes", J::Int(a.modes as i64)),

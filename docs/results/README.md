@@ -44,9 +44,9 @@ cargo run --release --locked --manifest-path crates/Cargo.toml -p strato-results
 | `support.json` | Every selector option and every reason why not: stages 1 to 5, the five scenarios, the temperatures of the main experimental comparison per nuclide, the cells (stage, context, nuclide, temperature) with Method A and Method B availability and reasons, the experiment rows, the model-exploration temperatures with the register rows behind each layer. |
 | `parameters.json` | Geometry (outer radii, register rows), every diffusivity law with row id, class, phase of use and printed range, and the generation inputs (decay constants, yields, fission-rate density with its label and source rows). |
 | `curves/<key>.json` | One curve file per cell. Keys: `s1.exp.<nuclide>.<T>c` (stage 1, experimental-comparison context), `s3.exp...` and `s4.exp...` (decay and temperature-dependent stages in that context), `s1.expl...` (model exploration), `s<N>.<scenario>.<nuclide>.<T>c` for scenario runs (variants: `.exploration` at 1197 degC, `.cycles`, `.heating1600/1700/1800`). |
-| `experiment/agr1.<nuclide>.<T>c.json` | Experimental observations of one dataset: bound markers and window bounds with value, reading interval, status, premises (BP1, BP2, A1) and source; point markers only where a point comparison exists (none today). |
+| `experiment/agr1.<nuclide>.<T>c.json` | Experimental observations of one dataset: bound markers and window bounds with value, reading interval, status, premises (BP1, BP2, A1) and source; point markers only where a point comparison exists (none today). Every bound carries `comparison_class`, `denominator` (as the comparison program states them), `time_window` and `particle_applicability` (the register row's cells), and, for the ten matrix-corrected rows E-010..E-014 and E-033..E-037, `premise_source` and `window_end_origin`: class "window upper bound under premise BP1", denominator "as-run calculated compact inventory", the window from about 24 h at temperature to the end of the 300 h plateau or the shorter test end. Which rows these are comes from the comparison program, not from a list in the pipeline. |
 | `bounds.json`, `csv/bounds.csv` | All bound comparisons with their statuses (technical section). |
-| `nrmse.json`, `csv/nrmse.csv` | The NRMSE records exactly as `metric-nrmse.md` Section 7 defines them. Today N = 0 everywhere: each record states its exclusion reasons and no value is produced. This file replaces `deviations.json` of the specification (decision 64). |
+| `nrmse.json`, `csv/nrmse.csv` | The NRMSE records exactly as `metric-nrmse.md` Section 7 defines them. Today N = 0 everywhere: each record states its exclusion reasons and no value is produced. This file replaces `deviations.json` of the specification (decision 64). The model slope behind the time-reading term is the difference over the actual spacing of two samples; where no difference is possible the reading uncertainty is "not available", never computed with a zero slope. |
 | `scenarios.json`, `csv/scenario_histories.csv` | The scenario definitions as run: histories, source ids, labels. |
 | `csv/scenario_series.csv`, `csv/curves.csv` | The decimated series of the scenario runs and the curves of the experimental and exploration cells. |
 | `labels.json` | Colours, the NRMSE display rule and label templates (LaTeX and plain), and the label texts of the graphs generated in Rust. |
@@ -104,8 +104,17 @@ and 28 h, labelled prescribed input (assumed), because the source gives no exact
   diffusivity in m^2 s^-1; radii in m; temperature in degC; time in h unless a field says `_s` or `_d`.
 - Method A is the BTCS solver (blue, #2563EB); Method B is the Sturm-Liouville solution (red,
   #DC2626), present only where the analytical module applies and drawn only where its mask accepts
-  the value. A curve that needs the analytical extensions reads "not available: extension pending";
-  merging `feat/analytical-extensions` changes only `crates/strato-results/src/methodb.rs`.
+  the value. One function (`crates/strato-results/src/methodb.rs`) asks the applicability function
+  of the analytical module (science design Section 4.3) and draws through `KernelRun::drawn`
+  (Section 4.2, Document 6 Section 8): the baseline at a constant temperature is exact, decay at a
+  constant temperature goes through formula (B2), a piecewise-constant kernel source through (B3)
+  to (B5); a temperature that changes in time is never drawn
+  (`reason_code` `TIME_VARYING_TEMPERATURE`). A value the mask withholds is `null` and its reason
+  code stands at the same index of `method_b.withheld_reason_codes`, with the legend in
+  `method_b.withheld_reason_legend`; a curve with no drawn value has `method_b.available: false`
+  with `reason_code` and `reason` (for example `NOT_DRAWN_AT_ANY_TIME`, which lists the reasons
+  and their counts). The existing series now uses the same mask, so its floor factor is the 4 of
+  Document 6 Section 5. `EXTENSION_FLOOR_REESTIMATED` is true (decision 68(c)).
 - A model value is "not resolved" (`resolved: false`) when the base run and the refined run (twice
   the intervals, half the step) differ by more than 5 % of the refined value (science design
   Section 3.5; the 5 % is a labelled convention, not a derived bound).

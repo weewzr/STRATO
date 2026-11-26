@@ -165,6 +165,18 @@ fn refusal(r: &Reason) -> NotAvailable {
     NotAvailable { code, reason }
 }
 
+/// The codes of withheld values with their meaning, for the curve files.
+pub const WITHHELD_LEGEND: [(&str, &str); 8] = [
+    ("BEFORE_MIN_VALID_TIME", "t is before the first time at which the omitted modes are negligible (min_valid_time)"),
+    ("COVER_SENSITIVITY", "the series with the eigenvalue cover reduced by a factor 4 differs from the full series by more than 5 % of the value"),
+    ("BELOW_ACCURACY_FLOOR", "the value is below the accuracy floor of the existing series (4 times accuracy_floor against 5 % of the value)"),
+    ("EXTENSION_ERROR_TOO_LARGE", "the estimated error of the decay or source extension is above 5 % of the value (Document 6 Section 8)"),
+    ("OUTSIDE_ESTIMATED_REGIME", "the run lies outside the regime in which the error estimate of the extensions was measured"),
+    ("QUANTITY_UNDEFINED", "the plotted quantity is not defined for this state (for example a fraction of a zero input)"),
+    ("ERROR_ESTIMATE_UNDEFINED", "the error estimate is not defined because the amount released so far is not positive"),
+    ("RUN_REFUSED", "the extension refuses the input"),
+];
+
 /// The code of a withheld value.
 fn withheld_code(w: &Withheld) -> &'static str {
     match w {
@@ -173,6 +185,9 @@ fn withheld_code(w: &Withheld) -> &'static str {
         Withheld::BelowAccuracyFloor { .. } => "BELOW_ACCURACY_FLOOR",
         Withheld::ExtensionErrorTooLarge { .. } => "EXTENSION_ERROR_TOO_LARGE",
         Withheld::OutsideEstimatedRegime(_) => "OUTSIDE_ESTIMATED_REGIME",
+        // The mask's own texts: the quantity itself, or its error estimate, is not defined (a
+        // zero or negative amount released so far).
+        Withheld::Undefined(why) if why.contains("relative error") => "ERROR_ESTIMATE_UNDEFINED",
         Withheld::Undefined(_) => "QUANTITY_UNDEFINED",
         Withheld::FloorNotReestimated => "FLOOR_NOT_REESTIMATED",
     }
