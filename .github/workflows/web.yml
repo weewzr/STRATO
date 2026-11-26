@@ -19,6 +19,9 @@ name: Web demo
 # link check then fails the job if any link of the built site does not resolve, and the content
 # check runs on the complete site.
 #
+# The content check (scripts/check_content.mjs) also renders the pages of the built site in the browser
+# and applies the minimal-text guards (scripts/minimal_text_rules.mjs), so the browser is installed first.
+#
 # Deployment: on main (push or manual run) the build that passed every step above, documents
 # included, is published to GitHub Pages by the deploy job. The repository's Pages source is
 # "GitHub Actions" (switched by the owner on 2026-11-25). Should the source ever be set back to
@@ -148,11 +151,12 @@ jobs:
       - name: Every link of the built site resolves
         working-directory: .
         run: cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-docsite -- check-links web/dist --base /STRATO/
-      - name: Content check of the build (demonstration and documents)
-        run: npm run check:content
       - name: Install the browser
         id: browser
         run: npx playwright install --with-deps chromium
+      # The content check renders the pages of the complete site in this browser for the minimal-text guards.
+      - name: Content check of the build (demonstration and documents)
+        run: npm run check:content
       - name: Browser tests
         env:
           EXPECT_COMMIT: ${{ github.sha }}

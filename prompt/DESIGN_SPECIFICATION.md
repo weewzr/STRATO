@@ -2,6 +2,8 @@
 
 This file agrees with the owner's equation-first brief (`prompt/EQUATION_FIRST_REQUEST.md`, owner policy decision M7 of 2026-11-24, with the rules E1 to E9 in `prompt/PROGRESS.md`). Where this file and the brief differ, the brief applies and this file is corrected in the same commit.
 
+Section 12 (Minimal-text rules) is binding for every current and future page and feature, including the physics, scenario and experimental-comparison features. Where another section of this file asks for more text on a page than Section 12 allows, Section 12 applies.
+
 ## 1 Design intent
 
 An equation-first scientific instrument that teaches and shows. The reader first sees the governing equation that STRATO is solving, and immediately underneath it the live simulation of exactly that equation: particle, profile, release and inventory change together. Controls, explanation and the future-research catalogue follow below. Physics grows on the page one verified mechanism at a time; what is not implemented and verified is shown as research, with its status, and never as a result.
@@ -12,7 +14,7 @@ The honesty devices follow Theodore's Outram Park dispersion demo (https://theod
 
 ### 2.1 Explore page: order A to E
 
-The Explore page is one column in this order. The order is the same at every width; only density changes.
+The Explore page is one column in this order. The order is the same at every width; only density changes. The blocks below are the earlier layout: the Explore page is now ordered governing equation, operating scenarios, numerical interpretation, live simulation, results (Section 12.2), and the contents of blocks D and E leave the page as Section 12 requires (explanations to Scientific Documentation, the research summary to Research).
 
 | Block | Content | Section of this file |
 |---|---|---|
@@ -22,7 +24,7 @@ The Explore page is one column in this order. The order is the same at every wid
 | C Interactive controls | case selector, layer parameters, time controls, mechanism switches, Run, Reset to baseline, Set current as baseline | 5 |
 | D Scientific explanation | each active term: meaning, assumptions, units, physical meaning; the boundary, interface and initial conditions; what the case is and is not | 6 |
 | E Future research mechanisms | a summary of the research catalogue: the three transport regimes, the nine species and the bricks, each with its research status, linking to the Research section | 7 |
-| Status line | footer: label of the current main result, solver time, commit | 9 |
+| Status line | footer: label of the current main result and the solver state (no build hash; Section 12) | 9 |
 
 Fold requirement: at a 1440 x 900 CSS-pixel viewport, with the default case, at the top of the page and without scrolling, block A (the whole typeset equation of the active stage and its stage picker) and the top of block B (the particle cross-section and the release-fraction readout, each with its result label) are entirely inside the viewport. The test is in `prompt/TESTING_AND_VALIDATION.md` Section 3.
 
@@ -36,7 +38,7 @@ No width has sideways page scrolling. The particle and the equation are never hi
 
 ### 2.2 Sections
 
-Navigation (tabs or anchored scroll): **Explore** (blocks A to E), **Compare** (model comparison), **Validate** (literature graph), **Verify** (verification and convergence), **Research** (the full research catalogue: regimes, species, pending mechanisms, Materials Studio gallery, brick roadmap; Section 7), **Data** (provenance, references, downloads), **About** (model, assumptions, credits including Outram Park).
+Navigation (tabs or anchored scroll): **Explore** (blocks A to E), **Compare** (model comparison), **Validate** (literature graph), **Verify** (verification and convergence), **Research** (the full research catalogue: regimes, species, pending mechanisms, Materials Studio gallery, brick roadmap; Section 7), **Data** (searchable parameters and citations, downloads), **About** (a short project introduction, credits including Outram Park, licence), **Scientific Documentation** (always the last entry; Section 12.4).
 
 ### 2.3 Header
 
@@ -117,7 +119,7 @@ The balance of the active stage (Section 3.2) as a small table or bar with its r
 - For each active term: what it represents, its assumptions, the units of every symbol and its physical meaning, in plain language first and then with the symbols, for non-specialists without loss of accuracy.
 - The boundary, interface and initial conditions in words.
 - What the current case is: the synthetic five-layer case is a verification case whose parameters are not physical TRISO data, and the page says so (`prompt/SCIENTIFIC_REQUIREMENTS.md` Section 2).
-- Verification is not validation: a short paragraph and a link to the Verify and Validate sections.
+- Verification is not validation: stated once, in Scientific Documentation; a page carries at most a few words or a link (Section 12, rule 4).
 - Stable and radioactive isotopes are named as such; decay constants come from `data/nuclear/decay.csv`.
 
 ## 7 Block E and the Research section: future research mechanisms
@@ -215,7 +217,7 @@ Wording rule: both items, and every other future phase on this page, are describ
 
 ### 8.3 Verification panel (Verify)
 
-Code B against Code C error, convergence plots (spatial and temporal, with reference slopes 2 and 1), balance residual, golden regression status and native/wasm parity, each with its label (COMPUTED v1.0 or PRECOMPUTED) and the commit that produced it.
+Code B against Code C error, convergence plots (spatial and temporal, with reference slopes 2 and 1), balance residual, golden regression status and native/wasm parity, each with its label (COMPUTED v1.0 or PRECOMPUTED). The commit and the command that produced a result are in the exported file and in Scientific Documentation, not in the figure caption. The graphs and results come first; the checks and their evidence are described in Scientific Documentation.
 
 ### 8.4 Provenance and references (Data)
 
@@ -248,7 +250,7 @@ The owner chose the identity "an instrument with a monograph behind it" for STRA
 - Tokens: `web/src/design/tokens.css` holds STRATO's own colours and faces and imports a copied `tokens.core.css` (shared spacing, radii, durations, focus width, minimum sizes and colour-vision-safe palette). The shared written specification lives in `docs/DESIGN_SYSTEM.md` of the owner's portfolio repository; there is no shared component library and no command palette on this site.
 - Third-party component kits are inspiration only; nothing is copied from them.
 - Avoid what reads as generic: purple gradients, glowing statistic cards, decorative blobs, repeated oversized rounded cards, glass effects without purpose, vague slogans, invented metrics, decoration-only animation. Prefer editorial typography on a real type scale, one consistent card and table system, labelled navigation, figures with units and sources, and interactions that tell the reader something.
-- Every figure and exported file carries its source, the model version and the commit. Figure data come from one generator that writes CSV and JSON with a provenance header (Section 8.5 and `prompt/TECHNICAL_ARCHITECTURE.md` Section 5), never from numbers typed into components.
+- Every exported figure and data file carries its source, the model version and the commit (in the file or in the exported image); the page itself prints none of them (Section 12, rule 5). Figure data come from one generator that writes CSV and JSON with a provenance header (Section 8.5 and `prompt/TECHNICAL_ARCHITECTURE.md` Section 5), never from numbers typed into components.
 
 ## 10 Labels on screen
 
@@ -259,3 +261,54 @@ Every number, plot and particle colouring shows one of `COMPUTED v1.0`, `COMPUTE
 The About section credits Theodore's Outram Park project (https://github.com/theodoreOnzGit/outram-park-backend, AGPL-3.0-only) for the interface ideas, and lists any file copied or adapted from it with its commit.
 
 The site neither publishes nor links the `prompt/` folder (owner decision M3), and it does not repeat, quote or extend the README sentence about the internal SNRSI comparison (owner decision M5).
+
+## 12 Minimal-text rules
+
+These rules are binding for every current and future page and feature of the site, including the physics, scenario and experimental-comparison features. A page is restructured so that equations, controls, scientific visualisations and results are its content; it is not merely shortened.
+
+### 12.1 The ten rules
+
+1. Equations, controls, scientific visualisations and results are the primary content of every page and come first.
+2. Minimal explanatory prose: no introductory paragraph, and no explanatory paragraph beneath a control or a graph.
+3. A figure caption is about one concise sentence.
+4. No repeated disclaimer. A qualification appears once, in Scientific Documentation; a page carries at most a few words or a link where the qualification is essential.
+5. No build hash, repository file path or source-code path, and no implementation commentary, in the main interface.
+6. Detailed assumptions, model limitations, derivations, verification methodology, experimental interpretation and technical implementation information live on one dedicated page, Scientific Documentation, the last entry of the navigation.
+7. No placeholder-heavy page. Where nothing exists yet, a compact status of one line stands in its place.
+8. No scientific explanation is duplicated across pages.
+9. Units, concise dataset identifiers and source links stay where they are needed. Under an experimental graph stand the APA citation and the direct publication link; where R² is unavailable, a short caption below the graph says why (never a warning or label inside the plot).
+10. Nothing scientific is deleted. A sentence that carries an assumption, a limitation, a definition, a verification statement, an interpretation, a citation or a source link and leaves a page exists afterwards, once, in Scientific Documentation or in a repository document that Scientific Documentation links to. Only repetition, implementation commentary and filler are removed. Scientific statements are moved verbatim or shortened without changing their meaning, and numerical verification is never called experimental validation.
+
+### 12.2 What each page shows first
+
+| Page | First content |
+|---|---|
+| Explore | the progressive governing equation, the operating-scenario buttons, the Numerical Interpretation and the live simulation, then the results |
+| Compare | the baseline-versus-current graphs and their controls |
+| Validate | the experimental graphs with R² where it is supported; otherwise a compact status |
+| Verify | the numerical verification graphs and results |
+| Research | mechanisms, species and publications |
+| Data | searchable scientific parameters and their citations |
+| About | a short professional project introduction |
+| Scientific Documentation | a table of contents, then the seven sections of Section 12.4 |
+
+### 12.3 Limits that are checked mechanically
+
+The content check of the built site (`web/scripts/check_content.mjs`, rules in `web/scripts/minimal_text_rules.mjs`) renders every page and fails on:
+
+- a build hash, digest, repository path, source file name or build command in the visible text of any page except Scientific Documentation (a link's address may contain a path; its visible text may not);
+- a figure or table caption longer than 220 characters (about one sentence);
+- more than 60 words of prose before the first control, equation, graph, table or reference list of a page (the About introduction may use up to 120 words, because it has none of these);
+- a registered disclaimer sentence that appears more than once in the whole site (the registered sentences are listed in the rules file; add a sentence there when it is found repeated).
+
+A page that is still to be cleaned is listed by name, with the rules it still breaks, in `TEMPORARY_EXCEPTIONS` of the rules file. An entry is removed when its page is clean, and the check reports an entry that is no longer needed. No new page or feature is added to that list.
+
+### 12.4 Scientific Documentation
+
+The page is the last entry of the navigation and has an in-page table of contents. Its sections, each with anchors that other pages can link to, are: assumptions; model limitations; derivations (links to the rendered derivation documents); verification methodology; experimental interpretation; technical implementation and build information (the build hash, the solver version and the source-code paths live here); data provenance. Each section holds headed short paragraphs, lists and tables, not a wall of prose. The content of each section comes from one small module per source page (`web/src/documentation/`), so that a page or feature adds its material without editing another page's file.
+
+A new feature that needs a qualification, an assumption or a method description adds an entry to its own module and links to it from its page in a few words.
+
+### 12.5 Wording
+
+State a qualification at most once on the whole site. Name quantities in full with their units. Do not describe how the page is built. Where Section 7 asks for a statement on every catalogue entry ("planned for a future phase", "research concept, not solved"), the entry carries its research status, a word with its shape, and at most a few words; the full explanation stands once in Scientific Documentation.

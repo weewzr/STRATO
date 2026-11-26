@@ -7,6 +7,7 @@ import { About } from './sections/About';
 import { NavigatedContext } from './sections/common';
 import { Compare } from './sections/Compare';
 import { Data } from './sections/Data';
+import { Documentation } from './sections/Documentation';
 import { Explore } from './sections/Explore';
 import { Research } from './sections/Research';
 import { Validate } from './sections/Validate';
@@ -77,6 +78,8 @@ export function App() {
         return <Data />;
       case 'about':
         return <About />;
+      case 'documentation':
+        return <Documentation />;
     }
   };
 

@@ -2,15 +2,28 @@
 // Usage: node scripts/check_content.mjs dist
 // Fails (exit 1) if the build contains a file under prompt/, a link to the prompt/ folder, the README
 // sentence about the internal comparison or an agreement figure of that sentence, or a local
-// absolute path. Prints one PASS or FAIL line per rule. Reads files only.
+// absolute path. It also renders the pages in a browser and applies the mechanical guards of the
+// minimal-text rules (scripts/minimal_text_rules.mjs): no build hash or file path in the main interface,
+// short figure captions, a limit on prose before the first control, each registered disclaimer once.
+// Prints one PASS or FAIL line per rule.
+// Options: --snapshots <file.json> uses page snapshots from a file instead of rendering the build;
+//          --no-render skips the rendered guards (static rules only).
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
+import { evaluateSnapshots, TEMPORARY_EXCEPTIONS } from './minimal_text_rules.mjs';
 
-const root = process.argv[2];
+const args = process.argv.slice(2);
+const flagValue = (name) => {
+  const i = args.indexOf(name);
+  return i >= 0 ? args[i + 1] : undefined;
+};
+const root = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--snapshots');
 if (!root) {
-  console.error('usage: node scripts/check_content.mjs <dist directory>');
+  console.error('usage: node scripts/check_content.mjs <dist directory> [--snapshots file.json | --no-render]');
   process.exit(2);
 }
+const noRender = args.includes('--no-render');
+const snapshotsFile = flagValue('--snapshots');
 
 function walk(dir, out = []) {
   for (const name of readdirSync(dir)) {
@@ -52,6 +65,25 @@ rule('no internal-comparison text or agreement figure', textFailures);
 rule('no local absolute path', pathFailures);
 rule('the build has an index.html and a build.json', ['index.html', 'build.json'].filter((n) => !files.some((f) => relative(root, f) === n)));
 
+let notes = [];
+if (!noRender) {
+  let snapshots = null;
+  try {
+    if (snapshotsFile) snapshots = JSON.parse(readFileSync(snapshotsFile, 'utf8'));
+    else snapshots = await (await import('./render_pages.mjs')).collectSnapshots(root);
+  } catch (e) {
+    rule('the pages render for the minimal-text guards', [e instanceof Error ? e.message : String(e)]);
+  }
+  if (snapshots) {
+    const evaluated = evaluateSnapshots(snapshots, TEMPORARY_EXCEPTIONS);
+    for (const r of evaluated.results) {
+      const label = r.excepted.length > 0 ? `${r.name} [temporary exceptions: ${r.excepted.join(', ')}]` : r.name;
+      rule(label, r.failures);
+    }
+    notes = evaluated.notes;
+  }
+}
+
 let failed = 0;
 for (const r of rules) {
   if (r.failures.length === 0) console.log(`PASS ${r.name}`);
@@ -61,5 +93,6 @@ for (const r of rules) {
     for (const x of r.failures) console.log(`     ${x}`);
   }
 }
+for (const n of notes) console.log(`NOTE ${n}`);
 console.log(`${textFiles.length} text files of ${files.length} checked`);
 process.exit(failed ? 1 : 0);
