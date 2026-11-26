@@ -16,7 +16,7 @@ import type { PlotTheme } from './theme';
 
 export type { Figure };
 
-function axis(theme: PlotTheme, title: string, extra: Record<string, unknown> = {}): Record<string, unknown> {
+export function axis(theme: PlotTheme, title: string, extra: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     title: { text: title, font: { size: 12, color: theme.text }, standoff: 8 },
     color: theme.muted,
@@ -36,7 +36,7 @@ function axis(theme: PlotTheme, title: string, extra: Record<string, unknown> = 
   };
 }
 
-function baseLayout(theme: PlotTheme, extra: Layout): Layout {
+export function baseLayout(theme: PlotTheme, extra: Layout): Layout {
   return {
     font: { family: theme.font, size: 12, color: theme.text },
     paper_bgcolor: 'rgba(0,0,0,0)',

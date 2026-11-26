@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 // Runs against the production build served by `vite preview` under the GitHub Pages base path.
 // Locally, set PW_CHANNEL=msedge to use the installed Microsoft Edge instead of a downloaded Chromium.
-const port = 4173;
+const port = Number(process.env.PW_PORT ?? 4173);
 const channel = process.env.PW_CHANNEL;
 
 export default defineConfig({
@@ -26,10 +26,20 @@ export default defineConfig({
     { name: 'chromium', grepInvert: /@perf/, use: { ...devices['Desktop Chrome'], ...(channel ? { channel } : {}) } },
     { name: 'performance', grep: /@perf/, workers: 1, fullyParallel: false, use: { ...devices['Desktop Chrome'], ...(channel ? { channel } : {}) } },
   ],
-  webServer: {
-    command: 'npm run preview',
-    url: `http://localhost:${port}/STRATO/`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
-  },
+  webServer: [
+    {
+      command: `npx vite preview --host localhost --port ${port} --strictPort`,
+      url: `http://localhost:${port}/STRATO/`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
+    },
+    // The test harness of the experimental-comparison graph (tests/harness): the development server on
+    // 127.0.0.1, never part of the production build. Only e2e/graph.spec.ts uses it.
+    {
+      command: 'npm run harness',
+      url: 'http://127.0.0.1:4433/STRATO/harness.html',
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
+    },
+  ],
 });
