@@ -40,25 +40,55 @@ const RELAX_EFOLDS: f64 = 40.0;
 /// 5 % convention of science design Section 3.5 and decision 49; not a derived bound).
 pub const MASK_RELATIVE_TOLERANCE: f64 = 0.05;
 
-/// Factor by which item 3 of the drawing mask multiplies `accuracy_floor()`. Verifier check (v)
-/// of the science design (open point O10) compared the series with closed-form modes at values
-/// of 1 to 100 times `accuracy_floor()` and observed differences up to 3.3 times the floor, a
-/// constant offset that the existing decay-free series has as well (the weights of the shooting
-/// solution, not the extension). The science design then asks for item 3 to use the observed
-/// error instead of the floor. 4 is that observed ratio rounded up: a labelled convention
-/// (observed in one geometry, not derived), applied to every quantity because the offset
-/// belongs to the series. The floor itself is to be re-estimated.
-pub const FLOOR_FACTOR_FROM_CHECK_V: f64 = 4.0;
+/// Factor of `accuracy_floor()` in item 3 of the mask for the existing series (no source, no
+/// decay), and in no other place. Verifier check (v) of the science design (open point O10)
+/// compared the series with closed-form modes at values of 1 to 100 times `accuracy_floor()`
+/// and observed differences up to 3.34 times the floor in one homogeneous layer (Document 6,
+/// Section 5). 4 is that ratio rounded up: a labelled convention (observed, not derived). The
+/// extension quantities do not use it: they use the rule of Document 6, Section 8.
+pub const SERIES_FLOOR_FACTOR: f64 = 4.0;
+
+/// Factor of `accuracy_floor()` inside `Delta` (49), the computed bound on the release fraction
+/// of the kernel step at `t_v`: the shooting error of the weights enters `1 - sum w exp(-alpha
+/// t_v)` with at most the observed ratio of check (v) (3.34, rounded up to 4). Document 6,
+/// Section 2.3 and Section 8 (the observed sum of the weight errors of the homogeneous
+/// particle is 3 floors at 64 modes and 5 floors at 1024 modes).
+pub const EARLY_RELEASE_FLOOR_FACTOR: f64 = 4.0;
 
 /// Whether the accuracy floor of the series has been re-estimated for (B2) to (B5) (science
-/// design Section 4.2, item 3). Check (v) failed: the observed error of the shooting weights
-/// reaches 3.34 times `accuracy_floor()` in one geometry, and the science design then says
-/// that the extension is not drawn until the floor is re-estimated. No re-estimate over
-/// several geometries and mode counts exists yet, so this stays `false` and
-/// [`KernelRun::drawn`] returns [`Withheld::FloorNotReestimated`] for every quantity of a run
-/// with decay or a non-zero source. The mask logic itself (items 1 to 3) stays implemented
-/// and tested (`KernelRun::mask`).
-pub const EXTENSION_FLOOR_REESTIMATED: bool = false;
+/// design Section 4.2, item 3, decision 68(c)): the estimate of Document 6, Section 8 exists
+/// and the independent verification of it passed, so the extension quantities are drawn where
+/// the rule of that section accepts them. With `false`, [`KernelRun::drawn`] returns
+/// [`Withheld::FloorNotReestimated`] for every quantity of a run with decay or a non-zero
+/// source.
+pub const EXTENSION_FLOOR_REESTIMATED: bool = true;
+
+/// Factor of `floor * A(t)` (mol) added to the computed bound (52) of the inventory `M`
+/// (Document 6, Equation (54)). The largest observed excess of the error over the computed
+/// bound in the designed sets is 3.53 times `floor * A` (Table 8.2); 10 is a margin of 2.8.
+pub const EXT_FACTOR_INVENTORY: f64 = 10.0;
+/// As [`EXT_FACTOR_INVENTORY`] for the released inventory `M_rel`: the largest observed excess
+/// is 8.37 (test set; 6.96 in the full set), so 24 is a margin of 2.9.
+pub const EXT_FACTOR_RELEASE: f64 = 24.0;
+/// Factor of `floor * S_Phi(t)` (mol s^-1) added to the computed bound (53) of the release
+/// rate `Phi`: the largest observed excess is 2.58, so 8 is a margin of 3.1.
+pub const EXT_FACTOR_FLUX: f64 = 8.0;
+
+/// The regime in which the error estimate of Document 6, Section 8 was measured. A run outside
+/// it is withheld ([`Withheld::OutsideEstimatedRegime`]): nothing is claimed there. Smallest
+/// and largest number of modes of the series.
+pub const REGIME_MODES: (usize, usize) = (16, 2048);
+/// Largest ratio `lambda / alpha_1` of the designed set (`alpha_1` the slowest mode rate of the
+/// series). The set covers the registered decay constants of `data/nuclear/decay.csv` from
+/// Cs-137 (7.3e-10 s^-1) to Ag-110 (2.8e-2 s^-1) on geometries whose `alpha_1` lies between
+/// 1.4e-9 and 6.4e-6 s^-1 (Table 8.1), so the ratio reaches 1.96e7.
+pub const REGIME_LAMBDA_OVER_ALPHA1_MAX: f64 = 1.9e7;
+/// Largest time in units of `1 / alpha_1`.
+pub const REGIME_ALPHA1_T_MAX: f64 = 1000.0;
+/// Largest number of pieces of the source history.
+pub const REGIME_PIECES_MAX: usize = 13;
+/// Largest `accuracy_floor()` of the designed set (the strongly contrasted set, 1.62e-9).
+pub const REGIME_FLOOR_MAX: f64 = 2.0e-9;
 
 /// Number of layers of the particle (kernel, buffer, IPyC, SiC, OPyC), hence the number of
 /// entries of [`Decay::PerLayer`].
@@ -323,8 +353,17 @@ pub struct ModalState {
     pub inventory_error_bound: f64,
     /// Bound on `|M_rel - M_rel(exact)|` (mol), from `Delta`.
     pub release_error_bound: f64,
-    /// Bound on `|Phi - Phi(exact)|` (mol s^-1); valid from `t >= t_v` only, `None` before.
+    /// Bound on `|Phi - Phi(exact)|` (mol s^-1), equation (53) of Document 6; valid from
+    /// `t >= t_v` only, `None` before.
     pub flux_error_bound: Option<f64>,
+    /// `A(t) = M^0 + V_K sum_{k: s_k < t} G_k (t - s_k)` (mol): the input weighted by its
+    /// age, the scale of the cancellation in the sums of (51) (Document 6, Section 8).
+    pub age_input: f64,
+    /// `V_K sum_{k: s_k < t} G_k + M^0 / t` (mol s^-1): the scale of the flux. The second term
+    /// bounds the initial-inventory part of the flux, `M^0 sum_mu w_mu alpha_mu e^{-alpha_mu t}`,
+    /// in which every term is at most `alpha_mu e^{-alpha_mu t} <= 1 / (e t)` (Document 6,
+    /// Section 8). Zero at `t = 0` without a source.
+    pub flux_scale: f64,
 }
 
 impl ModalState {
@@ -339,6 +378,29 @@ impl ModalState {
     pub fn balance_residual(&self) -> f64 {
         self.inventory + self.released + self.decayed - self.total_input()
     }
+
+    /// The error estimate of Document 6, Section 8 for a series whose `accuracy_floor()` is
+    /// `floor`: the computed bounds (52), (53) plus the floor terms (54) to (56).
+    pub fn estimated_errors(&self, floor: f64) -> EstimatedErrors {
+        EstimatedErrors {
+            inventory: self.inventory_error_bound + EXT_FACTOR_INVENTORY * floor * self.age_input,
+            released: self.release_error_bound + EXT_FACTOR_RELEASE * floor * self.age_input,
+            flux: self
+                .flux_error_bound
+                .map(|b| b + EXT_FACTOR_FLUX * floor * self.flux_scale),
+        }
+    }
+}
+
+/// The estimated absolute errors of [`ModalState::estimated_errors`].
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct EstimatedErrors {
+    /// `e_ext` of the inventory `M` (mol).
+    pub inventory: f64,
+    /// `e_ext` of the released inventory `M_rel` (mol).
+    pub released: f64,
+    /// `e_ext` of the release rate `Phi` (mol s^-1); `None` before `t_v`.
+    pub flux: Option<f64>,
 }
 
 /// Why a value is not drawn (the drawing mask of science design Section 4.2).
@@ -354,18 +416,27 @@ pub enum Withheld {
         /// Value with the cover reduced by a factor 4.
         reduced: f64,
     },
-    /// Item 3: the floor exceeds 5 % of the value (as a fraction of the input).
+    /// Item 3 for the existing series (no source, no decay): the floor exceeds 5 % of the value
+    /// (as a fraction of the input).
     BelowAccuracyFloor {
-        /// The value expressed as a fraction (of `M^0 + M_gen`, of `M(t_e)`, or `beta`).
+        /// The value expressed as a fraction (of `M^0`).
         value: f64,
-        /// `FLOOR_FACTOR_FROM_CHECK_V * accuracy_floor()` of the series.
+        /// `SERIES_FLOOR_FACTOR * accuracy_floor()` of the series.
         floor: f64,
     },
+    /// Item 3 for a run with decay or a source (Document 6, Section 8): the estimated relative
+    /// error of the value exceeds 5 %.
+    ExtensionErrorTooLarge {
+        /// Estimated relative error (the bound of Section 8 over the value).
+        relative_error: f64,
+    },
+    /// The run lies outside the regime in which the error estimate was measured
+    /// (`REGIME_*`); the text says which limit.
+    OutsideEstimatedRegime(&'static str),
     /// The quantity is not defined here (for example `F` with `M^0 = 0`).
     Undefined(&'static str),
     /// The run has decay or a source, and the accuracy floor has not been re-estimated for
-    /// (B2) to (B5) ([`EXTENSION_FLOOR_REESTIMATED`]): check (v) of the science design failed,
-    /// and its fallback rule withholds the extension until the floor is re-estimated.
+    /// (B2) to (B5) ([`EXTENSION_FLOOR_REESTIMATED`] is `false`).
     FloorNotReestimated,
 }
 
@@ -628,7 +699,7 @@ impl<'a> KernelRun<'a> {
             .map(|(al, w)| w * (-al * t_v).exp())
             .sum();
         let delta =
-            (1.0 - remaining_at_tv).max(0.0) + FLOOR_FACTOR_FROM_CHECK_V * s.accuracy_floor();
+            (1.0 - remaining_at_tv).max(0.0) + EARLY_RELEASE_FLOOR_FACTOR * s.accuracy_floor();
 
         let m0 = self.m0;
         let v = self.v_k;
@@ -637,6 +708,17 @@ impl<'a> KernelRun<'a> {
         let mut released = m0 * k.release(t);
         let mut flux = m0 * k.release_rate(t);
         let mut sum_g = 0.0; // sum of G_k over the pieces started before t
+        let mut age_input = m0;
+        let mut flux_b = 0.0;
+        // `a_hat(theta) Delta` bounds `|F_hat_lambda - F_lambda|` at `theta` (Document 6, (53)),
+        // which is exactly 0 at `theta = 0`.
+        let a_hat = |theta: f64| {
+            if theta <= 0.0 {
+                0.0
+            } else {
+                (if theta < t_v { 1.0 } else { 0.0 }) + lam * theta.min(t_v)
+            }
+        };
         let mut inv_b = if t < t_v { m0 * delta } else { 0.0 };
         let mut rel_b = m0 * delta * (if t < t_v { 1.0 } else { 0.0 } + lam * t.min(t_v));
         for j in 0..self.source.rates.len() {
@@ -653,6 +735,8 @@ impl<'a> KernelRun<'a> {
             flux += v * g * (k.release(th_hi) - k.release(th_lo));
             if g > 0.0 {
                 sum_g += g;
+                age_input += v * g * (t - sj);
+                flux_b += delta * v * g * a_hat(th_hi).max(a_hat(th_lo));
                 let len = ej - sj;
                 let overlap = ((th_hi).min(t_v) - th_lo).max(0.0);
                 inv_b += delta * v * g * overlap;
@@ -691,7 +775,9 @@ impl<'a> KernelRun<'a> {
             early_release: delta,
             inventory_error_bound: inv_b,
             release_error_bound: rel_b,
-            flux_error_bound: (t >= t_v).then_some(2.0 * delta * v * sum_g * (1.0 + lam * t_v)),
+            flux_error_bound: (t >= t_v).then_some(flux_b),
+            age_input,
+            flux_scale: v * sum_g + if t > 0.0 { m0 / t } else { 0.0 },
         })
     }
 
@@ -741,20 +827,81 @@ impl<'a> KernelRun<'a> {
 
     /// The value of `q` at `t`, or the reason it is not drawn: the drawing mask of science
     /// design Section 4.2 (items 1 to 3), applied a posteriori. No value is returned where
-    /// the series is not trustworthy. For a run with decay or a non-zero source nothing is
-    /// drawn while [`EXTENSION_FLOOR_REESTIMATED`] is `false` (the fallback rule of check
-    /// (v)): the answer is then [`Withheld::FloorNotReestimated`].
+    /// the series is not trustworthy. Item 3 for a run with decay or a non-zero source is the
+    /// rule of Document 6, Section 8 (estimated relative error at most 5 %, inside the
+    /// measured regime); for the existing series it is the floor test of check (v).
     pub fn drawn(&self, q: Quantity, t: f64) -> Result<Drawn, ExtensionError> {
+        self.drawn_gated(q, t, EXTENSION_FLOOR_REESTIMATED)
+    }
+
+    /// [`KernelRun::drawn`] with the floor re-estimation gate as an argument: with
+    /// `reestimated = false` a run with decay or a non-zero source returns
+    /// [`Withheld::FloorNotReestimated`]. Kept so that the gate stays tested.
+    pub(crate) fn drawn_gated(
+        &self,
+        q: Quantity,
+        t: f64,
+        reestimated: bool,
+    ) -> Result<Drawn, ExtensionError> {
         non_negative("time", t)?;
-        if !self.no_source_no_decay() && !EXTENSION_FLOOR_REESTIMATED {
+        if !self.no_source_no_decay() && !reestimated {
             return Ok(Drawn::Withheld(Withheld::FloorNotReestimated));
         }
         self.mask(q, t)
     }
 
+    /// The first limit of the measured regime that the run exceeds, or `None`.
+    fn outside_regime(&self, t: f64) -> Option<&'static str> {
+        let s = self.series;
+        let n = s.eigenvalues.len();
+        if n < REGIME_MODES.0 || n > REGIME_MODES.1 {
+            return Some("number of modes outside the measured range");
+        }
+        if s.accuracy_floor() > REGIME_FLOOR_MAX {
+            return Some("accuracy floor above the largest measured");
+        }
+        let alpha_1 = s.eigenvalues[0];
+        if self.lambda > REGIME_LAMBDA_OVER_ALPHA1_MAX * alpha_1 {
+            return Some("decay constant above the largest measured multiple of the slowest mode");
+        }
+        if alpha_1 * t > REGIME_ALPHA1_T_MAX {
+            return Some("time above the largest measured multiple of the slowest relaxation time");
+        }
+        if self.source.rates().len() > REGIME_PIECES_MAX {
+            return Some("more source pieces than measured");
+        }
+        None
+    }
+
+    /// Estimated relative error of the value of `q` at `t` (Document 6, Section 8): the sum of
+    /// the estimated absolute errors (`ModalState::estimated_errors`) of the quantities that
+    /// enter the value over the value itself. `None` where it is not defined (a zero or
+    /// negative denominator).
+    fn estimated_relative_error(&self, q: Quantity, t: f64) -> Result<Option<f64>, ExtensionError> {
+        let floor = self.series.accuracy_floor();
+        let st = self.state(t)?;
+        let e = st.estimated_errors(floor);
+        Ok(match q {
+            Quantity::InventoryFraction => (st.inventory > 0.0).then(|| e.inventory / st.inventory),
+            Quantity::ReleaseFraction | Quantity::ReleaseFractionGenerated => {
+                (st.released > 0.0).then(|| e.released / st.released)
+            }
+            Quantity::PostEventRelease { t_event } => {
+                let ev = self.state(t_event)?;
+                let ee = ev.estimated_errors(floor);
+                let gained = st.released - ev.released;
+                (gained > 0.0 && ev.inventory > 0.0)
+                    .then(|| (e.released + ee.released) / gained + ee.inventory / ev.inventory)
+            }
+            Quantity::Beta => match e.flux {
+                Some(f) if st.flux > 0.0 => Some(f / st.flux),
+                _ => None,
+            },
+        })
+    }
+
     /// Items 1 to 3 of the drawing mask, without the floor re-estimation gate of
-    /// [`KernelRun::drawn`]. Kept separate so that the mask logic stays tested for the
-    /// extensions while they are withheld.
+    /// [`KernelRun::drawn`].
     pub(crate) fn mask(&self, q: Quantity, t: f64) -> Result<Drawn, ExtensionError> {
         let s = self.series;
         non_negative("time", t)?;
@@ -791,7 +938,27 @@ impl<'a> KernelRun<'a> {
                 reduced,
             }));
         }
-        // Item 3 for release quantities, the value expressed as a fraction of the input.
+        if !self.no_source_no_decay() {
+            // Item 3 for a run with decay or a source: the estimated relative error.
+            if let Some(why) = self.outside_regime(t) {
+                return Ok(Drawn::Withheld(Withheld::OutsideEstimatedRegime(why)));
+            }
+            if let Quantity::PostEventRelease { t_event } = q {
+                if let Some(why) = self.outside_regime(t_event) {
+                    return Ok(Drawn::Withheld(Withheld::OutsideEstimatedRegime(why)));
+                }
+            }
+            return match self.estimated_relative_error(q, t)? {
+                Some(r) if r <= MASK_RELATIVE_TOLERANCE => Ok(Drawn::Value(full)),
+                Some(r) => Ok(Drawn::Withheld(Withheld::ExtensionErrorTooLarge {
+                    relative_error: r,
+                })),
+                None => Ok(Drawn::Withheld(Withheld::Undefined(
+                    "the relative error is not defined for this value",
+                ))),
+            };
+        }
+        // Item 3 for the existing series, the value expressed as a fraction of the input.
         let fraction = match q {
             Quantity::InventoryFraction => None,
             Quantity::ReleaseFraction => {
@@ -803,7 +970,7 @@ impl<'a> KernelRun<'a> {
             | Quantity::Beta => Some(full),
         };
         if let Some(value) = fraction {
-            let floor = FLOOR_FACTOR_FROM_CHECK_V * s.accuracy_floor();
+            let floor = SERIES_FLOOR_FACTOR * s.accuracy_floor();
             if value.is_nan() || floor > MASK_RELATIVE_TOLERANCE * value {
                 return Ok(Drawn::Withheld(Withheld::BelowAccuracyFloor {
                     value,
@@ -1490,8 +1657,9 @@ mod tests {
         }
         eprintln!("check (v): worst difference / accuracy_floor = {worst:.2}");
         // The literal criterion (difference <= floor) is not met: the observed ratio is the
-        // basis of FLOOR_FACTOR_FROM_CHECK_V, which item 3 of the mask uses instead.
-        assert!(worst <= FLOOR_FACTOR_FROM_CHECK_V, "observed ratio {worst}");
+        // basis of SERIES_FLOOR_FACTOR, which item 3 of the mask uses for the existing series
+        // instead (the extension quantities use the rule of Document 6, Section 8).
+        assert!(worst <= SERIES_FLOOR_FACTOR, "observed ratio {worst}");
         assert!(
             tested >= 3,
             "the floor test needs times at or after min_valid_time"
@@ -1619,10 +1787,11 @@ mod tests {
             &Decay::Uniform(1.0e-3),
         )
         .unwrap();
-        // `drawn` withholds this run altogether (decay, floor not re-estimated); the mask
-        // logic of items 1 to 3 is tested through `mask`.
+        // with the gate closed (`EXTENSION_FLOOR_REESTIMATED = false`) this run is withheld
+        // altogether; the mask logic of items 1 to 3 is tested through `mask`.
         assert_eq!(
-            run.drawn(Quantity::ReleaseFraction, 500.0).unwrap(),
+            run.drawn_gated(Quantity::ReleaseFraction, 500.0, false)
+                .unwrap(),
             Drawn::Withheld(Withheld::FloorNotReestimated)
         );
         // item 1
@@ -1687,6 +1856,152 @@ mod tests {
         );
     }
 
+    /// Minor 1 of the second verification round: the floor term of `Delta` (49) is tested. A
+    /// series whose only weight sits on a very slow mode has `F_0(t_v)` far below 1e-15, so the
+    /// floor term is all of `Delta`.
+    #[test]
+    fn early_release_bound_carries_the_floor_term() {
+        let s = ModalRelease {
+            eigenvalues: vec![1.0e-20, 1.0],
+            weights: vec![1.0, 0.0],
+            lambda_covered: 1.0,
+            min_flux_ratio: 0.1,
+        };
+        let run = KernelRun::new(
+            &s,
+            1.0,
+            1.0,
+            PiecewiseSource::none(),
+            &Decay::Uniform(1.0e-3),
+        )
+        .unwrap();
+        let st = run.state(100.0).unwrap();
+        let t_v = s.min_valid_time();
+        let kept: f64 = s
+            .weights
+            .iter()
+            .zip(&s.eigenvalues)
+            .map(|(w, a)| w * (-a * t_v).exp())
+            .sum();
+        let released_by_tv = (1.0 - kept).max(0.0);
+        assert!(released_by_tv < 1.0e-15, "{released_by_tv}");
+        let floor = s.accuracy_floor();
+        assert_eq!(
+            st.early_release,
+            released_by_tv + EARLY_RELEASE_FLOOR_FACTOR * floor
+        );
+        // not the floor alone, and not twice it
+        assert!(st.early_release > 3.9 * floor && st.early_release < 4.1 * floor);
+    }
+
+    /// The tightened flux bound (53): zero for a source on since the start without decay,
+    /// `Delta lambda t_v V_K G` with decay, and `Delta (1 + lambda theta) V_K G` shortly after
+    /// a switch-on.
+    #[test]
+    fn flux_bound_53_follows_the_age_of_the_source_pieces() {
+        let s = ModalRelease::new(&layers(D_FIVE), 45.0 / 5.0e3, 20_000).unwrap();
+        let t_v = s.min_valid_time();
+        let g = 1.0e-3;
+        let on = PiecewiseSource::constant(g, 1.0e12).unwrap();
+        let run = KernelRun::new(&s, 0.0, VK, on, &Decay::None).unwrap();
+        let st = run.state(1.0e6).unwrap();
+        assert_eq!(st.flux_error_bound, Some(0.0));
+        let lam = 2.0e-6;
+        let run = KernelRun::new(
+            &s,
+            0.0,
+            VK,
+            PiecewiseSource::constant(g, 1.0e12).unwrap(),
+            &Decay::Uniform(lam),
+        )
+        .unwrap();
+        let st = run.state(1.0e6).unwrap();
+        let expected = st.early_release * VK * g * lam * t_v;
+        assert!(rel(st.flux_error_bound.unwrap(), expected) < 1e-12);
+        let late_on = PiecewiseSource::new(vec![0.0, 2.0e5, 1.0e12], vec![0.0, g]).unwrap();
+        let run = KernelRun::new(&s, 0.0, VK, late_on, &Decay::Uniform(lam)).unwrap();
+        let theta = 0.5 * t_v;
+        let st = run.state(2.0e5 + theta).unwrap();
+        let expected = st.early_release * VK * g * (1.0 + lam * theta);
+        assert!(rel(st.flux_error_bound.unwrap(), expected) < 1e-12);
+    }
+
+    /// Item 3 for a run with decay or a source is the estimated relative error at most 5 %,
+    /// inside the measured regime (Document 6, Section 8).
+    #[test]
+    fn extension_mask_item_3_uses_the_estimated_error_and_the_regime() {
+        let s = ModalRelease::new(&layers(D_FIVE), 45.0 / 5.0e3, 64).unwrap();
+        assert!(s.eigenvalues.len() >= REGIME_MODES.0 && s.eigenvalues.len() <= REGIME_MODES.1);
+        let src = PiecewiseSource::constant(1.0e-3, 1.0e9).unwrap();
+        let run = KernelRun::new(&s, 1.0, VK, src.clone(), &Decay::Uniform(1.0e-6)).unwrap();
+        let t = 1.0e6;
+        // late: drawn, and the estimated relative error is far below 5 %
+        let drawn = run.drawn(Quantity::ReleaseFractionGenerated, t).unwrap();
+        let raw = run
+            .value(Quantity::ReleaseFractionGenerated, t)
+            .unwrap()
+            .unwrap();
+        assert_eq!(drawn, Drawn::Value(raw));
+        let r = run
+            .estimated_relative_error(Quantity::ReleaseFractionGenerated, t)
+            .unwrap()
+            .unwrap();
+        assert!(r > 0.0 && r < MASK_RELATIVE_TOLERANCE, "{r}");
+        // a time above the measured multiple of the slowest relaxation time
+        let far = REGIME_ALPHA1_T_MAX * 1.01 / s.eigenvalues[0];
+        assert!(matches!(
+            run.drawn(Quantity::ReleaseFraction, far).unwrap(),
+            Drawn::Withheld(Withheld::OutsideEstimatedRegime(_))
+        ));
+        // a decay constant above the measured multiple of the slowest mode rate
+        let fast = KernelRun::new(
+            &s,
+            1.0,
+            VK,
+            src.clone(),
+            &Decay::Uniform(2.0 * REGIME_LAMBDA_OVER_ALPHA1_MAX * s.eigenvalues[0]),
+        )
+        .unwrap();
+        assert!(matches!(
+            fast.drawn(Quantity::ReleaseFraction, t).unwrap(),
+            Drawn::Withheld(Withheld::OutsideEstimatedRegime(_))
+        ));
+        // fewer modes than measured
+        let few = ModalRelease::new(&layers(D_FIVE), 45.0 / 5.0e3, 8).unwrap();
+        let run_few = KernelRun::new(&few, 1.0, VK, src, &Decay::Uniform(1.0e-6)).unwrap();
+        assert!(matches!(
+            run_few
+                .drawn(Quantity::ReleaseFraction, 10.0 * few.min_valid_time())
+                .unwrap(),
+            Drawn::Withheld(Withheld::OutsideEstimatedRegime(_))
+        ));
+        // a value below its own error estimate: the floor term (16 floors times the input)
+        // exceeds 5 % of a release of 1e-12 (synthetic series with 16 modes)
+        let mut eigenvalues = vec![1.0e-14];
+        eigenvalues.extend((0..15).map(|k| 1.0 + 0.1 * k as f64));
+        let mut weights = vec![1.0 - 15.0e-20];
+        weights.extend(std::iter::repeat_n(1.0e-20, 15));
+        let synthetic = ModalRelease {
+            eigenvalues,
+            weights,
+            lambda_covered: 2.4,
+            min_flux_ratio: 1.0e-3,
+        };
+        let run_s = KernelRun::new(
+            &synthetic,
+            1.0,
+            1.0,
+            PiecewiseSource::none(),
+            &Decay::Uniform(1.0e-20),
+        )
+        .unwrap();
+        let w = run_s.drawn(Quantity::ReleaseFraction, 100.0).unwrap();
+        assert!(
+            matches!(w, Drawn::Withheld(Withheld::ExtensionErrorTooLarge { .. })),
+            "{w:?}"
+        );
+    }
+
     #[test]
     fn mask_item_2_withholds_a_value_that_depends_on_the_cover() {
         // Synthetic modes (not a physical series) with a heavy weight in the band between the
@@ -1713,7 +2028,7 @@ mod tests {
         let src = PiecewiseSource::constant(1.0e-3, 1.0e7).unwrap();
         let run = KernelRun::new(&s, 0.0, VK, src, &Decay::None).unwrap();
         assert_eq!(
-            run.drawn(Quantity::Beta, 1.0e5).unwrap(),
+            run.drawn_gated(Quantity::Beta, 1.0e5, false).unwrap(),
             Drawn::Withheld(Withheld::FloorNotReestimated)
         );
         assert_eq!(

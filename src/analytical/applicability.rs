@@ -167,8 +167,9 @@ impl Applicability {
 ///
 /// Order of the checks: invalid input; a temperature that varies in time; a stage that does
 /// not contain a supplied mechanism (stage 1 has neither source nor decay, stage 2 no decay;
-/// stage 4 keeps every term of stage 3, so it refuses neither); the source; the decay constants. A source whose rates are all zero counts as no
-/// source, a decay constant of zero as no decay.
+/// stage 4 keeps every term of stage 3, so it refuses neither); the source; the decay
+/// constants. A source whose rates are all zero counts as no source, a decay constant of zero
+/// as no decay.
 pub fn applicability(
     stage: Stage,
     source: &SourceHistory,
