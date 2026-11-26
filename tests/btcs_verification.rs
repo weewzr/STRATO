@@ -16,7 +16,12 @@
 //!   step. Their constants are `kappa_t` (backward error of the F24 solve, derived in
 //!   `numerical::tridiagonal::tests::thomas_matches_dense_f24`) and `c_step`. The O(u^2)
 //!   terms of these derivations are taken into the stated factors (see each comment); no
-//!   safety factor is applied anywhere.
+//!   safety factor is applied anywhere. The bound expressions are themselves evaluated in
+//!   round-to-nearest and that evaluation (a few u relative) is taken as exact: where a
+//!   bound is evaluated, the observed value is at most 0.4 of it (the multiple-of-dt check
+//!   about 0.4; P1 up to 0.25; the Kahan unit test about 0.25; table F of the results file at
+//!   most 1.3e-2), so the omitted few-u relative error cannot change an outcome; it is not
+//!   added to any bound.
 //! * A sign or a monotone sequence, which needs no tolerance: the error against the series
 //!   falls at every grid refinement (test A, B, C3), the Cauchy differences fall at every
 //!   step halving (D1, D2), the relative flux jump at each interface falls (E), the
@@ -141,13 +146,18 @@ fn f_at(cfg: &Config, times: &[f64]) -> Vec<f64> {
         .iter()
         .map(|&t| {
             let step = (t / dt).round() as usize;
-            // Derived (u = 2^-53): the requested times are decimal literals or tau * R^2/D
-            // (each literal and each operation rounds once, at most 3 roundings on the way to t);
-            // the effective step dt = end/steps is one division, and the product step * dt one
-            // more; for the times of tests A and D1 and the steps 25, 12.5, 6.25 s, ... both are
-            // exact (dyadic dt, integer t). So |step dt - t| <= 4 u t.
+            // Derived (u = 2^-53, |d_k| <= u each). With tau a decimal literal, s the shared
+            // double tau_scale (test B uses the same rounded s in the times and in `end`) and
+            // end = s/2 exactly: t = fl(fl(tau) s) = tau s (1 + d1)(1 + d2), one rounding for the
+            // literal and one for the product. The step count is the integer 2000 2^k, so
+            // step/steps = 2 tau exactly; dt = fl(end/steps) = (end/steps)(1 + d3) is one
+            // division, and fl(step dt) = step dt (1 + d4) one product. Hence
+            // step dt / t = (1 + d3)(1 + d4)/((1 + d1)(1 + d2)), and
+            // |step dt - t| <= ((1 + u)^2/(1 - u)^2 - 1) t = 4u/(1 - u)^2 t <= gamma_4 t.
+            // For the times of tests A and D1 (dyadic dt, integer t) both sides are exact. If the
+            // run reported another step count the assertion would fail, which is the check.
             assert!(
-                (step as f64 * dt - t).abs() <= 4.0 * U * t,
+                (step as f64 * dt - t).abs() <= gamma(4.0) * t,
                 "time {t} is not a multiple of dt {dt}"
             );
             r.series[step].1.release_fraction
@@ -190,8 +200,8 @@ fn kappa_t() -> f64 {
 }
 
 /// Per-step coefficient of the exact-form row residual, `|rho_i| <= c_step (|A||x|)_i`:
-/// the solve (kappa_t) plus the stored entries (3 u/(1 - 3u): the rounding of the division in
-/// U that is not absorbed in V, and the two roundings of B). Derived in the comment of
+/// the solve (kappa_t) plus the stored entries (3 u/(1 - 3u): one rounding each in L and U and
+/// two in B, against the exact-form matrix with data `K' = P/(-dt)`). Derived in item 2 of
 /// `balance_bound_history`.
 fn c_step() -> f64 {
     kappa_t() + 3.0 * U / (1.0 - 3.0 * U)
@@ -244,12 +254,17 @@ impl Expansion {
     }
 
     /// `|reported + (exact value held)|`; with the held value `-sum x_j` this is the exact
-    /// accumulation error of `reported`. The final summation from the largest partial is
-    /// accurate to a relative u, which the factor allows for.
+    /// accumulation error of `reported`. The m partials are summed from the largest; recursive
+    /// summation of m terms satisfies |fl(sum) - sum| <= gamma_{m-1} sum |p_k| (each term
+    /// meets at most m - 1 additions, each a factor 1 + d with |d| <= u), so the exact
+    /// magnitude is at most |fl(sum)| + gamma_{m-1} sum |p_k|, which is returned (the
+    /// evaluation of this bound itself is taken as exact to O(u), see the header).
     fn magnitude_with(&self, reported: f64) -> f64 {
         let mut e = self.clone();
         e.add(reported);
-        e.partials.iter().rev().sum::<f64>().abs() * (1.0 + 2.0 * U)
+        let approx = e.partials.iter().rev().sum::<f64>().abs();
+        let abs_sum: f64 = e.partials.iter().map(|p| p.abs()).sum();
+        approx + gamma(e.partials.len().saturating_sub(1) as f64) * abs_sum
     }
 }
 
@@ -351,7 +366,9 @@ fn homogeneous_sphere_vs_analytical_reference() {
     let times: Vec<f64> = taus.iter().map(|tau| tau * tau_scale).collect();
     // The series reports a bound of its own truncation error with every value
     // (`Estimate::error_bound`); the rounding of the series evaluation is not bounded by the
-    // module and is far below every error asserted on here (those are above 1e-8).
+    // module and is far below every error asserted on here (those are above 1e-8 relative to
+    // the value; F itself is at most 1, and the absolute release-rate errors are of order
+    // 1e-18 to 1e-21 mol/s, which is 6e-4 to 1.6e-6 of the rate).
     let estimates: Vec<_> = times
         .iter()
         .map(|&t| sphere.release_fraction(t, 1e-14).unwrap())
@@ -644,8 +661,9 @@ fn interfaces_concentration_and_flux_continuity() {
             // roundings). In units of `scale` (which bounds the (F10) scale S, times 4 pi):
             //  - the exact-form row residual of the computed x: c_step (backward error of the
             //    solve plus the stored entries, `c_step`);
-            //  - r^2 (a + b)/2 against the stored V_i: 3 roundings, and the division
-            //    rounding of the stored entry: gamma_4;
+            //  - r^2 (a + b)/2 against the stored V_i: 3 roundings (gamma_3); a fourth rounding
+            //    is kept in gamma_4 as slack: the stored-entry roundings are already in `c_step`
+            //    (item 2 of `balance_bound_history`, no modified V), so it is not needed;
             //  - the shared product dt K against K itself: gamma_1;
             //  - evaluating each of fi and fo: k (c - c) 2 roundings; half = r r a / 2 and
             //    (c_new - c_old)/dt (2) and their product: 5; the difference of the two terms
@@ -704,26 +722,31 @@ struct BalanceBound {
 /// the step count enter). Notation: u = 2^-53, gamma_k = k u/(1 - k u); `x` is the computed
 /// profile of a step, `c` the old one; pi stands for the double `PI` used by the solver.
 ///
-/// 1. Exact identity. Rows (F10) with data `K'`, `V''` (defined in 2), multiplied by `V''`,
-///    summed over `i = 1 ..= N-1` telescope (`K_0 = 0`, `x_N = 0`):
-///    `sum V'' (x - c) = -dt K'_{N-1} x_{N-1} + sum V'' rho`, with `rho = (A'' x - c)` the
-///    residual of the exact-form matrix. Hence
-///    `M''(x) - M''(c) + dt Phi'(x) = 4 pi sum_i V''_i rho_i` exactly, where
-///    `M''` is `4 pi sum V'' x` and `Phi' = 4 pi K' x_{N-1}`.
+/// 1. Exact identity. Rows (F10) with data `K'` (defined in 2) and the stored `V`, multiplied by
+///    `V`, summed over `i = 1 ..= N-1` telescope (`K_0 = 0`, `x_N = 0`):
+///    `sum V (x - c) = -dt K'_{N-1} x_{N-1} + sum V rho`, with `rho = (A' x - c)` the
+///    residual of the exact-form matrix `A'` (entries `P/V`, diagonal `1 + |L'| + |U'|`). Hence
+///    `M(x) - M(c) + dt Phi'(x) = 4 pi sum_i V_i rho_i` exactly, where
+///    `M` is `4 pi sum V x` and `Phi' = 4 pi K' x_{N-1}`.
 /// 2. Stored matrix. `assemble` forms `P = fl(-dt K)` (one rounding, the same operands in the
 ///    two rows that use `K_i`), `L = fl(P/V)`, `U = fl(P/V)`, `B = fl(fl(1 - L) - U)`. Put
-///    `K' = P/(-dt)` (relative change u) and `V''_i` such that `L_i = P_{i-1}/V''_i` exactly
-///    (relative change u from V_i). Then `U_i` differs from `P_i/V''_i` by at most one
-///    relative rounding, and `B` carries two roundings of positive terms:
-///    `|B - (1 + |L| + |U''|)| <= gamma_2 B`. So `|(A'' - A) x|_i <= 3u/(1 - 3u) (|A||x|)_i`
-///    (u |U||x_{i+1}| from U, 2u B |x_i| from B; L is exact for the modified data).
+///    `K' = P/(-dt)` (relative change u from K); then `A'` has `L' = P_{i-1}/V_i`,
+///    `U' = P_i/V_i`, `B' = 1 + |L'| + |U'|`. Stored against exact-form: `L` and `U` each carry
+///    one rounding (`|L - L'| <= u|L'|`, same for U); `B` carries two roundings of positive
+///    terms against `1 + |L| + |U|` (`gamma_2 B`) and the change of `|L| + |U|` against
+///    `|L'| + |U'|` adds `u(|L| + |U|)/(1 - u) <= u B/(1 - u)^3`. So an off-diagonal entry
+///    differs by at most `u/(1 - u)` of its stored magnitude, the diagonal entry by at most
+///    `(2u + u^2)/(1 - u)^2 B + u B/(1 - u)^3 = (3u + 8u^2 + O(u^3)) B`, and
+///    `|(A - A') x|_i <= 3u/(1 - 3u) (|A||x|)_i`. No modified `V` is needed.
 /// 3. Solve. The computed `x` satisfies `(A + dA) x = c` with `|dA| <= kappa_t |A|`,
 ///    `kappa_t = 4u + O(u^2)` (derived in `numerical::tridiagonal::tests::thomas_matches_dense_f24`).
 ///    Together: `|rho_i| <= c_step (|A||x|)_i`, `c_step = kappa_t + 3u/(1 - 3u)` (about 7u),
-///    so per step `|M''(x) - M''(c) + dt Phi'| <= 4 pi c_step sum_i V_i (|A||x|)_i (1 + gamma_{N+6})`
-///    (the factor covers `V''` against `V` and the evaluation of the sum, N terms).
+///    so per step `|M(x) - M(c) + dt Phi'| <= 4 pi c_step sum_i V_i (|A||x|)_i (1 + gamma_{N+6})`
+///    (the evaluation of the sum of N terms needs gamma_{N+5} at most; the larger factor kept
+///    here was written for the earlier modified-`V` form and is left as slack, not tightened).
 /// 4. What the solver reports differs from the exact quantities by: `M` (N - 1 products, N - 2
-///    additions, the factor 4 pi: gamma_N, and `V''` against `V`: u): gamma_{N+1} M, at
+///    additions, the factor 4 pi: gamma_N; the factor gamma_{N+1} kept here again exceeds that by
+///    one rounding): gamma_{N+1} M, at
 ///    `j` and at `0`; the increments `dt Phi` (3 products, with `K'` against `K`: u):
 ///    gamma_4 per increment, so gamma_4 times the cumulative release; the compensated sum of
 ///    the increments against their exact sum: the *measured* exact accumulation error `E_K`
@@ -851,6 +874,33 @@ fn balance_identity_to_rounding_every_step() {
 }
 
 #[test]
+fn production_balance_bound_equals_the_test_derivation() {
+    // The bound reported in every output row of the run (`BalanceBound`) is the same quantity
+    // as the history derived above, accumulated in the same order; it is not a second formula.
+    for n in [20usize, 40] {
+        let cfg = s5(n, 200.0);
+        let r = run(&cfg, &LIMITS, &[]).unwrap();
+        let history = balance_bound_history(&cfg);
+        let history = history.bound;
+        assert_eq!(history.len(), r.series.len());
+        let m0 = r.meta.initial_inventory;
+        for (k, (_, row)) in r.series.iter().enumerate() {
+            // The same operations in the same order; the run stores the bound in mol (one
+            // multiplication by m0) and it is divided by m0 here (one division): relative
+            // difference at most gamma_2.
+            let rel = row.balance_residual_bound / m0;
+            assert!(
+                (rel - history[k]).abs() <= gamma(2.0) * history[k],
+                "n={n} row {k}: {rel} vs {}",
+                history[k]
+            );
+            // The observed residual is reported beside the bound and lies below it.
+            assert!(row.balance_residual.abs() <= row.balance_residual_bound);
+        }
+    }
+}
+
+#[test]
 fn balance_negative_control_wrong_release_level() {
     // Release computed from the OLD level C_{N-1}^j gives a residual of discretisation size,
     // not rounding size (D2 Section 7.2).
@@ -966,7 +1016,7 @@ fn positivity_maximum_principle_and_monotone_release() {
         assert!(rep.release_in_range, "F out of [0,1] n={n}");
         // M^{j+1} - M^j = -dt Phi^{j+1} + (rounding discrepancy of the step) with Phi >= 0, so
         // an increase can only be rounding: at most the accumulating per-step term of the balance
-        // bound (item 3 of alance_bound_history) plus the rounding of the two reported
+        // bound (item 3 of `balance_bound_history`) plus the rounding of the two reported
         // inventories, gamma_{N+1}/(1 - gamma_{N+1}) (M^j + M^{j-1}).
         report(
             "G",
@@ -1015,7 +1065,8 @@ fn matrix_sign_pattern_and_diagonal_dominance_p1() {
         let a = assemble(&grid, coeff, dt).unwrap();
         let rep = check_matrix_structure(&a.matrix).unwrap();
         // Derived: B = fl(fl(1 - L) - U) is two roundings of positive terms, so the real margin
-        // B - |L| - |U| deviates from 1 by at most gamma_2 B_max (1 + O(u)); check_matrix_structure`n        // evaluates it in floating point with two subtractions, which adds at most gamma_2 B_max
+        // B - |L| - |U| deviates from 1 by at most gamma_2 B_max (1 + O(u)); `check_matrix_structure`
+        // evaluates it in floating point with two subtractions, which adds at most gamma_2 B_max
         // more. So the deviation is at most 2 gamma_2 B_max, and the smallest margin is at least
         // 1 minus that.
         let b_max = a.matrix.diag.iter().cloned().fold(0.0, f64::max);

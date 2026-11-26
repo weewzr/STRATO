@@ -1,12 +1,12 @@
 # label: INPUT
 # kind: input_case
-# generator: scripts/web/generate_data.py v1
-# strato_version: 1.0.1
+# generator: strato-webtools v1
+# strato_version: 2.0.0
 # input_file: inputs/synthetic/synthetic_five_layer.toml
 # input_sha256: 257fe9933a4c1dee38a44545209bfafea7fc06945f389fad9aeb5f0d739afa93
 # input_commit: 8c5d8a8591d28e254f7040ef03f6b725f50fa390
-# command: python -I -X utf8 scripts/web/generate_data.py case inputs/synthetic/synthetic_five_layer.toml
-# created_utc: 2026-11-24T08:19:51Z
+# command: strato-webtools case inputs/synthetic/synthetic_five_layer.toml
+# created_utc: 2026-11-26T10:20:50Z
 # note: SYNTHETIC NUMERICAL BENCHMARK - NOT LITERATURE TRISO DATA
 group,region_index,region_name,key,value,unit
 case,,,case_name,synthetic-five-layer-release,

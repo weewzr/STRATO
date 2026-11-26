@@ -291,22 +291,6 @@ mod tests {
         }
     }
 
-    fn multiply(l: &[f64], d: &[f64], u: &[f64], x: &[f64]) -> Vec<f64> {
-        let n = d.len();
-        (0..n)
-            .map(|i| {
-                let mut s = d[i] * x[i];
-                if i > 0 {
-                    s += l[i - 1] * x[i - 1];
-                }
-                if i + 1 < n {
-                    s += u[i] * x[i + 1];
-                }
-                s
-            })
-            .collect()
-    }
-
     /// Dense Gaussian elimination with partial pivoting.
     fn dense_solve(l: &[f64], d: &[f64], u: &[f64], b: &[f64]) -> Vec<f64> {
         let n = d.len();

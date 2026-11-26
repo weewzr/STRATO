@@ -6,17 +6,33 @@ import type { WorkerMessage, WorkerRequest } from '../src/solver/protocol';
 import type { BuildInfo } from '../src/solver/types';
 
 const BUILD_INFO = {
-  schema: 1,
-  abi: 1,
+  abi: 3,
   crate: 'strato-wasm',
-  wrapper_version: '0.1.0',
-  strato_version: '1.0.1',
+  wrapper_version: '2.0.0',
+  strato_version: '2.0.0',
   commit: 'abc1234',
   dirty: false,
   wasm_bindgen: '0.2.130',
-  label: 'COMPUTED v1.0',
-  capabilities: ['diffusion_layered'],
-  limits: { max_total_cells: 1, max_steps: 1, max_profile_values: 1, max_series_modes: 1, library_max_modes: 1 },
+  btcs: {
+    solver: {
+      id: 'btcs_five_layer',
+      method: 'BTCS five-layer spherical finite difference (nodal)',
+      capability: 'diffusion_btcs_layered',
+      version: '2.0.0',
+      commit: 'abc1234',
+      label: 'COMPUTED v2.0',
+      formulation: 'docs/mathematics/btcs/02_final_formulation.md',
+      scope: 'constant diffusivity in each layer',
+      nature: 'numerical solution of the stated model; not experimental validation',
+    },
+    schema: 2,
+    functions: ['validate', 'run', 'compare'],
+    export_functions: ['export_run'],
+    export_formats: ['timeseries_csv', 'profiles_csv', 'run_json'],
+    capabilities: ['diffusion_btcs_layered'],
+    label: 'COMPUTED v2.0',
+    limits: { max_total_intervals: 1, min_intervals_per_layer: 1, max_steps: 1, max_profile_values: 1, max_profile_times: 1, max_series_modes: 1 },
+  },
 } satisfies BuildInfo;
 
 class FakeWorker implements WorkerLike {
@@ -34,7 +50,7 @@ class FakeWorker implements WorkerLike {
     this.onmessage?.({ data: msg } as MessageEvent<WorkerMessage>);
   }
   hello(): void {
-    this.emit({ kind: 'hello', abi: 1, build: BUILD_INFO });
+    this.emit({ kind: 'hello', abi: 3, build: BUILD_INFO });
   }
   reply(id: number, body: unknown): void {
     this.emit({ kind: 'response', id, ok: true, body, elapsed_ms: 1.5 });
@@ -91,7 +107,7 @@ describe('time-out and recovery', () => {
     const onRestart = vi.fn();
     const c = new SolverClient(factory, { onRestart }, 1000);
     workers[0]!.hello();
-    const p = c.request('run_v1', {});
+    const p = c.request('run', {});
     const caught = p.catch((e: unknown) => e);
     vi.advanceTimersByTime(1001);
     const err = await caught;
@@ -112,7 +128,7 @@ describe('time-out and recovery', () => {
   it('replaces a worker whose instance trapped and never reuses it', async () => {
     const c = new SolverClient(factory, {});
     workers[0]!.hello();
-    const p = c.request('run_v1', {});
+    const p = c.request('run', {});
     workers[0]!.emit({ kind: 'response', id: workers[0]!.received[0]!.id, ok: false, error: 'RuntimeError: unreachable', trapped: true });
     await expect(p).rejects.toMatchObject({ reason: 'trap' });
     expect(workers[0]!.terminated).toBe(true);
@@ -122,7 +138,7 @@ describe('time-out and recovery', () => {
   it('keeps the worker after an ordinary error reply', async () => {
     const c = new SolverClient(factory, {});
     workers[0]!.hello();
-    const p = c.request('run_v1', {});
+    const p = c.request('run', {});
     workers[0]!.emit({ kind: 'response', id: workers[0]!.received[0]!.id, ok: false, error: 'SyntaxError', trapped: false });
     await expect(p).rejects.toMatchObject({ reason: 'worker_error' });
     expect(workers).toHaveLength(1);
@@ -133,8 +149,8 @@ describe('runs', () => {
   it('drops a reply that a newer run has overtaken (stale requests are cancelled by id)', async () => {
     const c = new SolverClient(factory, {});
     workers[0]!.hello();
-    const first = c.runV1({ n: 1 }, ['diffusion_layered'], ['diffusion_layered']);
-    const second = c.runV1({ n: 2 }, ['diffusion_layered'], ['diffusion_layered']);
+    const first = c.run({ n: 1 }, ['diffusion_btcs_layered'], ['diffusion_btcs_layered']);
+    const second = c.run({ n: 2 }, ['diffusion_btcs_layered'], ['diffusion_btcs_layered']);
     const [r1, r2] = workers[0]!.received;
     workers[0]!.reply(r1!.id, { status: 'ok', n: 1 });
     workers[0]!.reply(r2!.id, { status: 'ok', n: 2 });
@@ -146,10 +162,10 @@ describe('runs', () => {
     const c = new SolverClient(factory, {});
     workers[0]!.hello();
     // decay and generation are RESEARCHED in the catalogue: dropped even when a capability claims them.
-    const p = c.runV1({}, ['diffusion_layered', 'decay', 'generation'], ['diffusion_layered', 'decay']);
+    const p = c.run({}, ['diffusion_btcs_layered', 'decay', 'generation'], ['diffusion_btcs_layered', 'decay']);
     const sent = JSON.parse(workers[0]!.received[0]!.payload) as { schema: number; mechanisms: string[] };
-    expect(sent.schema).toBe(1);
-    expect(sent.mechanisms).toEqual(['diffusion_layered']);
+    expect(sent.schema).toBe(2);
+    expect(sent.mechanisms).toEqual(['diffusion_btcs_layered']);
     workers[0]!.reply(workers[0]!.received[0]!.id, { status: 'ok' });
     await expect(p).resolves.toMatchObject({ dropped: ['decay', 'generation'] });
   });
@@ -157,7 +173,7 @@ describe('runs', () => {
   it('sends nothing for diffusion when the wrapper has not reported its capabilities', async () => {
     const c = new SolverClient(factory, {});
     workers[0]!.hello();
-    void c.runV1({}, ['diffusion_layered'], []).catch(() => undefined);
+    void c.run({}, ['diffusion_btcs_layered'], []).catch(() => undefined);
     const sent = JSON.parse(workers[0]!.received[0]!.payload) as { mechanisms: string[] };
     expect(sent.mechanisms).toEqual([]);
   });

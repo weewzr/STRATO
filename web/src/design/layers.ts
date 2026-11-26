@@ -1,5 +1,5 @@
 // One colour token per TRISO layer (tokens.css), by region index from the centre outwards.
-// v1.0 always has the five regions kernel, buffer, IPyC, SiC and OPyC (Config::validate); the
+// The solver always has the five regions kernel, buffer, IPyC, SiC and OPyC (Config::validate); the
 // layer names shown on screen come from the active configuration, not from this file.
 const LAYER_TOKENS = ['--layer-kernel', '--layer-buffer', '--layer-ipyc', '--layer-sic', '--layer-opyc'] as const;
 

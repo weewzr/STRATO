@@ -112,10 +112,10 @@ test.describe('catalogue switches by keyboard', () => {
     expect(await solverRequests(page)).toBe(before);
   });
 
-  test('stage 6 of the builder lists the catalogue rows behind one disclosure, with disabled switches', async ({ page, problems }) => {
+  test('the last step of the builder lists the catalogue rows behind one disclosure, with disabled switches', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
-    await page.getByTestId('stage-6').click();
+    await page.getByTestId('stage-17').click();
     const toggle = page.getByTestId('stage6-toggle');
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
     const before = await solverRequests(page);
@@ -128,7 +128,7 @@ test.describe('catalogue switches by keyboard', () => {
     await expect(switches.first()).toHaveAttribute('aria-checked', 'false');
     expect(await checkStatuses(page, '[data-testid="stage6"]')).toBeGreaterThan(0);
     expect(await solverRequests(page)).toBe(before);
-    if (dir) await page.getByTestId('block-a').screenshot({ path: join(dir, 'explore-stage6-1440.png') });
+    if (dir) await page.getByTestId('block-a').screenshot({ path: join(dir, 'explore-last-step-1440.png') });
   });
 
   test('a link to a heading of another entry opens that entry at the heading', async ({ page, problems }) => {

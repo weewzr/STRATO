@@ -1,26 +1,26 @@
-import { useId, useMemo, useState, type ReactNode } from 'react';
+import { Fragment, useId, useMemo, useState, type ReactNode } from 'react';
 import { repoFile } from '../build';
 import { CASES, type RegionConfig } from '../data/case';
 import { layerColour } from '../design/layers';
 import { isAvailable } from '../equation/availability';
-import { SWITCH_MECHANISM, SWITCHES, switchIntroducedBy, TERMS } from '../equation/terms';
+import { SWITCH_MECHANISM, SWITCHES, switchIntroducedBy, termOf } from '../equation/terms';
 import { Tex } from '../equation/Tex';
 import { clamp, sciText } from '../format';
+import { METHOD_1 } from '../methods';
 import { statusOf, useCatalogue } from '../research/catalogue';
 import { StatusChip } from '../research/StatusChip';
 import { configDifferences, useStrato } from '../state/store';
-import { validateInputs } from '../state/validation';
 import { Sci } from './Badge';
 import { NumberField } from './NumberField';
 
-// Slider span for the diffusivity, in decades. A display range only: the number field accepts
-// any positive finite value, which is the only rule Config::validate applies to D_i.
+// Slider span for the diffusivity, in decades. A display range only: the number field accepts any
+// value, and the wrapper decides whether it is valid (it must be positive and finite).
 const LOG_D_MIN = -18;
 const LOG_D_MAX = -8;
 
 export type ControlLayout = 'inline' | 'sheet';
 
-function LayerFields({ r, i, issueAt }: { r: RegionConfig; i: number; issueAt: (path: string) => string | undefined }) {
+function LayerFields({ r, i }: { r: RegionConfig; i: number }) {
   const setRegionField = useStrato((s) => s.setRegionField);
   const logD = Math.log10(r.diffusivity_m2_s);
   const sliderValue = Number.isFinite(logD) ? clamp(logD, LOG_D_MIN, LOG_D_MAX) : LOG_D_MIN;
@@ -28,7 +28,7 @@ function LayerFields({ r, i, issueAt }: { r: RegionConfig; i: number; issueAt: (
     <>
       <div className="field">
         <label className="field__label" htmlFor={`d-slider-${i}`}>
-          D<sub>{i + 1}</sub>, logarithmic slider
+          {r.name} diffusivity (m²/s), logarithmic slider
         </label>
         <input
           id={`d-slider-${i}`}
@@ -38,7 +38,7 @@ function LayerFields({ r, i, issueAt }: { r: RegionConfig; i: number; issueAt: (
           max={LOG_D_MAX}
           step={0.01}
           value={sliderValue}
-          aria-valuetext={`D${i + 1} = ${sciText(r.diffusivity_m2_s)} square metres per second`}
+          aria-valuetext={`${r.name} diffusivity = ${sciText(r.diffusivity_m2_s)} square metres per second`}
           onChange={(e) => setRegionField(i, 'diffusivity_m2_s', Number((10 ** Number(e.target.value)).toPrecision(3)))}
         />
         <div className="slider__ticks" aria-hidden="true">
@@ -51,36 +51,27 @@ function LayerFields({ r, i, issueAt }: { r: RegionConfig; i: number; issueAt: (
         </div>
       </div>
       <NumberField
-        label={
-          <>
-            Diffusivity D<sub>{i + 1}</sub>
-          </>
-        }
-        unit="m² s⁻¹"
+        label={`${r.name} diffusivity`}
+        unit="m²/s"
         value={r.diffusivity_m2_s}
-        issue={issueAt(`regions.${i}.diffusivity_m2_s`)}
         onCommit={(v) => setRegionField(i, 'diffusivity_m2_s', v)}
         testId={`d-field-${i}`}
       />
       <NumberField
-        label={
-          <>
-            Outer radius R<sub>{i + 1}</sub>
-          </>
-        }
+        label={`${r.name} outer radius`}
         unit="m"
         value={r.outer_radius_m}
-        issue={issueAt(`regions.${i}.outer_radius_m`)}
         onCommit={(v) => setRegionField(i, 'outer_radius_m', v)}
         testId={`r-field-${i}`}
       />
       <NumberField
-        label="Cells"
+        label={`Grid intervals in the ${r.name} layer`}
+        unit="dimensionless"
         value={r.cells}
         integer
-        issue={issueAt(`regions.${i}.cells`)}
         onCommit={(v) => setRegionField(i, 'cells', v)}
         testId={`n-field-${i}`}
+        hint={i === 0 ? 'Whole number of at least 1 per layer; the grid has one more node than intervals.' : undefined}
       />
     </>
   );
@@ -89,7 +80,8 @@ function LayerFields({ r, i, issueAt }: { r: RegionConfig; i: number; issueAt: (
 /**
  * Block C: the parameter controls, bound to the store. Inline (tablet and desktop) the layers sit
  * side by side as one group per layer; in the phone bottom sheet each layer is a collapsible group.
- * Run asks the solver session (solver/session.ts) for a run; every input change also reruns it.
+ * Run asks the solver session (solver/session.ts) for a run; every input change also reruns it. The
+ * wrapper checks every input: its own messages are listed under the controls when it rejects one.
  */
 export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlLayout; onClose?: (() => void) | undefined }) {
   const config = useStrato((s) => s.config);
@@ -99,18 +91,21 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
   const capabilities = useStrato((s) => s.capabilities);
   const stage = useStrato((s) => s.stage);
   const solverState = useStrato((s) => s.solver.state);
+  const validation = useStrato((s) => s.validation);
   const requestRun = useStrato((s) => s.requestRun);
   const catalogue = useCatalogue();
   const introduced = switchIntroducedBy(stage);
   const { loadCase, setTimeField, setKernelConcentration, setTemperature, resetToBaseline, setCurrentAsBaseline, setMechanism } =
     useStrato.getState();
 
-  const issues = useMemo(() => validateInputs(config), [config]);
-  const issueAt = (path: string) => issues.find((i) => i.path === path)?.message;
   const changed = useMemo(() => configDifferences(baseline, config).length, [baseline, config]);
   const [announce, setAnnounce] = useState('');
+  // A reset or a case load must also clear an unsent draft, even when the stored value did not change.
+  const [resetCount, setResetCount] = useState(0);
+  const fieldsKey = `${caseId}:${resetCount}`;
   const ids = { mech: useId(), run: useId(), step: useId(), title: useId(), caseHint: useId() };
   const sheet = layout === 'sheet';
+  const errors = validation.state === 'rejected' || validation.state === 'error' ? validation.errors : [];
 
   const caseField = (
     <div className="field controls__case">
@@ -143,7 +138,7 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
         <span className="layer__swatch" aria-hidden="true" />
         <span className="layer__name">{r.name}</span>
         <span className="layer__d">
-          D = <Sci value={r.diffusivity_m2_s} unit="m² s⁻¹" />
+          Diffusivity <Sci value={r.diffusivity_m2_s} unit="m²/s" />
         </span>
       </>
     );
@@ -152,13 +147,13 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
       <details key={i} className="layer layer--collapsible" open={i === 0} data-testid={`layer-${i}`} style={style}>
         <summary className="layer__summary">{head}</summary>
         <div className="layer__body">
-          <LayerFields r={r} i={i} issueAt={issueAt} />
+          <LayerFields r={r} i={i} />
         </div>
       </details>
     ) : (
       <fieldset key={i} className="layer layer--column" data-testid={`layer-${i}`} style={style}>
         <legend className="layer__legend">{head}</legend>
-        <LayerFields r={r} i={i} issueAt={issueAt} />
+        <LayerFields r={r} i={i} />
       </fieldset>
     );
   });
@@ -168,65 +163,54 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
       <fieldset className="group">
         <legend className="group__legend">Start and temperature</legend>
         <NumberField
-          label={
-            <>
-              Kernel start concentration c<sub>0</sub>
-            </>
-          }
-          unit="mol m⁻³"
+          label="Initial kernel concentration"
+          unit="mol/m³"
           value={config.initial.kernel_concentration_mol_m3}
-          issue={issueAt('initial.kernel_concentration_mol_m3')}
           onCommit={setKernelConcentration}
           hint="Uniform in the kernel, zero in the coating layers."
         />
         <NumberField
-          label="Temperature T"
+          label="Temperature"
           unit="K"
           value={config.temperature_k}
-          issue={issueAt('temperature_k')}
           onCommit={setTemperature}
-          hint="Required by the input format. v1.0 records it and does not use it."
+          hint="Required by the input format and recorded with the result. The solver does not use it: the diffusivities are constant."
         />
       </fieldset>
       <fieldset className="group">
         <legend className="group__legend">Time</legend>
-        <NumberField label="Time step Δt" unit="s" value={config.time.dt_s} issue={issueAt('time.dt_s')} onCommit={(v) => setTimeField('dt_s', v)} />
+        <NumberField label="Time step" unit="s" testId="dt-field" value={config.time.dt_s} onCommit={(v) => setTimeField('dt_s', v)} />
+        <NumberField label="Simulation duration" unit="s" testId="duration-field" value={config.time.end_time_s} onCommit={(v) => setTimeField('end_time_s', v)} />
         <NumberField
-          label={
-            <>
-              End time t<sub>end</sub>
-            </>
-          }
-          unit="s"
-          value={config.time.end_time_s}
-          issue={issueAt('time.end_time_s')}
-          onCommit={(v) => setTimeField('end_time_s', v)}
-        />
-        <NumberField
-          label="Output every"
-          unit="steps"
+          label="Time steps between output rows"
+          unit="dimensionless"
           testId="output-every-field"
           value={config.time.output_every_steps}
           integer
-          issue={issueAt('time.output_every_steps')}
           onCommit={(v) => setTimeField('output_every_steps', v)}
         />
         <p className="field__hint" id={ids.step}>
-          Step rule of the solver: N = ⌈t<sub>end</sub> / Δt⌉ steps of length t<sub>end</sub> / N. The solver reports the step it used.
+          The solver divides the duration into the whole number of equal steps that is at least the duration divided by the time step, and
+          reports the step it used.
         </p>
+        {validation.warnings.map((m) => (
+          <p className="field__msg" key={m} role="status" data-testid="validation-warning">
+            {m}
+          </p>
+        ))}
       </fieldset>
     </>
   );
 
   // Labels come from the term table (equation/terms.ts) and every status from the generated
-  // catalogue; availability only from isAvailable(). The switch that the selected builder stage
-  // introduces is marked, so the stage picker and the switches stay in step.
+  // catalogue; availability only from isAvailable(). The switch that the selected builder preview
+  // stands for is marked, so the step picker and the switches stay in step.
   const mechanismSwitches = (
     <fieldset className="group group--mechs">
       <legend className="group__legend">Mechanism switches</legend>
       <ul className="mechs" role="list">
         {SWITCHES.map((sw) => {
-          const term = TERMS[sw.term];
+          const term = termOf(sw.term);
           const mechId = SWITCH_MECHANISM[sw.id];
           const status = statusOf(catalogue, mechId);
           const live = isAvailable(mechId, capabilities, catalogue) && mechanisms[sw.id].available;
@@ -264,28 +248,34 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
                 ) : (
                   <>
                     Not available: status {status ?? 'unknown'}; awaiting reviewed implementation (see the{' '}
-                    <a href={repoFile('docs/development/phase2_review_package.md')}>Phase 2 review package</a>).
+                    <a href={repoFile('docs/archive/finite-volume/development/phase2_review_package.md')}>Phase 2 review package</a>). A labelled preview of its equation
+                    is shown in the equation builder.
                   </>
                 )}
-                {current ? <span className="mech__stage"> Introduced by stage {stage}.</span> : null}
+                {current ? <span className="mech__stage"> Previewed at step {stage}.</span> : null}
               </p>
             </li>
           );
         })}
       </ul>
       <p id={ids.mech} className="field__hint">
-        Operating a switch that is not available changes no result and sends no solver request. Layer-specific temperature laws come with
-        the temperature switch; species-specific mechanisms are research catalogue entries.
+        Operating a switch that is not available changes no result and sends no solver request. Generation, decay and temperature
+        dependence are previews until the solver implements and verifies them; species-specific mechanisms are research catalogue entries.
       </p>
     </fieldset>
   );
 
   const actions = (
     <div className="controls__actions">
-      {issues.length > 0 ? (
-        <p className="panel__issues" role="status" data-testid="issue-count">
-          {issues.length === 1 ? '1 input needs attention.' : `${issues.length} inputs need attention.`}
-        </p>
+      {errors.length > 0 ? (
+        <div className="panel__issues" role="alert" data-testid="validation-errors">
+          <p data-testid="issue-count">{errors.length === 1 ? 'The solver rejects these inputs, with 1 message:' : `The solver rejects these inputs, with ${errors.length} messages:`}</p>
+          <ul className="panel__issue-list">
+            {errors.map((m) => (
+              <li key={m}>{m}</li>
+            ))}
+          </ul>
+        </div>
       ) : (
         <p className="panel__issues panel__issues--ok" role="status" data-testid="issue-count">
           {changed === 0 ? 'Inputs equal the baseline.' : changed === 1 ? '1 input differs from the baseline.' : `${changed} inputs differ from the baseline.`}
@@ -315,6 +305,7 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
           data-testid="reset"
           onClick={() => {
             resetToBaseline();
+            setResetCount((n) => n + 1);
             setAnnounce('Parameters reset to the baseline.');
           }}
         >
@@ -333,8 +324,8 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
         </button>
       </div>
       <p id={ids.run} className="field__hint">
-        The verified STRATO v1.0 solver, compiled to WebAssembly, runs in your browser. A change of input reruns it after a short pause;
-        Run starts a run at once.
+        {METHOD_1}, the verified STRATO solver compiled to WebAssembly, runs in your browser. A change of input reruns it after a short
+        pause; Run starts a run at once. The solver itself checks every input.
       </p>
       <p className="visually-hidden" role="status" aria-live="polite" data-testid="announce">
         {announce}
@@ -359,9 +350,9 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
           {caseField}
           <fieldset className="group">
             <legend className="group__legend">Layers</legend>
-            {layers}
+            <Fragment key={fieldsKey}>{layers}</Fragment>
           </fieldset>
-          {startAndTime}
+          <Fragment key={`t${fieldsKey}`}>{startAndTime}</Fragment>
           {mechanismSwitches}
         </div>
         <div className="panel__actions">{actions}</div>
@@ -376,10 +367,10 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
         {actions}
       </div>
       <div className="controls__layers" role="group" aria-label="Layer parameters">
-        {layers}
+        <Fragment key={fieldsKey}>{layers}</Fragment>
       </div>
       <div className="controls__rest">
-        {startAndTime}
+        <Fragment key={`t${fieldsKey}`}>{startAndTime}</Fragment>
         {mechanismSwitches}
       </div>
     </div>

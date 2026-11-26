@@ -34,8 +34,8 @@ def report(tag, ok, detail=""):
 # ---------------------------------------------------------------- inputs (synthetic)
 RADII = ["2.0e-4", "3.0e-4", "3.5e-4", "4.0e-4", "4.5e-4"]      # m
 DIFFS = ["1.0e-12", "4.0e-10", "8.0e-13", "2.0e-14", "7.0e-13"]  # m^2 s^-1
-T_MIN = 2.0e3        # s, first FV output time (10 steps x 200 s) in the v1.0 main run
-LAMBDA_MAX = 45.0 / T_MIN   # s^-1, as in comparison.rs line 59
+T_MIN = 2.0e3        # s, first output time of the synthetic case (10 steps x 200 s)
+LAMBDA_MAX = 45.0 / T_MIN   # s^-1, the series construction rule of the Rust code (45 / t_min)
 T_EVAL = 2.0e5       # s
 TARGET_L1 = 3.273255671175805e-6
 TARGET_L2 = 7.791893309400181e-5

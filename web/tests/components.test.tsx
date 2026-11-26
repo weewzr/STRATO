@@ -35,20 +35,50 @@ describe('ControlPanel', () => {
     expect(useStrato.getState().config.regions[1]?.outer_radius_m).toBe(caseJson.data.config.regions[1]?.outer_radius_m);
   });
 
-  it('shows the Config::validate rule when radii stop increasing', async () => {
+  it('shows the wrapper\'s own message when it rejects the inputs, and no rule of its own', async () => {
     const user = userEvent.setup();
     render(<ControlPanel />);
     const field = screen.getByTestId('r-field-2') as HTMLInputElement;
     await user.clear(field);
     await user.type(field, '1e-4');
-    expect(field.getAttribute('aria-invalid')).toBe('true');
-    expect(screen.getByText(/must be larger than the radius of the layer inside it/)).toBeTruthy();
-    expect(screen.getByTestId('issue-count').textContent).toContain('1 input needs attention');
+    // The page applies no radius rule itself: the field is valid until the wrapper answers.
+    expect(field.getAttribute('aria-invalid')).toBeNull();
+    expect(screen.getByTestId('issue-count').textContent).toContain('from the baseline');
+    // The wrapper's answer to validate for these inputs (the text is the wrapper's, shown as it is).
+    act(() => {
+      useStrato.getState().setValidation({ key: 'k', state: 'rejected', errors: ['invalid region IPyC'], warnings: [], plan: null, grid: null, limits: null });
+    });
+    expect(screen.getByTestId('validation-errors').textContent).toContain('invalid region IPyC');
+    expect(screen.getByTestId('issue-count').textContent).toContain('1 message');
   });
 
+  it('shows a warning of the wrapper beside the time controls', () => {
+    render(<ControlPanel />);
+    act(() => {
+      useStrato.getState().setValidation({ key: 'k', state: 'ok', errors: [], warnings: ['the solver will use dt = 2.5e2 s'], plan: null, grid: null, limits: null });
+    });
+    expect(screen.getByTestId('validation-warning').textContent).toBe('the solver will use dt = 2.5e2 s');
+  });
+
+  it('names every control with its full physical name and its unit', () => {
+    render(<ControlPanel />);
+    for (const label of [
+      'Kernel diffusivity (m²/s)',
+      'SiC diffusivity (m²/s)',
+      'Kernel outer radius (m)',
+      'Grid intervals in the Kernel layer (dimensionless)',
+      'Initial kernel concentration (mol/m³)',
+      'Temperature (K)',
+      'Time step (s)',
+      'Simulation duration (s)',
+      'Time steps between output rows (dimensionless)',
+    ]) {
+      expect(screen.getByLabelText(label), label).toBeTruthy();
+    }
+  });
   it('moves the diffusivity with the log slider', () => {
     render(<ControlPanel />);
-    const slider = screen.getByLabelText(/D1, logarithmic slider/) as HTMLInputElement;
+    const slider = screen.getByLabelText(/Kernel diffusivity \(m²\/s\), logarithmic slider/) as HTMLInputElement;
     fireEvent.change(slider, { target: { value: '-11' } });
     expect(useStrato.getState().config.regions[0]?.diffusivity_m2_s).toBe(1e-11);
   });
@@ -60,8 +90,22 @@ describe('ControlPanel', () => {
     await user.clear(field);
     await user.type(field, '5e-12');
     await user.click(screen.getByTestId('reset'));
-    expect(field.value).toBe('1e-12');
+    expect((screen.getByTestId('d-field-0') as HTMLInputElement).value).toBe('1e-12');
     expect(screen.getByTestId('announce').textContent).toBe('Parameters reset to the baseline.');
+  });
+
+  it('reset also clears an unsent invalid draft whose stored value did not change', async () => {
+    const user = userEvent.setup();
+    render(<ControlPanel />);
+    const stored = useStrato.getState().config.regions[0]?.cells;
+    const field = screen.getByTestId('n-field-0') as HTMLInputElement;
+    // Appending a decimal part to the stored whole number leaves text the field refuses to send.
+    await user.type(field, '.5');
+    expect(screen.getByText('Must be a whole number.')).toBeTruthy();
+    expect(useStrato.getState().config.regions[0]?.cells).toBe(stored);
+    await user.click(screen.getByTestId('reset'));
+    expect((screen.getByTestId('n-field-0') as HTMLInputElement).value).toBe(String(stored));
+    expect(screen.queryByText('Must be a whole number.')).toBeNull();
   });
 
   it('keeps the mechanism switches focusable, disabled and off', async () => {
@@ -187,7 +231,7 @@ describe('App', () => {
     window.location.hash = '#/compare';
     render(<App />);
     const table = screen.getByTestId('diff-table');
-    expect(within(table).getByText('SiC diffusivity')).toBeTruthy();
+    expect(within(table).getByText('Diffusivity of the SiC layer (m²/s)')).toBeTruthy();
     expect(within(table).getByText('4e-14')).toBeTruthy();
   });
 

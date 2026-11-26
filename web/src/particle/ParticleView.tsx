@@ -1,6 +1,7 @@
 import { Component, lazy, Suspense, useId, useState, type ReactNode } from 'react';
 import { BUILD } from '../build';
-import type { CaseProvenance, V1Config } from '../data/case';
+import { METHOD_1 } from '../methods';
+import type { CaseProvenance, CaseConfig } from '../data/case';
 import { layerColour } from '../design/layers';
 import { sciText } from '../format';
 import { Badge, Sci } from '../panels/Badge';
@@ -19,7 +20,7 @@ import { hasWebGL2 } from './webgl';
 
 const Particle3D = lazy(() => import('./Particle3D'));
 
-/** Bottom of the logarithmic colour scale, as a fraction of c0 (10 to the power -LOG_DECADES). */
+/** Bottom of the logarithmic colour scale, as a fraction of the top (10 to the power -LOG_DECADES). */
 const LOG_FLOOR = `10⁻${String(LOG_DECADES).replace(/\d/g, (k) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[Number(k)] ?? k)}`;
 
 class ThreeBoundary extends Component<{ onError: (message: string) => void; children: ReactNode }, { failed: boolean }> {
@@ -52,7 +53,7 @@ function RowTime() {
   if (t === undefined) return null;
   return (
     <span className="figure__time" data-testid="particle-time" data-value={String(t)}>
-      at <i>t</i> = <Sci value={t} unit="s" digits={4} />
+      at time <Sci value={t} unit="s" digits={4} />
     </span>
   );
 }
@@ -68,8 +69,8 @@ function Legend({ run }: { run: RunOk }) {
   return (
     <div className="legend" data-testid="colour-legend" data-colormap={map} data-scale={scale}>
       <p className="legend__title">
-        <i>c</i> on a {scale === 'log' ? `log scale, ${LOG_DECADES} decades` : 'linear scale'} up to <i>c</i>
-        <sub>0</sub> = <Sci value={top} unit="mol m⁻³" /> <span className="muted">(kernel start, input)</span>
+        Concentration (mol/m³) on a {scale === 'log' ? `log scale, ${LOG_DECADES} decades` : 'linear scale'} up to the largest nodal concentration of
+        the run, <Sci value={top} unit="mol/m³" /> <span className="muted">(returned by the solver)</span>.
       </p>
       <div className="legend__bar" style={{ backgroundImage: gradient }} aria-hidden="true" />
       <div className="legend__ticks" aria-hidden="true">
@@ -80,7 +81,7 @@ function Legend({ run }: { run: RunOk }) {
         ))}
       </div>
       <p className="visually-hidden">
-        Colour map {COLORMAP_LABEL[map]}, {scale === 'log' ? `logarithmic over ${LOG_DECADES} decades below c0` : 'linear from 0 to c0'}.
+        Colour map {COLORMAP_LABEL[map]}, {scale === 'log' ? `logarithmic over ${LOG_DECADES} decades below the largest concentration of the run` : 'linear from 0 to the largest concentration of the run'}.
       </p>
     </div>
   );
@@ -113,9 +114,11 @@ function ColourOptions() {
 }
 
 /** Inspector of one layer: inputs of the run, and the layer inventory and share at the playback row. */
-function LayerDetail({ index, run, config }: { index: number; run: RunOk | null; config: V1Config }) {
+function LayerDetail({ index, run, config }: { index: number; run: RunOk | null; config: CaseConfig }) {
   const tIndex = useStrato((s) => s.playback.tIndex);
-  const regions = run ? run.inputs.regions : config.regions;
+  const regions: { name: string; outer_radius_m: number; diffusivity_m2_s: number; cells: number }[] = run
+    ? run.inputs.regions.map((r) => ({ name: r.name, outer_radius_m: r.outer_radius_m, diffusivity_m2_s: r.diffusivity_m2_s, cells: r.intervals }))
+    : config.regions;
   const sel = regions[index];
   if (!sel) return null;
   const profile = run?.profiles[tIndex];
@@ -128,32 +131,24 @@ function LayerDetail({ index, run, config }: { index: number; run: RunOk | null;
         <span className="layer-dot" style={{ ['--ring' as string]: layerColour(index) }} aria-hidden="true" />
         {sel.name}
       </dd>
-      <dt>
-        Radii R<sub>{index}</sub> to R<sub>{index + 1}</sub>
-      </dt>
+      <dt>Inner and outer radius of the layer (m)</dt>
       <dd>
         {index === 0 ? <span className="num">0</span> : <Sci value={regions[index - 1]?.outer_radius_m ?? NaN} />} to{' '}
         <Sci value={sel.outer_radius_m} unit="m" />
       </dd>
-      <dt>
-        Diffusivity D<sub>{index + 1}</sub>
-      </dt>
+      <dt>Diffusivity of the layer (m²/s)</dt>
       <dd>
-        <Sci value={sel.diffusivity_m2_s} unit="m² s⁻¹" />
+        <Sci value={sel.diffusivity_m2_s} unit="m²/s" />
       </dd>
-      <dt>Cells</dt>
+      <dt>Grid intervals in the layer (dimensionless)</dt>
       <dd className="num">{sel.cells}</dd>
       {run && profile ? (
         <>
-          <dt>
-            Inventory in the layer at <i>t</i> = {sciText(profile.t_s, 4)} s
-          </dt>
+          <dt>Inventory in the layer at the playback time of {sciText(profile.t_s, 4)} s (mol)</dt>
           <dd data-testid="inspector-inventory" data-value={inv === undefined ? '' : String(inv)} data-label={run.label}>
             {inv === undefined ? '–' : <Sci value={inv} unit="mol" digits={4} />}
           </dd>
-          <dt>
-            Share of the inventory <i>M</i>
-          </dt>
+          <dt>Share of the inventory in the particle (dimensionless)</dt>
           <dd data-testid="inspector-share" data-value={share === undefined ? '' : String(share)} data-label={run.label}>
             {share === undefined ? <span className="muted">not returned (inventory not positive)</span> : <Sci value={share} digits={4} />}{' '}
             <Badge label={run.label} />
@@ -161,7 +156,7 @@ function LayerDetail({ index, run, config }: { index: number; run: RunOk | null;
         </>
       ) : (
         <>
-          <dt>Inventory share</dt>
+          <dt>Inventory share (dimensionless)</dt>
           <dd className="muted">appears when the solver has run these inputs</dd>
         </>
       )}
@@ -173,7 +168,7 @@ function LayerDetail({ index, run, config }: { index: number; run: RunOk | null;
   );
 }
 
-export function ParticleView({ config, provenance }: { config: V1Config; provenance: CaseProvenance }) {
+export function ParticleView({ config, provenance }: { config: CaseConfig; provenance: CaseProvenance }) {
   const { run, stale } = useShownRun();
   const selected = useStrato((s) => s.view.selectedLayer);
   const selectLayer = useStrato((s) => s.selectLayer);
@@ -216,7 +211,7 @@ export function ParticleView({ config, provenance }: { config: V1Config; provena
           <span className="figure__kind" data-testid="particle-kind">
             {run ? (
               <>
-                <i>c</i>(<i>r</i>) <RowTime />
+                Concentration against radius <RowTime />
               </>
             ) : (
               'Particle cross-section to the input radii; no concentration data'
@@ -306,20 +301,17 @@ export function ParticleView({ config, provenance }: { config: V1Config; provena
         <strong>Figure 1.</strong>{' '}
         {run ? (
           <>
-            The concentration of the synthetic verification case in every cell of the solver mesh at the playback time,{' '}
+            The concentration of the synthetic verification case at every node of the solver grid at the playback time, each node painted over its band of radii,{' '}
             {logColour ? (
               <>
-                on a fixed logarithmic colour scale over {LOG_DECADES} decades up to the kernel start concentration <i>c</i>
-                <sub>0</sub> (values at or below {LOG_FLOOR} <i>c</i>
-                <sub>0</sub> take the lowest colour)
+                on a fixed logarithmic colour scale over {LOG_DECADES} decades up to the largest nodal concentration of the run (values at or below {LOG_FLOOR} of it take the lowest colour)
               </>
             ) : (
               <>
-                on a fixed linear colour scale from 0 to the kernel start concentration <i>c</i>
-                <sub>0</sub>
+                on a fixed linear colour scale from 0 to the largest nodal concentration of the run
               </>
             )}
-            ; the {names.length} layers are drawn to scale with their boundaries in the layer colours. The playback shows
+            ; the tick labels under the colour bar give the fraction of that largest concentration (dimensionless); the {names.length} layers are drawn to scale with their boundaries in the layer colours. The playback shows
             the output times the solver recorded; nothing is interpolated.
           </>
         ) : (
@@ -331,14 +323,14 @@ export function ParticleView({ config, provenance }: { config: V1Config; provena
         <span className="figure__source">
           {run ? (
             <>
-              Source: STRATO v{run.engine.strato_version} Rust solver in WebAssembly, build <code>{run.engine.commit}</code>, run on the
+              Source: {METHOD_1}, solver version {run.solver.version} ({run.label}), Rust solver in WebAssembly, build <code>{run.engine.commit}</code>, run on the
               active parameters starting from <code>{provenance.input_file}</code> (synthetic verification case, not physical data); colour
               table {COLORMAP_LABEL[map]} from matplotlib. Page build <code>{BUILD.commit}</code>.
             </>
           ) : (
             <>
               Source: active parameters, starting from <code>{provenance.input_file}</code> (synthetic verification case, not physical
-              data). STRATO v{BUILD.strato_version}, build <code>{BUILD.commit}</code>.
+              data). STRATO page build <code>{BUILD.commit}</code>.
             </>
           )}
         </span>

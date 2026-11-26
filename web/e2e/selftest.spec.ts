@@ -19,7 +19,7 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
     expect(failed, JSON.stringify(failed)).toEqual([]);
     expect(verdict.result).toBe('pass');
     // Web phase 3: the solver checks run and pass (they were not_run before the wasm module existed).
-    for (const id of ['wasm_loads', 'golden_parity', 'native_parity']) {
+    for (const id of ['wasm_loads', 'native_parity']) {
       expect(verdict.checks.find((c) => c.id === id)?.status, id).toBe('pass');
     }
     if (expectCommit) expect(verdict.checks.find((c) => c.id === 'expected_commit')?.status).toBe('pass');

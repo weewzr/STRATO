@@ -4,5 +4,5 @@ test-results/
 playwright-report/
 *.tsbuildinfo
 
-# WebAssembly wrapper built by scripts/web/build_wasm.py
+# WebAssembly wrapper built by `strato-webtools build-wasm`
 src/solver/pkg/

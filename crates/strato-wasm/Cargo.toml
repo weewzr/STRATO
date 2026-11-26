@@ -1,8 +1,8 @@
 [package]
 name = "strato-wasm"
-version = "0.1.0"
+version = "2.0.0"
 edition = "2021"
-description = "Thin WebAssembly wrapper around the verified STRATO v1.0 library: JSON in, JSON out, no physics."
+description = "Thin WebAssembly wrapper around the verified STRATO v2.0 library (BTCS solver and Sturm-Liouville series): JSON in, JSON out, no physics."
 license = "AGPL-3.0-only"
 repository = "https://github.com/weewzr/STRATO"
 publish = false
@@ -23,7 +23,7 @@ serde = { version = "1", features = ["derive"] }
 # TOML parser of the CLI reads it, so the wrapper sees the same inputs bit for bit.
 serde_json = { version = "1", features = ["float_roundtrip"] }
 toml = "0.8"
-# Pinned to the installed wasm-bindgen CLI; scripts/web/build_wasm.py checks that the two match.
+# Pinned to the installed wasm-bindgen CLI; `strato-webtools build-wasm` checks that the two match.
 wasm-bindgen = "=0.2.130"
 
 [dev-dependencies]

@@ -3,7 +3,7 @@
 // scale (linear, or logarithmic over a fixed number of decades), then the nearest of the 256
 // entries of the colour table. This is display mapping only, like an axis of a plot; it computes
 // no physical quantity. The tables come from web/src/generated/colormaps.json, written by
-// scripts/web/generate_data.py from data/colormaps/ (copied from matplotlib, cividis by default).
+// strato-webtools colormaps from data/colormaps/ (copied from matplotlib, cividis by default).
 import maps from '../generated/colormaps.json';
 import type { ColormapName } from '../state/store';
 import type { RunOk } from '../solver/types';
@@ -54,16 +54,18 @@ export function css(rgb: Rgb): string {
 }
 
 /**
- * The top of the colour scale: the kernel start concentration c0 of the run, an input that the
- * wrapper echoes back. It is fixed for the whole run so that frames can be compared; for this
- * equation (no source, absorbing surface) the solution does not exceed it.
+ * The top of the colour scale: the largest nodal concentration over the whole run, which the wrapper
+ * returns for every output row (max_concentration_mol_m3). It is fixed for the whole run so that
+ * frames can be compared. A selection of returned numbers, not a computed quantity.
  */
 export function scaleTop(run: RunOk): number {
-  return run.inputs.initial.kernel_concentration_mol_m3;
+  let top = 0;
+  for (const v of run.max_concentration_mol_m3) if (v > top) top = v;
+  return top;
 }
 
-/** Colours of every cell of the run's output row `index`, in cell order (centre outwards). */
-export function cellColours(run: RunOk, index: number, name: ColormapName, scale: ColourScale): Rgb[] {
+/** Colours of every node of the run's output row `index`, in node order (centre outwards). */
+export function nodeColours(run: RunOk, index: number, name: ColormapName, scale: ColourScale): Rgb[] {
   const profile = run.profiles[index];
   if (!profile) return [];
   const top = scaleTop(run);
@@ -71,37 +73,36 @@ export function cellColours(run: RunOk, index: number, name: ColormapName, scale
 }
 
 /**
- * The cell that contains each of `bins` equally spaced radii (bin centres) from the centre to the
- * outer radius of the mesh: a lookup in the mesh faces the wrapper returned. Used to paint the cut
- * faces of the 3D view.
+ * The colour band that contains each of `bins` equally spaced radii (bin centres) from the centre to
+ * the outer radius: a lookup in the ring edges the wrapper returned (the band of node i is
+ * [edges[i], edges[i+1]]). Used to paint the cut faces of the 3D view.
  */
-export function cellOfBins(faces: readonly number[], bins: number): number[] {
+export function bandOfBins(edges: readonly number[], bins: number): number[] {
   const out: number[] = [];
-  const outer = faces[faces.length - 1] ?? 0;
-  let cell = 0;
+  const outer = edges[edges.length - 1] ?? 0;
+  let band = 0;
   for (let k = 0; k < bins; k++) {
     const r = ((k + 0.5) / bins) * outer;
-    while (cell < faces.length - 2 && r > (faces[cell + 1] ?? Infinity)) cell++;
-    out.push(cell);
+    while (band < edges.length - 2 && r > (edges[band + 1] ?? Infinity)) band++;
+    out.push(band);
   }
   return out;
 }
 
 /**
- * Tick marks of the legend, labelled as fractions of the scale top c0 (so the legend shows no
- * number other than c0 itself, which is an input): 0, c0/2 and c0 on the linear scale; every third
- * decade below c0 on the logarithmic scale.
+ * Tick marks of the legend, labelled in words by the position on the scale as a fraction of the largest concentration of the run: 0, half and the top on the linear scale; every third
+ * decade below the top on the logarithmic scale.
  */
 export function legendTicks(scale: ColourScale): { position: number; label: string }[] {
   if (scale === 'linear')
     return [
       { position: 0, label: '0' },
-      { position: 0.5, label: 'c₀/2' },
-      { position: 1, label: 'c₀' },
+      { position: 0.5, label: '0.5' },
+      { position: 1, label: '1' },
     ];
   const ticks: { position: number; label: string }[] = [];
   const sup = (n: number) => String(n).replace(/\d/g, (k) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[Number(k)] ?? k);
-  for (let d = LOG_DECADES; d > 0; d -= 3) ticks.push({ position: 1 - d / LOG_DECADES, label: `10⁻${sup(d)} c₀` });
-  ticks.push({ position: 1, label: 'c₀' });
+  for (let d = LOG_DECADES; d > 0; d -= 3) ticks.push({ position: 1 - d / LOG_DECADES, label: `10⁻${sup(d)}` });
+  ticks.push({ position: 1, label: '1' });
   return ticks;
 }

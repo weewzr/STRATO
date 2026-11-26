@@ -4,13 +4,13 @@ import * as THREE from 'three';
 import { LAYER_TOKEN_NAMES } from '../design/layers';
 import type { RunOk } from '../solver/types';
 import { useStrato } from '../state/store';
-import { cellColours, cellOfBins } from './colormap';
+import { bandOfBins, nodeColours } from './colormap';
 
 // Optional 3D cutaway of the particle (prompt/DESIGN_SPECIFICATION.md Section 4.1;
 // prompt/TECHNICAL_ARCHITECTURE.md Section 4): nested spherical shells in the layer colours with a
 // quarter wedge removed; the two cut faces are painted with the solver's concentration at the
 // playback row through the same colour mapping as the 2D view (each radius takes the colour of the
-// mesh cell that contains it). Loaded lazily, only when the reader picks the 3D view. The scene is
+// node band that contains it). Loaded lazily, only when the reader picks the 3D view. The scene is
 // rendered on demand: playback updates a texture and asks for one frame, and React does not
 // re-render per frame. Orbit by dragging, arrow keys rotate, + and - zoom, 0 resets the view.
 // Multisampling is used only when WebGL runs on a GPU (see useAntialias); it changes edge smoothing
@@ -83,7 +83,7 @@ const fragment = /* glsl */ `
   }
 `;
 
-/** Writes the colour of each radius bin (the colour of the cell that contains it) into the texture. */
+/** Writes the colour of each radius bin (the colour of the node band that contains it) into the texture. */
 function fillTexture(texture: THREE.DataTexture, colours: readonly (readonly [number, number, number])[], bins: readonly number[]): void {
   const data = texture.image.data as Uint8Array;
   for (let k = 0; k < BINS; k++) {
@@ -98,8 +98,8 @@ function fillTexture(texture: THREE.DataTexture, colours: readonly (readonly [nu
 
 function Scene({ run, orbit, onFrame }: { run: RunOk; orbit: { current: OrbitState }; onFrame: () => void }) {
   const { camera, invalidate } = useThree();
-  const faces = run.mesh.cell_faces_m;
-  const outer = faces[faces.length - 1] ?? 1;
+  const edges = run.grid.ring_edges_m;
+  const outer = edges[edges.length - 1] ?? 1;
   const regions = run.inputs.regions;
 
   const texture = useMemo(() => {
@@ -110,7 +110,7 @@ function Scene({ run, orbit, onFrame }: { run: RunOk; orbit: { current: OrbitSta
     tex.needsUpdate = true;
     return tex;
   }, []);
-  const bins = useMemo(() => cellOfBins(faces, BINS), [faces]);
+  const bins = useMemo(() => bandOfBins(edges, BINS), [edges]);
   const material = useMemo(
     () =>
       new THREE.ShaderMaterial({
@@ -180,7 +180,7 @@ function Scene({ run, orbit, onFrame }: { run: RunOk; orbit: { current: OrbitSta
   useEffect(() => {
     const paint = () => {
       const s = useStrato.getState();
-      fillTexture(texture, cellColours(run, s.playback.tIndex, s.view.colormap, s.view.logColour ? 'log' : 'linear'), bins);
+      fillTexture(texture, nodeColours(run, s.playback.tIndex, s.view.colormap, s.view.logColour ? 'log' : 'linear'), bins);
       invalidate();
     };
     paint();

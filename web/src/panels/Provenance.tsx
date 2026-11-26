@@ -1,6 +1,6 @@
 import { useId, useState } from 'react';
 import { repoFile } from '../build';
-import type { CaseEntry, V1Config } from '../data/case';
+import type { CaseEntry, CaseConfig } from '../data/case';
 import { plain } from '../format';
 import { useCatalogue } from '../research/catalogue';
 import { linkCheckedDate } from '../research/entries';
@@ -18,16 +18,20 @@ export interface ParameterRow {
   unit: string;
   file: number | string;
   current: number | string;
-  /** How the value is classed: the case file's own note, or "recorded only" for inputs v1.0 does not use. */
+  /** Source row of the value: the case file, or "recorded only" for an input the solver does not use. */
+  source: string;
+  /** Class of the value (coordinator decisions 16 and 31). */
   status: string;
 }
 
-/** One row per input of the v1.0 format, from the case file and the current inputs (selection only). */
-export function parameterRows(file: V1Config, current: V1Config, note: string): ParameterRow[] {
-  // The case file's own note (in capitals in the file) is shown once under the table; each row says it briefly.
-  const synthetic = note ? 'synthetic verification value, not literature TRISO data (case-file note)' : 'synthetic verification value';
+/** One row per input of the solver, from the case file and the current inputs (selection only). */
+export function parameterRows(file: CaseConfig, current: CaseConfig, input: string): ParameterRow[] {
+  // Every input of this case is a synthetic verification value: its class says so, and the case file
+  // is its source row. A numerical setting (grid, time step) is a choice of the run, not a material value.
+  const synthetic = 'synthetic benchmark, not literature TRISO data';
+  const setting = 'numerical setting of the run';
   const out: ParameterRow[] = [
-    { group: 'Case', parameter: 'Species', key: 'species', unit: '', file: file.species, current: current.species, status: 'label only' },
+    { group: 'Case', parameter: 'Species', key: 'species', unit: '', file: file.species, current: current.species, source: input, status: 'label only' },
     {
       group: 'Case',
       parameter: 'Temperature',
@@ -35,45 +39,47 @@ export function parameterRows(file: V1Config, current: V1Config, note: string): 
       unit: 'K',
       file: file.temperature_k,
       current: current.temperature_k,
-      status: 'recorded only; v1.0 physics does not use it',
+      source: input,
+      status: 'recorded only; the solver does not use it',
     },
   ];
   file.regions.forEach((r, i) => {
     const c = current.regions[i];
     if (!c) return;
-    out.push({ group: r.name, parameter: 'Outer radius', key: `regions[${i}].outer_radius_m`, unit: 'm', file: r.outer_radius_m, current: c.outer_radius_m, status: synthetic });
-    out.push({ group: r.name, parameter: 'Diffusivity', key: `regions[${i}].diffusivity_m2_s`, unit: 'm² s⁻¹', file: r.diffusivity_m2_s, current: c.diffusivity_m2_s, status: synthetic });
-    out.push({ group: r.name, parameter: 'Cells', key: `regions[${i}].cells`, unit: '', file: r.cells, current: c.cells, status: 'numerical setting' });
+    out.push({ group: r.name, parameter: `${r.name} outer radius`, key: `regions[${i}].outer_radius_m`, unit: 'm', file: r.outer_radius_m, current: c.outer_radius_m, source: input, status: synthetic });
+    out.push({ group: r.name, parameter: `${r.name} diffusivity`, key: `regions[${i}].diffusivity_m2_s`, unit: 'm²/s', file: r.diffusivity_m2_s, current: c.diffusivity_m2_s, source: input, status: synthetic });
+    out.push({ group: r.name, parameter: `Grid intervals in the ${r.name} layer`, key: `regions[${i}].cells`, unit: 'dimensionless', file: r.cells, current: c.cells, source: input, status: setting });
   });
   out.push({
     group: 'Start',
-    parameter: 'Kernel concentration',
+    parameter: 'Initial kernel concentration',
     key: 'initial.kernel_concentration_mol_m3',
-    unit: 'mol m⁻³',
+    unit: 'mol/m³',
     file: file.initial.kernel_concentration_mol_m3,
     current: current.initial.kernel_concentration_mol_m3,
+    source: input,
     status: synthetic,
   });
-  out.push({ group: 'Time', parameter: 'Time step', key: 'time.dt_s', unit: 's', file: file.time.dt_s, current: current.time.dt_s, status: 'numerical setting' });
-  out.push({ group: 'Time', parameter: 'End time', key: 'time.end_time_s', unit: 's', file: file.time.end_time_s, current: current.time.end_time_s, status: 'numerical setting' });
+  out.push({ group: 'Time', parameter: 'Time step', key: 'time.dt_s', unit: 's', file: file.time.dt_s, current: current.time.dt_s, source: input, status: setting });
+  out.push({ group: 'Time', parameter: 'Simulation duration', key: 'time.end_time_s', unit: 's', file: file.time.end_time_s, current: current.time.end_time_s, source: input, status: setting });
   out.push({
     group: 'Time',
-    parameter: 'Output every',
+    parameter: 'Time steps between output rows',
     key: 'time.output_every_steps',
-    unit: 'steps',
+    unit: 'dimensionless',
     file: file.time.output_every_steps,
     current: current.time.output_every_steps,
-    status: 'numerical setting',
+    source: input,
+    status: setting,
   });
   return out;
 }
-
 /** Rows whose text contains every word of the query (case-insensitive); display filter only. */
 export function filterRows(rows: ParameterRow[], query: string): ParameterRow[] {
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
   if (words.length === 0) return rows;
   return rows.filter((r) => {
-    const text = [r.group, r.parameter, r.key, r.unit, String(r.file), String(r.current), r.status].join(' ').toLowerCase();
+    const text = [r.group, r.parameter, r.key, r.unit, String(r.file), String(r.current), r.source, r.status].join(' ').toLowerCase();
     return words.every((w) => text.includes(w));
   });
 }
@@ -85,7 +91,7 @@ export function ParameterProvenance({ entry }: { entry: CaseEntry }) {
   const [query, setQuery] = useState('');
   const searchId = useId();
   const p = entry.provenance;
-  const all = parameterRows(entry.config, config, p.notes.join(' '));
+  const all = parameterRows(entry.config, config, p.input_file);
   const rows = filterRows(all, query);
   return (
     <>
@@ -107,7 +113,7 @@ export function ParameterProvenance({ entry }: { entry: CaseEntry }) {
         <table className="table" data-testid="input-table">
           <caption className="table__caption">
             <strong>Table 1.</strong> {entry.title}: every input of the run, the value in the case file and the value now set in the controls,
-            with its status and source. Source of every row: <code>{p.input_file}</code> (SHA-256 <code className="hash">{p.input_sha256.slice(0, 12)}</code>,
+            with its source row and its class. The case file is <code>{p.input_file}</code> (SHA-256 <code className="hash">{p.input_sha256.slice(0, 12)}</code>,
             last changed in commit <code>{p.input_commit.slice(0, 7)}</code>). None of these values comes from the parameter register, so no row
             has a register id; the synthetic values were chosen for verification and are not measured TRISO properties.
           </caption>
@@ -122,7 +128,8 @@ export function ParameterProvenance({ entry }: { entry: CaseEntry }) {
                 Current
               </th>
               <th scope="col">Unit</th>
-              <th scope="col">Status</th>
+              <th scope="col">Source row</th>
+              <th scope="col">Class</th>
               <th scope="col">Key in the case file</th>
             </tr>
           </thead>
@@ -139,6 +146,9 @@ export function ParameterProvenance({ entry }: { entry: CaseEntry }) {
                     {differs ? <span className="changed-mark"> changed</span> : null}
                   </td>
                   <td>{r.unit}</td>
+                  <td>
+                    <code>{r.source}</code>
+                  </td>
                   <td>{r.status}</td>
                   <td>
                     <code>{r.key}</code>
@@ -148,7 +158,7 @@ export function ParameterProvenance({ entry }: { entry: CaseEntry }) {
             })}
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={7} className="muted">
+                <td colSpan={8} className="muted">
                   No parameter matches the search.
                 </td>
               </tr>
@@ -198,7 +208,7 @@ export function References() {
       </ul>
       <p>
         Literature parameters for Phase 2, each with its register status (verified, digitised or not verified) and source, are in the{' '}
-        <a href={repoFile('data/reference/STRATO_Parameter_Register.md')}>parameter register</a>. v1.0 does not read them.
+        <a href={repoFile('data/reference/STRATO_Parameter_Register.md')}>parameter register</a>. The solver does not read them yet.
       </p>
     </>
   );

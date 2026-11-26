@@ -1,12 +1,12 @@
-//! Code C: analytical approach. Sturm-Liouville eigenfunction series for the layered
-//! sphere. Nothing in this module calls the finite-volume solver.
+//! Method B: analytical approach. Sturm-Liouville eigenfunction series for the layered
+//! sphere. Nothing in this module calls a numerical solver.
 //!
 //! Two independent pieces live here:
 //!
 //! 1. A homogeneous Robin-sphere eigenvalue finder (`robin_residual`, `robin_roots`).
 //! 2. The exact eigenfunction expansion of the five-layer initial-inventory release
 //!    problem (initial kernel concentration, no source, absorbing outer surface).
-//!    This is the same physical problem solved by the FV code, so the two can be
+//!    This is the same physical problem solved by the BTCS code, so the two can be
 //!    compared directly.
 //!
 //! Modal formulation (u = r*phi, k_i^2 = Lambda/D_i):
@@ -365,9 +365,9 @@ impl ModalRelease {
 
     /// Estimated absolute accuracy of `release_fraction`, about 2.2e-16 / `min_flux_ratio`
     /// (at least 2.2e-16). Cancellation in the shooting solution is the dominant error
-    /// when adjacent layers differ strongly in diffusivity. Treat differences between FV and
-    /// the series below this level as unresolved. Measured against FV on test inputs, the
-    /// true error stayed about 10 to 20 times below this estimate.
+    /// when adjacent layers differ strongly in diffusivity. Treat differences between a numerical
+    /// solution and the series below this level as unresolved. In the finite-volume tests of
+    /// version 1.x, the true error stayed about 10 to 20 times below this estimate.
     pub fn accuracy_floor(&self) -> f64 {
         2.2e-16 / self.min_flux_ratio.min(1.0)
     }

@@ -37,7 +37,11 @@ export function StatusLine({ compact = false }: { compact?: boolean }) {
           {solverText}
         </span>
       )}
-      {compact ? null : <span className="status__item">STRATO v{BUILD.strato_version}</span>}
+      {compact ? null : (
+        <span className="status__item" data-testid="status-version">
+          {solver.build ? `Solver version ${solver.build.btcs.solver.version}` : `STRATO v${BUILD.strato_version}`}
+        </span>
+      )}
       <span className="status__item" data-testid="status-commit">
         build{' '}
         <a href={`${REPO_URL}/commit/${BUILD.commit}`} className="status__link">

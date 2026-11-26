@@ -11,36 +11,27 @@ pub const REPO_URL: &str = "https://github.com/weewzr/STRATO";
 /// Where the shared files of the document pages go, from the site root.
 pub const ASSETS: &str = "docs/_assets";
 
-/// The verification output listed on its own page (an old link of the Jekyll site pointed here).
-pub const GOLDEN_DIR: &str = "tests/golden/v1.0";
-
 /// Folders that get a generated list page, besides the folders whose README.md is published.
-pub const LISTED_DIRS: &[&str] = &["docs", "docs/mathematics", "docs/mathematics/v1.0.0"];
+pub const LISTED_DIRS: &[&str] = &["docs", "docs/mathematics", "docs/mathematics/btcs"];
 
 /// What kind of document an entry is; the page says so above the text.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Group {
-    V1,
-    Phase2,
-    Phase1,
+    Btcs,
     Register,
 }
 
 impl Group {
     pub fn heading(self) -> &'static str {
         match self {
-            Group::V1 => "v1.0 mathematical documentation",
-            Group::Phase2 => "Phase 2 design: derived, not implemented",
-            Group::Phase1 => "Phase 1 derivation, historical record",
+            Group::Btcs => "BTCS mathematical documentation (version 2.0)",
             Group::Register => "Parameter register",
         }
     }
 
     pub fn id(self) -> &'static str {
         match self {
-            Group::V1 => "v1",
-            Group::Phase2 => "phase2",
-            Group::Phase1 => "phase1",
+            Group::Btcs => "btcs",
             Group::Register => "register",
         }
     }
@@ -48,9 +39,7 @@ impl Group {
     /// The status line shown above every document of the group.
     pub fn status(self) -> &'static str {
         match self {
-            Group::V1 => "Documents the verified v1.0 solver: diffusion through five spherical layers with a constant diffusivity per layer, verified on the synthetic five-layer case (verification, not validation against measurements).",
-            Group::Phase2 => "Design documents. Fission-product generation, radioactive decay and temperature-dependent diffusivity are derived and specified here; the solver does not implement them yet (research status RESEARCHED in the web demonstration).",
-            Group::Phase1 => "Kept unchanged as the historical record of the Phase 1 delivery (October 2026). The v1.0 documents are the current derivation.",
+            Group::Btcs => "Documents 0 to 4 of the spherical BTCS finite-difference solver of version 2.0: the account of the original documents, the derivation, the final formulation (Document 2, normative), the Rust pseudocode and the equation-to-code traceability. The solver is verified numerically on synthetic cases (verification, not validation against measurements).",
             Group::Register => "Literature parameters with the source, page and status of every value. The live simulation of the web demonstration uses the synthetic five-layer verification case, not these values.",
         }
     }
@@ -71,46 +60,34 @@ pub struct Doc {
 /// docs/development/ are deliberately absent, and nothing under prompt/ may be listed.
 pub const DOCS: &[Doc] = &[
     Doc {
-        src: "docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md",
-        title: "Full Mathematical Derivation (v1.0)",
-        group: Group::V1,
-        summary: "Every equation the v1.0 code uses, derived step by step, with the lines of the Rust code that compute it; also the equations v1.0 does not compute.",
+        src: "docs/mathematics/btcs/00_original_documents.md",
+        title: "Document 0: the original FTCS documents, an account and an algebra check",
+        group: Group::Btcs,
+        summary: "A faithful account of the two original documents with a verdict on every algebra step; the starting point of the BTCS reconstruction.",
     },
     Doc {
-        src: "docs/mathematics/v1.0.0/STRATO_Final_Deliverable.md",
-        title: "Final Deliverable: equations, pseudocode and Rust code (v1.0)",
-        group: Group::V1,
-        summary: "The short form: for every operation the final equation, the pseudocode and the Rust code in one table row.",
+        src: "docs/mathematics/btcs/01_from_ftcs_to_five_layer_btcs.md",
+        title: "Document 1: from the explicit scheme to the five-layer BTCS scheme",
+        group: Group::Btcs,
+        summary: "The full derivation of the five-layer BTCS scheme, with the properties proved, outlined or observed, each labelled as such.",
     },
     Doc {
-        src: "docs/mathematics/STRATO_Phase2_Derivations.md",
-        title: "Phase 2 derivations",
-        group: Group::Phase2,
-        summary: "Derivations of fission-product generation, radioactive decay, inventory accounting and temperature-dependent diffusivity with layer-specific laws.",
+        src: "docs/mathematics/btcs/02_final_formulation.md",
+        title: "Document 2: the final BTCS formulation (normative)",
+        group: Group::Btcs,
+        summary: "The complete five-layer system, row by row: grid, matrix rows, right-hand side, solve, inventory, release and balance, with every numbered equation the code cites.",
     },
     Doc {
-        src: "docs/mathematics/STRATO_Phase2_Pseudocode.md",
-        title: "Phase 2 pseudocode",
-        group: Group::Phase2,
-        summary: "Pseudocode of the Phase 2 solver steps specified by the derivations.",
+        src: "docs/mathematics/btcs/03_rust_pseudocode.md",
+        title: "Document 3: Rust pseudocode",
+        group: Group::Btcs,
+        summary: "The routines that implement Document 2, with inputs, outputs, units and the equations each implements.",
     },
     Doc {
-        src: "docs/mathematics/phase1/README.md",
-        title: "Phase 1 derivation: overview",
-        group: Group::Phase1,
-        summary: "What the Phase 1 files are and how their names map to the STRATO code.",
-    },
-    Doc {
-        src: "docs/mathematics/phase1/TRISO_Finite_Volume_Derivation.md",
-        title: "Phase 1 finite-volume derivation",
-        group: Group::Phase1,
-        summary: "Conservation law, spherical diffusion equation, exact eigenfunction solution, conservative finite volumes and Backward Euler, as delivered.",
-    },
-    Doc {
-        src: "docs/mathematics/phase1/TRISO_Finite_Volume_Pseudocode.md",
-        title: "Phase 1 pseudocode",
-        group: Group::Phase1,
-        summary: "Pseudocode of the finite-volume solver and the exact reference series, as delivered.",
+        src: "docs/mathematics/btcs/04_equation_to_code_traceability.md",
+        title: "Document 4: equation-to-code traceability",
+        group: Group::Btcs,
+        summary: "Every numbered equation of Document 2 mapped to its pseudocode routine, the Rust item that holds it and the test that checks it.",
     },
     Doc {
         src: "data/reference/README.md",
@@ -472,9 +449,9 @@ impl Site {
     fn list_page(&self, dir: &str) -> (String, String) {
         let out = format!("{dir}/index.html");
         let (title, groups, intro): (&str, Vec<Group>, &str) = match dir {
-            "docs" => ("Documents", vec![Group::V1, Group::Phase2, Group::Phase1, Group::Register], "The derivation and register documents of STRATO, rendered from the repository with the mathematics typeset. Each page links its Markdown source on GitHub and, where one exists, its PDF."),
-            "docs/mathematics" => ("Mathematical documentation", vec![Group::V1, Group::Phase2, Group::Phase1], "The derivations and pseudocode of STRATO, rendered from the repository with the mathematics typeset."),
-            _ => ("v1.0 mathematical documentation", vec![Group::V1], "The two documents of the verified v1.0 solver, rendered from the repository with the mathematics typeset."),
+            "docs" => ("Documents", vec![Group::Btcs, Group::Register], "The derivation and register documents of STRATO, rendered from the repository with the mathematics typeset. Each page links its Markdown source on GitHub and, where one exists, its PDF."),
+            "docs/mathematics" => ("Mathematical documentation", vec![Group::Btcs], "The derivations and pseudocode of STRATO, rendered from the repository with the mathematics typeset."),
+            _ => ("BTCS mathematical documentation (version 2.0)", vec![Group::Btcs], "Documents 0 to 4 of the spherical BTCS finite-difference solver, rendered from the repository with the mathematics typeset."),
         };
         let mut body = format!(
             "<h1>{}</h1>\n<p class=\"lede\">{}</p>\n",
@@ -482,45 +459,7 @@ impl Site {
             esc(intro)
         );
         body.push_str(&self.doc_list(&out, &groups));
-        if dir == "docs" {
-            body.push_str(&format!(
-                "<section class=\"doc-group\" aria-labelledby=\"golden\">\n<h2 id=\"golden\">Verification output</h2>\n<p class=\"doc-group__status\">The golden output files of the v1.0 solver for the synthetic five-layer case.</p>\n<ul class=\"doc-list\"><li><a class=\"doc-list__title\" href=\"{}\">Golden v1.0 output (<code>{GOLDEN_DIR}</code>)</a></li></ul>\n</section>\n",
-                esc(&relative(&out, &format!("{GOLDEN_DIR}/index.html")))
-            ));
-        }
         (out.clone(), self.page(&out, title, &[], &[], &body, false))
-    }
-
-    fn golden_page(&self) -> Result<(String, String), String> {
-        let out = format!("{GOLDEN_DIR}/index.html");
-        let mut body = String::from("<h1>Golden v1.0 output</h1>\n");
-        body.push_str(&format!(
-            "<p class=\"lede\">Output of the verified v1.0 solver for the synthetic five-layer case (<a href=\"{}\"><code>inputs/synthetic/synthetic_five_layer.toml</code></a>). These are verification files of a synthetic case, not measurements. <a href=\"{}\"><code>tests/phase1_regression.rs</code></a> checks every build against them, and the web workflow checks that the native command-line run reproduces them.</p>\n",
-            esc(&self.blob("inputs/synthetic/synthetic_five_layer.toml")),
-            esc(&self.blob("tests/phase1_regression.rs"))
-        ));
-        body.push_str("<div class=\"table-wrap\" role=\"region\" tabindex=\"0\" aria-label=\"Golden files\"><table>\n<thead><tr><th>File</th><th>Size (bytes)</th></tr></thead>\n<tbody>\n");
-        let dir = self.repo.join(GOLDEN_DIR);
-        for name in files_of(&dir)? {
-            let size = fs::metadata(dir.join(&name)).map(|m| m.len()).unwrap_or(0);
-            body.push_str(&format!(
-                "<tr><td><a href=\"{}\"><code>{}</code></a></td><td>{size}</td></tr>\n",
-                esc(&self.blob(&format!("{GOLDEN_DIR}/{name}"))),
-                esc(&name)
-            ));
-        }
-        body.push_str("</tbody>\n</table></div>\n");
-        let meta = vec![(
-            "Source".to_string(),
-            format!(
-                "<a href=\"{REPO_URL}/tree/{}/{GOLDEN_DIR}\"><code>{GOLDEN_DIR}</code></a>",
-                esc(&self.commit)
-            ),
-        )];
-        Ok((
-            out.clone(),
-            self.page(&out, "Golden v1.0 output", &meta, &[], &body, false),
-        ))
     }
 }
 
@@ -585,8 +524,7 @@ pub fn resolve_commit(repo: &Path, given: Option<&str>) -> Result<String, String
     Ok(commit)
 }
 
-/// Renders every document of [`DOCS`] into `cfg.out`, with the list pages, the golden-output page,
-/// the copied figures and PDFs and the shared assets. Returns an error listing every problem (a
+/// Renders every document of [`DOCS`] into `cfg.out`, with the list pages, the copied figures and PDFs and the shared assets. Returns an error listing every problem (a
 /// link to a file that does not exist, a `$` the parser did not take as mathematics, a document
 /// path under prompt/).
 pub fn build(cfg: &Config) -> Result<Report, String> {
@@ -620,7 +558,6 @@ pub fn build(cfg: &Config) -> Result<Report, String> {
     )
     .ok_or("no version in the KaTeX package.json")?;
     let mut indexed: BTreeSet<String> = LISTED_DIRS.iter().map(|s| s.to_string()).collect();
-    indexed.insert(GOLDEN_DIR.to_string());
     for d in DOCS {
         if d.src.ends_with("/README.md") {
             indexed.insert(parent(d.src).to_string());
@@ -686,9 +623,6 @@ pub fn build(cfg: &Config) -> Result<Report, String> {
         write(&cfg.out.join(&out), &html)?;
         report.lines.push(format!("LIST {out}"));
     }
-    let (out, html) = site.golden_page()?;
-    write(&cfg.out.join(&out), &html)?;
-    report.lines.push(format!("LIST {out}"));
 
     for p in &copied {
         if is_forbidden(p) {
@@ -761,12 +695,12 @@ mod tests {
     #[test]
     fn page_addresses_keep_the_jekyll_addresses() {
         assert_eq!(
-            out_path("docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.md"),
-            "docs/mathematics/v1.0.0/STRATO_Full_Mathematical_Derivation.html"
+            out_path("docs/mathematics/btcs/02_final_formulation.md"),
+            "docs/mathematics/btcs/02_final_formulation.html"
         );
         assert_eq!(
-            out_path("docs/mathematics/phase1/README.md"),
-            "docs/mathematics/phase1/index.html"
+            out_path("data/reference/README.md"),
+            "data/reference/index.html"
         );
         assert_eq!(out_path("README.md"), "index.html");
     }
@@ -775,11 +709,11 @@ mod tests {
     fn reads_versions() {
         assert_eq!(
             quoted_value(
-                "[package]\nname = \"strato\"\nversion = \"1.0.1\"\n",
+                "[package]\nname = \"strato\"\nversion = \"2.0.0\"\n",
                 "version"
             )
             .as_deref(),
-            Some("1.0.1")
+            Some("2.0.0")
         );
         assert_eq!(
             quoted_value(
@@ -793,12 +727,11 @@ mod tests {
 
     fn test_site() -> Site {
         let mut indexed: BTreeSet<String> = LISTED_DIRS.iter().map(|s| s.to_string()).collect();
-        indexed.insert(GOLDEN_DIR.to_string());
-        indexed.insert("docs/mathematics/phase1".to_string());
+        indexed.insert("data/reference".to_string());
         Site {
             repo: repo(),
             commit: "0123456789abcdef0123456789abcdef01234567".to_string(),
-            version: "1.0.1".to_string(),
+            version: "2.0.0".to_string(),
             katex_version: "0".to_string(),
             published: DOCS
                 .iter()
@@ -811,21 +744,21 @@ mod tests {
     #[test]
     fn links_resolve_to_pages_files_folders_or_github() {
         let s = test_site();
-        let src = "docs/mathematics/v1.0.0/STRATO_Final_Deliverable.md";
+        let src = "docs/mathematics/btcs/03_rust_pseudocode.md";
         let page = out_path(src);
         let (mut copied, mut notes, mut problems) = (BTreeSet::new(), Vec::new(), Vec::new());
         let mut r = |d: &str| s.resolve(src, &page, d, &mut copied, &mut notes, &mut problems);
         assert_eq!(
-            r("STRATO_Full_Mathematical_Derivation.md#notes"),
-            Target::Keep("STRATO_Full_Mathematical_Derivation.html#notes".into())
+            r("02_final_formulation.md#notes"),
+            Target::Keep("02_final_formulation.html#notes".into())
         );
         assert_eq!(
-            r("figures/control_volume.png"),
-            Target::Keep("figures/control_volume.png".into())
+            r("../../archive/finite-volume/phase2/STRATO_Phase2_Derivations.pdf"),
+            Target::Keep("../../archive/finite-volume/phase2/STRATO_Phase2_Derivations.pdf".into())
         );
         assert_eq!(
-            r("../../../tests/golden/v1.0/"),
-            Target::Keep("../../../tests/golden/v1.0/index.html".into())
+            r("../../../data/reference/"),
+            Target::Keep("../../../data/reference/index.html".into())
         );
         assert_eq!(r("./"), Target::Keep("index.html".into()));
         assert_eq!(
@@ -842,7 +775,7 @@ mod tests {
         assert_eq!(r("no_such_file.md"), Target::Text);
         assert_eq!(problems.len(), 1, "{problems:?}");
         assert_eq!(notes.len(), 1);
-        assert!(copied.contains("docs/mathematics/v1.0.0/figures/control_volume.png"));
+        assert!(copied.contains("docs/archive/finite-volume/phase2/STRATO_Phase2_Derivations.pdf"));
     }
 
     /// Every published document converts completely: each `$` is mathematics, each `\tag{` sits

@@ -1,12 +1,12 @@
 [package]
 name = "strato"
-version = "1.0.1"
+version = "2.0.0"
 edition = "2021"
-description = "STRATO: Spherical TRISO Analysis and Transport Operations. Fission-product diffusion in multilayer TRISO fuel particles, solved by finite volume and by Sturm-Liouville eigenfunction expansion."
+description = "STRATO: Spherical TRISO Analysis and Transport Operations. Fission-product diffusion in multilayer TRISO fuel particles, solved by a spherical backward-time centred-space (BTCS) finite-difference scheme and by Sturm-Liouville eigenfunction expansion."
 license = "AGPL-3.0-only"
 repository = "https://github.com/weewzr/STRATO"
 readme = "README.md"
-keywords = ["nuclear", "triso", "diffusion", "finite-volume", "sturm-liouville"]
+keywords = ["nuclear", "triso", "diffusion", "finite-difference", "btcs", "sturm-liouville"]
 categories = ["science", "simulation"]
 
 [lib]
@@ -14,15 +14,16 @@ name = "strato"
 path = "src/lib.rs"
 
 [[bin]]
-name = "strato"
-path = "src/main.rs"
+name = "strato-btcs"
+path = "src/bin/strato_btcs.rs"
 
 [dependencies]
 anyhow = "1"
-csv = "1"
-plotters = { version = "0.3", default-features = false, features = ["svg_backend", "line_series"] }
 serde = { version = "1", features = ["derive"] }
 toml = "0.8"
+
+[dev-dependencies]
+csv = "1"
 
 [profile.release]
 debug = false

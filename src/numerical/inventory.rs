@@ -264,15 +264,26 @@ mod tests {
             acc.add(0.1);
             plain += 0.1;
         }
-        // The exact sum of 1e6 copies of the double 0.1 is 1e6 * 0.1(double) as a real number;
-        // the product 1.0e6 * 0.1 below is that number rounded once. The compensated sum is
-        // closer to it than the plain sum (no tolerance). The quantitative accuracy of the
-        // compensated sum, |S - sum x_j| <= (2u + O(N u^2)) sum |x_j| (Goldberg, "What Every
-        // Computer Scientist Should Know About Floating-Point Arithmetic", Theorem 8), enters
-        // the balance bound of `tests/btcs_verification.rs`, where it is used with an explicit
-        // statement of what is assumed about the O(N u^2) term.
-        let exact = 1.0e6 * 0.1;
-        assert!((acc.value() - exact).abs() < (plain - exact).abs());
+        // Exact reference: the real number 1e6 * 0.1(double) is hi + lo with hi = fl(1e6 * 0.1)
+        // and lo = fma(1e6, 0.1, -hi), which is exact (the rounding error of a product is a
+        // double, and the fma rounds once). The error of the plain sum is compared with that of
+        // the compensated sum, then the compensated one is bounded by Goldberg, "What Every
+        // Computer Scientist Should Know About Floating-Point Arithmetic", Theorem 8 (checked
+        // against the text of the reprint): S = sum x_j (1 + delta_j) + O(N eps^2) sum |x_j|,
+        // |delta_j| <= 2 eps, with eps the unit roundoff (2^-53 here). All x_j are equal and
+        // positive, so sum |x_j| = the exact sum and |S - exact| <= 2 u sum|x_j| + O(N u^2) sum|x_j|.
+        // The theorem gives no constant for the O term; here N u^2 = 1e6 * 2^-106 = 1.2e-26
+        // against 2u = 2.2e-16, a relative 1e-10 of the first term, so it is not added: if the
+        // assertion ever failed by that margin it would be reported, not widened.
+        let u = f64::EPSILON / 2.0;
+        let hi = 1.0e6 * 0.1;
+        let lo = 1.0e6f64.mul_add(0.1, -hi);
+        let err = |s: f64| ((s - hi) - lo).abs();
+        assert!(err(acc.value()) < err(plain));
+        assert!(
+            err(acc.value()) <= 2.0 * u * (hi + lo),
+            "first-order bound 2 u sum|x_j| of Goldberg Theorem 8 (the O(N u^2) term is omitted)"
+        );
     }
 
     #[test]

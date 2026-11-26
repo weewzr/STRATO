@@ -1,4 +1,4 @@
-//! Native timing of `run_v1` at the wrapper limits (development aid, not a test). The limits
+//! Native timing of `run` (BTCS) at the wrapper limits (development aid, not a test). The limits
 //! themselves are set from browser measurements recorded in prompt/PROGRESS.md; this example
 //! gives the native times of the same configurations for comparison.
 //!
@@ -12,19 +12,19 @@ fn main() {
         .expect("run from the repository root");
     let base: Value = toml::from_str(&raw).unwrap();
     for (name, cfg) in limits_cases(&base) {
-        let req = json!({"schema": 1, "config": cfg}).to_string();
+        let req = json!({"schema": 2, "config": cfg}).to_string();
         let t0 = Instant::now();
-        let out = strato_wasm::run_v1(&req);
+        let out = strato_wasm::run(&req);
         let ms = t0.elapsed().as_secs_f64() * 1e3;
         let v: Value = serde_json::from_str(&out).unwrap();
-        let modes = v["diagnostics"]["code_c"]["modes"]
+        let modes = v["analytical"]["modes"]
             .as_u64()
             .map(|m| m.to_string())
             .unwrap_or_else(|| "none".into());
         println!(
-            "{name:<34} status={:<8} cells={:<5} steps={:<6} rows={:<6} modes={:<5} bytes={:<9} ms={ms:.1}",
+            "{name:<34} status={:<8} intervals={:<5} steps={:<6} rows={:<6} modes={:<5} bytes={:<9} ms={ms:.1}",
             v["status"].as_str().unwrap_or("?"),
-            v["diagnostics"]["cells"],
+            v["diagnostics"]["intervals_total"],
             v["diagnostics"]["steps"],
             v["diagnostics"]["output_rows"],
             modes,

@@ -1,9 +1,11 @@
 /// <reference lib="webworker" />
-// Web Worker that loads the STRATO WebAssembly wrapper (built by scripts/web/build_wasm.py into
-// ./pkg) and answers requests from client.ts. It passes JSON text to the wrapper and parses the
-// reply; it does no arithmetic on the values. After a trap (a panic aborts on wasm32) the
-// instance is unusable; the worker reports it and the client replaces the worker.
-import init, { abi_version, analytical_release, build_info, compare_v1, run_v1, validate_config } from './pkg/strato_wasm.js';
+// Web Worker that loads the STRATO WebAssembly wrapper (built by strato-webtools build-wasm into
+// ./pkg) and answers requests from client.ts. It passes JSON text to the BTCS functions of the
+// wrapper and parses the reply; it does no arithmetic on the values. It imports no other function
+// of the module: there is no path from the page to the retired finite-volume exports
+// (web/tests/btcs_only.test.tsx). After a trap (a panic aborts on wasm32) the instance is unusable;
+// the worker reports it and the client replaces the worker.
+import init, { abi_version, build_info, compare, export_run, run, validate } from './pkg/strato_wasm.js';
 import type { ErrorMessage, HelloMessage, LoadFailedMessage, ResponseMessage, WorkerRequest } from './protocol';
 import type { BuildInfo } from './types';
 
@@ -14,14 +16,14 @@ const queue: WorkerRequest[] = [];
 
 function call(req: WorkerRequest): string {
   switch (req.kind) {
-    case 'run_v1':
-      return run_v1(req.payload);
-    case 'analytical':
-      return analytical_release(req.payload);
+    case 'run':
+      return run(req.payload);
     case 'validate':
-      return validate_config(req.payload);
+      return validate(req.payload);
     case 'compare':
-      return compare_v1(req.payload);
+      return compare(req.payload);
+    case 'export_run':
+      return export_run(req.payload);
     case 'build_info':
       return build_info();
   }

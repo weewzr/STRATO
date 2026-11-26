@@ -7,7 +7,7 @@ import { ringsOf } from './geometry';
 // Reference fuel: AGR-1 UCO TRISO (rule E2; prompt/DESIGN_SPECIFICATION.md Sections 4.1 and 7.7).
 // A second, geometry-only view: the particle drawn to scale from the registered dimensions in
 // data/geometry/geometry.csv, through web/src/generated/agr1_reference.json (written by
-// scripts/web/generate_data.py geometry), with the row id, register status and source of every
+// strato-webtools geometry), with the row id, register status and source of every
 // value. It is not a simulation, carries no concentration and is never combined with the
 // diffusivities of the synthetic case. It uses no result badge: the values are register entries.
 

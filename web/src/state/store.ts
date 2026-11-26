@@ -1,10 +1,10 @@
 // Application state (zustand), shaped as in prompt/TECHNICAL_ARCHITECTURE.md Section 4.
-// Defaults come from the generated case JSON (scripts/web/generate_data.py), never from literals.
+// Defaults come from the generated case JSON (strato-webtools case), never from literals.
 import { create } from 'zustand';
-import { cloneConfig, DEFAULT_CASE, findCase, type RegionConfig, type V1Config } from '../data/case';
+import { cloneConfig, DEFAULT_CASE, findCase, type RegionConfig, type CaseConfig } from '../data/case';
 import { isAvailable } from '../equation/availability';
 import { SWITCH_MECHANISM, type Stage } from '../equation/terms';
-import type { BuildInfo, CompareOk, RunResponse } from '../solver/types';
+import type { BtcsLimits, BuildInfo, CompareOk, Grid, RunResponse, ValidateReply } from '../solver/types';
 
 // Mechanism switches; the ids map to mechanism_id rows of data/research/mechanisms.csv through
 // SWITCH_MECHANISM (equation/terms.ts): decay -> decay, source -> generation, arrhenius -> diffusivity_temperature.
@@ -61,7 +61,7 @@ export interface RunInfo {
   dropped: string[];
 }
 
-/** The comparison of the current inputs with the baseline (compare_v1), run while the Compare section is open (web phase 5). */
+/** The comparison of the current inputs with the baseline (compare), run while the Compare section is open (web phase 5). */
 export interface ComparisonState {
   status: 'idle' | 'running' | 'ok' | 'rejected' | 'error';
   reply: CompareOk | null;
@@ -72,10 +72,22 @@ export interface ComparisonState {
   elapsedMs: number | null;
 }
 
+/** The wrapper's check of the current inputs (validate): its own messages, the plan and the grid of the run. */
+export interface ValidationState {
+  /** inputKey of the configuration the answer belongs to; empty before the first answer. */
+  key: string;
+  state: 'idle' | 'ok' | 'rejected' | 'error';
+  errors: string[];
+  warnings: string[];
+  plan: ValidateReply['plan'];
+  grid: Grid | null;
+  limits: BtcsLimits | null;
+}
+
 export interface StratoState {
   caseId: string;
-  config: V1Config;
-  baselineConfig: V1Config;
+  config: CaseConfig;
+  baselineConfig: CaseConfig;
   /** Displayed builder stage. Selecting a stage changes the display only, never the inputs or a run. */
   stage: Stage;
   /** Mechanism ids the wasm wrapper reports from build_info(); empty until the module has loaded (web phase 3). */
@@ -89,6 +101,7 @@ export interface StratoState {
   problem: RunProblem | null;
   playback: PlaybackState;
   comparison: ComparisonState;
+  validation: ValidationState;
   view: {
     showComparison: boolean;
     showDifference: boolean;
@@ -101,6 +114,9 @@ export interface StratoState {
     profileLog: boolean;
     profileStart: boolean;
     releaseLog: boolean;
+    /** Which solution methods the release plot draws: Method A (finite-difference BTCS) and Method B (analytical solution). */
+    showMethod1: boolean;
+    showMethod2: boolean;
     simPlot: SimPlot;
   };
 
@@ -123,6 +139,8 @@ export interface StratoState {
    * sections, independent of each other). They change no input and no result.
    */
   setView: (patch: Partial<Omit<StratoState['view'], 'selectedLayer'>>) => void;
+  /** Records the wrapper's answer to validate (called by solver/session.ts). */
+  setValidation: (v: ValidationState) => void;
   /** Records the state of the comparison (called by solver/session.ts). */
   setComparison: (patch: Partial<ComparisonState>) => void;
   /** Asks the solver session for a comparison now; a no-op until solver/session.ts installs it. */
@@ -139,7 +157,7 @@ export interface StratoState {
 }
 
 /** A key of the inputs (display and tests only): equal configs give equal keys. */
-export function inputKey(cfg: V1Config): string {
+export function inputKey(cfg: CaseConfig): string {
   const text = JSON.stringify(cfg);
   let h = 0x811c9dc5;
   for (let i = 0; i < text.length; i++) {
@@ -178,6 +196,7 @@ export function initialState() {
     problem: null as RunProblem | null,
     playback: { tIndex: 0, playing: false, speed: 1 },
     comparison: { status: 'idle', reply: null, problem: null, key: '', elapsedMs: null } as ComparisonState,
+    validation: { key: '', state: 'idle', errors: [], warnings: [], plan: null, grid: null, limits: null } as ValidationState,
     view: {
       // Compare section: the baseline curve is shown by default, the difference curve is optional
       // (prompt/DESIGN_SPECIFICATION.md Section 8.1). Validate section: no prediction layer exists yet.
@@ -194,12 +213,14 @@ export function initialState() {
       profileLog: true,
       profileStart: true,
       releaseLog: false,
+      showMethod1: true,
+      showMethod2: true,
       simPlot: 'profile' as SimPlot,
     },
   };
 }
 
-function withRegion(cfg: V1Config, index: number, patch: Partial<RegionConfig>): V1Config {
+function withRegion(cfg: CaseConfig, index: number, patch: Partial<RegionConfig>): CaseConfig {
   const next = cloneConfig(cfg);
   const r = next.regions[index];
   if (r) Object.assign(r, patch);
@@ -219,6 +240,7 @@ export const useStrato = create<StratoState>()((set, get) => ({
       run: null,
       baselineRun: null,
       status: 'idle',
+      validation: { key: '', state: 'idle', errors: [], warnings: [], plan: null, grid: null, limits: null },
     });
   },
 
@@ -283,6 +305,8 @@ export const useStrato = create<StratoState>()((set, get) => ({
 
   setSolver: (patch) => set({ solver: { ...get().solver, ...patch } }),
 
+  setValidation: (validation) => set({ validation }),
+
   setComparison: (patch) => set({ comparison: { ...get().comparison, ...patch } }),
 
   requestCompare: () => undefined,
@@ -315,33 +339,33 @@ export interface ConfigDifference {
 }
 
 /** Key of a (baseline, current) pair of configurations (display and tests only). */
-export function comparisonKey(baseline: V1Config, current: V1Config): string {
+export function comparisonKey(baseline: CaseConfig, current: CaseConfig): string {
   return `${inputKey(baseline)}|${inputKey(current)}`;
 }
 
 /** Lists the input fields whose values differ between two configurations (equality test only). */
-export function configDifferences(baseline: V1Config, current: V1Config): ConfigDifference[] {
+export function configDifferences(baseline: CaseConfig, current: CaseConfig): ConfigDifference[] {
   const out: ConfigDifference[] = [];
   const cmp = (path: string, label: string, unit: string, a: number | string, b: number | string) => {
     if (!Object.is(a, b)) out.push({ path, label, unit, baseline: a, current: b });
   };
-  cmp('temperature_k', 'Temperature (recorded only in v1.0)', 'K', baseline.temperature_k, current.temperature_k);
+  cmp('temperature_k', 'Temperature (K), recorded, not used by the solver', 'K', baseline.temperature_k, current.temperature_k);
   current.regions.forEach((r, i) => {
     const b = baseline.regions[i];
     if (!b) return;
-    cmp(`regions.${i}.outer_radius_m`, `${r.name} outer radius`, 'm', b.outer_radius_m, r.outer_radius_m);
-    cmp(`regions.${i}.diffusivity_m2_s`, `${r.name} diffusivity`, 'm² s⁻¹', b.diffusivity_m2_s, r.diffusivity_m2_s);
-    cmp(`regions.${i}.cells`, `${r.name} cells`, '', b.cells, r.cells);
+    cmp(`regions.${i}.outer_radius_m`, `Outer radius of the ${r.name} layer (m)`, 'm', b.outer_radius_m, r.outer_radius_m);
+    cmp(`regions.${i}.diffusivity_m2_s`, `Diffusivity of the ${r.name} layer (m²/s)`, 'm²/s', b.diffusivity_m2_s, r.diffusivity_m2_s);
+    cmp(`regions.${i}.cells`, `Grid intervals in the ${r.name} layer (dimensionless)`, 'dimensionless', b.cells, r.cells);
   });
   cmp(
     'initial.kernel_concentration_mol_m3',
-    'Kernel start concentration',
-    'mol m⁻³',
+    'Initial kernel concentration (mol/m³)',
+    'mol/m³',
     baseline.initial.kernel_concentration_mol_m3,
     current.initial.kernel_concentration_mol_m3,
   );
-  cmp('time.dt_s', 'Time step', 's', baseline.time.dt_s, current.time.dt_s);
-  cmp('time.end_time_s', 'End time', 's', baseline.time.end_time_s, current.time.end_time_s);
-  cmp('time.output_every_steps', 'Output every', 'steps', baseline.time.output_every_steps, current.time.output_every_steps);
+  cmp('time.dt_s', 'Time step (s)', 's', baseline.time.dt_s, current.time.dt_s);
+  cmp('time.end_time_s', 'Simulation duration (s)', 's', baseline.time.end_time_s, current.time.end_time_s);
+  cmp('time.output_every_steps', 'Time steps between output rows (dimensionless)', 'dimensionless', baseline.time.output_every_steps, current.time.output_every_steps);
   return out;
 }

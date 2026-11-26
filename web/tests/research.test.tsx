@@ -94,7 +94,7 @@ describe('the generated catalogue holds the research content', () => {
 
   it('marks nothing as validated and only the five-layer diffusion row as verified (the evidence of 2026-11-25)', () => {
     expect(CATALOGUE.mechanisms.filter((m) => m.status === 'VALIDATED')).toEqual([]);
-    expect(CATALOGUE.mechanisms.filter((m) => m.status === 'VERIFIED').map((m) => m.mechanism_id)).toEqual(['diffusion_layered']);
+    expect(CATALOGUE.mechanisms.filter((m) => m.status === 'VERIFIED').map((m) => m.mechanism_id)).toEqual(['diffusion_btcs_layered']);
     expect(CATALOGUE.mechanisms.filter((m) => m.brick !== null && m.brick >= 4).every((m) => m.status === 'PENDING')).toBe(true);
   });
 });
@@ -289,7 +289,7 @@ describe('no pending mechanism has an enabled switch', () => {
   };
 
   it('gives every row of an entry a switch that is present, focusable, disabled and says what is missing', async () => {
-    act(() => useStrato.getState().setCapabilities(['diffusion_layered']));
+    act(() => useStrato.getState().setCapabilities(['diffusion_btcs_layered']));
     const withEntry = CATALOGUE.mechanisms.filter((m) => m.entry);
     for (const path of [...new Set(withEntry.map((m) => m.entry))]) {
       const { unmount } = renderPage(entryPage(path));
@@ -314,7 +314,7 @@ describe('no pending mechanism has an enabled switch', () => {
   it('has no switch without aria-disabled anywhere in the Research section or block E, and sends no solver request', async () => {
     let asked = 0;
     act(() => {
-      useStrato.getState().setCapabilities(['diffusion_layered']);
+      useStrato.getState().setCapabilities(['diffusion_btcs_layered']);
       useStrato.setState({ requestRun: () => (asked += 1) });
     });
     const config = JSON.stringify(useStrato.getState().config);
@@ -338,13 +338,13 @@ describe('no pending mechanism has an enabled switch', () => {
     const verifiedNoCap: MechanismRow = { ...base, status: 'VERIFIED', solver_capability: 'ag_trapping_detrapping' };
     const implementedCap: MechanismRow = { ...base, status: 'IMPLEMENTED', solver_capability: 'ag_trapping_detrapping' };
     const cat = (row: MechanismRow): Catalogue => ({ ...CATALOGUE, mechanisms: [row, ...CATALOGUE.mechanisms.filter((m) => m.mechanism_id !== row.mechanism_id)] });
-    expect(isRowAvailable(verifiedNoCap, ['diffusion_layered'], cat(verifiedNoCap))).toBe(false);
-    expect(isRowAvailable(implementedCap, ['diffusion_layered', 'ag_trapping_detrapping'], cat(implementedCap))).toBe(false);
+    expect(isRowAvailable(verifiedNoCap, ['diffusion_btcs_layered'], cat(verifiedNoCap))).toBe(false);
+    expect(isRowAvailable(implementedCap, ['diffusion_btcs_layered', 'ag_trapping_detrapping'], cat(implementedCap))).toBe(false);
     // Only both together make a row live; a pending row never is.
     expect(isRowAvailable(verifiedNoCap, ['ag_trapping_detrapping'], cat(verifiedNoCap))).toBe(true);
     expect(isRowAvailable(base, ['ag_trapping_detrapping'], CATALOGUE)).toBe(false);
     for (const row of CATALOGUE.mechanisms.filter((m) => m.status !== 'VERIFIED')) {
-      expect(isRowAvailable(row, [row.mechanism_id, row.solver_capability, 'diffusion_layered'].filter(Boolean)), rowKey(row)).toBe(false);
+      expect(isRowAvailable(row, [row.mechanism_id, row.solver_capability, 'diffusion_btcs_layered'].filter(Boolean)), rowKey(row)).toBe(false);
     }
   });
 });
