@@ -2,8 +2,11 @@
 //!
 //! Each row gets a status from [`crate::status::classify`]. Rows with a model plan are run through
 //! the solver; bound rows become WITHIN or EXCEEDS REPORTED UPPER BOUND from the inequality; point
-//! rows get the deviations of section 13. Rows whose denominator is not established get a model value for scale
-//! only (a provisional value): no deviation is formed for it, and it never enters a status or an aggregate.
+//! rows get the deviations of section 13. The ten intact matrix-corrected rows are window upper
+//! bounds under premise BP1 (decisions 67 and 68): they are inequalities over their window, never
+//! point comparisons, and no NRMSE is formed. Rows whose denominator is not established get a model
+//! value for scale only (a provisional value): no deviation is formed for it, and it never enters a
+//! status or an aggregate.
 
 use std::collections::BTreeMap;
 
@@ -85,6 +88,43 @@ pub struct RowRecord {
     pub model: Option<ModelValue>,
     /// The comparison.
     pub eval: Eval,
+}
+
+impl RowRecord {
+    /// True for a window upper bound under premise BP1 (decision 68(a)).
+    pub fn is_window_bound(&self) -> bool {
+        matches!(
+            self.eval,
+            Eval::Bound {
+                source: BoundSource::WindowUnderBp1,
+                ..
+            }
+        )
+    }
+
+    /// The class of the comparison of this row, in words.
+    pub fn comparison_class(&self) -> &'static str {
+        match &self.eval {
+            Eval::None => "not compared (see the status rule)",
+            Eval::Bound {
+                source: BoundSource::WindowUnderBp1,
+                ..
+            } => crate::status::WINDOW_BOUND_CLASS,
+            Eval::Bound { .. } => "upper bound (inequality)",
+            Eval::Point { .. } => "point comparison",
+            Eval::Provisional { .. } => "for scale only (denominator not established)",
+        }
+    }
+
+    /// The denominator the comparison uses: the register's, with the window rows named as the
+    /// as-run calculated compact inventory (decision 68(a)).
+    pub fn comparison_denominator(&self) -> String {
+        if self.is_window_bound() {
+            crate::status::WINDOW_BOUND_DENOMINATOR.to_string()
+        } else {
+            self.row.denominator.as_str().to_string()
+        }
+    }
 }
 
 /// Text of a reading uncertainty.

@@ -11,7 +11,7 @@ use strato_compare::data::{
 };
 use strato_compare::model::{Runner, Settings};
 use strato_compare::pipeline::{generate, Options};
-use strato_compare::status::{classify, Plan, Status};
+use strato_compare::status::{classify, BoundSource, Plan, Status};
 use strato_data::release::Releases;
 use strato_data::Register;
 
@@ -49,10 +49,62 @@ fn statuses_of_named_rows_follow_the_decisions() {
     assert_eq!(st("E-001").status, Status::NotDirectlyComparable);
     // A count is not a release value.
     assert_eq!(st("E-099").status, Status::NotAssessed);
-    // The matrix-corrected intact rows have no established denominator (decision 22).
-    let e10 = st("E-010");
-    assert_eq!(e10.status, Status::DataIncomplete);
-    assert!(matches!(e10.plan, Plan::Provisional { .. }));
+    // Decisions 67 and 68(a): the ten intact matrix-corrected rows are window upper bounds under
+    // premise BP1 over the window from 24 h at temperature to the end of the 300 h plateau (or
+    // the shorter test end); they are inequalities, never point comparisons.
+    for id in [
+        "E-010", "E-011", "E-012", "E-013", "E-014", "E-033", "E-034", "E-035", "E-036", "E-037",
+    ] {
+        let v = st(id);
+        assert_eq!(v.status, Status::ComparisonAvailable, "{id}");
+        assert_eq!(v.category, "window_upper_bound_bp1", "{id}");
+        match v.plan {
+            Plan::Inequality {
+                spec,
+                limit,
+                source,
+            } => {
+                assert_eq!(source, BoundSource::WindowUnderBp1, "{id}");
+                assert_eq!(spec.window_start_h, 24.0, "{id}");
+                // 6-4-3 (1600 degC, as-run 400 h) and 4-4-3 (1700 degC, as-run 303 h) ran longer
+                // than the plateau, and the register holds no as-run duration of the others:
+                // the window ends at the plateau for all ten.
+                assert_eq!(spec.t_end_h, 300.0, "{id}");
+                assert!(limit > 0.0 && limit < 1.0, "{id}");
+                assert!(
+                    spec.time_source.contains("300 h plateau"),
+                    "{id}: {}",
+                    spec.time_source
+                );
+            }
+            other => panic!("{id}: expected a window bound, got {other:?}"),
+        }
+    }
+    // Where the register holds no as-run duration, the output says so; where it holds a longer
+    // one, it says that this is not the window end.
+    let origin = |id: &str| match st(id).plan {
+        Plan::Inequality { spec, .. } => spec.time_source,
+        other => panic!("{id}: {other:?}"),
+    };
+    assert!(origin("E-010").contains("holds no as-run duration"));
+    assert!(origin("E-014").contains("is longer and is not the window end"));
+    assert!(origin("E-037").contains("is longer and is not the window end"));
+    // The failed-SiC compacts stay as the decisions class them.
+    for n in 38..=45 {
+        let id = format!("E-{n:03}");
+        let v = st(&id);
+        assert_eq!(v.status, Status::NotDirectlyComparable, "{id}");
+        assert_eq!(v.category, "failed_or_released_particles", "{id}");
+        assert!(matches!(v.plan, Plan::NoModel), "{id}");
+    }
+    // The JAERI rows stay DATA INCOMPLETE: no denominator, no decay correction, no sequence.
+    for n in 117..=149 {
+        let id = format!("E-{n:03}");
+        let v = st(&id);
+        assert_eq!(v.status, Status::DataIncomplete, "{id}");
+        assert_eq!(v.category, "denominator_not_established", "{id}");
+        assert!(matches!(v.plan, Plan::NoModel), "{id}");
+    }
     // A reported upper bound is an inequality.
     let e27 = st("E-027");
     assert_eq!(e27.status, Status::ComparisonAvailable);
@@ -69,15 +121,16 @@ fn statuses_of_named_rows_follow_the_decisions() {
     // Totals of silver and strontium include inventory released in the reactor.
     assert_eq!(st("E-063").status, Status::NotDirectlyComparable);
     assert_eq!(st("E-172").status, Status::NotDirectlyComparable);
-    // JAERI: denominator not established.
-    assert_eq!(st("E-117").status, Status::DataIncomplete);
     // Loose particles with failed TRISO.
     assert_eq!(st("E-493").status, Status::NotDirectlyComparable);
 }
 
 #[test]
-fn a_confirmed_denominator_turns_a_provisional_row_into_a_point_comparison() {
-    // The program decides from the register cell: edit the cell of E-010 and the plan changes.
+fn a_matrix_corrected_row_without_an_established_denominator_is_shown_for_scale_only() {
+    // The program decides from the register cell. Decision 67 established the denominator of
+    // E-010 (as-run calculated compact inventory, window upper bound under premise BP1). If the
+    // cell said `not established` again (decision 22), the row would be DATA INCOMPLETE and carry
+    // a model value for scale only over the same window, never a bound and never a point.
     let text = std::fs::read_to_string(
         repo()
             .join("data")
@@ -88,27 +141,86 @@ fn a_confirmed_denominator_turns_a_provisional_row_into_a_point_comparison() {
     let mut changed = String::new();
     let mut edited = false;
     for line in text.lines() {
-        if line.starts_with("E-010,") && line.contains("not established") {
-            changed.push_str(&line.replacen("not established", "calculated compact inventory", 1));
+        if line.starts_with("E-010,") && line.ends_with(",calculated compact inventory") {
+            let cut = line.len() - "calculated compact inventory".len();
+            changed.push_str(&line[..cut]);
+            changed.push_str("not established");
             edited = true;
         } else {
             changed.push_str(line);
         }
         changed.push('\n');
     }
-    assert!(edited, "E-010 has the denominator `not established`");
+    assert!(
+        edited,
+        "E-010 has the denominator `calculated compact inventory`"
+    );
     let releases = Releases::parse(&changed).expect("the edited register parses");
     let mut reg = register();
     reg.release = releases;
     let v = classify(&reg, reg.release.get("E-010").expect("row"));
-    assert_eq!(v.status, Status::ComparisonAvailable);
+    assert_eq!(v.status, Status::DataIncomplete);
+    assert_eq!(v.category, "denominator_not_established");
     match v.plan {
-        Plan::Point { spec, value } => {
+        Plan::Provisional { spec, value } => {
             assert_eq!(spec.window_start_h, 24.0);
+            assert_eq!(spec.t_end_h, 300.0);
             assert!((value - 8.5e-8).abs() < 1e-20);
         }
-        other => panic!("expected a point plan, got {other:?}"),
+        other => panic!("expected a provisional plan, got {other:?}"),
     }
+}
+
+#[test]
+fn the_ten_window_rows_are_bounds_and_no_row_is_a_point_comparison() {
+    // Decisions 67 and 68: N = 0 for every set of points, so no NRMSE and no aggregate of points.
+    let reg = register();
+    let g = radii(&reg).unwrap();
+    let mut runner = Runner::new(
+        &reg,
+        g,
+        Settings {
+            intervals: [20, 15, 10, 20, 10],
+            dt_h: 0.5,
+        },
+    )
+    .unwrap();
+    let records = run_rows(&reg, &mut runner).unwrap();
+    let ten = [
+        "E-010", "E-011", "E-012", "E-013", "E-014", "E-033", "E-034", "E-035", "E-036", "E-037",
+    ];
+    for r in &records {
+        assert!(!matches!(r.eval, Eval::Point { .. }), "row {}", r.row.id);
+        let is_ten = ten.contains(&r.row.id.as_str());
+        assert_eq!(r.is_window_bound(), is_ten, "row {}", r.row.id);
+        if is_ten {
+            match &r.eval {
+                Eval::Bound { source, margin, .. } => {
+                    assert_eq!(*source, BoundSource::WindowUnderBp1);
+                    let want = if margin.satisfied {
+                        Status::WithinReportedUpperBound
+                    } else {
+                        Status::ExceedsReportedUpperBound
+                    };
+                    assert_eq!(r.status, want, "row {}", r.row.id);
+                }
+                other => panic!("row {}: {other:?}", r.row.id),
+            }
+            let m = r.model.as_ref().expect("a model value");
+            assert_eq!(m.spec.window_start_h, 24.0);
+            assert_eq!(m.spec.t_end_h, 300.0);
+            // The model value is the release over the window, not the cumulative release.
+            assert!((m.f_window - (m.f_end - m.f_start)).abs() < 1e-15);
+            assert_eq!(r.comparison_class(), "window upper bound under premise BP1");
+            assert_eq!(
+                r.comparison_denominator(),
+                "as-run calculated compact inventory"
+            );
+        }
+    }
+    assert!(strato_compare::compare::datasets(&records)
+        .iter()
+        .all(|d| d.point.is_none()));
 }
 
 #[test]
