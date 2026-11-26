@@ -685,7 +685,12 @@ pub fn generate(opts: &Options) -> Result<Files, String> {
                     masked(text).as_bytes(),
                 )),
             ),
-            ("bytes", J::Int(text.len() as i64)),
+            // Counted without the commit lines, like the hash, so that the manifest does not
+            // depend on the commit the outputs are generated with.
+            (
+                "bytes_without_commit_lines",
+                J::Int(masked(text).len() as i64),
+            ),
         ]));
     }
     files.insert(

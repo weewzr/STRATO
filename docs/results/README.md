@@ -53,7 +53,7 @@ cargo run --release --locked --manifest-path crates/Cargo.toml -p strato-results
 | `verification/convergence.json` | Observed orders in space and in time against the exact series. |
 | `verification/agreement.json` | Solver-to-solver agreement of Method A and Method B at the stage 1 cells. |
 | `verification/conservation.json` | Balance residuals against their derived bounds (Document 5, F46), for every curve. |
-| `manifest.json` | Every file with the hash of its content (commit lines excluded) and its size. |
+| `manifest.json` | Every file with the hash of its content and its size (`bytes_without_commit_lines`), both computed with the commit lines excluded, so that the manifest does not depend on the commit the files are generated with. |
 
 ## Differences from science design 7.3 and web specification part 4
 
