@@ -230,3 +230,36 @@ The vertex time and y coordinate are those of the vertex read; `bracket` gives t
 
 - The entries of E-015 and E-023 in section 8 gave the old reading uncertainty as not recorded. The file at the commit before the Morris re-read held `factor=1.5` (E-015, note "about a factor 1.5") and `rel_value_pct=10..15` (E-023, note "about 10-15 %"). The entries are corrected, and the superseded visual-reading statements in the notes of the two rows are marked as superseded.
 - The reading uncertainties and, for E-054, E-055, E-082 and E-083, the values stated in the 34 Morris entries of section 8 are superseded by 9.4 and 9.5. The other columns of those entries stand.
+
+## 10. Comparison denominators: matrix-corrected rows (decision 45 procedure, task data-comparison-denominators, 2026-11-26)
+
+Source: Collin et al. (2016), accepted manuscript INL/JOU-15-34147 (OSTI 1246116), read from the PDF (manuscript pp. 3, 5, 6, 8 and the page images of Figs. 3, 4 and 6 on manuscript pp. 16 to 18); the journal's printed pages 382 to 384 cited by the register could not be checked in this file. Supporting: Demkowicz et al. (2015), INL/EXT-15-36407, printed p. 58 ("The released fraction is the cumulative inventory on the cups/plates divided by the predicted compact inventory at the end of the irradiation"); Stempien et al. (2023), INL/RPT-23-74651, printed p. 10 (the same normalisation, Mx/Ccompact).
+
+What changed in the eighteen rows below: the column `denominator` (old value "not established", new value "calculated compact inventory"); the column `notes` (one sentence appended: denominator confirmed and what the value counts); and, for the ten intact rows, the column `particle_applicability` (the sentence that the compact fraction "equals the mean particle release fraction" is replaced by a statement that it equals the mean intact-particle release after about 24 h only if no release from outside the SiC occurs after about 24 h, an assumption of the source). Changed numerical values: 0. Class, qualifier and reading uncertainty: unchanged.
+
+Reason for the denominator: the source normalises the released amount to a predicted (as-run, calculated) compact source term (manuscript p. 3) and defines the release fraction relative to the total inventory produced during irradiation (p. 5). The registered matrix-corrected values are below the Table 14 totals of the same compacts in all ten intact cases, and the implied prompt release (Table 14 total minus the corrected value) is 1.9e-7 to 3.2e-6 for Cs-134 (Collin p. 8 states 2e-7 to 3e-6) and 2.9e-3 (compact 6-2-1) to 0.338 (compact 4-3-3) for Ag-110m (Collin p. 6 states 2.9e-3 to 3.4e-1).
+
+Reason for the notes and the applicability sentence: Collin p. 6 calls the correction "an attempt" and states that release from the particles cannot be distinguished from silver "slowly driven out of the matrix" later. The value is therefore at most the release through intact coatings in the window plus any later matrix release; it is not a point measurement.
+
+| Row | Nuclide, compact, T (C) | Source location | Denominator old | Denominator new | Other cells |
+|---|---|---|---|---|---|
+| E-010 | Cs-134, 3-2-2, 1600 | Collin et al. (2016) Fig. 6, manuscript p. 18; p. 3 (denominator), p. 6 (correction) | not established | calculated compact inventory | notes appended; applicability corrected |
+| E-011 | Cs-134, 4-3-3, 1600 | Collin et al. (2016) Fig. 6, manuscript p. 18; p. 3, p. 6 | not established | calculated compact inventory | notes appended; applicability corrected |
+| E-012 | Cs-134, 5-3-3, 1600 | Collin et al. (2016) Fig. 6, manuscript p. 18; p. 3, p. 6 | not established | calculated compact inventory | notes appended; applicability corrected |
+| E-013 | Cs-134, 6-2-1, 1600 | Collin et al. (2016) Fig. 6, manuscript p. 18; p. 3, p. 6 | not established | calculated compact inventory | notes appended; applicability corrected |
+| E-014 | Cs-134, 6-4-3, 1600 | Collin et al. (2016) Fig. 6, manuscript p. 18; p. 3, p. 6 | not established | calculated compact inventory | notes appended; applicability corrected |
+| E-033 | Ag-110m, 4-3-3, 1600 | Collin et al. (2016) Fig. 3, manuscript p. 16; p. 3, p. 6 | not established | calculated compact inventory | notes appended; applicability corrected |
+| E-034 | Ag-110m, 5-3-3, 1600 | Collin et al. (2016) Fig. 3, manuscript p. 16; p. 3, p. 6 | not established | calculated compact inventory | notes appended; applicability corrected |
+| E-035 | Ag-110m, 6-2-1, 1600 | Collin et al. (2016) Fig. 3, manuscript p. 16; p. 3, p. 6 | not established | calculated compact inventory | notes appended; applicability corrected |
+| E-036 | Ag-110m, 6-4-3, 1600 | Collin et al. (2016) Fig. 3, manuscript p. 16; p. 3, p. 6 | not established | calculated compact inventory | notes appended; applicability corrected |
+| E-037 | Ag-110m, 4-4-3, 1700 | Collin et al. (2016) Fig. 3, manuscript p. 16; p. 3, p. 6 | not established | calculated compact inventory | notes appended; applicability corrected |
+| E-038 | Ag-110m, 4-1-2, 1600, failed SiC | Collin et al. (2016) Fig. 4, manuscript p. 17; p. 3, p. 6 | not established | calculated compact inventory | notes appended (failed SiC, not comparable) |
+| E-039 | Ag-110m, 6-4-1, 1600, failed SiC | Collin et al. (2016) Fig. 4, manuscript p. 17; p. 3, p. 6 | not established | calculated compact inventory | notes appended (failed SiC, not comparable) |
+| E-040 | Ag-110m, 3-3-1, 1700, failed SiC | Collin et al. (2016) Fig. 4, manuscript p. 17; p. 3, p. 6 | not established | calculated compact inventory | notes appended (failed SiC, not comparable) |
+| E-041 | Ag-110m, 5-1-1, 1700, failed SiC | Collin et al. (2016) Fig. 4, manuscript p. 17; p. 3, p. 6 | not established | calculated compact inventory | notes appended (failed SiC, not comparable) |
+| E-042 | Ag-110m, 3-2-3, 1800, failed SiC | Collin et al. (2016) Fig. 4, manuscript p. 17; p. 3, p. 6 | not established | calculated compact inventory | notes appended (failed SiC, not comparable) |
+| E-043 | Ag-110m, 4-3-2, 1800, failed SiC | Collin et al. (2016) Fig. 4, manuscript p. 17; p. 3, p. 6 | not established | calculated compact inventory | notes appended (failed SiC, not comparable) |
+| E-044 | Ag-110m, 4-4-1, 1800, failed SiC | Collin et al. (2016) Fig. 4, manuscript p. 17; p. 3, p. 6 | not established | calculated compact inventory | notes appended (failed SiC, not comparable) |
+| E-045 | Ag-110m, 5-1-3, 1800, failed SiC | Collin et al. (2016) Fig. 4, manuscript p. 17; p. 3, p. 6 | not established | calculated compact inventory | notes appended (failed SiC, not comparable) |
+
+Two register prose passages (R.7 and the applicability sentence on matrix-corrected values) were extended in the register document and in its template with the same finding. The data check `DI.release.denominator` now requires the eighteen rows to be compact-inventory rows and expects 43 rows (was 61) that say "not established" (JAERI E-117..E-149, CRP-6 E-150..E-156 and the remaining text rows); a failure test was added. Not changed: E-117..E-149 (denominator, decay correction and test sequence are stated neither on printed p. 164 of IAEA-TECDOC-978 nor on the pages around it).
