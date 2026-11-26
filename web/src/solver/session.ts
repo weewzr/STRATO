@@ -6,7 +6,7 @@
 // computes a value.
 import { buildCapability, runMechanisms, selectionSupport } from '../equation/capability';
 import { BTCS_CAPABILITY } from '../equation/availability';
-import { comparisonKey, inputKey, useStrato } from '../state/store';
+import { comparisonKey, inputKey, selectionKey, useStrato } from '../state/store';
 import { SolverClient, SolverError, type WorkerFactory } from './client';
 import { RUN_DEBOUNCE_MS } from './tolerances';
 
@@ -72,13 +72,14 @@ async function runNow(): Promise<void> {
   const s = useStrato.getState();
   const config = s.config;
   const key = inputKey(config);
+  const sentSelection = selectionKey(s.selection);
   s.setRunning();
   void validateNow();
   try {
     const pending = client.run(config, runMechanisms(s.selection.physics), s.capabilities);
     stampRequests();
     const reply = await pending;
-    const info = { elapsedMs: reply.elapsedMs, requestId: reply.requestId, inputKey: key, dropped: reply.dropped };
+    const info = { elapsedMs: reply.elapsedMs, requestId: reply.requestId, inputKey: key, dropped: reply.dropped, selectionKey: sentSelection };
     if (reply.body.status === 'ok') useStrato.getState().setRunOutcome({ run: reply.body, info });
     else useStrato.getState().setRunOutcome({ problem: { kind: 'rejected', messages: reply.body.errors }, info });
   } catch (e) {

@@ -5,7 +5,8 @@ import { METHOD_1, METHOD_2 } from '../methods';
 import { hrefFor } from '../route';
 import { Badge, Sci } from '../panels/Badge';
 import type { RunOk } from '../solver/types';
-import { inputKey, useStrato, type SimPlot } from '../state/store';
+import { useShownRun } from '../solver/shown';
+import { useStrato, type SimPlot } from '../state/store';
 import { profileFigure, releaseFigure } from './figures';
 import { Plot } from './Plot';
 import { usePlotTheme } from './theme';
@@ -15,14 +16,6 @@ import { usePlotTheme } from './theme';
 // the release fraction of Method A and Method B with a playback cursor. Every plotted value is an array
 // of the wrapper's RunResponse as returned (owner decision M4). On a phone one plot is shown at a time,
 // with a switcher.
-
-function useShownRun(): { run: RunOk | null; stale: boolean } {
-  const run = useStrato((s) => s.run);
-  const info = useStrato((s) => s.runInfo);
-  const config = useStrato((s) => s.config);
-  const status = useStrato((s) => s.status);
-  return { run, stale: run !== null && (status === 'running' || info?.inputKey !== inputKey(config)) };
-}
 
 /** Source line of an exported image: model, version, solver and page commits, label, case. */
 export function runSource(run: RunOk): string {

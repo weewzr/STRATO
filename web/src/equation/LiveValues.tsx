@@ -4,6 +4,7 @@ import { Sci } from '../panels/Badge';
 import { statusOf, useCatalogue } from '../research/catalogue';
 import type { RunOk } from '../solver/types';
 import { useStrato } from '../state/store';
+import { useShownRun } from '../solver/shown';
 import { BTCS_CAPABILITY } from './availability';
 import type { Stage } from './terms';
 
@@ -120,7 +121,7 @@ function show(v: Row['value'], unit: string | undefined, digits: number | undefi
 
 /** The numbers of the current run for one builder step, or a note that there is no run yet. */
 export function LiveValues({ stage }: { stage: Stage }) {
-  const run = useStrato((s) => s.run);
+  const { run } = useShownRun();
   const row = useStrato((s) => s.playback.tIndex);
   const catalogue = useCatalogue();
   if (!run) {

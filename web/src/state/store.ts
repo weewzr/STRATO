@@ -65,7 +65,12 @@ export interface RunInfo {
   inputKey: string;
   /** Mechanism ids that isAvailable() removed from the request. */
   dropped: string[];
+  /** selectionKey of the physics and scenario selected when the request was sent; the reply is shown only under that selection (solver/shown.ts). */
+  selectionKey?: string;
 }
+
+/** A key of the physics and the scenario of a selection (the expanded regions are display state and are not part of it). */
+export const selectionKey = (sel: { physics: PhysicsId; scenario: ScenarioId | null }): string => `${sel.physics}|${sel.scenario ?? ''}`;
 
 /** The comparison of the current inputs with the baseline (compare), run while the Compare section is open (web phase 5). */
 export interface ComparisonState {

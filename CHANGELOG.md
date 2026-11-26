@@ -4,6 +4,8 @@ All notable changes to STRATO are recorded here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+Website: the Explore page is rebuilt as a targeted refinement. A progressive governing-equation builder, a row of operating scenarios, an expandable fourteen-item Numerical Interpretation, the live simulation and the results read one shared selection that is kept in the address. Status and control availability come from the capability the WebAssembly wrapper reports; a selection the build does not compute shows no result and says so, and a reply is shown only under the selection it was computed for. The simulation block names the active solver and the physics it implements. The experimental-comparison graph component is merged. New tests walk the learning sequence at three widths, both colour schemes and both motion settings, and with the keyboard only. No Rust source changed.
+
 Next: the second integration (experimental-data layer, generation, decay and temperature-dependent diffusivity in the BTCS scheme, final native and WebAssembly parity and regression verification). The plan written before the BTCS solver existed is archived in [docs/archive/finite-volume/development/v1_to_v2_changes.md](docs/archive/finite-volume/development/v1_to_v2_changes.md).
 
 ## [2.0.0] - 2026-11-26

@@ -3,6 +3,7 @@ import { repoFile } from '../build';
 import { simulationMethod } from '../equation/availability';
 import { PHYSICS_LABEL } from '../equation/physics';
 import { unsupportedMessage } from '../equation/capability';
+import { ActiveModel } from '../equation/ActiveModel';
 import { GoverningEquation } from '../equation/GoverningEquation';
 import { NumericalInterpretation } from '../equation/NumericalInterpretation';
 import { ScenarioPicker } from '../equation/ScenarioPicker';
@@ -88,6 +89,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           </p>
           <SolverStatus compact />
         </div>
+        <ActiveModel />
         <p className="block__note">
           The simulation uses the synthetic five-layer verification case,{' '}
           <a href={repoFile('inputs/synthetic/synthetic_five_layer.toml')}>
@@ -175,6 +177,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
         </div>
         {support.supported ? (
           <>
+            <ActiveModel short />
             <ReleaseReadout />
             <div className="results-plots">
               <SimPlots compact={compact} />

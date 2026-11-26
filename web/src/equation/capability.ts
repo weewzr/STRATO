@@ -138,6 +138,19 @@ export function selectionSupport(cap: BuildCapability, physics: PhysicsId, scena
   return { supported: missing.length === 0, missing };
 }
 
+/**
+ * What the running computation implements, from the capability of the build alone: the mechanisms its
+ * wrapper reports at the verified status (the simulation uses those) and those it does not compute.
+ */
+export function computedMechanisms(cap: BuildCapability): { computed: Mechanism[]; notComputed: Mechanism[] } {
+  return { computed: MECHANISMS.filter((m) => isSimulable(cap.mechanisms[m])), notComputed: MECHANISMS.filter((m) => !isSimulable(cap.mechanisms[m])) };
+}
+
+/** A list of names as a phrase ("a, b and c"). */
+export function phrase(names: readonly string[]): string {
+  return names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : (names[0] ?? '');
+}
+
 /** The mechanism ids a run asks the wrapper for: the baseline capability and the selected mechanisms (the client drops what is not available). */
 export function runMechanisms(physics: PhysicsId): string[] {
   return [BTCS_CAPABILITY, ...mechanismsOf(physics).map((m) => WRAPPER_ID[m])];

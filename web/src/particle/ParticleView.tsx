@@ -6,7 +6,8 @@ import { layerColour } from '../design/layers';
 import { sciText } from '../format';
 import { Badge, Sci } from '../panels/Badge';
 import type { RunOk } from '../solver/types';
-import { inputKey, useStrato, type ColormapName } from '../state/store';
+import { useShownRun } from '../solver/shown';
+import { useStrato, type ColormapName } from '../state/store';
 import { COLORMAP_LABEL, css, LOG_DECADES, legendTicks, scaleTop, table } from './colormap';
 import { CrossSection2D } from './CrossSection2D';
 import { ringsOf } from './geometry';
@@ -36,18 +37,9 @@ class ThreeBoundary extends Component<{ onError: (message: string) => void; chil
   }
 }
 
-/** The run shown, and whether it belongs to inputs other than the current ones. */
-function useShownRun(): { run: RunOk | null; stale: boolean } {
-  const run = useStrato((s) => s.run);
-  const info = useStrato((s) => s.runInfo);
-  const config = useStrato((s) => s.config);
-  const status = useStrato((s) => s.status);
-  return { run, stale: run !== null && (status === 'running' || info?.inputKey !== inputKey(config)) };
-}
-
 /** Time of the playback row, from the wrapper; re-renders on playback without touching the drawing. */
 function RowTime() {
-  const run = useStrato((s) => s.run);
+  const { run } = useShownRun();
   const tIndex = useStrato((s) => s.playback.tIndex);
   const t = run?.profiles[tIndex]?.t_s;
   if (t === undefined) return null;

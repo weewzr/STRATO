@@ -6,7 +6,8 @@ import { METHOD_1, METHOD_2 } from '../methods';
 import { statusOf, useCatalogue } from '../research/catalogue';
 import { StatusChip } from '../research/StatusChip';
 import type { RunResponse } from '../solver/types';
-import { inputKey, useStrato } from '../state/store';
+import { useShownRun } from '../solver/shown';
+import { useStrato } from '../state/store';
 import { TableBox } from '../sections/common';
 import { Badge, Sci } from './Badge';
 
@@ -33,14 +34,7 @@ function V({ v, unit, digits = 6, id, name }: { v: number | null | undefined; un
   );
 }
 
-function useCurrentRun(): { run: RunResponse | null; stale: boolean } {
-  const run = useStrato((s) => s.run);
-  const info = useStrato((s) => s.runInfo);
-  const config = useStrato((s) => s.config);
-  const status = useStrato((s) => s.status);
-  const stale = run !== null && (status === 'running' || info?.inputKey !== inputKey(config));
-  return { run, stale };
-}
+const useCurrentRun = useShownRun;
 
 function Updating({ stale }: { stale: boolean }) {
   return stale ? (
