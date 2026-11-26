@@ -16,6 +16,7 @@
 //! `wasm32-unknown-unknown`.
 
 pub mod definitions;
+pub mod geometry;
 pub mod laws;
 pub mod methodb;
 pub mod support;

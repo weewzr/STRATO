@@ -179,7 +179,7 @@ fn normalise_config(mut v: Value) -> Result<Value, Vec<String>> {
     Ok(v)
 }
 
-fn config_from_request_value(v: Value) -> Result<Config, Vec<String>> {
+pub(crate) fn config_from_request_value(v: Value) -> Result<Config, Vec<String>> {
     config_from_value(normalise_config(v)?)
 }
 
@@ -328,7 +328,7 @@ struct Prepared {
 }
 
 /// Steps at which a row is written: `j = 0`, every `output_every`-th step and the last.
-fn output_steps(input: &ValidatedInput) -> Vec<usize> {
+pub(crate) fn output_steps(input: &ValidatedInput) -> Vec<usize> {
     let mut steps = vec![0];
     for s in 1..=input.steps {
         if s % input.output_every == 0 || s == input.steps {
@@ -442,7 +442,7 @@ fn echo(cfg: &Config) -> Value {
 /// The grid as Rust built it. `ring_edges_m` is presentation geometry: the radial extent of
 /// the colour band of each node (midpoints between neighbouring nodes, `0` at the centre and
 /// the outer radius at the last node); it is not a property of the discretisation.
-fn grid_value(grid: &Grid, cfg: &Config, input: &ValidatedInput) -> Value {
+pub(crate) fn grid_value(grid: &Grid, cfg: &Config, input: &ValidatedInput) -> Value {
     let n = grid.n;
     let mut class = Vec::with_capacity(n + 1);
     let mut inner = Vec::with_capacity(n + 1);
@@ -480,7 +480,7 @@ fn grid_value(grid: &Grid, cfg: &Config, input: &ValidatedInput) -> Value {
 // Run
 // ---------------------------------------------------------------------------------------
 
-fn finite_or_null(x: f64) -> Value {
+pub(crate) fn finite_or_null(x: f64) -> Value {
     if x.is_finite() {
         json!(x)
     } else {

@@ -334,3 +334,31 @@ pub fn run(def: &ScenarioDefinition, built: &Built, s: &Setup<'_>) -> Result<Sce
     };
     run_scenario(&d, &cfg).map_err(|e| format!("{}: {e}", def.id))
 }
+
+/// Linear interpolation of a series at `x` (clamped to the ends).
+pub fn interp(t: &[f64], f: &[Option<f64>], x: f64) -> Option<f64> {
+    let k = t.partition_point(|v| *v <= x);
+    if k == 0 {
+        return f[0];
+    }
+    if k >= t.len() {
+        return f[t.len() - 1];
+    }
+    let (a, b) = (f[k - 1]?, f[k]?);
+    Some(a + (x - t[k - 1]) / (t[k] - t[k - 1]) * (b - a))
+}
+
+/// Indices of at most `max` rows, always including the first, the last and every `must` row.
+pub fn pick(n: usize, max: usize, must: &[usize]) -> Vec<usize> {
+    let mut idx: Vec<usize> = if n <= max {
+        (0..n).collect()
+    } else {
+        let stride = n.div_ceil(max);
+        (0..n).step_by(stride).collect()
+    };
+    idx.push(n - 1);
+    idx.extend(must.iter().copied().filter(|i| *i < n));
+    idx.sort_unstable();
+    idx.dedup();
+    idx
+}

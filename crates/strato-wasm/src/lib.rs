@@ -20,6 +20,9 @@
 #![recursion_limit = "512"]
 
 pub mod btcs_api;
+pub mod embedded;
+pub mod scenario_api;
+pub mod stage_api;
 pub mod tolerances;
 
 use serde_json::{json, Map, Value};
@@ -28,8 +31,9 @@ use wasm_bindgen::prelude::*;
 
 /// ABI version of the exported functions; the worker reports it in its hello message. ABI 3
 /// removed the finite-volume exports `validate_config`, `run_v1`, `analytical_release` and
-/// `compare_v1` of ABI 1 and 2.
-pub const ABI_VERSION: u32 = 3;
+/// `compare_v1` of ABI 1 and 2. ABI 4 adds `run_stage`, `run_scenario`, `btcs_system`,
+/// `analytical` and `options` (request and reply schema 3); every function of ABI 3 is unchanged.
+pub const ABI_VERSION: u32 = 4;
 /// Version of the wrapped `strato` package, read from its Cargo.toml by build.rs.
 pub const STRATO_VERSION: &str = env!("STRATO_PACKAGE_VERSION");
 /// Version of this wrapper crate.
@@ -110,6 +114,41 @@ pub fn export_run(request_json: &str) -> String {
     btcs_api::export_run(request_json)
 }
 
+/// Runs one of the five equation stages (schema 3): which mechanisms are on, the source and the
+/// decay constant, and a temperature history with the Arrhenius laws; the reply holds the series,
+/// the per-step diffusivity and source, the balance and whether Method B applies.
+#[wasm_bindgen]
+pub fn run_stage(request_json: &str) -> String {
+    stage_api::run_stage(request_json)
+}
+
+/// Runs an operating scenario of `data/scenarios/` (schema 3) and returns the series of the
+/// engine with the normal-operation reference and Method B where it applies.
+#[wasm_bindgen]
+pub fn run_scenario(request_json: &str) -> String {
+    scenario_api::run_scenario(request_json)
+}
+
+/// The assembled BTCS system of one step for a small grid: matrix rows, right-hand side and the
+/// terms each mechanism adds, as numbers and as labelled symbolic parts.
+#[wasm_bindgen]
+pub fn btcs_system(request_json: &str) -> String {
+    stage_api::btcs_system(request_json)
+}
+
+/// The analytical method (Method B) for a stage request: applicability, reason, values and the
+/// drawing mask. A withheld value is absent with its reason, never zero.
+#[wasm_bindgen]
+pub fn analytical(request_json: &str) -> String {
+    stage_api::analytical(request_json)
+}
+
+/// The supported stages, scenarios, nuclides and temperatures from the embedded definitions.
+#[wasm_bindgen]
+pub fn options(request_json: &str) -> String {
+    scenario_api::options(request_json)
+}
+
 // ---------------------------------------------------------------------------------------
 // Build information
 // ---------------------------------------------------------------------------------------
@@ -124,6 +163,7 @@ pub fn build_info_value() -> Value {
         "dirty": BUILD_DIRTY == "1",
         "wasm_bindgen": WASM_BINDGEN_VERSION,
         "btcs": btcs_api::build_info_value(),
+        "stages": stage_api::build_info_value(),
     })
 }
 

@@ -159,7 +159,144 @@ fn battery() -> Vec<(&'static str, &'static str, String)> {
         ));
     }
     out.push(("build_info", "build_info", String::new()));
+    out.extend(stage_battery(&base));
     out
+}
+
+/// Test inputs of the stage cases: numbers for the numerics, not register values.
+fn stage_physics(stage: u8, temperature: Value) -> Value {
+    let mut p = Map::new();
+    if stage >= 2 {
+        p.insert(
+            "source".into(),
+            json!({"mode": "kernel_fission_yield", "product": "direct_fission_product",
+                   "yield_kind": "cumulative", "yield_atoms_per_fission": 0.06,
+                   "fission_rate_origin": "parity test input",
+                   "fission_rate_density": {"value": 1.0e19}}),
+        );
+    }
+    if stage >= 3 {
+        p.insert("decay".into(), json!({"half_life_s": 1.0e5}));
+    }
+    if stage >= 4 {
+        p.insert("temperature".into(), temperature);
+        let d0 = [1.0e-6, 2.0e-7, 5.0e-6, 3.0e-5, 8.0e-6];
+        let ea = [200.0, 150.0, 220.0, 260.0, 210.0];
+        let names = ["Kernel", "Buffer", "IPyC", "SiC", "OPyC"];
+        let laws: Vec<Value> = (0..5)
+            .map(|k| {
+                json!({"region": names[k], "source": "parity test input, no source",
+                       "class": "user-supplied, no source",
+                       "terms": [{"d0_m2_s": d0[k], "activation_energy_kj_per_mol": ea[k],
+                                  "valid_from_k": 1000.0, "valid_to_k": 1500.0}]})
+            })
+            .collect();
+        p.insert("arrhenius".into(), Value::Array(laws));
+    }
+    Value::Object(p)
+}
+
+/// The cases of the functions of ABI 4 (schema 3). They are not in the committed file of the
+/// small cases (`strato-webtools` names the cases it keeps); the whole battery is the input of
+/// the native-versus-WebAssembly parity run.
+fn stage_battery(base: &Value) -> Vec<(&'static str, &'static str, String)> {
+    let ramp = json!({"unit": "degC", "interpolation": "linear",
+                      "times_s": [0.0, 2.0e5], "values": [900.0, 1100.0]});
+    let flat = json!({"unit": "degC", "value": 1000.0});
+    let stage = |n: u8, t: Value| json!({"schema": 3, "config": base, "stage": n, "physics": stage_physics(n, t)});
+    let mut small = base.clone();
+    for k in 0..5 {
+        small = with(small, &format!("/regions/{k}/cells"), json!(5));
+    }
+    small = with(
+        small,
+        "/time",
+        json!({"dt_s": 2000.0, "end_time_s": 6000.0, "output_every_steps": 1}),
+    );
+    let mut sys = json!({"schema": 3, "config": small, "stage": 5,
+                         "physics": stage_physics(5, flat.clone()), "step": 2});
+    sys["rows"] = json!([
+        "first",
+        1,
+        "interface:1",
+        "interface:2",
+        "interface:3",
+        "interface:4",
+        "last"
+    ]);
+    let mut ana1 = json!({"schema": 3, "config": base, "stage": 1});
+    ana1["times_s"] = json!([1.0e4, 5.0e4, 1.0e5, 2.0e5]);
+    let scen = |id: &str, nuclide: &str, grid: [u32; 5]| {
+        json!({"schema": 3, "scenario_id": id, "nuclide": nuclide,
+               "grid": {"intervals_per_layer": grid}, "check_resolution": true, "max_rows": 120})
+    };
+    vec![
+        (
+            "run_stage_1",
+            "run_stage",
+            json!({"schema": 3, "config": base, "stage": 1}).to_string(),
+        ),
+        (
+            "run_stage_2",
+            "run_stage",
+            stage(2, ramp.clone()).to_string(),
+        ),
+        (
+            "run_stage_3",
+            "run_stage",
+            stage(3, ramp.clone()).to_string(),
+        ),
+        (
+            "run_stage_4_ramp",
+            "run_stage",
+            stage(4, ramp.clone()).to_string(),
+        ),
+        (
+            "run_stage_5_constant",
+            "run_stage",
+            stage(5, flat.clone()).to_string(),
+        ),
+        (
+            "run_stage_rejected",
+            "run_stage",
+            json!({"schema": 3, "config": base, "stage": 1,
+                   "physics": stage_physics(2, ramp.clone())})
+            .to_string(),
+        ),
+        ("btcs_system_step_2", "btcs_system", sys.to_string()),
+        ("analytical_stage_1", "analytical", ana1.to_string()),
+        (
+            "analytical_stage_3",
+            "analytical",
+            stage(3, ramp.clone()).to_string(),
+        ),
+        (
+            "analytical_stage_4_ramp",
+            "analytical",
+            stage(4, ramp).to_string(),
+        ),
+        (
+            "analytical_stage_5_constant",
+            "analytical",
+            stage(5, flat).to_string(),
+        ),
+        (
+            "run_scenario_steady_state_cs137",
+            "run_scenario",
+            scen("steady-state", "cs137", [40, 10, 10, 40, 10]).to_string(),
+        ),
+        (
+            "run_scenario_shutdown_sr90",
+            "run_scenario",
+            scen("shutdown-cooldown", "sr90", [60, 10, 10, 40, 10]).to_string(),
+        ),
+        (
+            "run_scenario_rejected",
+            "run_scenario",
+            json!({"schema": 3, "scenario_id": "steady-state", "nuclide": "ag110m"}).to_string(),
+        ),
+        ("options", "options", json!({"schema": 3}).to_string()),
+    ]
 }
 
 /// The battery, or only the cases named on the command line.
@@ -183,6 +320,11 @@ fn call(function: &str, input: &str) -> String {
         "compare" => strato_wasm::compare(input),
         "export_run" => strato_wasm::export_run(input),
         "build_info" => strato_wasm::build_info(),
+        "run_stage" => strato_wasm::run_stage(input),
+        "run_scenario" => strato_wasm::run_scenario(input),
+        "btcs_system" => strato_wasm::btcs_system(input),
+        "analytical" => strato_wasm::analytical(input),
+        "options" => strato_wasm::options(input),
         other => panic!("unknown function {other}"),
     }
 }
@@ -210,7 +352,13 @@ fn is_series_derived(pattern: &str) -> bool {
         .strip_prefix(".baseline")
         .or_else(|| pattern.strip_prefix(".modified"))
         .unwrap_or(pattern);
-    p.starts_with(".analytical.") || p.starts_with(".diagnostics.analytical_comparison")
+    // The `analytical` function of ABI 4 returns the series at the top level of its reply, and
+    // `run_scenario` returns it in `.method_b`; `run_stage` only says whether it applies.
+    p.starts_with(".analytical.")
+        || p.starts_with(".diagnostics.analytical_comparison")
+        || p.starts_with(".method_b.release_fraction")
+        || p.starts_with(".release_fraction[]")
+        || p.starts_with(".release_fraction_of_total[]")
 }
 
 /// The series accuracy floor of the native reply that a leaf belongs to: that of the run itself, or
@@ -223,7 +371,11 @@ fn floor_at(native: &Value, path: &str) -> f64 {
     } else {
         native
     };
-    run["analytical"]["accuracy_floor"].as_f64().unwrap_or(0.0)
+    run["analytical"]["accuracy_floor"]
+        .as_f64()
+        .or_else(|| run["method_b"]["accuracy_floor"].as_f64())
+        .or_else(|| run["accuracy_floor"].as_f64())
+        .unwrap_or(0.0)
 }
 
 fn pattern(path: &str) -> String {

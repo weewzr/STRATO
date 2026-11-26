@@ -427,6 +427,7 @@ dependencies = [
  "plotters",
  "strato",
  "strato-data",
+ "strato-scenarios",
 ]
 
 [[package]]
