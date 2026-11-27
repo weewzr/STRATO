@@ -7,7 +7,7 @@
     "solver_version": "1.0.1",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "f5f3155",
+    "commit": "461aa1d",
     "solver_source_sha256": "02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
@@ -46,38 +46,38 @@
     },
     {
       "path": "comparison/HUNN14-422-AG110M.json",
-      "sha256_without_commit_lines": "30791fc793a24d5d754a630a339b3cffa03c7978017d6a41e2511a11c3cbcf4c",
-      "bytes_without_commit_lines": 41123
+      "sha256_without_commit_lines": "a0b7f3b77f242645252d09181c3bddce3088803752fc4750b1725098b6fdac1c",
+      "bytes_without_commit_lines": 41119
     },
     {
       "path": "comparison/HUNN14-442-AG110M.json",
-      "sha256_without_commit_lines": "42fc661371e80f9fc97f204efbc38448357931a78fb4695ccf6d7483b4f6afae",
-      "bytes_without_commit_lines": 30557
+      "sha256_without_commit_lines": "92d19c64e0e41cd69ce47e4cb973ebb85ef163cdd93b104f2fbc1c9ef5877cf5",
+      "bytes_without_commit_lines": 30575
     },
     {
       "path": "comparison/HUNN14-442-SR90.json",
-      "sha256_without_commit_lines": "71b2c28bc6c2684002006bc3ae0493a795dd6ae0a8d14add7ebe560b59199265",
-      "bytes_without_commit_lines": 30325
+      "sha256_without_commit_lines": "69c0d62c5e7c56665adbbf4b664b761e7ba14714e493963f72917019927f1b87",
+      "bytes_without_commit_lines": 30343
     },
     {
       "path": "comparison/HUNN16-442-CS134.json",
-      "sha256_without_commit_lines": "2b684368ac4b4dedf33d4f6d8bb85116f1cfee6dde68fc75b4dd2e0ec0abdb36",
-      "bytes_without_commit_lines": 30328
+      "sha256_without_commit_lines": "fcff334b06899733c0d89e0da5615a860c0e12e7bd53b1eb99c1f143ceea08fb",
+      "bytes_without_commit_lines": 30346
     },
     {
       "path": "comparison/HUNN16-442-CS137.json",
-      "sha256_without_commit_lines": "0e74c327eab0b3ced099df47cc51e4f2f5e5f8363627faaa27eeb7c08f6cc1c7",
-      "bytes_without_commit_lines": 30028
+      "sha256_without_commit_lines": "06fd63199b64445052697bd1e39f9936dcc5cc60725c5aee8bb9765c8480cd4a",
+      "bytes_without_commit_lines": 30046
     },
     {
       "path": "comparison/IAEA97-JAERI-A-CS137-1600.json",
-      "sha256_without_commit_lines": "d052723f0a04803f8ec00dc206049584da186de7a1ec3b7ae7f547cfdee1f97b",
-      "bytes_without_commit_lines": 23451
+      "sha256_without_commit_lines": "0971b62df57c18fbade90f86f4869bc5ba39ab9716aef5faf90b85ae60050d6f",
+      "bytes_without_commit_lines": 23464
     },
     {
       "path": "comparison/IAEA97-JAERI-A-CS137-1800.json",
-      "sha256_without_commit_lines": "5678fce32c70eacbdf544e21dc637c6015a05efd54522bdffe9587218ffa82df",
-      "bytes_without_commit_lines": 23747
+      "sha256_without_commit_lines": "579ee8af6cf7d0958003da81275f0565bca21509d07b6a8c66dfaa5ada68789b",
+      "bytes_without_commit_lines": 23763
     },
     {
       "path": "comparison/IAEA97-K31-AG110M.json",
@@ -86,8 +86,8 @@
     },
     {
       "path": "comparison/IAEA97-K31-CS137.json",
-      "sha256_without_commit_lines": "721d33455195618aff212f64ce9809ba5a9203a360bc98e438e71ca8b34a2854",
-      "bytes_without_commit_lines": 38086
+      "sha256_without_commit_lines": "a51a22f0614cce9f4fad16d978f94387343806aa7cbe941ebc6de5ef0b5eab0b",
+      "bytes_without_commit_lines": 38246
     },
     {
       "path": "comparison/IAEA97-K31-SR90.json",
@@ -96,18 +96,18 @@
     },
     {
       "path": "comparison/STEMPIEN23-433-AG110M.json",
-      "sha256_without_commit_lines": "eb727c3b4393570e126fd57f87229127b035a042ea452f354d2ebcafd9630df7",
-      "bytes_without_commit_lines": 28425
+      "sha256_without_commit_lines": "bca8b823ae2d8e39661ae50d07e3591c239cbcf2da0840014bcc2e6ebba3199b",
+      "bytes_without_commit_lines": 28421
     },
     {
       "path": "comparison/STEMPIEN23-643-AG110M.json",
-      "sha256_without_commit_lines": "20514f86f19740b5e73858e1020a0880fe8439e88c3ea646e095bf163b39486b",
-      "bytes_without_commit_lines": 33310
+      "sha256_without_commit_lines": "68219096ff353bf5b751b37520fe8a68198c57d63e1948532a5510b2f4fcb5c5",
+      "bytes_without_commit_lines": 28743
     },
     {
       "path": "comparison/STEMPIEN23-643-SR90.json",
-      "sha256_without_commit_lines": "29ca98fc5299ab8eec286b087e67036b6cc5bbf57c49fc084e963e10292ef070",
-      "bytes_without_commit_lines": 34125
+      "sha256_without_commit_lines": "8227cafe9eadca7ac3f5795712f6cdbb6e4b10aefb47e556ddee7614233fc661",
+      "bytes_without_commit_lines": 29561
     },
     {
       "path": "csv/agreement.csv",
@@ -136,8 +136,8 @@
     },
     {
       "path": "csv/r2.csv",
-      "sha256_without_commit_lines": "42fb9762c880d2423de742e008af20accc5bd4068eed7d9c504d746744f48e8c",
-      "bytes_without_commit_lines": 8590
+      "sha256_without_commit_lines": "61c83c765dc0395af9761962244b9a0e9868b9d857c60149d067b6fc4beb7469",
+      "bytes_without_commit_lines": 8602
     },
     {
       "path": "csv/scenario_histories.csv",
@@ -676,8 +676,8 @@
     },
     {
       "path": "labels.json",
-      "sha256_without_commit_lines": "e5803aa0c6bd179f6d55a2df6e60a401f8fc570bb7b0edbd0311b13b59bf2fa6",
-      "bytes_without_commit_lines": 35986
+      "sha256_without_commit_lines": "9ce936f586a1d8a42644d60ea27f59b1a6d6cb41864040b2a615e9e0e71d32e0",
+      "bytes_without_commit_lines": 35784
     },
     {
       "path": "parameters.json",
@@ -686,8 +686,8 @@
     },
     {
       "path": "r2.json",
-      "sha256_without_commit_lines": "650a76e2611a1c9a232566702f0755a62e47cf353d59ef4faa259e66917212f8",
-      "bytes_without_commit_lines": 246209
+      "sha256_without_commit_lines": "3d6ffa6bf70fa06d94baa2c8517d9552b5de22d2940c783b03bf578bfb16aaf3",
+      "bytes_without_commit_lines": 245660
     },
     {
       "path": "scenarios.json",

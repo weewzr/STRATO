@@ -7,7 +7,7 @@
     "solver_version": "1.0.1",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "f5f3155",
+    "commit": "461aa1d",
     "solver_source_sha256": "02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
@@ -527,7 +527,7 @@
       "f_model_t_plus": [2.005020840780748e-67,1.7351677538876009e-25,5.294235777330919e-14,2.666234742474577e-9,3.3979135258777224e-8,7.683662323544484e-8,3.6589562755593106e-6,1.507359936685043e-5,3.752509968168464e-5,9.173517887420786e-5,1.73358363071106e-4,2.9478044794895307e-4,4.8810010062951215e-4,7.141938002906057e-4,1.0227396052034205e-3,1.334350104845507e-3,1.7876062881684851e-3,2.3154824198683877e-3,2.8680716867747467e-3,3.4550857404004915e-3,4.1549217529327715e-3,4.822071638208764e-3],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.CRP6-P4K3.T978-FRG.CRP6-8a.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "1e17e7140baf6530ce4e01e91c01d1e6c5685110d193c9e1085badbb39ba816a",
         "refined_output_sha256": "e215187f74e9415352e46df80f0b25669f7fd519aea46c5dddb0e83580cd7997",
@@ -611,7 +611,7 @@
         },
         {
           "code": "frg_reference_correlations",
-          "text": "diffusivities: the FRG reference correlations of IAEA-TECDOC-978 Tables A-1 to A-3 (German fuel; rows A1-01..A1-04, BUF-01, A2-01..A2-03, A3-01..A3-05), not the AGR-1 heating-test set C16 (decision 72(b)); no validity range printed"
+          "text": "diffusivities: the FRG reference correlations of IAEA-TECDOC-978 Tables A-1 to A-3 (German fuel; rows A1-01..A1-04, BUF-01, A2-01..A2-03, A3-01..A3-05), not the AGR-1 heating-test set C16 (decision 72(b)); no validity range printed; the row A3-01 is applied without its fluence factor exp(Gamma/5) (decision 39)"
         },
         {
           "code": "decay_not_modelled",
@@ -853,7 +853,7 @@
         },
         {
           "code": "frg_reference_correlations",
-          "text": "diffusivities: the FRG reference correlations of IAEA-TECDOC-978 Tables A-1 to A-3 (German fuel; rows A1-01..A1-04, BUF-01, A2-01..A2-03, A3-01..A3-05), not the AGR-1 heating-test set C16 (decision 72(b)); no validity range printed"
+          "text": "diffusivities: the FRG reference correlations of IAEA-TECDOC-978 Tables A-1 to A-3 (German fuel; rows A1-01..A1-04, BUF-01, A2-01..A2-03, A3-01..A3-05), not the AGR-1 heating-test set C16 (decision 72(b)); no validity range printed; the row A3-01 is applied without its fluence factor exp(Gamma/5) (decision 39)"
         },
         {
           "code": "decay_not_modelled",

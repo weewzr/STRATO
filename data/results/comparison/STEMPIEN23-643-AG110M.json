@@ -7,7 +7,7 @@
     "solver_version": "1.0.1",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "f5f3155",
+    "commit": "461aa1d",
     "solver_source_sha256": "02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
@@ -201,9 +201,8 @@
     },
     "method_b": {
       "label": "Method B: Sturm–Liouville",
-      "status": "available",
-      "time_h": [0e0,5e-2,5.4000000000000006e-2,5.832000000000001e-2,6.298560000000002e-2,6.802444800000003e-2,7.346640384000004e-2,7.934371614720005e-2,8.569121343897607e-2,9.254651051409415e-2,9.99502313552217e-2,1.0794624986363945e-1,1.1658194985273061e-1,1.2590850584094906e-1,1.35981186308225e-1,1.46859681212883e-1,1.5860845570991366e-1,1.7129713216670678e-1,1.8500090274004333e-1,1.998009749592468e-1,2.1578505295598657e-1,2.330478571924655e-1,2.5169168576786277e-1,2.718270206292918e-1,2.935731822796352e-1,3.1705903686200604e-1,3.4242375981096657e-1,3.698176605958439e-1,3.9940307344351145e-1,4.313553193189924e-1,4.658637448645118e-1,5.031328444536728e-1,5.433834720099666e-1,5.86854149770764e-1,6.338024817524252e-1,6.845066802926192e-1,7.392672147160287e-1,7.984085918933111e-1,8.62281279244776e-1,9.312637815843582e-1,1.0057648841111069e0,1.0862260748399954e0,1.1e0,1.1731241608271952e0,1.2669740936933709e0,1.3683320211888406e0,1.477798582883948e0,1.5960224695146639e0,1.7237042670758371e0,1.8616006084419041e0,2.0105286571172565e0,2.1713709496866374e0,2.3450806256615686e0,2.5326870757144944e0,2.735302041771654e0,2.9541262051133867e0,3.190456301522458e0,3.4456928056442546e0,3.721348230095795e0,4.019056088503459e0,4.3405805755837354e0,4.687827021630435e0,5.06285318336087e0,5.46788143802974e0,5.905311953072119e0,6.377736909317889e0,6.887955862063321e0,7.438992331028387e0,8.034111717510658e0,8.676840654911512e0,9.370987907304434e0,1.0120666939888789e1,1.0930320295079893e1,1.1804745918686285e1,1.2749125592181189e1,1.3769055639555685e1,1.4870580090720141e1,1.6060226497977755e1,1.7345044617815976e1,1.8732648187241256e1,2.023126004222056e1,2.1849760845598205e1,2.3597741713246062e1,2.51e1,2.5485561050305748e1,2.7524405934330208e1,2.9726358409076628e1,3.210446708180276e1,3.467282444834698e1,3.744665040421474e1,4.0442382436551924e1,4.367777303147608e1,4.7171994873994166e1,4.95e1,5.09457544639137e1,5.50214148210268e1,5.942312800670895e1,6.417697824724567e1,6.931113650702532e1,7.485602742758735e1,8.084450962179434e1,8.73120703915379e1,9.429703602286094e1,9.71e1,1.0184079890468982e2,1.0998806281706501e2,1.1878710784243022e2,1.2829007646982464e2,1.3855328258741062e2,1.452e2,1.496375451944035e2,1.6160854880995578e2,1.7453723271475226e2,1.8850021133193246e2,1.932e2,2.0358022823848708e2,2.1986664649756605e2,2.3745597821737135e2,2.551e2,2.5645245647476105e2,2.7696865299274197e2,2.991261452321613e2,3.032e2,3.2305623685073425e2,3.48900735798793e2,3.511e2,3.7681279466269643e2,3.991e2,3.993e2],
-      "release_fraction": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,6.322071910425109e-7,1.4773102818832484e-6,3.266890792330557e-6,6.861915388789441e-6,1.373686295480514e-5,2.6293250704134685e-5,4.826241938704623e-5,8.519133927264999e-5,1.4499208483220727e-4,2.3852283925784867e-4,3.8015835410931675e-4,5.883026169682948e-4,8.857968027486951e-4,1.3001808380390667e-3,1.8637756101063108e-3,2.6135632881352233e-3,3.590854129556731e-3,4.84073909912186e-3,6.411339016764828e-3,8.352873519338e-3,1.07165873284647e-2,1.355358673261764e-2,1.6913654209341322e-2,2.084412110208622e-2,2.443792430505265e-2,2.538888413579754e-2,3.0587648557695912e-2,3.6475467206594336e-2,4.3082620923240555e-2,5.0434853400061264e-2,5.855393653829721e-2,6.745850551489074e-2,7.716507129865724e-2,8.768909696055471e-2,9.469922915252593e-2,9.904601603816365e-2,1.112520776659236e-1,1.2432492315702248e-1,1.3828382913011916e-1,1.5314958844036575e-1,1.6894403658284796e-1,1.8568926243957562e-1,2.03406563846656e-1,2.221152180363789e-1,2.294997067418162e-1,2.418311346737586e-1,2.6256544761924727e-1,2.843230852150027e-1,3.0710134290220426e-1,3.308884706013281e-1,3.4585621730197136e-1,3.556622829412486e-1,3.8138880336650904e-1,4.0802096193869475e-1,4.3549737900527186e-1,4.444557755126882e-1,4.6374128059848163e-1,4.926596047400975e-1,5.221423696440375e-1,5.499955967042653e-1,5.520623843497358e-1,5.82275388831156e-1,6.126207131555361e-1,6.179551602923207e-1,6.429225425860161e-1,6.729918661945546e-1,6.754306118142135e-1,7.026291690755035e-1,7.243532009381893e-1,7.245407825066561e-1]
+      "status": "not available",
+      "reason": "Method B: not available (RAMP_NOT_REGISTERED: the measurement includes the heating ramp and the registered history holds none; an isothermal idealisation is a different configuration)"
     }
   },
   "r2_records": [
@@ -295,7 +294,7 @@
       "f_model_t_plus": [6.679212153600803e-13,2.4977655082156193e-2,9.529521737677236e-2,2.2999490078673626e-1,3.462627152218917e-1,4.44789230718647e-1,5.502534077294687e-1,6.181659249275583e-1,6.756028057705062e-1,7.24493599350069e-1],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ASRUN-6-4-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "e2a35170f34065d39cc9475b45a0a2d0d1ad545fa950270a7edf0ead1c23bb1f",
         "refined_output_sha256": "d4a612751a2a435daf8324c0c727645578441ff678565886c35767e9fe440eca",
@@ -328,6 +327,7 @@
       "failed_checks": [
         "C1",
         "C3",
+        "C5",
         "C6",
         "D1",
         "M2",
@@ -366,6 +366,10 @@
         {
           "code": "c16_heating_test_set",
           "text": "diffusivities: the published heating-test rows C16 as printed (decision 39); no validity range printed, applied by Collin (2016) over 400 to 1800 degC"
+        },
+        {
+          "code": "temperature_ramp_not_modelled",
+          "text": "temperature ramp not modelled: the time axis of the source runs through the heating ramp and the values include the release during it, but the registered history AGR1-ASRUN-6-4-3 holds the hold only; the run is isothermal from the hold start"
         },
         {
           "code": "decay_not_modelled",
@@ -473,22 +477,15 @@
       "data_kind": "digitised",
       "n": 10,
       "matched_times_h": [1.1e0,2.51e1,4.95e1,9.71e1,1.452e2,1.932e2,2.551e2,3.032e2,3.511e2,3.991e2],
-      "model_times_h": [null,2.51e1,4.95e1,9.71e1,1.452e2,1.932e2,2.551e2,3.032e2,3.511e2,3.991e2],
+      "model_times_h": [null,null,null,null,null,null,null,null,null,null],
       "f_exp": [1.89e-2,1.89e-2,1.89e-2,1.9e-2,1.9e-2,1.9e-2,1.91e-2,1.91e-2,1.91e-2,1.92e-2],
       "f_exp_registered": [1.89e-2,1.89e-2,1.89e-2,1.9e-2,1.9e-2,1.9e-2,1.91e-2,1.91e-2,1.91e-2,1.92e-2],
       "f_exp_registered_unit": "1",
       "f_exp_conversion": null,
-      "f_model": [null,2.443792430505265e-2,9.469922915252593e-2,2.294997067418162e-1,3.4585621730197136e-1,4.444557755126882e-1,5.499955967042653e-1,6.179551602923207e-1,6.754306118142135e-1,7.243532009381893e-1],
-      "f_model_t_minus": [null,2.394904135874487e-2,9.409741525673943e-2,2.2897511658091174e-1,3.454107606986233e-1,4.4407746232114986e-1,5.49689153766711e-1,6.1769499629814e-1,6.752095873174979e-1,7.241654916308685e-1],
-      "f_model_t_plus": [null,2.4929833889152264e-2,9.530093466944278e-2,2.3002394204109633e-1,3.4630137077993384e-1,4.4483383125681253e-1,5.503018311030412e-1,6.182151472412019e-1,6.756514859006146e-1,7.245407825066561e-1],
-      "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
-        "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ASRUN-6-4-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
-        "alpha_max_per_s": 2.5e-1,
-        "modes": 186,
-        "e_num_basis": "the accuracy floor of the series; the difference to the series with a quarter of the eigenvalue cover is not returned by the single Method B function and is not added"
-      },
+      "f_model": [null,null,null,null,null,null,null,null,null,null],
+      "f_model_t_minus": [null,null,null,null,null,null,null,null,null,null],
+      "f_model_t_plus": [null,null,null,null,null,null,null,null,null,null],
+      "model_run_ref": null,
       "curve_assessment_ref": null,
       "evaluation": [
         "exact_step",
@@ -502,7 +499,7 @@
         "exact_step",
         "exact_step"
       ],
-      "e_num": [null,4.03280897381652e-9,4.03280897381652e-9,4.03280897381652e-9,4.03280897381652e-9,4.03280897381652e-9,4.03280897381652e-9,4.03280897381652e-9,4.03280897381652e-9,4.03280897381652e-9],
+      "e_num": [null,null,null,null,null,null,null,null,null,null],
       "numerical_budget": null,
       "mean_f_exp": null,
       "ss_tot": null,
@@ -515,9 +512,10 @@
       "failed_checks": [
         "C1",
         "C3",
+        "C5",
         "C6",
         "D1",
-        "B2",
+        "B1",
         "C0",
         "V1"
       ],
@@ -555,6 +553,10 @@
           "text": "diffusivities: the published heating-test rows C16 as printed (decision 39); no validity range printed, applied by Collin (2016) over 400 to 1800 degC"
         },
         {
+          "code": "temperature_ramp_not_modelled",
+          "text": "temperature ramp not modelled: the time axis of the source runs through the heating ramp and the values include the release during it, but the registered history AGR1-ASRUN-6-4-3 holds the hold only; the run is isothermal from the hold start"
+        },
+        {
           "code": "decay_not_modelled",
           "text": "decay not modelled: release assumed decay-corrected"
         },
@@ -579,8 +581,8 @@
       },
       "systematic_r2_interval": null,
       "systematic_interval_display": null,
-      "method_b_applicable": true,
-      "method_b_mask_passed": false
+      "method_b_applicable": false,
+      "method_b_mask_passed": null
     }
   ],
   "caption": {
@@ -599,18 +601,13 @@
     "specimen_label": "compact 6-4-3",
     "temperature_label": "1600 °C",
     "y_axis_label": "Cumulative release fraction",
-    "y_axis_scale": "linear",
+    "y_axis_scale": null,
     "legend_exp_label": "Experiment, upper bound (digitised)",
     "marker_colour_exp": "#111111",
     "legend_methods": [
       {
         "label": "Method A: BTCS",
         "colour": "#2563EB",
-        "style": "solid"
-      },
-      {
-        "label": "Method B: Sturm–Liouville",
-        "colour": "#DC2626",
         "style": "solid"
       }
     ]

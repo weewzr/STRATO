@@ -7,7 +7,7 @@
     "solver_version": "1.0.1",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "f5f3155",
+    "commit": "461aa1d",
     "solver_source_sha256": "02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
@@ -145,7 +145,7 @@
       "f_model_t_plus": [1.4049728994775858e-29,2.4975655028915906e-3,1.1197802062822769e-1,3.404994812263173e-1,5.172976712829049e-1,6.439894703360737e-1,7.377635330016019e-1,8.065910645182087e-1,8.573538731235779e-1,8.955943046472287e-1,9.581667760501481e-1,9.84589852042924e-1,9.950843620137763e-1,9.981660075060135e-1,9.994552572286314e-1,null],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-LP-4-4-2.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "fbd0fef09d64bb3955376d769ec7c44fef7e5ff24fab33ffe8c820e956eab3c0",
         "refined_output_sha256": "b251d8a7df5bbd373de20a9e486b9984caf519f1690db25ace48c92bddb0eade",
@@ -565,7 +565,7 @@
       "f_model_t_plus": [6.026755687156219e-32,2.0659866568707242e-4,2.6837671947505023e-2,1.0765317072369104e-1,1.8438919134134107e-1,2.457347611606215e-1,2.962299608123029e-1,3.382824614373994e-1,3.743090690136829e-1,4.0659005294557216e-1,4.832180925969908e-1,5.478983127784448e-1,6.072040822911808e-1,6.497768203818503e-1,6.942344332201377e-1,null],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-LP-4-4-2.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "787a4b2bf2243c1435e7ab01758c8077e2282d935fa613d8c8c70f2d0a559cc9",
         "refined_output_sha256": "ab212c9d592498af830b8d960ab428b6230b43be1739bdea09fc4c329469a8be",
@@ -961,7 +961,7 @@
       "f_model_t_plus": [1.7467843109388796e-7,1.0052218289963614e-2,3.152438298671577e-2,7.358105364417833e-2,1.4469649760976877e-1,2.1140638906473855e-1,2.737432107659703e-1,3.304765846829849e-1,3.8319865638772144e-1,6.187856310131613e-1],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ST-C16-1600.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "6ab735b6eaee35e407f024e3c5e0639bac73a32d5d4b4057d2cbe3a20f5df136",
         "refined_output_sha256": "e198a11a0f7140ab26786388bfc29a04263b8a29c403cc80351fe001c901fd77",
@@ -1331,7 +1331,7 @@
       "f_model_t_plus": [6.679212153600803e-13,2.4977655082156193e-2,9.529521737677236e-2,2.2999490078673626e-1,3.462627152218917e-1,4.44789230718647e-1,5.502534077294687e-1,6.181659249275583e-1,6.756028057705062e-1,7.24493599350069e-1],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ASRUN-6-4-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "e2a35170f34065d39cc9475b45a0a2d0d1ad545fa950270a7edf0ead1c23bb1f",
         "refined_output_sha256": "d4a612751a2a435daf8324c0c727645578441ff678565886c35767e9fe440eca",
@@ -1364,6 +1364,7 @@
       "failed_checks": [
         "C1",
         "C3",
+        "C5",
         "C6",
         "D1",
         "M2",
@@ -1402,6 +1403,10 @@
         {
           "code": "c16_heating_test_set",
           "text": "diffusivities: the published heating-test rows C16 as printed (decision 39); no validity range printed, applied by Collin (2016) over 400 to 1800 degC"
+        },
+        {
+          "code": "temperature_ramp_not_modelled",
+          "text": "temperature ramp not modelled: the time axis of the source runs through the heating ramp and the values include the release during it, but the registered history AGR1-ASRUN-6-4-3 holds the hold only; the run is isothermal from the hold start"
         },
         {
           "code": "decay_not_modelled",
@@ -1509,22 +1514,15 @@
       "data_kind": "digitised",
       "n": 10,
       "matched_times_h": [1.1e0,2.51e1,4.95e1,9.71e1,1.452e2,1.932e2,2.551e2,3.032e2,3.511e2,3.991e2],
-      "model_times_h": [null,2.51e1,4.95e1,9.71e1,1.452e2,1.932e2,2.551e2,3.032e2,3.511e2,3.991e2],
+      "model_times_h": [null,null,null,null,null,null,null,null,null,null],
       "f_exp": [1.89e-2,1.89e-2,1.89e-2,1.9e-2,1.9e-2,1.9e-2,1.91e-2,1.91e-2,1.91e-2,1.92e-2],
       "f_exp_registered": [1.89e-2,1.89e-2,1.89e-2,1.9e-2,1.9e-2,1.9e-2,1.91e-2,1.91e-2,1.91e-2,1.92e-2],
       "f_exp_registered_unit": "1",
       "f_exp_conversion": null,
-      "f_model": [null,2.443792430505265e-2,9.469922915252593e-2,2.294997067418162e-1,3.4585621730197136e-1,4.444557755126882e-1,5.499955967042653e-1,6.179551602923207e-1,6.754306118142135e-1,7.243532009381893e-1],
-      "f_model_t_minus": [null,2.394904135874487e-2,9.409741525673943e-2,2.2897511658091174e-1,3.454107606986233e-1,4.4407746232114986e-1,5.49689153766711e-1,6.1769499629814e-1,6.752095873174979e-1,7.241654916308685e-1],
-      "f_model_t_plus": [null,2.4929833889152264e-2,9.530093466944278e-2,2.3002394204109633e-1,3.4630137077993384e-1,4.4483383125681253e-1,5.503018311030412e-1,6.182151472412019e-1,6.756514859006146e-1,7.245407825066561e-1],
-      "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
-        "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ASRUN-6-4-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
-        "alpha_max_per_s": 2.5e-1,
-        "modes": 186,
-        "e_num_basis": "the accuracy floor of the series; the difference to the series with a quarter of the eigenvalue cover is not returned by the single Method B function and is not added"
-      },
+      "f_model": [null,null,null,null,null,null,null,null,null,null],
+      "f_model_t_minus": [null,null,null,null,null,null,null,null,null,null],
+      "f_model_t_plus": [null,null,null,null,null,null,null,null,null,null],
+      "model_run_ref": null,
       "curve_assessment_ref": null,
       "evaluation": [
         "exact_step",
@@ -1538,7 +1536,7 @@
         "exact_step",
         "exact_step"
       ],
-      "e_num": [null,4.03280897381652e-9,4.03280897381652e-9,4.03280897381652e-9,4.03280897381652e-9,4.03280897381652e-9,4.03280897381652e-9,4.03280897381652e-9,4.03280897381652e-9,4.03280897381652e-9],
+      "e_num": [null,null,null,null,null,null,null,null,null,null],
       "numerical_budget": null,
       "mean_f_exp": null,
       "ss_tot": null,
@@ -1551,9 +1549,10 @@
       "failed_checks": [
         "C1",
         "C3",
+        "C5",
         "C6",
         "D1",
-        "B2",
+        "B1",
         "C0",
         "V1"
       ],
@@ -1591,6 +1590,10 @@
           "text": "diffusivities: the published heating-test rows C16 as printed (decision 39); no validity range printed, applied by Collin (2016) over 400 to 1800 degC"
         },
         {
+          "code": "temperature_ramp_not_modelled",
+          "text": "temperature ramp not modelled: the time axis of the source runs through the heating ramp and the values include the release during it, but the registered history AGR1-ASRUN-6-4-3 holds the hold only; the run is isothermal from the hold start"
+        },
+        {
           "code": "decay_not_modelled",
           "text": "decay not modelled: release assumed decay-corrected"
         },
@@ -1615,8 +1618,8 @@
       },
       "systematic_r2_interval": null,
       "systematic_interval_display": null,
-      "method_b_applicable": true,
-      "method_b_mask_passed": false
+      "method_b_applicable": false,
+      "method_b_mask_passed": null
     },
     {
       "record_id": "r2.STEMPIEN23-643-SR90.A",
@@ -1710,7 +1713,7 @@
       "f_model_t_plus": [2.4253697922933222e-14,4.214713455348247e-4,2.476737041615314e-3,5.610246452928788e-3,9.497797058070984e-3,1.861811074525472e-2,2.8743788035072822e-2,4.25969722236951e-2,5.360661486955672e-2,6.458925836747538e-2,7.549821583842772e-2],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ASRUN-6-4-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "9a120492ce2d8743cf0fb83c3109df753914580217c671127dc84617ee8284c6",
         "refined_output_sha256": "aece4aa088311e2563b1d794fc2a99e028d59a7b24083e4cb9855848c8f7ee19",
@@ -1744,6 +1747,7 @@
       "failed_checks": [
         "C1",
         "C3",
+        "C5",
         "C6",
         "D1",
         "M2",
@@ -1782,6 +1786,10 @@
         {
           "code": "c16_heating_test_set",
           "text": "diffusivities: the published heating-test rows C16 as printed (decision 39); no validity range printed, applied by Collin (2016) over 400 to 1800 degC"
+        },
+        {
+          "code": "temperature_ramp_not_modelled",
+          "text": "temperature ramp not modelled: the time axis of the source runs through the heating ramp and the values include the release during it, but the registered history AGR1-ASRUN-6-4-3 holds the hold only; the run is isothermal from the hold start"
         },
         {
           "code": "decay_not_modelled",
@@ -1893,22 +1901,15 @@
       "data_kind": "digitised",
       "n": 11,
       "matched_times_h": [1.1e0,2.51e1,4.95e1,7.32e1,9.72e1,1.453e2,1.932e2,2.551e2,3.032e2,3.511e2,3.991e2],
-      "model_times_h": [null,2.51e1,4.95e1,7.32e1,9.72e1,1.453e2,1.932e2,2.551e2,3.032e2,3.511e2,3.991e2],
+      "model_times_h": [null,null,null,null,null,null,null,null,null,null,null],
       "f_exp": [9.12e-7,2.45e-6,3.19e-6,3.7e-6,4.25e-6,5.31e-6,6.1e-6,7.27e-6,8.07e-6,9.11e-6,1.1e-5],
       "f_exp_registered": [9.12e-7,2.45e-6,3.19e-6,3.7e-6,4.25e-6,5.31e-6,6.1e-6,7.27e-6,8.07e-6,9.11e-6,1.1e-5],
       "f_exp_registered_unit": "1",
       "f_exp_conversion": null,
-      "f_model": [null,3.7398445956304815e-4,2.3686387402293008e-3,5.4670346673310055e-3,9.331706369381854e-3,1.842500318872231e-2,2.8536975959535082e-2,4.238291471296085e-2,5.339180720123016e-2,6.437635008587927e-2,7.528896177254063e-2],
-      "f_model_t_minus": [null,3.6450126425913165e-4,2.3465439558368884e-3,5.437476388266305e-3,9.297210751535112e-3,1.8384540220367618e-2,2.849333993593306e-2,4.23374015158845e-2,5.334589042189275e-2,6.433061646757221e-2,7.5243808624466e-2],
-      "f_model_t_plus": [null,3.835947853984001e-4,2.390812679521237e-3,5.496642722217837e-3,9.366235869093686e-3,1.8465483923513548e-2,2.858062142892126e-2,4.242843116050066e-2,5.343772427098603e-2,6.442208200380395e-2,7.533411186605332e-2],
-      "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
-        "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ASRUN-6-4-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
-        "alpha_max_per_s": 1.6449552621044146e-2,
-        "modes": 1000,
-        "e_num_basis": "the accuracy floor of the series; the difference to the series with a quarter of the eigenvalue cover is not returned by the single Method B function and is not added"
-      },
+      "f_model": [null,null,null,null,null,null,null,null,null,null,null],
+      "f_model_t_minus": [null,null,null,null,null,null,null,null,null,null,null],
+      "f_model_t_plus": [null,null,null,null,null,null,null,null,null,null,null],
+      "model_run_ref": null,
       "curve_assessment_ref": null,
       "evaluation": [
         "exact_step",
@@ -1923,7 +1924,7 @@
         "exact_step",
         "exact_step"
       ],
-      "e_num": [null,9.553494118410903e-9,9.553494118410903e-9,9.553494118410903e-9,9.553494118410903e-9,9.553494118410903e-9,9.553494118410903e-9,9.553494118410903e-9,9.553494118410903e-9,9.553494118410903e-9,9.553494118410903e-9],
+      "e_num": [null,null,null,null,null,null,null,null,null,null,null],
       "numerical_budget": null,
       "mean_f_exp": null,
       "ss_tot": null,
@@ -1936,9 +1937,10 @@
       "failed_checks": [
         "C1",
         "C3",
+        "C5",
         "C6",
         "D1",
-        "B2",
+        "B1",
         "C0",
         "V1"
       ],
@@ -1976,6 +1978,10 @@
           "text": "diffusivities: the published heating-test rows C16 as printed (decision 39); no validity range printed, applied by Collin (2016) over 400 to 1800 degC"
         },
         {
+          "code": "temperature_ramp_not_modelled",
+          "text": "temperature ramp not modelled: the time axis of the source runs through the heating ramp and the values include the release during it, but the registered history AGR1-ASRUN-6-4-3 holds the hold only; the run is isothermal from the hold start"
+        },
+        {
           "code": "decay_not_modelled",
           "text": "decay not modelled: release assumed decay-corrected"
         },
@@ -2000,8 +2006,8 @@
       },
       "systematic_r2_interval": null,
       "systematic_interval_display": null,
-      "method_b_applicable": true,
-      "method_b_mask_passed": false
+      "method_b_applicable": false,
+      "method_b_mask_passed": null
     },
     {
       "record_id": "r2.HUNN14-422-AG110M.A",
@@ -2167,7 +2173,7 @@
       "f_model_t_plus": [1.6925338674520242e-4,1.4705823973995197e-2,4.22917143350756e-2,1.0468713728825296e-1,1.7166933154117006e-1,1.9006136294198095e-1,2.0986894677230641e-1,2.3730171934198063e-1,2.6908909757868954e-1,2.8232978350063115e-1,2.8666037536801203e-1,2.909232586719329e-1,3.2436368595334925e-1,3.336740422505423e-1,3.345883711930529e-1,3.353306030248065e-1,3.61750598490387e-1,3.7380750118688616e-1,3.740607736667289e-1,3.743277614326906e-1,4.1075420050132067e-1,null,null,null,null,null,null,null,null],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ASRUN-4-2-2-MULTI.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "0fc1652c5fad2587f394b78cc323ff5c606d9d94f27115bcafd63c69c9ccf71b",
         "refined_output_sha256": "cf2b8476601e5637c7c971b45b70534c01c08e0dc23ef9f986055c96c6063329",
@@ -2589,7 +2595,7 @@
       "denominator": "not established",
       "time_basis": "isothermal test duration",
       "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
-      "independence": "calibration_check",
+      "independence": "not_established",
       "source_citation_apa": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
       "source_citation_note": null,
       "source_link": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
@@ -2631,7 +2637,7 @@
       "f_model_t_plus": [null,null,null],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "ca1e52e0626da6c289cc7e2b489fc33c88b419ff3bf214b0b3c84cb0abc56273",
         "refined_output_sha256": "0f01e366f61527f6beb808b2b7be22d654d50a48a0a16cb149a17ee72936fa55",
@@ -2698,8 +2704,8 @@
           "text": "no per-point uncertainty stated; zero-variance test at floating-point level only"
         },
         {
-          "code": "calibration_check",
-          "text": "parameter fitted to these data: calibration check, not an independent comparison"
+          "code": "independence_not_established",
+          "text": "independence of the parameters from these data not established"
         }
       ],
       "digitisation": {
@@ -2736,7 +2742,7 @@
       "denominator": "not established",
       "time_basis": "isothermal test duration",
       "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
-      "independence": "calibration_check",
+      "independence": "not_established",
       "source_citation_apa": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
       "source_citation_note": null,
       "source_link": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
@@ -2778,11 +2784,12 @@
       "f_model_t_plus": [null,null,null],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "alpha_max_per_s": 2.5e-1,
         "modes": 590,
-        "e_num_basis": "the accuracy floor of the series; the difference to the series with a quarter of the eigenvalue cover is not returned by the single Method B function and is not added"
+        "e_num_basis": "|V_alpha_max - V_alpha_max/4| + accuracy_floor (metric-r2.md Section 2.3); V_alpha_max/4 is the series with the eigenvalue cover reduced by a factor 4",
+        "accuracy_floor": 5.00305086985562e-9
       },
       "curve_assessment_ref": null,
       "evaluation": [
@@ -2844,8 +2851,8 @@
           "text": "no per-point uncertainty stated; zero-variance test at floating-point level only"
         },
         {
-          "code": "calibration_check",
-          "text": "parameter fitted to these data: calibration check, not an independent comparison"
+          "code": "independence_not_established",
+          "text": "independence of the parameters from these data not established"
         }
       ],
       "digitisation": {
@@ -2882,7 +2889,7 @@
       "denominator": "not established",
       "time_basis": "isothermal test duration",
       "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
-      "independence": "calibration_check",
+      "independence": "not_established",
       "source_citation_apa": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
       "source_citation_note": null,
       "source_link": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
@@ -2928,7 +2935,7 @@
       "f_model_t_plus": [null,null,null,null],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "860912ea24c31f762f08a5355b5babd5a9992bac7f7a049bb188ab01ee78052f",
         "refined_output_sha256": "bb152a3e30a38b7aa7305f4c543377f2ab6d40e128565cca7bdd707aa0a1aa1f",
@@ -2996,8 +3003,8 @@
           "text": "no per-point uncertainty stated; zero-variance test at floating-point level only"
         },
         {
-          "code": "calibration_check",
-          "text": "parameter fitted to these data: calibration check, not an independent comparison"
+          "code": "independence_not_established",
+          "text": "independence of the parameters from these data not established"
         }
       ],
       "digitisation": {
@@ -3034,7 +3041,7 @@
       "denominator": "not established",
       "time_basis": "isothermal test duration",
       "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
-      "independence": "calibration_check",
+      "independence": "not_established",
       "source_citation_apa": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
       "source_citation_note": null,
       "source_link": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
@@ -3080,11 +3087,12 @@
       "f_model_t_plus": [null,null,null,null],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "alpha_max_per_s": 2.5e-1,
         "modes": 175,
-        "e_num_basis": "the accuracy floor of the series; the difference to the series with a quarter of the eigenvalue cover is not returned by the single Method B function and is not added"
+        "e_num_basis": "|V_alpha_max - V_alpha_max/4| + accuracy_floor (metric-r2.md Section 2.3); V_alpha_max/4 is the series with the eigenvalue cover reduced by a factor 4",
+        "accuracy_floor": 2.5744680428486675e-10
       },
       "curve_assessment_ref": null,
       "evaluation": [
@@ -3146,8 +3154,8 @@
           "text": "no per-point uncertainty stated; zero-variance test at floating-point level only"
         },
         {
-          "code": "calibration_check",
-          "text": "parameter fitted to these data: calibration check, not an independent comparison"
+          "code": "independence_not_established",
+          "text": "independence of the parameters from these data not established"
         }
       ],
       "digitisation": {
@@ -3278,7 +3286,7 @@
       "f_model_t_plus": [5.4079900521184e-246,8.70120630107278e-19,2.1771359499603914e-4,1.5337544138214886e-2,4.8140582293384e-2,8.445502588059021e-2,1.2096440895880246e-1,1.5699908749723573e-1,1.9111290203636278e-1,2.237429300162633e-1,3.142105862867403e-1,4.0078480273669836e-1,4.867050706395793e-1,5.508073896635465e-1,6.188464462567366e-1,null],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-LP-4-4-2.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "b8b4b53066e3c5f73becedc4cab9057a43b14fdcf06b2dd75d3aa96d0a5d5fd1",
         "refined_output_sha256": "2615ba4efbcee87a0dde794c9de1f3ec703e88a28fa3f325f14a43b24dac0fe8",
@@ -3698,7 +3706,7 @@
       "f_model_t_plus": [1.742198804375991e-245,5.884528982715506e-18,2.281468137536483e-4,1.5449476693546986e-2,4.828876133290418e-2,8.476169913794748e-2,1.2111466023320822e-1,1.5728894677683528e-1,1.9125220786146796e-1,2.2401040728977675e-1,3.1432877173377155e-1,4.0088806944073097e-1,4.8688197431731994e-1,5.508848035083442e-1,6.189121354022473e-1,null],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-LP-4-4-2.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "d27998cc3f81729f016f4ce24abc906e4de7c846f4e9af33cad9b07aac647a43",
         "refined_output_sha256": "76644c5c82b269cf285dd6736f6e77e624d965e8ae01c5979f6f88eb91fc0bad",
@@ -4098,7 +4106,7 @@
       "f_model_t_plus": [2.856627801868765e-239,5.119521971217784e-94,2.66572734943684e-30,2.0629022191802553e-21,4.713407956759034e-15,1.754593775104536e-10,2.991980731111274e-8,6.282704733426614e-7,4.557389308203745e-6,1.8869013110942414e-5,9.451245265773835e-4],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-FACS-4-3-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "dc5bd79eec29b17b204aba13a724297f44b700e18295c620536775fecf950d6f",
         "refined_output_sha256": "6a2a98720dd7c7abb203529f93b1294b5e0be6ff7576726d12144d3911a87b05",
@@ -4476,7 +4484,7 @@
       "f_model_t_plus": [1.1982069778934852e-29,1.1707102454652946e-9,1.053986816774096e-4,4.6025533455367666e-4,1.52486932509141e-3,4.282873623958578e-3,7.916649793432408e-3,1.2152228235408421e-2,1.6731213467448037e-2,2.163787913799442e-2,5.3174016010627614e-2],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-FACS-4-3-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "5e84334e08893635057c732c885df3379077cf2e244c8919d8292d00a792ae4f",
         "refined_output_sha256": "419deb073524e9ff5915cd790375b2e5da66ee31215104ecd5f943bfadff146b",
@@ -4898,7 +4906,7 @@
       "f_model_t_plus": [1.2274924706215821e-5,1.6727483027005132e-2,7.261610274862915e-2,1.544490424274749e-1,1.8193378385044942e-1,1.9977412483774099e-1,2.8728559917874413e-1,3.3292976806154395e-1,3.687256035906397e-1,4.140222951853193e-1,4.5003546200185174e-1,4.852568079742863e-1,5.19549260708025e-1,5.515571328927575e-1,5.791176490087375e-1,6.038934913283956e-1,6.323158631171487e-1,6.568111671960254e-1,6.779029542080054e-1,6.985309963756855e-1,7.170587555571343e-1,7.344478310212065e-1],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.CRP6-P4K3.T978-FRG.CRP6-8a.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "d9eefc2f99d697a149450d851900aa5cefadded9a7a2791eef76744a3d840ca7",
         "refined_output_sha256": "ac9777ef4d595c8dad6af99a7216459f4b839534a06e5d10bf5718542314d811",
@@ -5390,7 +5398,7 @@
       "f_model_t_plus": [2.005020840780748e-67,1.7351677538876009e-25,5.294235777330919e-14,2.666234742474577e-9,3.3979135258777224e-8,7.683662323544484e-8,3.6589562755593106e-6,1.507359936685043e-5,3.752509968168464e-5,9.173517887420786e-5,1.73358363071106e-4,2.9478044794895307e-4,4.8810010062951215e-4,7.141938002906057e-4,1.0227396052034205e-3,1.334350104845507e-3,1.7876062881684851e-3,2.3154824198683877e-3,2.8680716867747467e-3,3.4550857404004915e-3,4.1549217529327715e-3,4.822071638208764e-3],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.CRP6-P4K3.T978-FRG.CRP6-8a.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "1e17e7140baf6530ce4e01e91c01d1e6c5685110d193c9e1085badbb39ba816a",
         "refined_output_sha256": "e215187f74e9415352e46df80f0b25669f7fd519aea46c5dddb0e83580cd7997",
@@ -5474,7 +5482,7 @@
         },
         {
           "code": "frg_reference_correlations",
-          "text": "diffusivities: the FRG reference correlations of IAEA-TECDOC-978 Tables A-1 to A-3 (German fuel; rows A1-01..A1-04, BUF-01, A2-01..A2-03, A3-01..A3-05), not the AGR-1 heating-test set C16 (decision 72(b)); no validity range printed"
+          "text": "diffusivities: the FRG reference correlations of IAEA-TECDOC-978 Tables A-1 to A-3 (German fuel; rows A1-01..A1-04, BUF-01, A2-01..A2-03, A3-01..A3-05), not the AGR-1 heating-test set C16 (decision 72(b)); no validity range printed; the row A3-01 is applied without its fluence factor exp(Gamma/5) (decision 39)"
         },
         {
           "code": "decay_not_modelled",
@@ -5716,7 +5724,7 @@
         },
         {
           "code": "frg_reference_correlations",
-          "text": "diffusivities: the FRG reference correlations of IAEA-TECDOC-978 Tables A-1 to A-3 (German fuel; rows A1-01..A1-04, BUF-01, A2-01..A2-03, A3-01..A3-05), not the AGR-1 heating-test set C16 (decision 72(b)); no validity range printed"
+          "text": "diffusivities: the FRG reference correlations of IAEA-TECDOC-978 Tables A-1 to A-3 (German fuel; rows A1-01..A1-04, BUF-01, A2-01..A2-03, A3-01..A3-05), not the AGR-1 heating-test set C16 (decision 72(b)); no validity range printed; the row A3-01 is applied without its fluence factor exp(Gamma/5) (decision 39)"
         },
         {
           "code": "decay_not_modelled",
@@ -5874,7 +5882,7 @@
       "f_model_t_plus": [2.3910669797074863e-4,1.39073484121945e-3,4.3446961794981e-3,6.6366721392752326e-3,1.1755267228209784e-2,1.5027884425534327e-2,1.8298946871434595e-2,2.2264901673852838e-2,2.572273775539794e-2,2.90795327286984e-2,3.3089545431799e-2,3.6661206290370514e-2,4.0400202435632186e-2,4.382969631473509e-2,4.818656667919815e-2,5.175129065275408e-2,5.5604876659472405e-2,5.927849620229786e-2,6.277136752520372e-2,6.608413817825955e-2],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.CRP6-P4K3.T978-FRG.CRP6-8a.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "0db5520f399051895733659316f5f962d51ecc270deb746ae54c1e2c39d10f90",
         "refined_output_sha256": "9adde25eb5184203f18ac0285fa5415dba11ffa3fa8479108d2cf7e79b091f1f",

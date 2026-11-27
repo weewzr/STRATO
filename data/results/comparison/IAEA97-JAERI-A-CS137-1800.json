@@ -7,7 +7,7 @@
     "solver_version": "1.0.1",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "f5f3155",
+    "commit": "461aa1d",
     "solver_source_sha256": "02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
@@ -135,7 +135,7 @@
       "denominator": "not established",
       "time_basis": "isothermal test duration",
       "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
-      "independence": "calibration_check",
+      "independence": "not_established",
       "source_citation_apa": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
       "source_citation_note": null,
       "source_link": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
@@ -181,7 +181,7 @@
       "f_model_t_plus": [null,null,null,null],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "860912ea24c31f762f08a5355b5babd5a9992bac7f7a049bb188ab01ee78052f",
         "refined_output_sha256": "bb152a3e30a38b7aa7305f4c543377f2ab6d40e128565cca7bdd707aa0a1aa1f",
@@ -249,8 +249,8 @@
           "text": "no per-point uncertainty stated; zero-variance test at floating-point level only"
         },
         {
-          "code": "calibration_check",
-          "text": "parameter fitted to these data: calibration check, not an independent comparison"
+          "code": "independence_not_established",
+          "text": "independence of the parameters from these data not established"
         }
       ],
       "digitisation": {
@@ -287,7 +287,7 @@
       "denominator": "not established",
       "time_basis": "isothermal test duration",
       "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
-      "independence": "calibration_check",
+      "independence": "not_established",
       "source_citation_apa": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
       "source_citation_note": null,
       "source_link": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
@@ -333,11 +333,12 @@
       "f_model_t_plus": [null,null,null,null],
       "model_run_ref": {
         "solver_package_version": "1.0.1",
-        "commit": "f5f3155",
+        "commit": "461aa1d",
         "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "alpha_max_per_s": 2.5e-1,
         "modes": 175,
-        "e_num_basis": "the accuracy floor of the series; the difference to the series with a quarter of the eigenvalue cover is not returned by the single Method B function and is not added"
+        "e_num_basis": "|V_alpha_max - V_alpha_max/4| + accuracy_floor (metric-r2.md Section 2.3); V_alpha_max/4 is the series with the eigenvalue cover reduced by a factor 4",
+        "accuracy_floor": 2.5744680428486675e-10
       },
       "curve_assessment_ref": null,
       "evaluation": [
@@ -399,8 +400,8 @@
           "text": "no per-point uncertainty stated; zero-variance test at floating-point level only"
         },
         {
-          "code": "calibration_check",
-          "text": "parameter fitted to these data: calibration check, not an independent comparison"
+          "code": "independence_not_established",
+          "text": "independence of the parameters from these data not established"
         }
       ],
       "digitisation": {
