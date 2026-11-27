@@ -1,4 +1,5 @@
 import { BUILD } from '../build';
+import { useSelectionSupport } from '../equation/useCapability';
 import { hrefDocumentation } from '../route';
 import { useStrato } from '../state/store';
 import { Badge } from './Badge';
@@ -14,6 +15,7 @@ export function StatusLine({ compact = false }: { compact?: boolean }) {
   const solver = useStrato((s) => s.solver);
   const info = useStrato((s) => s.runInfo);
   const status = useStrato((s) => s.status);
+  const support = useSelectionSupport();
   const solverText =
     solver.state === 'ready'
       ? status === 'running'
@@ -27,7 +29,9 @@ export function StatusLine({ compact = false }: { compact?: boolean }) {
   return (
     <footer className={`status${compact ? ' status--compact' : ''}`} aria-label="Status">
       <span className="status__item" data-testid="status-result">
-        {run ? (
+        {!support.supported ? (
+          'Result: none for the selection on Explore'
+        ) : run ? (
           <>
             Result <Badge label={run.label} />
           </>

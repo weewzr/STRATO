@@ -14,10 +14,13 @@ import { App } from './App';
 import { installCapture, runSelftest } from './selftest/selftest';
 import { installPlaybackClock } from './particle/playback';
 import { startSolver } from './solver/session';
+import { startAddressSync } from './state/address';
 
 const selftest = new URLSearchParams(window.location.search).get('selftest') === '1';
 if (selftest) installCapture();
 
+// The Explore selection and the address follow each other (a copied address reproduces the view).
+startAddressSync();
 // The Rust solver in a Web Worker (web phase 3); the page runs the inputs once it reports ready.
 startSolver();
 // Playback over the solver's recorded output rows (web phase 4), outside React's render path.

@@ -84,8 +84,9 @@ describe('inventory balance', () => {
     expect(value('bal-residual')).toBe(b.final.residual_mol);
     expect(value('bal-max-rel')).toBe(b.max_abs_residual_relative);
     expect(screen.getByTestId('balance-panel').querySelector('.badge')?.textContent).toBe('COMPUTED v2.0');
-    // the wrapper's own statement of the identity and its sign convention is printed, not re-signed
-    expect(screen.getByTestId('bal-statement').textContent).toContain(b.statement);
+    // The wrapper's statement of the identity and its sign convention left the page with the minimal-text pass of Explore;
+    // it is asserted at its new place, the balance entry of Scientific Documentation (tests/explore_documentation.test.tsx).
+    expect(screen.queryByTestId('bal-statement')).toBeNull();
   });
 
   it('shows the layer inventories and shares of the last profile as returned (no sums in TypeScript)', () => {
@@ -119,7 +120,6 @@ describe('numerical diagnostics', () => {
     d.fourier_numbers.forEach((f, i) => expect(value('diag-fo-' + String(i))).toBe(f));
     const time = screen.getByTestId('diag-time');
     expect(time.textContent).toContain('3.3 ms');
-    expect(time.textContent).toContain('not a result');
     expect(time.dataset.label).toBeUndefined();
   });
 });
@@ -163,14 +163,20 @@ describe('solver version and verification status', () => {
       s.setSolver({ state: 'ready', build: { abi: 3, crate: 'strato-wasm', wrapper_version: '0', strato_version: '2.0.0', commit: 'abc1234', dirty: false, wasm_bindgen: '0', btcs: { solver: RUN.solver, schema: 2, functions: [], export_functions: [], export_formats: [], capabilities: ['diffusion_btcs_layered'], label: 'COMPUTED v2.0', limits: { max_total_intervals: 1, min_intervals_per_layer: 1, max_steps: 1, max_profile_values: 1, max_profile_times: 1, max_series_modes: 1 } } } });
     });
     render(<SolverStatus />);
-    const el = screen.getByTestId('solver-status');
+    const el = screen.getByTestId('solver-status-line');
     expect(el.dataset.state).toBe('ready');
     expect(el.textContent).toContain(METHOD_1);
-    expect(screen.getByTestId('solver-version').textContent).toBe(RUN.solver.version);
-    expect(screen.getByTestId('solver-commit').textContent).toBe(RUN.solver.commit);
-    expect(el.querySelector('.badge')?.textContent).toBe('COMPUTED v2.0');
-    // the status is read from the generated research catalogue, and the page says what it is not
+    expect(screen.getByTestId('solver-version-line').textContent).toBe(RUN.solver.version);
+    // The build commit is not on the page: it is in the build table of Scientific Documentation.
+    expect(el.textContent).not.toContain(RUN.solver.commit);
+    // No run of the current selection yet: no result label is shown (it labels a result, not the solver).
+    expect(el.querySelector('.badge')).toBeNull();
+    act(() => {
+      const s = useStrato.getState();
+      s.setRunOutcome({ run: RUN, info: { elapsedMs: 1, requestId: 1, inputKey: inputKey(s.config), dropped: [] } });
+    });
+    expect(screen.getByTestId('solver-status-line').querySelector('.badge')?.textContent).toBe('COMPUTED v2.0');
+    // the status is read from the generated research catalogue
     expect(el.querySelector('[data-status-for]')?.getAttribute('data-status')).toBe('VERIFIED');
-    expect(el.textContent).toContain('not experimental validation');
   });
 });

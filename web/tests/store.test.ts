@@ -17,9 +17,8 @@ describe('store defaults', () => {
     expect(useStrato.getState().baselineConfig.regions[3]?.diffusivity_m2_s).toBe(caseJson.data.config.regions[3]?.diffusivity_m2_s);
   });
 
-  it('start at builder stage 1 with no solver capabilities (nothing is live before the wasm module loads)', () => {
+  it('start with no solver capabilities (nothing is live before the wasm module loads)', () => {
     const s = useStrato.getState();
-    expect(s.stage).toBe(1);
     expect(s.capabilities).toEqual([]);
   });
 
@@ -80,13 +79,8 @@ describe('store actions', () => {
     expect(useStrato.getState().caseId).toBe('synthetic_five_layer');
   });
 
-  it('keep the planned mechanisms off: they are unavailable before web phase 6', () => {
-    const a = useStrato.getState();
-    for (const m of ['decay', 'source', 'arrhenius'] as const) {
-      expect(useStrato.getState().mechanisms[m]).toEqual({ enabled: false, available: false });
-      a.setMechanism(m, true);
-      expect(useStrato.getState().mechanisms[m].enabled).toBe(false);
-    }
+  it('start with the default selection: baseline physics, no scenario, nothing expanded', () => {
+    expect(useStrato.getState().selection).toEqual({ physics: 'baseline', scenario: null, expanded: [] });
   });
 
   it('select and clear a layer', () => {

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { repoFile } from '../build';
 import { Blocks } from '../research/Blocks';
 import { useCatalogue, type Block } from '../research/catalogue';
-import { GALLERY_ENTRY, introBlocks, ROADMAP_ENTRY } from '../research/entries';
+import { bodyBlocks, GALLERY_ENTRY, introBlocks, ROADMAP_ENTRY } from '../research/entries';
 import { PathLink, PathStyle } from '../research/PathLink';
 import { STATUS_INFO, STATUSES } from '../research/status';
 import { GalleryPlannedDetail } from '../research/parts';
@@ -96,12 +96,36 @@ function onRoadmap(blocks: Block[]): Block[] {
   ) as Block[];
 }
 
+/** The summary table without its column "Delivered by", a project-process column that is not scientific content (clean-up directive). */
+function withoutProcessColumn(blocks: Block[]): Block[] {
+  return blocks.map((b) => {
+    if (b.t !== 'table') return b;
+    const col = b.head.findIndex((cell) => cell.map((s) => ('v' in s ? s.v : '')).join('') === 'Delivered by');
+    if (col < 0) return b;
+    const drop = <T,>(row: T[]): T[] => row.filter((_, i) => i !== col);
+    return { ...b, head: drop(b.head), rows: b.rows.map(drop) };
+  });
+}
 function RoadmapIntro() {
   const cat = useCatalogue();
   return (
     <Files>
       <div className="prose" data-testid="research-roadmap-intro">
         <Blocks blocks={onRoadmap(introBlocks(cat.entries[ROADMAP_ENTRY]))} catalogue={cat} />
+      </div>
+    </Files>
+  );
+}
+
+/** The roadmap document after its introduction: the status gates, the summary table and the narrative of each brick, as the document has them. */
+function RoadmapBody() {
+  const cat = useCatalogue();
+  const entry = cat.entries[ROADMAP_ENTRY];
+  const body = bodyBlocks(entry).slice(introBlocks(entry).length);
+  return (
+    <Files>
+      <div className="prose" data-testid="research-roadmap-body">
+        <Blocks blocks={withoutProcessColumn(onRoadmap(body))} catalogue={cat} shift={2} />
       </div>
     </Files>
   );
@@ -140,8 +164,8 @@ function CatalogueSources() {
       </ul>
       <p>
         The catalogue file was written by {cat.generator} from commit <code>{cat.commit.slice(0, 7)}</code>. In the catalogue pages a file
-        named in a text (a test, a data table, a document) is shown as a link named after the file; the link address is the file in the
-        repository.
+        named in a text (a test, a data table, a document) is shown as a link named in words; the link address is the file in the
+        repository, and this page names each file by its path.
       </p>
     </>
   );
@@ -177,6 +201,7 @@ export const research: DocContribution = {
   provenance: [
     { id: 'research-status-scale', title: 'Research status scale', body: <StatusScale /> },
     { id: 'research-roadmap', title: 'Brick roadmap: introduction', body: <RoadmapIntro /> },
+    { id: 'research-roadmap-body', title: 'Brick roadmap: status gates, summary and bricks', body: <RoadmapBody /> },
     { id: 'research-gallery', title: 'Materials Studio gallery: rules for the planned calculations', body: <GalleryRules /> },
     { id: 'research-gallery-planned', title: 'Materials Studio gallery: the planned calculations', body: <GalleryPlannedCalculations /> },
     { id: 'research-sources', title: 'Sources of the research catalogue', body: <CatalogueSources /> },

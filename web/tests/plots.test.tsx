@@ -347,7 +347,8 @@ describe('plots in block B', () => {
     const v = screen.getByTestId('release-cursor-value');
     expect(v.dataset.value).toBe(String(RUN.release_fraction[20]));
     expect(v.dataset.label).toBe('COMPUTED v2.0');
-    expect(screen.getByTestId('release-figure').textContent).toContain('not drawn here');
+    // The reason why the pointwise difference is not drawn is in Scientific Documentation (explore-figures), not under the figure.
+    expect(screen.getByTestId('release-figure').textContent).not.toContain('not drawn here');
     expect(screen.getByLabelText(METHOD_1)).toBeTruthy();
     expect(screen.getByLabelText(METHOD_2)).toBeTruthy();
     fireEvent.click(screen.getByTestId('release-method-2'));

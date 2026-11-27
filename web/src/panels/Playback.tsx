@@ -1,6 +1,7 @@
 import { useId, type KeyboardEvent } from 'react';
 import { readableDuration, sciText } from '../format';
 import { togglePlay } from '../particle/playback';
+import { useShownRun } from '../solver/shown';
 import { PLAYBACK_SPEEDS, useStrato } from '../state/store';
 import { Sci } from './Badge';
 
@@ -15,7 +16,7 @@ function speedText(s: number): string {
 }
 
 export function Playback() {
-  const run = useStrato((s) => s.run);
+  const { run } = useShownRun();
   const tIndex = useStrato((s) => s.playback.tIndex);
   const playing = useStrato((s) => s.playback.playing);
   const speed = useStrato((s) => s.playback.speed);

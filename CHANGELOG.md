@@ -5,7 +5,7 @@ All notable changes to STRATO are recorded here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
-The website's live simulation is wired to the solver of 2.1.0 in the following change.
+The website's live simulation is wired to the solver of 2.1.0 in the following change. The plan written before the BTCS solver existed is archived in [docs/archive/finite-volume/development/v1_to_v2_changes.md](docs/archive/finite-volume/development/v1_to_v2_changes.md).
 
 ## [2.1.0] - 2026-11-27
 
@@ -24,6 +24,7 @@ The BTCS solver gains generation, decay and temperature-dependent diffusion, the
 - Documents 5 (generation, decay and temperature-dependent diffusion) and 6 (analytical extensions) of `docs/mathematics/btcs/`.
 
 ### Changed
+- Website: the Explore page is rebuilt as a targeted refinement. A progressive governing-equation builder, a row of operating scenarios, an expandable fourteen-item Numerical Interpretation, the live simulation and the results read one shared selection that is kept in the address. Status and control availability come from the capability the WebAssembly wrapper reports; a selection the build does not compute shows no result and says so, and a reply is shown only under the selection it was computed for. The simulation block names the active solver and the physics it implements. The experimental-comparison graph component is merged. New tests walk the learning sequence at three widths, both colour schemes and both motion settings, and with the keyboard only. The site-wide minimal-text clean-up (Compare, Validate, Verify, Research, Data and About) and the Scientific Documentation page are merged with it, and Explore follows the same rules: no introductions, one-sentence captions, no build hash or file path on the page, the details in Scientific Documentation; the content check has no exception left. The roadmap and gallery pages of Research are shorter, and the citation list is kept once. The tablet header is two compact rows, the unsupported-selection condition is stated once, and the touch targets at phone width are 44 px. No Rust source changed.
 - The crate and the wrapper crate `strato-wasm` are version 2.1.0; the wrapper's ABI is 4.
 - The R2 independence rule reads the register field `fitted_to`, not a phrase of the notes of a row.
 - The balance statements of the replies of `run` and `run_stage` start with a capital letter and no longer mention the directive.

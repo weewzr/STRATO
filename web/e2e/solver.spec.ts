@@ -177,9 +177,9 @@ test.describe('block B shows the wrapper values', () => {
       await expect(page.getByTestId(id).locator('.badge').first()).toHaveText('COMPUTED v2.0');
     }
     // The solver and its verification status are on the page.
-    await expect(page.getByTestId('solver-status')).toContainText('Method A: BTCS');
-    await expect(page.getByTestId('solver-version')).toHaveText(NATIVE.solver.version);
-    await expect(page.getByTestId('solver-status').locator('[data-status-for]')).toHaveAttribute('data-status', 'VERIFIED');
+    await expect(page.getByTestId('solver-status-line').first()).toContainText('Method A: BTCS');
+    await expect(page.getByTestId('solver-version-line').first()).toHaveText(NATIVE.solver.version);
+    await expect(page.getByTestId('solver-status-line').first().locator('[data-status-for]')).toHaveAttribute('data-status', 'VERIFIED');
   });
 
   test('a rejected input shows the wrapper message and no result; a valid input brings the result back', async ({ page, problems }) => {

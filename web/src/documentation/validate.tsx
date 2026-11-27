@@ -45,7 +45,10 @@ export const validate: DocContribution = {
               uncertainty and a reference for each series.
             </li>
             <li>Model predictions only from reviewed runs with the matching nuclide, particle geometry and temperature history.</li>
-            <li>Error metrics computed in Rust, never typed in.</li>
+            <li>
+              R² is the only displayed agreement metric: it is computed in Rust per release-versus-time curve and shown only where the
+              comparison is scientifically defensible, otherwise a caption below the graph says why. No registered dataset supports one today.
+            </li>
           </ul>
         </>
       ),

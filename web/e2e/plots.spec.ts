@@ -122,8 +122,9 @@ test.describe('block B plots', () => {
     for (const id of ['profile-figure', 'release-figure']) {
       const fig = page.getByTestId(id);
       await expect(fig.locator('.figure__head .badge')).toHaveText('COMPUTED v2.0');
-      await expect(fig.locator('figcaption')).toContainText('Source: Method A: BTCS, solver version');
-      await expect(fig.locator('figcaption')).toContainText('Page build');
+      // One sentence under the figure; the source line (solver version and build) is in the exported file and in Scientific Documentation.
+      await expect(fig.locator('figcaption')).not.toContainText('Page build');
+      expect(((await fig.locator('figcaption').innerText()) ?? '').length).toBeLessThanOrEqual(220);
     }
     await expect(page.getByTestId('profile-plot').locator('.xtitle')).toHaveText('Radius (m)');
     await expect(page.getByTestId('profile-plot').locator('.ytitle')).toHaveText('Concentration (mol/m³)');
@@ -138,7 +139,7 @@ test.describe('block B plots', () => {
     void problems;
     await gotoSection(page, 'explore');
     await waitForRun(page);
-    const key = await page.getByTestId('block-b').getAttribute('data-input-key');
+    const key = await page.getByTestId('block-d').getAttribute('data-input-key');
     const before = await solverRequests(page);
     await page.getByTestId('profile-log').uncheck();
     await page.getByTestId('profile-start').uncheck();
@@ -149,7 +150,7 @@ test.describe('block B plots', () => {
     // Switching Method B off removes its curve only.
     await page.getByTestId('release-method-2').uncheck();
     await expect.poll(async () => (await drawn(page, 'release-plot')).map((t) => t.id).sort()).toEqual(['release-b', 'release-cursor']);
-    expect(await page.getByTestId('block-b').getAttribute('data-input-key')).toBe(key);
+    expect(await page.getByTestId('block-d').getAttribute('data-input-key')).toBe(key);
     expect(await solverRequests(page)).toBe(before);
   });
 

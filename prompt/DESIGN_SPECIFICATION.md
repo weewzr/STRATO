@@ -14,7 +14,7 @@ The honesty devices follow Theodore's Outram Park dispersion demo (https://theod
 
 ### 2.1 Explore page: order A to E
 
-The Explore page is one column in this order. The order is the same at every width; only density changes. The blocks below are the earlier layout: the Explore page is now ordered governing equation, operating scenarios, numerical interpretation, live simulation, results (Section 12.2), and the contents of blocks D and E leave the page as Section 12 requires (explanations to Scientific Documentation, the research summary to Research).
+The Explore page is one column in this order. The order is the same at every width; only density changes. The blocks below are the earlier layout: the Explore page is now ordered governing equation (A), operating scenarios (B), numerical interpretation (C, collapsed by default), live simulation (D), results (E) (Section 12.2), and it follows Section 12 like every page (its explanations are in Scientific Documentation, the research summary in Research).
 
 | Block | Content | Section of this file |
 |---|---|---|
@@ -124,7 +124,7 @@ The balance of the active stage (Section 3.2) as a small table or bar with its r
 
 ## 7 Block E and the Research section: future research mechanisms
 
-Block E on the Explore page is a summary (the three regimes, the nine species, the bricks, each with status counts and a link). The Research section holds the full catalogue. Everything in it is read from the catalogue files of `prompt/TECHNICAL_ARCHITECTURE.md` Section 5.1.
+The Research overview is a summary (the three regimes, the nine species, the bricks, each with status counts and a link); Explore carries no catalogue summary. The Research section holds the full catalogue. Everything in it is read from the catalogue files of `prompt/TECHNICAL_ARCHITECTURE.md` Section 5.1.
 
 ### 7.1 Research-status system
 
@@ -301,7 +301,7 @@ The content check of the built site (`web/scripts/check_content.mjs`, rules in `
 - more than 60 words of prose before the first control, equation, graph, table or reference list of a page (the About introduction may use up to 120 words, because it has none of these);
 - a registered disclaimer sentence that appears more than once in the whole site (the registered sentences are listed in the rules file; add a sentence there when it is found repeated).
 
-A page that is still to be cleaned is listed by name, with the rules it still breaks, in `TEMPORARY_EXCEPTIONS` of the rules file. An entry is removed when its page is clean, and the check reports an entry that is no longer needed. No new page or feature is added to that list.
+No page is excepted: `TEMPORARY_EXCEPTIONS` of the rules file is empty, and no page or feature is added to it. A paragraph or list item of more than 100 words fails the check on every page except Scientific Documentation; typeset formulas are not counted as prose.
 
 ### 12.4 Scientific Documentation
 

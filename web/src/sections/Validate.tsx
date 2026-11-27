@@ -1,3 +1,4 @@
+import { ExperimentalComparisons } from '../graph/Comparisons';
 import { hrefDocumentation } from '../route';
 import { useStrato } from '../state/store';
 import { SectionHeading } from './common';
@@ -37,8 +38,9 @@ export function Validate() {
       <SectionHeading>Validation against measurements</SectionHeading>
       <ValidationLayer />
 
-      {/* MOUNT POINT: the experimental-comparison graph component (web/src/graph, Workstream A) is placed here by the integration task. Leave empty until then. */}
-      <div data-mount="experimental-comparison-graph" data-testid="experimental-comparison-mount" />
+      <div data-mount="experimental-comparison-graph" data-testid="experimental-comparison-mount">
+        <ExperimentalComparisons />
+      </div>
     </article>
   );
 }

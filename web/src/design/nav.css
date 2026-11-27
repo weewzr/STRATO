@@ -2,11 +2,15 @@
    fit beside the title and the theme and repository links, so the links take a second row. Phones use the
    menu of app.css, wide screens keep one row. */
 @media (min-width: 768px) and (max-width: 1279.98px) {
+  :root {
+    /* Two rows of 44 px (the tools, then the links) and the border of the header. */
+    --header-height: 89px;
+  }
   .header {
     align-items: flex-start;
   }
   .header__brand {
-    min-height: var(--header-height);
+    min-height: 44px;
     align-items: center;
   }
   .nav {
@@ -18,14 +22,16 @@
     order: -1;
     flex: 1 1 100%;
     justify-content: flex-end;
-    min-height: var(--header-height);
+    min-height: 44px;
     margin-left: 0;
   }
   .nav__list {
     flex: 1 1 100%;
-    margin-top: calc(var(--space-2) * -1);
+    margin: 0;
   }
   .nav__list .nav__link {
     padding: 0 6px;
+    min-width: var(--touch-min);
+    justify-content: center;
   }
 }

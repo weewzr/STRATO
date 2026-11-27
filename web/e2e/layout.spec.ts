@@ -15,10 +15,59 @@ for (const vp of VIEWPORTS) {
       });
     }
 
-    test('controls: inline in block C from 768 px, a bottom sheet below', async ({ page, problems }, info) => {
+    test('the sticky header is compact: at most 100 px high from 768 px, and as high as --header-height', async ({ page, problems }) => {
       void problems;
       await gotoSection(page, 'explore');
-      const blockC = page.getByTestId('block-c');
+      const h = await page.locator('header.header').evaluate((e) => e.getBoundingClientRect().height);
+      if (vp.width >= 768) expect(h).toBeLessThanOrEqual(100);
+      const declared = await page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height')));
+      if (vp.width >= 768) expect(Math.abs(h - declared)).toBeLessThanOrEqual(2);
+    });
+
+    test('everything of the header lies inside the header box and the title lies below it', async ({ page, problems }) => {
+      void problems;
+      test.skip(vp.width !== 768, 'one run: it sets its own widths');
+      await gotoSection(page, 'explore');
+      for (const width of [768, 900, 1024, 1099, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      const m = await page.evaluate(() => {
+        const r = (e: Element) => e.getBoundingClientRect();
+        const header = r(document.querySelector('header.header')!);
+        const items = Array.from(document.querySelectorAll('header.header .nav, header.header .nav__link, header.header .nav__tools, header.header .nav__tools > *, header.header .header__brand'))
+          .map((e) => ({ cls: e.className, top: r(e).top, bottom: r(e).bottom, width: r(e).width }));
+        const h1 = r(document.querySelector('h1')!);
+        return { header: { top: header.top, bottom: header.bottom }, items, h1top: h1.top };
+      });
+      for (const it of m.items) {
+        expect(it.top, it.cls).toBeGreaterThanOrEqual(m.header.top - 0.5);
+        expect(it.bottom, it.cls).toBeLessThanOrEqual(m.header.bottom + 0.5);
+      }
+      expect(m.h1top).toBeGreaterThanOrEqual(m.header.bottom);
+      const links = await page.locator('header.header .nav__link').evaluateAll((els) => els.map((e) => [e.textContent, e.getBoundingClientRect().width, e.getBoundingClientRect().height] as const));
+      for (const [name, w, h] of links) {
+        expect(w, String(name)).toBeGreaterThanOrEqual(43.5);
+        expect(h, String(name)).toBeGreaterThanOrEqual(43.5);
+      }
+      }
+    });
+    test('phone targets: the footer link, the figure links and the switches are 44 px', async ({ page, problems }) => {
+      void problems;
+      test.skip(vp.width >= 768, 'phone width only');
+      await gotoSection(page, 'compare');
+      const height = (sel: string) => page.locator(sel).first().evaluate((e) => e.getBoundingClientRect().height);
+      expect(await height('.status__link')).toBeGreaterThanOrEqual(43.5);
+      expect(await height('a.link-target')).toBeGreaterThanOrEqual(43.5);
+      expect(await height('.switch-row .plot-option')).toBeGreaterThanOrEqual(43.5);
+      await gotoSection(page, 'research');
+      expect(await height('.species-card__head')).toBeGreaterThanOrEqual(43.5);
+      await gotoSection(page, 'data');
+      expect(await height('caption a.link-target')).toBeGreaterThanOrEqual(43.5);
+    });
+
+    test('controls: inline in block D from 768 px, a bottom sheet below', async ({ page, problems }, info) => {
+      void problems;
+      await gotoSection(page, 'explore');
+      const blockC = page.getByTestId('block-d');
       // No control column beside the page at any width (owner decision M7).
       await expect(page.locator('aside')).toHaveCount(0);
       if (vp.width >= 768) {

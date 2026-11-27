@@ -1,34 +1,30 @@
 import { mechanismRow, useCatalogue } from '../research/catalogue';
 import { StatusChip } from '../research/StatusChip';
-import { useStrato } from '../state/store';
 import { docHref, DOCS } from './links';
-import { STEP_DEFS } from './terms';
+import { STEP_DEFS, type Stage } from './terms';
 import { RichText, Tex } from './Tex';
 
 /**
- * Block D, first part: every part of the step shown in block A, with its meaning in plain words,
- * the units of every symbol, the assumptions and, for a preview, the evidence behind its research status.
+ * Every part of a step, with its meaning in plain words, the units of every symbol, the assumptions and,
+ * for a mechanism, the evidence behind its research status. It is the "Symbols, units and assumptions"
+ * disclosure of the step, so each explanation stands in one place.
  */
-export function TermExplanations() {
-  const stage = useStrato((s) => s.stage);
+export function TermExplanations({ stage }: { stage: Stage }) {
   const catalogue = useCatalogue();
   const def = STEP_DEFS[stage];
   const parts = def.parts;
   return (
     <div className="terms-explained" data-testid="term-explanations">
-      <h3>
-        The parts of step {stage}, {def.name}
-      </h3>
       {parts.map((p, i) => {
         const row = p.mechanism ? mechanismRow(catalogue, p.mechanism) : undefined;
         // The evidence of a mechanism is written once, under its first part.
         const firstOfMechanism = parts.findIndex((u) => u.mechanism === p.mechanism) === i;
         return (
           <section key={p.id} id={`term-${p.id}`} className="term-x" aria-labelledby={`term-${p.id}-h`} data-term={p.id}>
-            <h4 id={`term-${p.id}-h`} className="term-x__title">
+            <h5 id={`term-${p.id}-h`} className="term-x__title">
               <Tex latex={p.symbol} className="term-x__tex" />
               <span>{p.name}</span>
-            </h4>
+            </h5>
             {row ? (
               <p className="term-x__status">
                 <StatusChip status={row.status} mechanism={row.mechanism_id} />{' '}

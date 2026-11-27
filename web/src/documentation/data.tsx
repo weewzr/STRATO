@@ -182,10 +182,12 @@ export const data: DocContribution = {
         <>
           <p>
             Key references of the STRATO model, as listed in the repository README. Gelbard (2003) and IAEA (1997) are entries of the
-            research catalogue and are shown once, with their links, in the catalogue list; Hales et al. (2021) is listed first.
+            research catalogue and are shown once, with their links, in the catalogue list; Hales et al. (2021) is the one reference that the
+            Data page lists itself.
           </p>
           <p>
-            References of the research catalogue (<code>data/research/references.csv</code>), each with the date its link was last opened.
+            References of the research catalogue (<code>data/research/references.csv</code>), each with the date its link was last opened,
+            are listed once, on the Research pages; the Data page links to that list.
           </p>
           <p>
             Literature parameters for Phase 2, each with its register status (verified, digitised or not verified) and source, are in the{' '}

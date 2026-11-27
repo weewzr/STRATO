@@ -1,0 +1,29 @@
+{
+  "fixture": "FIXTURE: invented values for tests of the graph component, not data, never shipped",
+  "schema": 1,
+  "id": "FIXTURE-no-b",
+  "nuclide": "Eu-154",
+  "temperature": { "value": 1700, "unit": "°C" },
+  "time_unit": "h",
+  "method_a": {
+    "t": [0, 5, 10, 15, 20, 25, 30],
+    "f": [0, 0.05, 0.1, 0.18, 0.3, 0.45, 0.6]
+  },
+  "method_b": null,
+  "observations": [{ "kind": "measurement", "t": [5, 10, 15, 20, 25, 30], "f": [0.04, 0.12, 0.2, 0.28, 0.5, 0.62] }],
+  "r2": [
+    {
+      "metric": "r2",
+      "method": "A",
+      "n": 6,
+      "value": 0.88,
+      "status": "FIXTURE",
+      "reason_code": null,
+      "caption_plain": "",
+      "label_latex": "R^2 = 0.88",
+      "label_plain": "R² (Method A: BTCS) = 0.88",
+      "source": { "citation_apa": "FIXTURE: Invented, D. (2003). Not a real publication, a fourth time. FIXTURE Journal, 0(0), 0-0.", "link": "https://example.org/fixture-not-a-real-publication-4", "location": "FIXTURE Figure 2" }
+    }
+  ],
+  "source": { "citation_apa": "FIXTURE: Invented, D. (2003). Not a real publication, a fourth time. FIXTURE Journal, 0(0), 0-0.", "link": "https://example.org/fixture-not-a-real-publication-4", "location": "FIXTURE Figure 2" }
+}

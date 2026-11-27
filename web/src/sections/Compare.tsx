@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { BUILD } from '../build';
+import { ExperimentalComparisons } from '../graph/Comparisons';
 import { plain } from '../format';
 import { METHOD_1 } from '../methods';
 import { Badge, Sci } from '../panels/Badge';
@@ -94,7 +95,9 @@ function ComparisonFigure() {
       ) : null}
       <figcaption className="figure__caption">
         <strong>Figure 1.</strong> Fraction of the initial inventory released: baseline (grey) and current inputs (blue), with their difference
-        (green, right axis) when switched on. <a href={hrefDocumentation('compare-difference-curve')}>Method and limits</a>
+        (green, right axis) when switched on. <a href={hrefDocumentation('compare-limits')} className="link-target">
+          Method and limits
+        </a>
       </figcaption>
     </figure>
   );
@@ -120,8 +123,9 @@ export function Compare() {
 
       <ComparisonFigure />
 
-      {/* MOUNT POINT: the experimental-comparison graph component (web/src/graph, Workstream A) is placed here by the integration task. Leave empty until then. */}
-      <div data-mount="experimental-comparison-graph" data-testid="experimental-comparison-mount" />
+      <div data-mount="experimental-comparison-graph" data-testid="experimental-comparison-mount">
+        <ExperimentalComparisons />
+      </div>
 
       {diffs.length === 0 ? (
         <p data-testid="no-diffs">

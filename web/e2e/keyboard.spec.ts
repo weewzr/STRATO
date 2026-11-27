@@ -12,12 +12,12 @@ async function focusInfo(page: Page) {
       text: (el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 60),
       outlineStyle: cs.outlineStyle,
       outlineWidth: parseFloat(cs.outlineWidth),
-      inControls: el.closest('[data-testid="block-c"] [data-testid="controls"]') !== null,
+      inControls: el.closest('[data-testid="block-d"] [data-testid="controls"]') !== null,
     };
   });
 }
 
-const CONTROLS = '[data-testid="block-c"] [data-testid="controls"]';
+const CONTROLS = '[data-testid="block-d"] [data-testid="controls"]';
 
 test.describe('keyboard at 1280 px', () => {
   test.use({ viewport: { width: 1280, height: 800 } });
@@ -42,7 +42,8 @@ test.describe('keyboard at 1280 px', () => {
         ).length,
       CONTROLS,
     );
-    expect(expected).toBeGreaterThan(30);
+    // Twenty-nine controls since the three mechanism switches left the panel (the physics is chosen in block A).
+    expect(expected).toBeGreaterThan(25);
     await page.locator(`${CONTROLS} select`).focus();
     const seen = new Set<string>();
     let reached = 0;
@@ -82,19 +83,29 @@ test.describe('keyboard at 1280 px', () => {
     await expect(page.getByTestId('issue-count')).toHaveText('Inputs equal the baseline.');
   });
 
-  test('mechanism switches are focusable, stay off and say why', async ({ page, problems }) => {
+  test('the physics choices are one tab stop, move with the arrow keys, announce the change and write the address', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
-    for (const id of ['source', 'decay', 'arrhenius']) {
-      const sw = page.getByTestId(`mech-${id}`);
-      await sw.focus();
-      await expect(sw).toBeFocused();
-      await page.keyboard.press('Space');
-      await page.keyboard.press('Enter');
-      await expect(sw).toHaveAttribute('aria-checked', 'false');
-      await expect(sw).toHaveAttribute('aria-disabled', 'true');
-      await expect(page.getByTestId('announce')).toContainText('not available');
-    }
+    const baseline = page.getByTestId('physics-baseline');
+    await baseline.focus();
+    await expect(baseline).toBeFocused();
+    await page.keyboard.press('ArrowRight');
+    await expect(page.getByTestId('physics-generation')).toBeFocused();
+    await expect(page.getByTestId('physics-generation')).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByTestId('physics-announce')).toContainText('enters the right-hand side');
+    await expect(page).toHaveURL(/#\/explore\?physics=generation$/);
+    await page.keyboard.press('End');
+    await expect(page.getByTestId('physics-combined')).toHaveAttribute('aria-checked', 'true');
+    await expect(page).toHaveURL(/#\/explore\?physics=combined$/);
+    // Tab leaves the group: only the selected choice is a tab stop.
+    await page.keyboard.press('Tab');
+    expect(await page.evaluate(() => document.activeElement?.closest('[data-testid="physics-picker"]') === null)).toBe(true);
+    // Enter and Space on the status legend toggle.
+    const toggle = page.getByTestId('status-legend-toggle');
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByTestId('status-legend')).toBeVisible();
   });
 
   test('section links work with Enter and focus the new heading', async ({ page, problems }) => {

@@ -13,6 +13,8 @@ const PORT = 4441;
 /** Views to render: the id, the page it belongs to, the hash and what to wait for. */
 export const VIEWS = [
   { id: 'explore', page: 'explore', hash: '#/explore', settle: '[data-block]' },
+  // The combined model with every item of the Numerical Interpretation open: no block grows beyond the block rule there.
+  { id: 'explore-expanded', page: 'explore', hash: '#/explore?physics=combined&open=numerical,' + Array.from({ length: 14 }, (_, i) => `n${i + 1}`).join(','), settle: '[data-testid="num-items"]' },
   { id: 'compare', page: 'compare', hash: '#/compare', settle: '[data-testid="compare-figure"][data-state="ok"]' },
   { id: 'validate', page: 'validate', hash: '#/validate' },
   { id: 'verify', page: 'verify', hash: '#/verify', settle: '[data-testid="verify-balance-plot"]' },
@@ -91,7 +93,10 @@ function snapshotInPage() {
     for (const el of main.querySelectorAll('p, li, dd, blockquote')) {
       // A bibliographic reference is a citation, not prose; it is counted by no rule.
       if (el.closest('table, nav, [hidden], .ref-list, .refs') || el.querySelector('p, li, dd')) continue;
-      const t = el.innerText.trim();
+      // A typeset formula is not prose: its text (the KaTeX markup and the MathML copy, one symbol per line) is left out of the count.
+      const copy = el.cloneNode(true);
+      copy.querySelectorAll('.katex').forEach((k) => k.replaceWith(' '));
+      const t = (copy.textContent ?? '').replace(/\s+/g, ' ').trim();
       const n = t === '' ? 0 : t.split(/\s+/).length;
       if (n > longestBlockWords) {
         longestBlockWords = n;

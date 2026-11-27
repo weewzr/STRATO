@@ -1,14 +1,9 @@
 import { Fragment, useId, useMemo, useState, type ReactNode } from 'react';
-import { repoFile } from '../build';
 import { CASES, type RegionConfig } from '../data/case';
 import { layerColour } from '../design/layers';
-import { isAvailable } from '../equation/availability';
-import { SWITCH_MECHANISM, SWITCHES, switchIntroducedBy, termOf } from '../equation/terms';
-import { Tex } from '../equation/Tex';
 import { clamp, sciText } from '../format';
-import { METHOD_1 } from '../methods';
-import { statusOf, useCatalogue } from '../research/catalogue';
-import { StatusChip } from '../research/StatusChip';
+import { unsupportedMessage } from '../equation/capability';
+import { useSelectionSupport } from '../equation/useCapability';
 import { configDifferences, useStrato } from '../state/store';
 import { Sci } from './Badge';
 import { NumberField } from './NumberField';
@@ -71,7 +66,6 @@ function LayerFields({ r, i }: { r: RegionConfig; i: number }) {
         integer
         onCommit={(v) => setRegionField(i, 'cells', v)}
         testId={`n-field-${i}`}
-        hint={i === 0 ? 'Whole number of at least 1 per layer; the grid has one more node than intervals.' : undefined}
       />
     </>
   );
@@ -87,23 +81,18 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
   const config = useStrato((s) => s.config);
   const baseline = useStrato((s) => s.baselineConfig);
   const caseId = useStrato((s) => s.caseId);
-  const mechanisms = useStrato((s) => s.mechanisms);
-  const capabilities = useStrato((s) => s.capabilities);
-  const stage = useStrato((s) => s.stage);
   const solverState = useStrato((s) => s.solver.state);
+  const support = useSelectionSupport();
   const validation = useStrato((s) => s.validation);
   const requestRun = useStrato((s) => s.requestRun);
-  const catalogue = useCatalogue();
-  const introduced = switchIntroducedBy(stage);
-  const { loadCase, setTimeField, setKernelConcentration, setTemperature, resetToBaseline, setCurrentAsBaseline, setMechanism } =
-    useStrato.getState();
+  const { loadCase, setTimeField, setKernelConcentration, setTemperature, resetToBaseline, setCurrentAsBaseline } = useStrato.getState();
 
   const changed = useMemo(() => configDifferences(baseline, config).length, [baseline, config]);
   const [announce, setAnnounce] = useState('');
   // A reset or a case load must also clear an unsent draft, even when the stored value did not change.
   const [resetCount, setResetCount] = useState(0);
   const fieldsKey = `${caseId}:${resetCount}`;
-  const ids = { mech: useId(), run: useId(), step: useId(), title: useId(), caseHint: useId() };
+  const ids = { run: useId(), title: useId() };
   const sheet = layout === 'sheet';
   const errors = validation.state === 'rejected' || validation.state === 'error' ? validation.errors : [];
 
@@ -117,7 +106,6 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
         className="field__input"
         value={caseId}
         onChange={(e) => loadCase(e.target.value)}
-        aria-describedby={ids.caseHint}
         data-testid="case-select"
       >
         {CASES.map((c) => (
@@ -126,9 +114,6 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
           </option>
         ))}
       </select>
-      <p className="field__hint" id={ids.caseHint}>
-        Synthetic values chosen for verification, not measured TRISO properties.
-      </p>
     </div>
   );
 
@@ -167,14 +152,12 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
           unit="mol/m³"
           value={config.initial.kernel_concentration_mol_m3}
           onCommit={setKernelConcentration}
-          hint="Uniform in the kernel, zero in the coating layers."
         />
         <NumberField
           label="Temperature"
           unit="K"
           value={config.temperature_k}
           onCommit={setTemperature}
-          hint="Required by the input format and recorded with the result. The solver does not use it: the diffusivities are constant."
         />
       </fieldset>
       <fieldset className="group">
@@ -189,10 +172,6 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
           integer
           onCommit={(v) => setTimeField('output_every_steps', v)}
         />
-        <p className="field__hint" id={ids.step}>
-          The solver divides the duration into the whole number of equal steps that is at least the duration divided by the time step, and
-          reports the step it used.
-        </p>
         {validation.warnings.map((m) => (
           <p className="field__msg" key={m} role="status" data-testid="validation-warning">
             {m}
@@ -202,69 +181,8 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
     </>
   );
 
-  // Labels come from the term table (equation/terms.ts) and every status from the generated
-  // catalogue; availability only from isAvailable(). The switch that the selected builder preview
-  // stands for is marked, so the step picker and the switches stay in step.
-  const mechanismSwitches = (
-    <fieldset className="group group--mechs">
-      <legend className="group__legend">Mechanism switches</legend>
-      <ul className="mechs" role="list">
-        {SWITCHES.map((sw) => {
-          const term = termOf(sw.term);
-          const mechId = SWITCH_MECHANISM[sw.id];
-          const status = statusOf(catalogue, mechId);
-          const live = isAvailable(mechId, capabilities, catalogue) && mechanisms[sw.id].available;
-          const current = introduced === sw.id;
-          const why = `${ids.mech}-${sw.id}`;
-          return (
-            <li key={sw.id} className={`mech${current ? ' is-stage' : ''}`}>
-              <button
-                type="button"
-                role="switch"
-                className={`mech__switch mech__switch--${sw.id}`}
-                aria-checked={live && mechanisms[sw.id].enabled}
-                aria-disabled={!live}
-                aria-describedby={why}
-                data-testid={`mech-${sw.id}`}
-                data-stage-current={current ? 'true' : undefined}
-                onClick={() => {
-                  if (!live) setAnnounce(`${term.name}: not available; status ${status ?? 'unknown'}; awaiting reviewed implementation.`);
-                  else setMechanism(sw.id, !mechanisms[sw.id].enabled);
-                }}
-              >
-                <span className={`mech__swatch mech__swatch--${sw.line}`} aria-hidden="true" />
-                <span className="mech__name">{term.name}</span>
-                <span className="mech__term">
-                  <Tex latex={sw.latex} />
-                </span>
-                <span className="mech__state">{live && mechanisms[sw.id].enabled ? 'On' : 'Off'}</span>
-              </button>
-              <p id={why} className="mech__why">
-                {live ? (
-                  <>
-                    {status ? <StatusChip status={status} mechanism={mechId} compact /> : null} Available: implemented in the solver at the live
-                    status.
-                  </>
-                ) : (
-                  <>
-                    Not available: status {status ?? 'unknown'}; awaiting reviewed implementation (see the{' '}
-                    <a href={repoFile('docs/archive/finite-volume/development/phase2_review_package.md')}>Phase 2 review package</a>). A labelled preview of its equation
-                    is shown in the equation builder.
-                  </>
-                )}
-                {current ? <span className="mech__stage"> Previewed at step {stage}.</span> : null}
-              </p>
-            </li>
-          );
-        })}
-      </ul>
-      <p id={ids.mech} className="field__hint">
-        Operating a switch that is not available changes no result and sends no solver request. Generation, decay and temperature
-        dependence are previews until the solver implements and verifies them; species-specific mechanisms are research catalogue entries.
-      </p>
-    </fieldset>
-  );
-
+  // The physics is chosen above the simulation (the governing equation, block A); there is no second
+  // control for it here.
   const actions = (
     <div className="controls__actions">
       {errors.length > 0 ? (
@@ -285,10 +203,13 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
         <button
           type="button"
           className="btn btn--primary"
-          aria-disabled={solverState !== 'ready'}
-          aria-describedby={ids.run}
+          aria-disabled={solverState !== 'ready' || !support.supported}
           data-testid="run"
           onClick={() => {
+            if (!support.supported) {
+              setAnnounce('Run is not available for this selection. ' + unsupportedMessage(support));
+              return;
+            }
             if (solverState !== 'ready') {
               setAnnounce(solverState === 'failed' ? 'Run is not available: the solver could not be loaded.' : 'The solver is still loading.');
               return;
@@ -323,10 +244,6 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
           Set current as baseline
         </button>
       </div>
-      <p id={ids.run} className="field__hint">
-        {METHOD_1}, the verified STRATO solver compiled to WebAssembly, runs in your browser. A change of input reruns it after a short
-        pause; Run starts a run at once. The solver itself checks every input.
-      </p>
       <p className="visually-hidden" role="status" aria-live="polite" data-testid="announce">
         {announce}
       </p>
@@ -353,7 +270,6 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
             <Fragment key={fieldsKey}>{layers}</Fragment>
           </fieldset>
           <Fragment key={`t${fieldsKey}`}>{startAndTime}</Fragment>
-          {mechanismSwitches}
         </div>
         <div className="panel__actions">{actions}</div>
       </section>
@@ -371,7 +287,6 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
       </div>
       <div className="controls__rest">
         <Fragment key={`t${fieldsKey}`}>{startAndTime}</Fragment>
-        {mechanismSwitches}
       </div>
     </div>
   );

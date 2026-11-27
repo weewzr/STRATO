@@ -89,6 +89,9 @@ h2[tabindex='-1']:focus {
   color: var(--accent);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   transform: translateY(-200%);
 }
 .skip-link:focus {
@@ -168,6 +171,9 @@ h2[tabindex='-1']:focus {
   letter-spacing: 0.04em;
   color: var(--text);
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 .header__wordmark:hover {
   color: var(--text);
@@ -179,7 +185,7 @@ h2[tabindex='-1']:focus {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-@media (max-width: 1023.98px) {
+@media (max-width: 1199.98px) {
   .header__subtitle {
     display: none;
   }
@@ -790,16 +796,17 @@ select.field__input {
   padding-top: var(--space-5);
   border-top: 1px solid var(--border);
 }
-/* A and B sit close together: the simulation reads as the equation's own instrument. */
-.block--a + .block--b {
-  margin-top: calc(var(--space-6) * -1 + var(--space-4));
-  padding-top: var(--space-3);
-}
-.block--b > .block__head {
+.block--d > .block__head {
   margin-bottom: var(--space-2);
 }
-.block--b > .strip {
+.block--d > .strip {
   margin-bottom: var(--space-2);
+}
+.block__note {
+  margin: 0 0 var(--space-3);
+  max-width: 70ch;
+  font-size: var(--fs-label);
+  color: var(--text-muted);
 }
 .block__head {
   margin-bottom: var(--space-3);
@@ -1296,10 +1303,18 @@ select.field__input {
   cursor: pointer;
 }
 .plot-option input {
-  width: 1rem;
-  height: 1rem;
+  width: 1.5rem;
+  height: 1.5rem;
   margin: 0;
   accent-color: var(--accent);
+}
+/* Links that sit in a figure head or caption: a 44 px target at phone width. */
+@media (max-width: 767.98px) {
+  .link-target {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--touch-min);
+  }
 }
 /* Switches above a figure: the whole label is the 44 px target, and the box is larger than the default. */
 .switch-row .plot-option {
@@ -1318,6 +1333,28 @@ select.field__input {
 .plot {
   position: relative;
   min-width: 0;
+}
+
+/* Experimental-comparison graph: caption and source stand below the whole plot. */
+.expfig {
+  margin-top: var(--space-4);
+}
+.expfig__title {
+  margin: 0;
+  font-size: var(--fs-ui);
+}
+.expfig__caption,
+.expfig__source {
+  margin: var(--space-2) 0 0;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  max-width: var(--measure);
+  overflow-wrap: anywhere;
+}
+.expfig__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
 }
 .plot__graph {
   width: 100%;
@@ -1556,24 +1593,34 @@ select.field__input {
 
 /* ---------- Block A: staged equation builder ---------- */
 
-/* Desktop: stage picker, equation and term list side by side, the disclosure row under them.
-   Tablet: picker in two rows of three, then the equation, then the terms. Phone: a select. */
+/* One derivation step inside an item of the Numerical Interpretation. Desktop: equation and term list side by
+   side, the additions and the disclosure row under them. Tablet and phone: one column. */
 .builder {
   display: grid;
   gap: var(--space-3);
+  min-width: 0;
+}
+.builder__step-title {
+  margin: 0;
+  font-family: var(--font-doc);
+  font-size: 1.0625rem;
 }
 @media (min-width: 1200px) {
   .builder {
-    grid-template-columns: 17rem minmax(0, 1fr) 20rem;
+    grid-template-columns: minmax(0, 1fr) 20rem;
     grid-template-areas:
-      'picker eq side'
-      'picker more more';
+      'title title'
+      'eq side'
+      'add add'
+      'more more';
     column-gap: var(--space-4);
     align-items: start;
   }
-  .builder > .stages {
-    grid-area: picker;
-    align-self: start;
+  .builder > .builder__step-title {
+    grid-area: title;
+  }
+  .builder > .step-additions {
+    grid-area: add;
   }
   .builder > .builder__main {
     display: contents;
@@ -2217,7 +2264,7 @@ select.field__input {
 
 /* ---------- Block D: the terms explained ---------- */
 
-.terms-explained h3 {
+.terms-explained h5 {
   margin-top: 0;
 }
 .term-x {
@@ -2451,8 +2498,8 @@ select.field__input {
 .status__link {
   /* A 44 px target without making the footer taller: padding balanced by negative margin. */
   display: inline-block;
-  padding: 0.75rem 0.5rem;
-  margin: -0.75rem -0.5rem;
+  padding: 0.9rem 0.5rem;
+  margin: -0.9rem -0.5rem;
   color: var(--accent);
 }
 .status--compact {
@@ -2801,6 +2848,23 @@ select.field__input {
   .refp__table .muted {
     display: none;
   }
+  /* The row id and the layer name stay on one line; the table box scrolls sideways instead. */
+  .refp__table td.mono,
+  .refp__table tbody th {
+    white-space: nowrap;
+  }
+}
+/* Touch targets of the particle view switch and of the Validate link at phone width. */
+@media (max-width: 559.98px) {
+  .segmented__item {
+    min-height: var(--touch-min);
+  }
+  #validation-layer-why a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--touch-min);
+    min-width: var(--touch-min);
+  }
 }
 .refp__note {
   margin: var(--space-3) 0 0;
@@ -2814,5 +2878,440 @@ select.field__input {
     transition-duration: 0s !important;
     animation-duration: 0s !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Explore block A: the governing equation and its physics controls ---------- */
+
+/* The equation is the largest element of the page. Its pieces sit in one row and wrap onto a second line
+   (the added terms) before the box would scroll sideways. */
+.geq {
+  display: grid;
+  gap: var(--space-3);
+}
+.geq__eq {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0.35em;
+  row-gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  overflow-x: auto;
+  font-size: 1.35rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+}
+@media (min-width: 1200px) {
+  .geq__eq {
+    font-size: 1.65rem;
+    padding: var(--space-4) var(--space-5);
+  }
+}
+@media (max-width: 767.98px) {
+  .geq__eq {
+    font-size: 1.05rem;
+    padding: var(--space-2) var(--space-3);
+  }
+}
+.geq__eq[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.geq__piece {
+  display: inline-block;
+  max-width: 100%;
+  border-radius: 3px;
+}
+.geq__piece .katex {
+  font-size: 1em;
+}
+/* The newly introduced piece or coefficient: a tinted block with an outline, in the mechanism's colour.
+   The outline carries the highlight when no motion is allowed; the colour is never the only cue (the
+   term list below names it too). */
+.geq-new,
+.geq-hi {
+  padding: 0 0.15em;
+  border-radius: 3px;
+}
+/* A symbol that the selected operating scenario changed (G to G(r,t), D(r,T) to D(r,T(t))). */
+.geq-hi--scenario {
+  --geq-colour: var(--accent);
+}
+.geq-new--source,
+.geq-hi--source {
+  --geq-colour: var(--mech-source);
+}
+.geq-new--decay,
+.geq-hi--decay {
+  --geq-colour: var(--mech-decay);
+}
+.geq-new--arrhenius,
+.geq-hi--temperature {
+  --geq-colour: var(--mech-arrhenius);
+}
+.geq-new {
+  background: color-mix(in srgb, var(--geq-colour) 14%, transparent);
+  outline: 2px solid color-mix(in srgb, var(--geq-colour) 75%, transparent);
+  outline-offset: 2px;
+}
+.geq-hi {
+  display: inline-block;
+  padding: 0 0.3em;
+  margin: 0 0.1em;
+  background: color-mix(in srgb, var(--geq-colour) 18%, transparent);
+  outline: 2px solid color-mix(in srgb, var(--geq-colour) 75%, transparent);
+  outline-offset: 2px;
+}
+/* The operator piece itself is a baseline piece: it carries no frame of its own. */
+.geq__piece--operator.geq-new {
+  background: none;
+  outline: none;
+  padding: 0;
+}
+/* A short move in from the right and a fade, only when motion is allowed; with reduced motion the
+   outline alone marks the term and nothing moves. */
+@media (prefers-reduced-motion: no-preference) {
+  .geq__piece.geq-new:not(.geq__piece--operator) {
+    animation: geq-in var(--dur-explain) var(--ease-standard) both;
+  }
+  .geq-hi {
+    animation: geq-fade var(--dur-explain) var(--ease-standard) both;
+  }
+}
+@keyframes geq-in {
+  from {
+    opacity: 0;
+    transform: translateX(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes geq-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.physics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.physics__btn {
+  display: grid;
+  gap: 2px;
+  align-content: center;
+  justify-items: start;
+  min-height: var(--touch-min);
+  padding: var(--space-1) var(--space-3);
+  font: inherit;
+  font-size: var(--fs-label);
+  text-align: left;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard);
+}
+.physics__btn:hover {
+  color: var(--text);
+  background: var(--bg-subtle);
+}
+.physics__btn.is-current {
+  color: var(--text);
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  box-shadow: inset 0 -3px 0 var(--accent);
+}
+.physics__name {
+  font-weight: 600;
+}
+@media (max-width: 767.98px) {
+  .physics__btn {
+    flex: 1 1 100%;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+}
+/* Build status: a word with a border shape (dotted, outline, solid), never colour alone. */
+.bstatus {
+  display: inline-block;
+  padding: 0 var(--space-2);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--text-muted);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+}
+.bstatus--planned {
+  border-style: dotted;
+}
+.bstatus--implemented {
+  border-style: dashed;
+}
+.bstatus--verified {
+  color: var(--text);
+  border-color: var(--text);
+}
+/* Block B: the scenario row uses the physics controls' look; below it the rule, the explanation and the symbols. */
+/* A selection can move the row (the term list above it changes), so it is scrolled back into view clear of the sticky header and status line. */
+.scenarios .physics__btn {
+  scroll-margin-top: calc(var(--header-height) + var(--space-4));
+  scroll-margin-bottom: calc(var(--status-height) + var(--space-8, 2rem));
+}
+.scenario__rule {
+  margin: var(--space-2) 0 0;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+.scenario {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  min-width: 0;
+}
+.scenario__title {
+  margin: 0;
+  font-size: 1rem;
+}
+.scenario__kind {
+  display: inline-block;
+  margin-left: var(--space-2);
+  font-size: var(--fs-small);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.scenario__text {
+  margin: 0;
+  max-width: 70ch;
+}
+.physics__legend {
+  margin: 0;
+  font-size: var(--fs-small);
+}
+.linklike {
+  min-height: var(--touch-min);
+  padding: 0;
+  font: inherit;
+  color: var(--accent);
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.physics__defs {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--fs-small);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.physics__defs[hidden] {
+  display: none;
+}
+.physics__defs dt {
+  font-weight: 600;
+}
+.physics__defs dd {
+  margin: 0;
+  color: var(--text-muted);
+}
+.geq__terms {
+  display: grid;
+  gap: var(--space-2) var(--space-5);
+  align-items: start;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@media (min-width: 900px) {
+  .geq__terms {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.geq__term {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--border);
+}
+.geq__term.is-new {
+  border-left-color: var(--accent);
+  background: var(--accent-bg);
+}
+.geq__sym {
+  overflow-x: auto;
+  overflow-y: hidden;
+  font-size: 0.95em;
+}
+.geq__text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  font-size: var(--fs-label);
+}
+.geq__name {
+  font-weight: 600;
+}
+.geq__meaning {
+  color: var(--text);
+}
+.geq__unit {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+/* Block C: one collapsed region */
+.numerical {
+  margin-top: var(--space-3);
+}
+.numerical[hidden] {
+  display: none;
+}
+.disclosure {
+  margin-top: var(--space-1);
+}
+.numerical__status,
+.numerical__notation {
+  margin: 0 0 var(--space-3);
+  max-width: 80ch;
+  font-size: var(--fs-label);
+  color: var(--text-muted);
+}
+/* The fourteen items: one heading button each, expanded and collapsed independently, never all open by default. */
+.num-items {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.num-item {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.num-item__head {
+  margin: 0;
+  font-size: 1rem;
+}
+.num-item__toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.num-item__num {
+  flex: none;
+  min-width: 1.5em;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.num-item__title {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.num-item__toggle .bstatus {
+  flex: none;
+  font-weight: 400;
+}
+.num-item__chevron {
+  flex: none;
+  width: 0.55em;
+  height: 0.55em;
+  margin-right: var(--space-1);
+  border-right: 2px solid currentcolor;
+  border-bottom: 2px solid currentcolor;
+  transform: rotate(45deg);
+}
+.num-item__toggle[aria-expanded='true'] .num-item__chevron {
+  transform: rotate(-135deg);
+}
+.num-item__body {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+.num-item__body[hidden] {
+  display: none;
+}
+.num-item__status {
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+/* How the selected scenario enters the scheme, written inside the item where it acts. */
+.scenario-note {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--accent);
+  background: var(--accent-bg);
+}
+/* What the selected physics adds to a step where the assembled system or the accounting is shown. */
+.step-additions {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--accent);
+  background: var(--accent-bg);
+}
+.step-additions__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0;
+}
+.step-additions__note {
+  min-width: 0;
+}
+.step-additions__more {
+  margin: 0;
+}
+
+/* Block D: numerical controls under the simulation; block E: the results in the full width */
+.controls-block {
+  margin-top: var(--space-5);
+}
+.controls-block__title {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-doc);
+  font-size: var(--fs-h3);
+}
+.block--e > .readout,
+.block--e > .results-plots {
+  margin-bottom: var(--space-4);
+}
+@media (min-width: 1200px) {
+  .results-plots .sim__plots {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

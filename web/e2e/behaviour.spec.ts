@@ -103,7 +103,8 @@ test.describe('content and data', () => {
     await waitForRun(page);
     await expect(page.getByTestId('status-result')).toHaveText('Result COMPUTED v2.0');
     await expect(page.getByTestId('status-solver')).toContainText(/ms in this browser/);
-    await expect(page.getByTestId('diagnostics-panel')).toContainText(`WebAssembly build ${build.commit}`);
+    // The build of the WebAssembly solver is not on the page: it is in the build table of Scientific Documentation.
+    await expect(page.getByTestId('diagnostics-panel')).not.toContainText('WebAssembly build');
     expect(await page.locator('meta[name="strato-build"]').getAttribute('content')).toBe(build.commit);
     await page.getByTestId('status-build').getByRole('link', { name: 'Build details' }).click();
     await expect(page).toHaveURL(/#\/documentation\/build$/);
