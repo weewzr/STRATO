@@ -145,8 +145,9 @@ test.describe('block B plots', () => {
     await page.getByTestId('profile-start').uncheck();
     await page.getByTestId('release-log').check();
     await expect.poll(async () => (await drawn(page, 'profile-plot')).map((t) => t.id)).toEqual(['profile']);
-    const layout = await page.getByTestId('release-plot-graph').evaluate((el) => (el as unknown as { layout: { yaxis: { type: string } } }).layout.yaxis.type);
-    expect(layout).toBe('log');
+    await expect
+      .poll(() => page.getByTestId('release-plot-graph').evaluate((el) => (el as unknown as { layout: { yaxis: { type: string } } }).layout.yaxis.type))
+      .toBe('log');
     // Switching Method B off removes its curve only.
     await page.getByTestId('release-method-2').uncheck();
     await expect.poll(async () => (await drawn(page, 'release-plot')).map((t) => t.id).sort()).toEqual(['release-b', 'release-cursor']);

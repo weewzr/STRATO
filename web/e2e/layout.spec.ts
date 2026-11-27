@@ -73,6 +73,7 @@ for (const vp of VIEWPORTS) {
       await expect(page.getByTestId('open-panel')).toHaveCount(0);
       expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
       await info.attach(`explore-${vp.width}`, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
+      await page.waitForLoadState('networkidle');
       await gotoAdvanced(page);
       const controls = page.getByTestId('advanced-solver').getByTestId('controls');
       if (vp.width >= 768) {
