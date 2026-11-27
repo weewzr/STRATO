@@ -85,6 +85,24 @@ export const selectionKey = (sel: { physics: PhysicsId; scenario: ScenarioId | n
 /** The key under which the manual solver's reply is recorded: it always runs the baseline problem, whatever the Explore selection is. */
 export const BASELINE_RUN_KEY = selectionKey({ physics: 'baseline', scenario: null });
 
+/**
+ * The one condition under which a computed status may be shown (badge, research-status chip of a result,
+ * result label in the footer, run-derived text): the stored run is the manual solver's run of the baseline
+ * problem, it belongs to the current inputs, and the build supports the baseline run. The Explore selection of
+ * the model equation and the operation does not enter: it neither starts nor changes this run. Everything that
+ * presents a result as computed or verified reads this, so that a run of other inputs is never described as the
+ * result of the current ones.
+ */
+export function runIsCurrent(
+  s: { run: unknown; runInfo: RunInfo | null; config: CaseConfig },
+  supported: boolean,
+): boolean {
+  if (!supported || s.run === null || s.run === undefined || s.runInfo === null) return false;
+  // A reply sent without a selection key (older callers) counts as the baseline run, as in solver/shown.ts.
+  const sameSelection = s.runInfo.selectionKey === undefined || s.runInfo.selectionKey === BASELINE_RUN_KEY;
+  return sameSelection && s.runInfo.inputKey === inputKey(s.config);
+}
+
 /** The comparison of the current inputs with the baseline (compare), run while the Compare section is open (web phase 5). */
 export interface ComparisonState {
   status: 'idle' | 'running' | 'ok' | 'rejected' | 'error';

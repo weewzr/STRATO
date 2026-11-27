@@ -75,6 +75,18 @@ jobs:
       # differs (the lines that record the commit are ignored). A stale file fails the build.
       - name: strato-results run --check
         run: cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-results -- run --check
+      # The committed files are those of this platform (Linux, the runner of this workflow): the
+      # libm of another platform differs in the last digits of the Method B series and of the
+      # run hashes, so a bit-exact check holds on one platform only. The files regenerated here
+      # are attached to every run; when the check fails, take them from the run and commit them.
+      - name: Regenerate on this platform and attach the files
+        if: always()
+        run: cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-results -- run
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: data-results-linux
+          path: data/results/
 
   python-reference:
     name: Analytical series against the independent Python reference

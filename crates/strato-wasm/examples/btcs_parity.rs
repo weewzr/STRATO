@@ -360,6 +360,7 @@ fn main() -> ExitCode {
             let mut any_fail = false;
             let (mut solver_fail, mut series_fail) = (0usize, 0usize);
             let (mut residual_total, mut flag_total) = ((0usize, 0usize), (0usize, 0usize));
+            let mut swap_total = (0usize, 0usize);
             for (name, nv) in n {
                 let Some(wv) = w.get(name) else {
                     println!("FAIL {name}: missing from the WebAssembly file");
@@ -373,13 +374,15 @@ fn main() -> ExitCode {
                     "FAIL"
                 };
                 println!(
-                    "{status} {name}: {} values, {} bit-identical, worst relative difference {:e}; residual rule covers {} field(s) ({} needed it), flag rule covers {} field(s) ({} needed it)",
-                    t.compared, t.identical, t.worst_rel, t.residual_covered, t.residual_excused, t.flag_covered, t.flag_excused
+                    "{status} {name}: {} values, {} bit-identical, worst relative difference {:e}; residual rule covers {} field(s) ({} needed it), flag rule covers {} field(s) ({} needed it), reason-swap rule covers {} field(s) ({} needed it)",
+                    t.compared, t.identical, t.worst_rel, t.residual_covered, t.residual_excused, t.flag_covered, t.flag_excused, t.swap_covered, t.swap_excused
                 );
                 residual_total.0 += t.residual_covered;
                 residual_total.1 += t.residual_excused;
                 flag_total.0 += t.flag_covered;
                 flag_total.1 += t.flag_excused;
+                swap_total.0 += t.swap_covered;
+                swap_total.1 += t.swap_excused;
                 for (pat, f) in &t.failures {
                     let (a, b) = f.first.clone().unwrap_or_default();
                     let kind = kind_of(name, pat);
@@ -400,8 +403,8 @@ fn main() -> ExitCode {
                 any_fail = true;
             }
             println!(
-                "RULES residual rule: {} field(s) covered over all cases, {} needed it; flag rule: {} field(s) covered, {} needed it",
-                residual_total.0, residual_total.1, flag_total.0, flag_total.1
+                "RULES residual rule: {} field(s) covered over all cases, {} needed it; flag rule: {} field(s) covered, {} needed it; reason-swap rule: {} field(s) covered, {} needed it",
+                residual_total.0, residual_total.1, flag_total.0, flag_total.1, swap_total.0, swap_total.1
             );
             println!(
                 "RESULT {} ({solver_fail} failing BTCS field(s), {series_fail} failing series-derived field(s))",

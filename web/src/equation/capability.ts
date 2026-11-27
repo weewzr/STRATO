@@ -159,7 +159,7 @@ export function runMechanisms(physics: PhysicsId): string[] {
 
 /** What the build does not implement, as a phrase ("a, b and c"). */
 export function missingList(support: SelectionSupport): string {
-  return support.missing.length > 1 ? `${support.missing.slice(0, -1).join(', ')} and ${support.missing[support.missing.length - 1]}` : (support.missing[0] ?? '');
+  return phrase(support.missing);
 }
 
 /** One sentence for the simulation and results blocks when the selection cannot be run. */

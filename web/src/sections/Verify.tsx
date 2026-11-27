@@ -1,4 +1,5 @@
 import { BTCS_CAPABILITY } from '../equation/availability';
+import { useRunIsCurrent } from '../equation/useCapability';
 import { METHOD_1 } from '../methods';
 import { Badge } from '../panels/Badge';
 import { BalancePanelVerify, CheckFigurePanel, MethodComparisonPanel, ObservedOrdersTable } from '../panels/Verification';
@@ -13,6 +14,7 @@ function VerifyStatus() {
   const build = useStrato((s) => s.solver.build);
   const state = useStrato((s) => s.solver.state);
   const run = useStrato((s) => s.run);
+  const current = useRunIsCurrent();
   const catalogue = useCatalogue();
   if (state === 'failed') {
     return (
@@ -28,7 +30,7 @@ function VerifyStatus() {
       </p>
     );
   }
-  const label = (run?.solver ?? build.btcs.solver).label;
+  const label = (current && run ? run.solver : build.btcs.solver).label;
   const status = statusOf(catalogue, BTCS_CAPABILITY);
   return (
     <p className="solver-status solver-status--compact" data-testid="verify-status" data-state="ready">
