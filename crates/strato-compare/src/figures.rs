@@ -1748,7 +1748,7 @@ pub fn deviation_lines(records: &[RowRecord], species: Species) -> Vec<String> {
             three(a.max_absolute)
         )),
         None => out.push(format!(
-            "No {nuc} row supports a point comparison, so the absolute deviation, and the relative deviation in percent are not defined for {nuc}{}; no number is substituted.",
+            "No {nuc} row supports a point comparison, so the absolute deviation and the relative deviation in percent are not defined for {nuc}{}; no number is substituted.",
             if any_scale {
                 " (the log10 ratios above are for scale only and enter no aggregate)"
             } else {
