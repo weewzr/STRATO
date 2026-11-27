@@ -222,14 +222,41 @@ test.describe('interactive graphs', () => {
     }
   });
 
-  test('draw the registered experimental data with its caption, citation and link beneath', async ({ page, problems }) => {
+  test('draw a curve for every model equation, and a source starts from a fresh particle: the fraction of the generated inventory', async ({ page, problems }) => {
+    void problems;
+    await gotoSection(page, 'explore');
+    await expect(page.getByTestId('explore-plot-release-graph')).toBeVisible({ timeout: 30_000 });
+    for (const physics of ['baseline', 'generation', 'decay', 'temperature', 'combined']) {
+      await page.getByTestId(`physics-${physics}`).click();
+      const plot = page.getByTestId('explore-plot-release-graph');
+      await expect(plot).toBeVisible({ timeout: 30_000 });
+      await expect(page.getByTestId('graph-empty')).toHaveCount(0);
+      const last = await plot.evaluate((el) => {
+        const y = (el as unknown as { data: { y: number[] }[] }).data[0]?.y ?? [];
+        return y[y.length - 1] ?? Number.NaN;
+      });
+      // Every plotted fraction (of the initial or of the generated inventory) lies between 0 and 1.
+      expect(last, physics).toBeGreaterThanOrEqual(0);
+      expect(last, physics).toBeLessThanOrEqual(1);
+      if (physics === 'generation' || physics === 'combined') await expect(page.getByTestId('graph-panel')).toContainText('generated inventory');
+    }
+  });
+
+  test('draw the registered experimental data with its caption, citation and link beneath, and its model curves only under temperature-dependent diffusion', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     await page.getByTestId('graph-experiment').click();
     await expect(page.getByTestId('dataset-select')).toBeVisible({ timeout: 30_000 });
     const plot = page.getByTestId('explore-plot-experiment-graph');
     await expect(plot).toBeVisible();
-    await expect.poll(() => plot.evaluate((el) => ((el as unknown as { data?: unknown[] }).data ?? []).length), { timeout: 30_000 }).toBeGreaterThan(1);
+    const lines = () => plot.evaluate((el) => ((el as unknown as { data?: { mode: string }[] }).data ?? []).filter((t) => t.mode === 'lines').length);
+    // Baseline diffusion: the measurements stand alone, and no model curve is drawn under another equation.
+    await expect.poll(() => plot.evaluate((el) => ((el as unknown as { data?: unknown[] }).data ?? []).length), { timeout: 30_000 }).toBeGreaterThan(0);
+    expect(await lines()).toBe(0);
+    await expect(page.getByTestId('experiment-model-note')).toHaveCount(0);
+    await page.getByTestId('physics-temperature').click();
+    await expect.poll(lines, { timeout: 30_000 }).toBeGreaterThan(0);
+    await expect(page.getByTestId('experiment-model-note')).toContainText('temperature-dependent diffusion');
     const markers = await plot.evaluate((el) =>
       (el as unknown as { data: { mode: string; marker?: { color: string; symbol: string } }[] }).data.filter((t) => t.mode === 'markers').map((t) => `${t.marker?.color}/${t.marker?.symbol}`),
     );
