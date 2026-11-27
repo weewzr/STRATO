@@ -1,0 +1,456 @@
+{
+  "schema_version": "1",
+  "what": "one experimental curve with its model curves and its R² records",
+  "provenance": {
+    "label": "numerical solution of the stated model; not experimental validation",
+    "solver": "STRATO BTCS five-layer spherical finite difference",
+    "solver_version": "1.0.1",
+    "pipeline": "strato-results 0.1.0",
+    "schema_version": "1",
+    "commit": "461aa1d",
+    "solver_source_sha256": "02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275",
+    "input_sha256": {
+      "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
+      "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
+      "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
+      "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
+      "temperature_histories.csv": "b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d",
+      "release_measurements.csv": "29f0d7bec6f40fb97c52c0bf7972782d7849a58f5f910527fe8efa8afa9ddda9",
+      "agr1_irradiation_conditions.csv": "31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d",
+      "agr1_burnup_by_cycle.csv": "e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f",
+      "agr1_power_history_digitised.csv": "25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a",
+      "scenarios/s1_normal_operation.csv": "c420e1e04e043ed0418099c27156cabda8188f40ce2fb239d1ce3916cccc7970",
+      "scenarios/s2_shutdown_cooldown.csv": "f575e9a42670e52293083907b3658fd7e3a99c279912861999f0cb847cbf6044",
+      "scenarios/s3_startup.csv": "bf2b6bd01168d0aa72f9db61f5fa4eae60ff39a81928eaed515ae8279916bfa7",
+      "scenarios/s4_control_rod_insertion.csv": "93856f2003ca65b7a7258d60819a47b8a651d695dffeff0fd7dc664b90309759",
+      "scenarios/s5_fuel_removal.csv": "4cad00101259e2fdbeec585f27d8910502a1858ab38bce59899c132b0caad9bb"
+    }
+  },
+  "curve_id": "IAEA97-JAERI-A-CS137-1800",
+  "definition_id": "R2_LINEAR_PER_CURVE_V1",
+  "nuclide": "Cs-137",
+  "register": "data/experimental/release_measurements.csv; data/experimental/curve_assessment.csv",
+  "experiment": {
+    "marker_colour": "#111111",
+    "connect": false,
+    "points": [
+      {
+        "id": "E-127",
+        "time_h": 5e0,
+        "value": 1.4e-3,
+        "registered_value": 1.4e-3,
+        "registered_unit": "1",
+        "qualifier": "=",
+        "value_class": "M printed table",
+        "point_class": "measured",
+        "status": "verified",
+        "reading_uncertainty": {
+          "value_abs": null,
+          "time_h": null
+        }
+      },
+      {
+        "id": "E-130",
+        "time_h": 7e0,
+        "value": 1.6e-2,
+        "registered_value": 1.6e-2,
+        "registered_unit": "1",
+        "qualifier": "=",
+        "value_class": "M printed table",
+        "point_class": "measured",
+        "status": "verified",
+        "reading_uncertainty": {
+          "value_abs": null,
+          "time_h": null
+        }
+      },
+      {
+        "id": "E-131",
+        "time_h": 2.4e1,
+        "value": 1.3e-1,
+        "registered_value": 1.3e-1,
+        "registered_unit": "1",
+        "qualifier": "=",
+        "value_class": "M printed table",
+        "point_class": "measured",
+        "status": "verified",
+        "reading_uncertainty": {
+          "value_abs": null,
+          "time_h": null
+        }
+      },
+      {
+        "id": "E-133",
+        "time_h": 4.8e1,
+        "value": 2.7e-1,
+        "registered_value": 2.7e-1,
+        "registered_unit": "1",
+        "qualifier": "=",
+        "value_class": "M printed table",
+        "point_class": "measured",
+        "status": "verified",
+        "reading_uncertainty": {
+          "value_abs": null,
+          "time_h": null
+        }
+      }
+    ]
+  },
+  "model": {
+    "method_a": {
+      "label": "Method A: BTCS",
+      "status": "computed",
+      "time_h": [0e0,5e-2,5.4000000000000006e-2,5.832000000000001e-2,6.298560000000002e-2,6.802444800000003e-2,7.346640384000004e-2,7.934371614720005e-2,8.569121343897607e-2,9.254651051409415e-2,9.99502313552217e-2,1.0794624986363945e-1,1.1658194985273061e-1,1.2590850584094906e-1,1.35981186308225e-1,1.46859681212883e-1,1.5860845570991366e-1,1.7129713216670678e-1,1.8500090274004333e-1,1.998009749592468e-1,2.1578505295598657e-1,2.330478571924655e-1,2.5169168576786277e-1,2.718270206292918e-1,2.935731822796352e-1,3.1705903686200604e-1,3.4242375981096657e-1,3.698176605958439e-1,3.9940307344351145e-1,4.313553193189924e-1,4.658637448645118e-1,5.031328444536728e-1,5.433834720099666e-1,5.86854149770764e-1,6.338024817524252e-1,6.845066802926192e-1,7.392672147160287e-1,7.984085918933111e-1,8.62281279244776e-1,9.312637815843582e-1,1.0057648841111069e0,1.0862260748399954e0,1.1731241608271952e0,1.2669740936933709e0,1.3683320211888406e0,1.477798582883948e0,1.5960224695146639e0,1.7237042670758371e0,1.8616006084419041e0,2.0105286571172565e0,2.1713709496866374e0,2.3450806256615686e0,2.5326870757144944e0,2.735302041771654e0,2.9541262051133867e0,3.190456301522458e0,3.4456928056442546e0,3.721348230095795e0,4.019056088503459e0,4.3405805755837354e0,4.687827021630435e0,5e0,5.06285318336087e0,5.46788143802974e0,5.905311953072119e0,6.377736909317889e0,6.887955862063321e0,7e0,7.438992331028387e0,8.034111717510658e0,8.676840654911512e0,9.370987907304434e0,1.0120666939888789e1,1.0930320295079893e1,1.1804745918686285e1,1.2749125592181189e1,1.3769055639555685e1,1.4870580090720141e1,1.6060226497977755e1,1.7345044617815976e1,1.8732648187241256e1,2.023126004222056e1,2.1849760845598205e1,2.3597741713246062e1,2.4e1,2.5485561050305748e1,2.7524405934330208e1,2.9726358409076628e1,3.210446708180276e1,3.467282444834698e1,3.744665040421474e1,4.0442382436551924e1,4.367777303147608e1,4.7171994873994166e1,4.8e1],
+      "release_fraction": [0e0,9.188468546579514e-27,2.996381685592149e-26,5.240119303001076e-26,7.663355929802723e-26,1.0280451486748499e-25,1.3106914688249947e-25,1.61594949458715e-25,1.9456281624102778e-25,2.301681123659256e-25,2.6862183218081522e-25,8.629152384792518e-25,1.5084911272596377e-24,2.2057130871424538e-24,2.958712803815897e-24,3.771952497823215e-24,1.0296029512523768e-23,1.956634646506339e-23,2.9578288773806193e-23,4.0391186467248393e-23,1.2662655791507246e-22,2.2077601710786297e-22,3.6934384531975995e-22,1.037226544201151e-21,1.7585398589930523e-21,4.8921154876886496e-21,9.234396965913885e-21,2.5814353478304904e-20,4.862998470369838e-20,1.4613706146836775e-19,3.821833681995077e-19,8.831554144176866e-19,2.389103888825225e-18,6.8835635365513626e-18,1.9593006348654997e-17,5.58139003189483e-17,1.5927017167179694e-16,4.514841150769924e-16,1.4473448194159273e-15,4.398254313991023e-15,1.3111208237117227e-14,4.0937967773210814e-14,1.2775424919183868e-13,3.919002267664104e-13,1.2014721490206854e-12,3.653917108718618e-12,1.0815809397765335e-11,3.2616051252378125e-11,9.468740049821334e-11,2.70372535131687e-10,7.569416255149636e-10,2.045916971915428e-9,5.430055107715062e-9,1.3908883195624831e-8,3.444203770441157e-8,8.275439979607595e-8,1.9168106631227729e-7,4.2954455582913554e-7,9.272066607560325e-7,1.9305861104184538e-6,3.882028739977131e-6,6.779198256162713e-6,7.536260999054155e-6,1.4136545756792983e-5,2.5634988412591952e-5,4.501733292086419e-5,7.658456980140019e-5,8.526683620018137e-5,1.2641114840422125e-4,2.0269218358495776e-4,3.1610815617800245e-4,4.8012435511318805e-4,7.11172465915655e-4,1.0286646367919901e-3,1.4548362522551718e-3,2.0145085237505338e-3,2.7345616562391302e-3,3.643250518796909e-3,4.769737489683476e-3,6.1433135004685824e-3,7.792767659133181e-3,9.745763369249762e-3,1.2028496513243472e-2,1.466541775035796e-2,1.5294257687127496e-2,1.7679008481773277e-2,2.108987413604066e-2,2.4916937589360366e-2,2.9177717427113874e-2,3.38887557845538e-2,3.90660681591888e-2,4.472572165293482e-2,5.0884351011930326e-2,5.755970127802579e-2,5.91425471197172e-2],
+      "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
+      "steps": 960,
+      "history_row_ids": [
+        "TH-122"
+      ],
+      "note": "the line is a drawing between output times; the values that enter R² are the exact step values in r2.json"
+    },
+    "method_b": {
+      "label": "Method B: Sturm–Liouville",
+      "status": "available",
+      "time_h": [0e0,5e-2,5.4000000000000006e-2,5.832000000000001e-2,6.298560000000002e-2,6.802444800000003e-2,7.346640384000004e-2,7.934371614720005e-2,8.569121343897607e-2,9.254651051409415e-2,9.99502313552217e-2,1.0794624986363945e-1,1.1658194985273061e-1,1.2590850584094906e-1,1.35981186308225e-1,1.46859681212883e-1,1.5860845570991366e-1,1.7129713216670678e-1,1.8500090274004333e-1,1.998009749592468e-1,2.1578505295598657e-1,2.330478571924655e-1,2.5169168576786277e-1,2.718270206292918e-1,2.935731822796352e-1,3.1705903686200604e-1,3.4242375981096657e-1,3.698176605958439e-1,3.9940307344351145e-1,4.313553193189924e-1,4.658637448645118e-1,5.031328444536728e-1,5.433834720099666e-1,5.86854149770764e-1,6.338024817524252e-1,6.845066802926192e-1,7.392672147160287e-1,7.984085918933111e-1,8.62281279244776e-1,9.312637815843582e-1,1.0057648841111069e0,1.0862260748399954e0,1.1731241608271952e0,1.2669740936933709e0,1.3683320211888406e0,1.477798582883948e0,1.5960224695146639e0,1.7237042670758371e0,1.8616006084419041e0,2.0105286571172565e0,2.1713709496866374e0,2.3450806256615686e0,2.5326870757144944e0,2.735302041771654e0,2.9541262051133867e0,3.190456301522458e0,3.4456928056442546e0,3.721348230095795e0,4.019056088503459e0,4.3405805755837354e0,4.687827021630435e0,5e0,5.06285318336087e0,5.46788143802974e0,5.905311953072119e0,6.377736909317889e0,6.887955862063321e0,7e0,7.438992331028387e0,8.034111717510658e0,8.676840654911512e0,9.370987907304434e0,1.0120666939888789e1,1.0930320295079893e1,1.1804745918686285e1,1.2749125592181189e1,1.3769055639555685e1,1.4870580090720141e1,1.6060226497977755e1,1.7345044617815976e1,1.8732648187241256e1,2.023126004222056e1,2.1849760845598205e1,2.3597741713246062e1,2.4e1,2.5485561050305748e1,2.7524405934330208e1,2.9726358409076628e1,3.210446708180276e1,3.467282444834698e1,3.744665040421474e1,4.0442382436551924e1,4.367777303147608e1,4.7171994873994166e1,4.8e1],
+      "release_fraction": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,2.7936490232249866e-8,7.878960905927102e-8,2.0747180728974968e-7,5.125820949913873e-7,1.19344264526422e-6,2.629264747144866e-6,4.896604019366535e-6,5.501550505826458e-6,1.0971203564635879e-5,2.091852712482467e-5,3.824761689241729e-5,6.724686436521132e-5,7.533599378395373e-5,1.1398557873576465e-4,1.86715175973573e-4,2.962344847856624e-4,4.561748228801843e-4,6.83163119218011e-4,9.968307273942045e-4,1.4196505286176997e-3,1.976603190353421e-3,2.6946922094168713e-3,3.602343874289149e-3,4.7287403263269745e-3,6.103140085652492e-3,7.75424022451765e-3,9.709628195590625e-3,1.199536038200788e-2,1.4635690676252144e-2,1.5265324444470263e-2,1.7652958153563825e-2,2.106763036611181e-2,2.489848935728911e-2,2.916294140415998e-2,3.38774278153996e-2,3.905791131534275e-2,4.4720409336060696e-2,5.0881541575589995e-2,5.755905532342254e-2,5.914234482382674e-2]
+    }
+  },
+  "r2_records": [
+    {
+      "record_id": "r2.IAEA97-JAERI-A-CS137-1800.A",
+      "definition_id": "R2_LINEAR_PER_CURVE_V1",
+      "curve_id": "IAEA97-JAERI-A-CS137-1800",
+      "method": "A",
+      "method_name": "Method A: BTCS",
+      "nuclide": "Cs-137",
+      "program": "JAERI",
+      "specimen_id": "sample A",
+      "specimen_level": "particle_batch",
+      "source_aggregated": false,
+      "temperature_C": 1.8e3,
+      "temperature_label": "1800 °C",
+      "temperature_history_id": "JAERI-HEAT (JAERI-A-IRR is not modelled)",
+      "release_definition": "fractional release",
+      "denominator": "not established",
+      "time_basis": "isothermal test duration",
+      "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
+      "independence": "not_established",
+      "source_citation_apa": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
+      "source_citation_note": null,
+      "source_link": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
+      "link_status": "verified",
+      "source_location": "Table 4-9; printed p. 164 (0-based PDF index 170)",
+      "row_ids": [
+        "E-127",
+        "E-130",
+        "E-131",
+        "E-133"
+      ],
+      "rows_excluded": [],
+      "early_bound_points": [],
+      "qualifiers": [
+        "=",
+        "=",
+        "=",
+        "="
+      ],
+      "bound_classes": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "register_status": [
+        "verified",
+        "verified",
+        "verified",
+        "verified"
+      ],
+      "digitisation_verification_ref": [null,null,null,null],
+      "data_kind": "measured_tabulated",
+      "n": 4,
+      "matched_times_h": [5e0,7e0,2.4e1,4.8e1],
+      "model_times_h": [5e0,7e0,2.4e1,4.8e1],
+      "f_exp": [1.4e-3,1.6e-2,1.3e-1,2.7e-1],
+      "f_exp_registered": [1.4e-3,1.6e-2,1.3e-1,2.7e-1],
+      "f_exp_registered_unit": "1",
+      "f_exp_conversion": null,
+      "f_model": [6.779198256162713e-6,8.526683620018137e-5,1.5294257687127496e-2,5.91425471197172e-2],
+      "f_model_t_minus": [null,null,null,null],
+      "f_model_t_plus": [null,null,null,null],
+      "model_run_ref": {
+        "solver_package_version": "1.0.1",
+        "commit": "461aa1d",
+        "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
+        "base_output_sha256": "860912ea24c31f762f08a5355b5babd5a9992bac7f7a049bb188ab01ee78052f",
+        "refined_output_sha256": "bb152a3e30a38b7aa7305f4c543377f2ab6d40e128565cca7bdd707aa0a1aa1f",
+        "steps": 960,
+        "matrix_assemblies": 1
+      },
+      "curve_assessment_ref": null,
+      "evaluation": [
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step"
+      ],
+      "e_num": [9.818097277932124e-7,5.041349792222241e-6,1.475735429983839e-5,2.2727480786244314e-7],
+      "numerical_budget": null,
+      "mean_f_exp": null,
+      "ss_tot": null,
+      "ss_res": null,
+      "r2": null,
+      "display": null,
+      "status": "unavailable",
+      "reason_code": "incompatible_definition",
+      "reason_caption": "R² unavailable because the published release definition or normalisation differs from the model's.",
+      "failed_checks": [
+        "C4",
+        "C5",
+        "C6",
+        "D1",
+        "C7",
+        "M2",
+        "C0",
+        "V1"
+      ],
+      "coating_failure_basis": "none",
+      "decay_correction": "not_stated",
+      "decay_reference": null,
+      "inventory_reference": null,
+      "inventory_reference_offset_h": null,
+      "counting_delay_h": [null,null,null,null],
+      "t_d_h": [null,null,null,null],
+      "lambda_t_N": null,
+      "decay_gate_delta": null,
+      "verification_ref": null,
+      "label_latex": null,
+      "label_plain": null,
+      "premises": [
+        {
+          "code": "A2",
+          "text": "kernel-only start (A2, decision 20): the run starts with the inventory uniform in the kernel"
+        },
+        {
+          "code": "c16_heating_test_set",
+          "text": "diffusivities: the published heating-test rows C16 as printed (decision 39); no validity range printed, applied by Collin (2016) over 400 to 1800 degC"
+        },
+        {
+          "code": "temperature_history_idealised",
+          "text": "temperature ramp not modelled: the register gives no durations for the history JAERI-HEAT; the run is isothermal at the registered test temperature from t = 0"
+        },
+        {
+          "code": "decay_not_modelled",
+          "text": "decay not modelled: release assumed decay-corrected"
+        },
+        {
+          "code": "zero_variance_floating_point",
+          "text": "no per-point uncertainty stated; zero-variance test at floating-point level only"
+        },
+        {
+          "code": "independence_not_established",
+          "text": "independence of the parameters from these data not established"
+        }
+      ],
+      "digitisation": {
+        "u_value": null,
+        "u_time_h": null,
+        "status": "not applicable",
+        "r2_low": null,
+        "r2_high": null,
+        "first_order_half_width": null,
+        "corner_method": null,
+        "scope": "stated measurement uncertainty",
+        "interval_display": null
+      },
+      "systematic_r2_interval": null,
+      "systematic_interval_display": null,
+      "method_b_applicable": null,
+      "method_b_mask_passed": null
+    },
+    {
+      "record_id": "r2.IAEA97-JAERI-A-CS137-1800.B",
+      "definition_id": "R2_LINEAR_PER_CURVE_V1",
+      "curve_id": "IAEA97-JAERI-A-CS137-1800",
+      "method": "B",
+      "method_name": "Method B: Sturm–Liouville",
+      "nuclide": "Cs-137",
+      "program": "JAERI",
+      "specimen_id": "sample A",
+      "specimen_level": "particle_batch",
+      "source_aggregated": false,
+      "temperature_C": 1.8e3,
+      "temperature_label": "1800 °C",
+      "temperature_history_id": "JAERI-HEAT (JAERI-A-IRR is not modelled)",
+      "release_definition": "fractional release",
+      "denominator": "not established",
+      "time_basis": "isothermal test duration",
+      "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
+      "independence": "not_established",
+      "source_citation_apa": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
+      "source_citation_note": null,
+      "source_link": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
+      "link_status": "verified",
+      "source_location": "Table 4-9; printed p. 164 (0-based PDF index 170)",
+      "row_ids": [
+        "E-127",
+        "E-130",
+        "E-131",
+        "E-133"
+      ],
+      "rows_excluded": [],
+      "early_bound_points": [],
+      "qualifiers": [
+        "=",
+        "=",
+        "=",
+        "="
+      ],
+      "bound_classes": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "register_status": [
+        "verified",
+        "verified",
+        "verified",
+        "verified"
+      ],
+      "digitisation_verification_ref": [null,null,null,null],
+      "data_kind": "measured_tabulated",
+      "n": 4,
+      "matched_times_h": [5e0,7e0,2.4e1,4.8e1],
+      "model_times_h": [5e0,7e0,2.4e1,4.8e1],
+      "f_exp": [1.4e-3,1.6e-2,1.3e-1,2.7e-1],
+      "f_exp_registered": [1.4e-3,1.6e-2,1.3e-1,2.7e-1],
+      "f_exp_registered_unit": "1",
+      "f_exp_conversion": null,
+      "f_model": [4.896604019366535e-6,7.533599378395373e-5,1.5265324444470263e-2,5.914234482382674e-2],
+      "f_model_t_minus": [null,null,null,null],
+      "f_model_t_plus": [null,null,null,null],
+      "model_run_ref": {
+        "solver_package_version": "1.0.1",
+        "commit": "461aa1d",
+        "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
+        "alpha_max_per_s": 2.5e-1,
+        "modes": 175,
+        "e_num_basis": "|V_alpha_max - V_alpha_max/4| + accuracy_floor (metric-r2.md Section 2.3); V_alpha_max/4 is the series with the eigenvalue cover reduced by a factor 4",
+        "accuracy_floor": 2.5744680428486675e-10
+      },
+      "curve_assessment_ref": null,
+      "evaluation": [
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step"
+      ],
+      "e_num": [2.5744680428486675e-10,2.5744680428486675e-10,2.5744680428486675e-10,2.5744680428486675e-10],
+      "numerical_budget": null,
+      "mean_f_exp": null,
+      "ss_tot": null,
+      "ss_res": null,
+      "r2": null,
+      "display": null,
+      "status": "unavailable",
+      "reason_code": "incompatible_definition",
+      "reason_caption": "R² unavailable because the published release definition or normalisation differs from the model's.",
+      "failed_checks": [
+        "C4",
+        "C5",
+        "C6",
+        "D1",
+        "C7",
+        "C0",
+        "V1"
+      ],
+      "coating_failure_basis": "none",
+      "decay_correction": "not_stated",
+      "decay_reference": null,
+      "inventory_reference": null,
+      "inventory_reference_offset_h": null,
+      "counting_delay_h": [null,null,null,null],
+      "t_d_h": [null,null,null,null],
+      "lambda_t_N": null,
+      "decay_gate_delta": null,
+      "verification_ref": null,
+      "label_latex": null,
+      "label_plain": null,
+      "premises": [
+        {
+          "code": "A2",
+          "text": "kernel-only start (A2, decision 20): the run starts with the inventory uniform in the kernel"
+        },
+        {
+          "code": "c16_heating_test_set",
+          "text": "diffusivities: the published heating-test rows C16 as printed (decision 39); no validity range printed, applied by Collin (2016) over 400 to 1800 degC"
+        },
+        {
+          "code": "temperature_history_idealised",
+          "text": "temperature ramp not modelled: the register gives no durations for the history JAERI-HEAT; the run is isothermal at the registered test temperature from t = 0"
+        },
+        {
+          "code": "decay_not_modelled",
+          "text": "decay not modelled: release assumed decay-corrected"
+        },
+        {
+          "code": "zero_variance_floating_point",
+          "text": "no per-point uncertainty stated; zero-variance test at floating-point level only"
+        },
+        {
+          "code": "independence_not_established",
+          "text": "independence of the parameters from these data not established"
+        }
+      ],
+      "digitisation": {
+        "u_value": null,
+        "u_time_h": null,
+        "status": "not applicable",
+        "r2_low": null,
+        "r2_high": null,
+        "first_order_half_width": null,
+        "corner_method": null,
+        "scope": "stated measurement uncertainty",
+        "interval_display": null
+      },
+      "systematic_r2_interval": null,
+      "systematic_interval_display": null,
+      "method_b_applicable": true,
+      "method_b_mask_passed": true
+    }
+  ],
+  "caption": {
+    "curve_id": "IAEA97-JAERI-A-CS137-1800",
+    "caption_text": "Cumulative release fraction of Cs-137 versus isothermal test duration (h), particle batch, sample A, 1800 °C.",
+    "reason_lines": [
+      "R² unavailable because the published release definition or normalisation differs from the model's."
+    ],
+    "source_citation_apa": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
+    "source_citation_note": null,
+    "source_link": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
+    "source_link_note": null,
+    "source_figure_table": "Table 4-9, p. 164",
+    "source_kind": "tabulated",
+    "time_axis_label": "isothermal test duration (h)",
+    "specimen_label": "particle batch, sample A",
+    "temperature_label": "1800 °C",
+    "y_axis_label": "Cumulative release fraction",
+    "y_axis_scale": "linear",
+    "legend_exp_label": "Experiment (tabulated)",
+    "marker_colour_exp": "#111111",
+    "legend_methods": [
+      {
+        "label": "Method A: BTCS",
+        "colour": "#2563EB",
+        "style": "solid"
+      },
+      {
+        "label": "Method B: Sturm–Liouville",
+        "colour": "#DC2626",
+        "style": "solid"
+      }
+    ]
+  }
+}

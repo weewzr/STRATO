@@ -70,7 +70,7 @@ pub struct Report {
 }
 
 impl Report {
-    fn add(
+    pub(crate) fn add(
         &mut self,
         id: impl Into<String>,
         passed: bool,
@@ -153,6 +153,9 @@ pub fn run_all(texts: &RegisterTexts, species_csv: Option<&str>) -> Report {
             b6_offline_checks(&mut rep, &reg);
             generate_data_checks(&mut rep, &reg.geometry);
             catalogue_checks(&mut rep, &reg.decay, species_csv);
+            crate::integration_checks::integration_checks(&mut rep, &reg);
+            crate::integration_checks::register_text_checks(&mut rep, texts);
+            crate::experiment_checks::experiment_checks(&mut rep, &reg, texts);
         }
     }
     rep

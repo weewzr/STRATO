@@ -1,0 +1,2605 @@
+{
+  "schema_version": "1",
+  "what": "support matrix: every selector option and every reason why not",
+  "provenance": {
+    "label": "numerical solution of the stated model; not experimental validation",
+    "solver": "STRATO BTCS five-layer spherical finite difference",
+    "solver_version": "1.0.1",
+    "pipeline": "strato-results 0.1.0",
+    "schema_version": "1",
+    "commit": "461aa1d",
+    "solver_source_sha256": "02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275",
+    "input_sha256": {
+      "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
+      "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
+      "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
+      "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
+      "temperature_histories.csv": "b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d",
+      "release_measurements.csv": "29f0d7bec6f40fb97c52c0bf7972782d7849a58f5f910527fe8efa8afa9ddda9",
+      "agr1_irradiation_conditions.csv": "31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d",
+      "agr1_burnup_by_cycle.csv": "e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f",
+      "agr1_power_history_digitised.csv": "25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a",
+      "scenarios/s1_normal_operation.csv": "c420e1e04e043ed0418099c27156cabda8188f40ce2fb239d1ce3916cccc7970",
+      "scenarios/s2_shutdown_cooldown.csv": "f575e9a42670e52293083907b3658fd7e3a99c279912861999f0cb847cbf6044",
+      "scenarios/s3_startup.csv": "bf2b6bd01168d0aa72f9db61f5fa4eae60ff39a81928eaed515ae8279916bfa7",
+      "scenarios/s4_control_rod_insertion.csv": "93856f2003ca65b7a7258d60819a47b8a651d695dffeff0fd7dc664b90309759",
+      "scenarios/s5_fuel_removal.csv": "4cad00101259e2fdbeec585f27d8910502a1858ab38bce59899c132b0caad9bb"
+    }
+  },
+  "stages": [
+    {
+      "stage": 1,
+      "name": "baseline spherical diffusion",
+      "computed": true
+    },
+    {
+      "stage": 2,
+      "name": "generation",
+      "computed": true
+    },
+    {
+      "stage": 3,
+      "name": "radioactive decay",
+      "computed": true
+    },
+    {
+      "stage": 4,
+      "name": "temperature-dependent diffusivity",
+      "computed": true
+    },
+    {
+      "stage": 5,
+      "name": "combined",
+      "computed": true
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "steady-state",
+      "definition": "S1",
+      "supported": true,
+      "min_stage": 2
+    },
+    {
+      "id": "shutdown-cooldown",
+      "definition": "S2",
+      "supported": true,
+      "min_stage": 5
+    },
+    {
+      "id": "startup",
+      "definition": "S3",
+      "supported": true,
+      "min_stage": 5
+    },
+    {
+      "id": "control-rod-insertion",
+      "definition": "S4",
+      "supported": true,
+      "min_stage": 5
+    },
+    {
+      "id": "refuelling",
+      "definition": "S5",
+      "supported": true,
+      "min_stage": 5
+    }
+  ],
+  "main_comparison_temperatures_c": {
+    "Ag-110m": [1.6e3,1.7e3],
+    "Cs-134": [1.6e3,1.7e3,1.8e3],
+    "Sr-90": [1.6e3,1.7e3]
+  },
+  "cells": [
+    {
+      "key": "s1.exp.ag110m.1600c",
+      "stage": 1,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.6e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.ag110m.1600c"
+        ],
+        "row_ids": [
+          "E-046",
+          "E-048",
+          "E-051",
+          "E-052",
+          "E-053",
+          "E-172",
+          "E-178",
+          "E-183",
+          "E-184",
+          "E-186",
+          "E-425",
+          "E-426",
+          "E-427",
+          "E-428",
+          "E-429",
+          "E-430",
+          "E-431",
+          "E-432",
+          "E-433",
+          "E-434",
+          "E-462",
+          "E-463",
+          "E-464",
+          "E-465",
+          "E-466",
+          "E-467",
+          "E-468",
+          "E-469",
+          "E-470",
+          "E-471"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s1.exp.ag110m.1600c.json",
+      "quantities": [
+        "release_fraction"
+      ],
+      "replacement_quantity": null,
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s3.exp.ag110m.1600c",
+      "stage": 3,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.6e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false,
+        "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+        "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 121, COVER_SENSITIVITY x 18, BEFORE_MIN_VALID_TIME x 1; first valid time 1.600e2 s, accuracy floor 4.0e-9)"
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.ag110m.1600c"
+        ],
+        "row_ids": [
+          "E-046",
+          "E-048",
+          "E-051",
+          "E-052",
+          "E-053",
+          "E-172",
+          "E-178",
+          "E-183",
+          "E-184",
+          "E-186",
+          "E-425",
+          "E-426",
+          "E-427",
+          "E-428",
+          "E-429",
+          "E-430",
+          "E-431",
+          "E-432",
+          "E-433",
+          "E-434",
+          "E-462",
+          "E-463",
+          "E-464",
+          "E-465",
+          "E-466",
+          "E-467",
+          "E-468",
+          "E-469",
+          "E-470",
+          "E-471"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s3.exp.ag110m.1600c.json",
+      "quantities": [
+        "release_fraction",
+        "remaining_inventory_fraction",
+        "decayed_fraction"
+      ],
+      "replacement_quantity": "Decayed amount as a fraction of the initial inventory",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s4.exp.ag110m.1600c",
+      "stage": 4,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.6e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false,
+        "reason_code": "TIME_VARYING_TEMPERATURE",
+        "reason": "the temperature changes in time, so the eigenfunctions change in time; the analytical solution is not defined for this case (science design Section 4.2)"
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.ag110m.1600c"
+        ],
+        "row_ids": [
+          "E-046",
+          "E-048",
+          "E-051",
+          "E-052",
+          "E-053",
+          "E-172",
+          "E-178",
+          "E-183",
+          "E-184",
+          "E-186",
+          "E-425",
+          "E-426",
+          "E-427",
+          "E-428",
+          "E-429",
+          "E-430",
+          "E-431",
+          "E-432",
+          "E-433",
+          "E-434",
+          "E-462",
+          "E-463",
+          "E-464",
+          "E-465",
+          "E-466",
+          "E-467",
+          "E-468",
+          "E-469",
+          "E-470",
+          "E-471"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s4.exp.ag110m.1600c.json",
+      "quantities": [
+        "release_fraction",
+        "temperature_history"
+      ],
+      "replacement_quantity": "Temperature history T(t)",
+      "default_y_scale": "log"
+    },
+    {
+      "stage": 2,
+      "context": "exp",
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.6e3,
+      "supported": false,
+      "reason": "a post-irradiation heating test has no fission source (G = 0); generation belongs to the scenarios"
+    },
+    {
+      "stage": 5,
+      "context": "exp",
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.6e3,
+      "supported": false,
+      "reason": "a post-irradiation heating test has no fission source (G = 0); generation belongs to the scenarios"
+    },
+    {
+      "key": "s1.exp.ag110m.1700c",
+      "stage": 1,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.7e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.ag110m.1700c"
+        ],
+        "row_ids": [
+          "E-055",
+          "E-180"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s1.exp.ag110m.1700c.json",
+      "quantities": [
+        "release_fraction"
+      ],
+      "replacement_quantity": null,
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s3.exp.ag110m.1700c",
+      "stage": 3,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.7e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.ag110m.1700c"
+        ],
+        "row_ids": [
+          "E-055",
+          "E-180"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s3.exp.ag110m.1700c.json",
+      "quantities": [
+        "release_fraction",
+        "remaining_inventory_fraction",
+        "decayed_fraction"
+      ],
+      "replacement_quantity": "Decayed amount as a fraction of the initial inventory",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s4.exp.ag110m.1700c",
+      "stage": 4,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.7e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false,
+        "reason_code": "TIME_VARYING_TEMPERATURE",
+        "reason": "the temperature changes in time, so the eigenfunctions change in time; the analytical solution is not defined for this case (science design Section 4.2)"
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.ag110m.1700c"
+        ],
+        "row_ids": [
+          "E-055",
+          "E-180"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s4.exp.ag110m.1700c.json",
+      "quantities": [
+        "release_fraction",
+        "temperature_history"
+      ],
+      "replacement_quantity": "Temperature history T(t)",
+      "default_y_scale": "log"
+    },
+    {
+      "stage": 2,
+      "context": "exp",
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.7e3,
+      "supported": false,
+      "reason": "a post-irradiation heating test has no fission source (G = 0); generation belongs to the scenarios"
+    },
+    {
+      "stage": 5,
+      "context": "exp",
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.7e3,
+      "supported": false,
+      "reason": "a post-irradiation heating test has no fission source (G = 0); generation belongs to the scenarios"
+    },
+    {
+      "key": "s1.exp.cs134.1600c",
+      "stage": 1,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Cs-134",
+      "temperature_c": 1.6e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.cs134.1600c"
+        ],
+        "row_ids": [
+          "E-015",
+          "E-016",
+          "E-017",
+          "E-018",
+          "E-019",
+          "E-027",
+          "E-028",
+          "E-032",
+          "E-187",
+          "E-193",
+          "E-198",
+          "E-199",
+          "E-201"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s1.exp.cs134.1600c.json",
+      "quantities": [
+        "release_fraction"
+      ],
+      "replacement_quantity": null,
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s3.exp.cs134.1600c",
+      "stage": 3,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Cs-134",
+      "temperature_c": 1.6e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false,
+        "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+        "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 103, COVER_SENSITIVITY x 17, BEFORE_MIN_VALID_TIME x 1; first valid time 1.600e2 s, accuracy floor 1.8e-8)"
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.cs134.1600c"
+        ],
+        "row_ids": [
+          "E-015",
+          "E-016",
+          "E-017",
+          "E-018",
+          "E-019",
+          "E-027",
+          "E-028",
+          "E-032",
+          "E-187",
+          "E-193",
+          "E-198",
+          "E-199",
+          "E-201"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s3.exp.cs134.1600c.json",
+      "quantities": [
+        "release_fraction",
+        "remaining_inventory_fraction",
+        "decayed_fraction"
+      ],
+      "replacement_quantity": "Decayed amount as a fraction of the initial inventory",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s4.exp.cs134.1600c",
+      "stage": 4,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Cs-134",
+      "temperature_c": 1.6e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false,
+        "reason_code": "TIME_VARYING_TEMPERATURE",
+        "reason": "the temperature changes in time, so the eigenfunctions change in time; the analytical solution is not defined for this case (science design Section 4.2)"
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.cs134.1600c"
+        ],
+        "row_ids": [
+          "E-015",
+          "E-016",
+          "E-017",
+          "E-018",
+          "E-019",
+          "E-027",
+          "E-028",
+          "E-032",
+          "E-187",
+          "E-193",
+          "E-198",
+          "E-199",
+          "E-201"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s4.exp.cs134.1600c.json",
+      "quantities": [
+        "release_fraction",
+        "temperature_history"
+      ],
+      "replacement_quantity": "Temperature history T(t)",
+      "default_y_scale": "log"
+    },
+    {
+      "stage": 2,
+      "context": "exp",
+      "nuclide": "Cs-134",
+      "temperature_c": 1.6e3,
+      "supported": false,
+      "reason": "a post-irradiation heating test has no fission source (G = 0); generation belongs to the scenarios"
+    },
+    {
+      "stage": 5,
+      "context": "exp",
+      "nuclide": "Cs-134",
+      "temperature_c": 1.6e3,
+      "supported": false,
+      "reason": "a post-irradiation heating test has no fission source (G = 0); generation belongs to the scenarios"
+    },
+    {
+      "key": "s1.exp.cs134.1700c",
+      "stage": 1,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Cs-134",
+      "temperature_c": 1.7e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.cs134.1700c"
+        ],
+        "row_ids": [
+          "E-020",
+          "E-021",
+          "E-195"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s1.exp.cs134.1700c.json",
+      "quantities": [
+        "release_fraction"
+      ],
+      "replacement_quantity": null,
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s3.exp.cs134.1700c",
+      "stage": 3,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Cs-134",
+      "temperature_c": 1.7e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false,
+        "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+        "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 103, COVER_SENSITIVITY x 17, BEFORE_MIN_VALID_TIME x 1; first valid time 1.600e2 s, accuracy floor 3.9e-9)"
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.cs134.1700c"
+        ],
+        "row_ids": [
+          "E-020",
+          "E-021",
+          "E-195"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s3.exp.cs134.1700c.json",
+      "quantities": [
+        "release_fraction",
+        "remaining_inventory_fraction",
+        "decayed_fraction"
+      ],
+      "replacement_quantity": "Decayed amount as a fraction of the initial inventory",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s4.exp.cs134.1700c",
+      "stage": 4,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Cs-134",
+      "temperature_c": 1.7e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false,
+        "reason_code": "TIME_VARYING_TEMPERATURE",
+        "reason": "the temperature changes in time, so the eigenfunctions change in time; the analytical solution is not defined for this case (science design Section 4.2)"
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.cs134.1700c"
+        ],
+        "row_ids": [
+          "E-020",
+          "E-021",
+          "E-195"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s4.exp.cs134.1700c.json",
+      "quantities": [
+        "release_fraction",
+        "temperature_history"
+      ],
+      "replacement_quantity": "Temperature history T(t)",
+      "default_y_scale": "log"
+    },
+    {
+      "stage": 2,
+      "context": "exp",
+      "nuclide": "Cs-134",
+      "temperature_c": 1.7e3,
+      "supported": false,
+      "reason": "a post-irradiation heating test has no fission source (G = 0); generation belongs to the scenarios"
+    },
+    {
+      "stage": 5,
+      "context": "exp",
+      "nuclide": "Cs-134",
+      "temperature_c": 1.7e3,
+      "supported": false,
+      "reason": "a post-irradiation heating test has no fission source (G = 0); generation belongs to the scenarios"
+    },
+    {
+      "key": "s1.exp.cs134.1800c",
+      "stage": 1,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Cs-134",
+      "temperature_c": 1.8e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.cs134.1800c"
+        ],
+        "row_ids": [
+          "E-029"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s1.exp.cs134.1800c.json",
+      "quantities": [
+        "release_fraction"
+      ],
+      "replacement_quantity": null,
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s3.exp.cs134.1800c",
+      "stage": 3,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Cs-134",
+      "temperature_c": 1.8e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.cs134.1800c"
+        ],
+        "row_ids": [
+          "E-029"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s3.exp.cs134.1800c.json",
+      "quantities": [
+        "release_fraction",
+        "remaining_inventory_fraction",
+        "decayed_fraction"
+      ],
+      "replacement_quantity": "Decayed amount as a fraction of the initial inventory",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s4.exp.cs134.1800c",
+      "stage": 4,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Cs-134",
+      "temperature_c": 1.8e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false,
+        "reason_code": "TIME_VARYING_TEMPERATURE",
+        "reason": "the temperature changes in time, so the eigenfunctions change in time; the analytical solution is not defined for this case (science design Section 4.2)"
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.cs134.1800c"
+        ],
+        "row_ids": [
+          "E-029"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s4.exp.cs134.1800c.json",
+      "quantities": [
+        "release_fraction",
+        "temperature_history"
+      ],
+      "replacement_quantity": "Temperature history T(t)",
+      "default_y_scale": "log"
+    },
+    {
+      "stage": 2,
+      "context": "exp",
+      "nuclide": "Cs-134",
+      "temperature_c": 1.8e3,
+      "supported": false,
+      "reason": "a post-irradiation heating test has no fission source (G = 0); generation belongs to the scenarios"
+    },
+    {
+      "stage": 5,
+      "context": "exp",
+      "nuclide": "Cs-134",
+      "temperature_c": 1.8e3,
+      "supported": false,
+      "reason": "a post-irradiation heating test has no fission source (G = 0); generation belongs to the scenarios"
+    },
+    {
+      "key": "s1.exp.sr90.1600c",
+      "stage": 1,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Sr-90",
+      "temperature_c": 1.6e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.sr90.1600c"
+        ],
+        "row_ids": [
+          "E-063",
+          "E-064",
+          "E-065",
+          "E-066",
+          "E-067",
+          "E-157",
+          "E-163",
+          "E-168",
+          "E-169",
+          "E-171",
+          "E-472",
+          "E-473",
+          "E-474",
+          "E-475",
+          "E-476",
+          "E-477",
+          "E-478",
+          "E-479",
+          "E-480",
+          "E-481",
+          "E-482"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s1.exp.sr90.1600c.json",
+      "quantities": [
+        "release_fraction"
+      ],
+      "replacement_quantity": null,
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s3.exp.sr90.1600c",
+      "stage": 3,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Sr-90",
+      "temperature_c": 1.6e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false,
+        "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+        "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 77, BEFORE_MIN_VALID_TIME x 35, COVER_SENSITIVITY x 19; first valid time 2.432e3 s, accuracy floor 9.6e-9)"
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.sr90.1600c"
+        ],
+        "row_ids": [
+          "E-063",
+          "E-064",
+          "E-065",
+          "E-066",
+          "E-067",
+          "E-157",
+          "E-163",
+          "E-168",
+          "E-169",
+          "E-171",
+          "E-472",
+          "E-473",
+          "E-474",
+          "E-475",
+          "E-476",
+          "E-477",
+          "E-478",
+          "E-479",
+          "E-480",
+          "E-481",
+          "E-482"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s3.exp.sr90.1600c.json",
+      "quantities": [
+        "release_fraction",
+        "remaining_inventory_fraction",
+        "decayed_fraction"
+      ],
+      "replacement_quantity": "Decayed amount as a fraction of the initial inventory",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s4.exp.sr90.1600c",
+      "stage": 4,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Sr-90",
+      "temperature_c": 1.6e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false,
+        "reason_code": "TIME_VARYING_TEMPERATURE",
+        "reason": "the temperature changes in time, so the eigenfunctions change in time; the analytical solution is not defined for this case (science design Section 4.2)"
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.sr90.1600c"
+        ],
+        "row_ids": [
+          "E-063",
+          "E-064",
+          "E-065",
+          "E-066",
+          "E-067",
+          "E-157",
+          "E-163",
+          "E-168",
+          "E-169",
+          "E-171",
+          "E-472",
+          "E-473",
+          "E-474",
+          "E-475",
+          "E-476",
+          "E-477",
+          "E-478",
+          "E-479",
+          "E-480",
+          "E-481",
+          "E-482"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s4.exp.sr90.1600c.json",
+      "quantities": [
+        "release_fraction",
+        "temperature_history"
+      ],
+      "replacement_quantity": "Temperature history T(t)",
+      "default_y_scale": "log"
+    },
+    {
+      "stage": 2,
+      "context": "exp",
+      "nuclide": "Sr-90",
+      "temperature_c": 1.6e3,
+      "supported": false,
+      "reason": "a post-irradiation heating test has no fission source (G = 0); generation belongs to the scenarios"
+    },
+    {
+      "stage": 5,
+      "context": "exp",
+      "nuclide": "Sr-90",
+      "temperature_c": 1.6e3,
+      "supported": false,
+      "reason": "a post-irradiation heating test has no fission source (G = 0); generation belongs to the scenarios"
+    },
+    {
+      "key": "s1.exp.sr90.1700c",
+      "stage": 1,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Sr-90",
+      "temperature_c": 1.7e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.sr90.1700c"
+        ],
+        "row_ids": [
+          "E-068",
+          "E-165"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s1.exp.sr90.1700c.json",
+      "quantities": [
+        "release_fraction"
+      ],
+      "replacement_quantity": null,
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s3.exp.sr90.1700c",
+      "stage": 3,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Sr-90",
+      "temperature_c": 1.7e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false,
+        "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+        "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 87, COVER_SENSITIVITY x 18, BEFORE_MIN_VALID_TIME x 15; first valid time 5.073e2 s, accuracy floor 2.2e-9)"
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.sr90.1700c"
+        ],
+        "row_ids": [
+          "E-068",
+          "E-165"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s3.exp.sr90.1700c.json",
+      "quantities": [
+        "release_fraction",
+        "remaining_inventory_fraction",
+        "decayed_fraction"
+      ],
+      "replacement_quantity": "Decayed amount as a fraction of the initial inventory",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s4.exp.sr90.1700c",
+      "stage": 4,
+      "context": "exp",
+      "scenario": null,
+      "nuclide": "Sr-90",
+      "temperature_c": 1.7e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false,
+        "reason_code": "TIME_VARYING_TEMPERATURE",
+        "reason": "the temperature changes in time, so the eigenfunctions change in time; the analytical solution is not defined for this case (science design Section 4.2)"
+      },
+      "experiment": {
+        "available": true,
+        "kind": "bound markers only (no point comparison exists)",
+        "dataset_ids": [
+          "agr1.sr90.1700c"
+        ],
+        "row_ids": [
+          "E-068",
+          "E-165"
+        ],
+        "r2_records": "r2.json: no R² value exists for the registered curves"
+      },
+      "curve_file": "curves/s4.exp.sr90.1700c.json",
+      "quantities": [
+        "release_fraction",
+        "temperature_history"
+      ],
+      "replacement_quantity": "Temperature history T(t)",
+      "default_y_scale": "log"
+    },
+    {
+      "stage": 2,
+      "context": "exp",
+      "nuclide": "Sr-90",
+      "temperature_c": 1.7e3,
+      "supported": false,
+      "reason": "a post-irradiation heating test has no fission source (G = 0); generation belongs to the scenarios"
+    },
+    {
+      "stage": 5,
+      "context": "exp",
+      "nuclide": "Sr-90",
+      "temperature_c": 1.7e3,
+      "supported": false,
+      "reason": "a post-irradiation heating test has no fission source (G = 0); generation belongs to the scenarios"
+    },
+    {
+      "key": "s1.expl.ag110m.955c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Ag-110m",
+      "temperature_c": 9.55e2,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.ag110m.955c.json",
+      "phase_of_correlations": "irradiation",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.ag110m.1028c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.028e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.ag110m.1028c.json",
+      "phase_of_correlations": "irradiation",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.ag110m.1136c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.136e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.ag110m.1136c.json",
+      "phase_of_correlations": "irradiation",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.ag110m.1197c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.197e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.ag110m.1197c.json",
+      "phase_of_correlations": "irradiation",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.ag110m.400c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Ag-110m",
+      "temperature_c": 4e2,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.ag110m.400c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.ag110m.1000c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Ag-110m",
+      "temperature_c": 1e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.ag110m.1000c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.ag110m.1075c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.075e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.ag110m.1075c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.ag110m.1150c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.15e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.ag110m.1150c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.ag110m.1250c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.25e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.ag110m.1250c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.ag110m.1300c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.3e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.ag110m.1300c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.ag110m.1375c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.375e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.ag110m.1375c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.ag110m.1450c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.45e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.ag110m.1450c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.ag110m.1600c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.6e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.ag110m.1600c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.ag110m.1700c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.7e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.ag110m.1700c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.ag110m.1800c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Ag-110m",
+      "temperature_c": 1.8e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.ag110m.1800c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.cs134.955c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Cs-134",
+      "temperature_c": 9.55e2,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.cs134.955c.json",
+      "phase_of_correlations": "irradiation",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.cs134.1028c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Cs-134",
+      "temperature_c": 1.028e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.cs134.1028c.json",
+      "phase_of_correlations": "irradiation",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.cs134.1136c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Cs-134",
+      "temperature_c": 1.136e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.cs134.1136c.json",
+      "phase_of_correlations": "irradiation",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.cs134.1197c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Cs-134",
+      "temperature_c": 1.197e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.cs134.1197c.json",
+      "phase_of_correlations": "irradiation",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.cs134.400c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Cs-134",
+      "temperature_c": 4e2,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.cs134.400c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.cs134.1000c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Cs-134",
+      "temperature_c": 1e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.cs134.1000c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.cs134.1075c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Cs-134",
+      "temperature_c": 1.075e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.cs134.1075c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.cs134.1150c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Cs-134",
+      "temperature_c": 1.15e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.cs134.1150c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.cs134.1250c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Cs-134",
+      "temperature_c": 1.25e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.cs134.1250c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.cs134.1300c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Cs-134",
+      "temperature_c": 1.3e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.cs134.1300c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.cs134.1375c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Cs-134",
+      "temperature_c": 1.375e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.cs134.1375c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.cs134.1450c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Cs-134",
+      "temperature_c": 1.45e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.cs134.1450c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.cs134.1600c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Cs-134",
+      "temperature_c": 1.6e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.cs134.1600c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.cs134.1700c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Cs-134",
+      "temperature_c": 1.7e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.cs134.1700c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.cs134.1800c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Cs-134",
+      "temperature_c": 1.8e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.cs134.1800c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.sr90.955c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Sr-90",
+      "temperature_c": 9.55e2,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.sr90.955c.json",
+      "phase_of_correlations": "irradiation",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.sr90.1028c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Sr-90",
+      "temperature_c": 1.028e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.sr90.1028c.json",
+      "phase_of_correlations": "irradiation",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.sr90.1136c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Sr-90",
+      "temperature_c": 1.136e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.sr90.1136c.json",
+      "phase_of_correlations": "irradiation",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.sr90.1197c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Sr-90",
+      "temperature_c": 1.197e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.sr90.1197c.json",
+      "phase_of_correlations": "irradiation",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.sr90.400c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Sr-90",
+      "temperature_c": 4e2,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.sr90.400c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.sr90.1000c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Sr-90",
+      "temperature_c": 1e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.sr90.1000c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.sr90.1075c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Sr-90",
+      "temperature_c": 1.075e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.sr90.1075c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.sr90.1150c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Sr-90",
+      "temperature_c": 1.15e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.sr90.1150c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.sr90.1250c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Sr-90",
+      "temperature_c": 1.25e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": false
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.sr90.1250c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.sr90.1300c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Sr-90",
+      "temperature_c": 1.3e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.sr90.1300c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.sr90.1375c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Sr-90",
+      "temperature_c": 1.375e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.sr90.1375c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.sr90.1450c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Sr-90",
+      "temperature_c": 1.45e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.sr90.1450c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.sr90.1600c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Sr-90",
+      "temperature_c": 1.6e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.sr90.1600c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.sr90.1700c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Sr-90",
+      "temperature_c": 1.7e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.sr90.1700c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s1.expl.sr90.1800c",
+      "stage": 1,
+      "context": "expl",
+      "nuclide": "Sr-90",
+      "temperature_c": 1.8e3,
+      "supported": true,
+      "method_a": {
+        "available": true
+      },
+      "method_b": {
+        "available": true
+      },
+      "experiment": {
+        "available": false,
+        "replacement": "Diffusivity of each layer at the temperature (m² s⁻¹) as a labelled table"
+      },
+      "curve_file": "curves/s1.expl.sr90.1800c.json",
+      "phase_of_correlations": "heating test",
+      "default_y_scale": "log"
+    },
+    {
+      "key": "s2.steady-state.sr90.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s2.steady-state.sr90.1028c.json",
+      "steps": 1241,
+      "resolved_fraction_of_drawable_points": 6.962127316680097e-1
+    },
+    {
+      "key": "s3.steady-state.sr90.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s3.steady-state.sr90.1028c.json",
+      "steps": 1241,
+      "resolved_fraction_of_drawable_points": 6.962127316680097e-1
+    },
+    {
+      "key": "s5.steady-state.sr90.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.steady-state.sr90.1028c.json",
+      "steps": 1241,
+      "resolved_fraction_of_drawable_points": 6.962127316680097e-1
+    },
+    {
+      "key": "s5.steady-state.cycles.sr90.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.steady-state.cycles.sr90.1028c.json",
+      "steps": 1246,
+      "resolved_fraction_of_drawable_points": 6.910112359550562e-1
+    },
+    {
+      "key": "s5.shutdown-cooldown.sr90.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.shutdown-cooldown.sr90.1028c.json",
+      "steps": 1706,
+      "resolved_fraction_of_drawable_points": 1e0
+    },
+    {
+      "key": "s5.startup.sr90.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.startup.sr90.1028c.json",
+      "steps": 1384,
+      "resolved_fraction_of_drawable_points": 6.884462151394423e-1
+    },
+    {
+      "key": "s5.control-rod-insertion.sr90.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.control-rod-insertion.sr90.1028c.json",
+      "steps": 1302,
+      "resolved_fraction_of_drawable_points": 7.104454685099847e-1
+    },
+    {
+      "key": "s5.refuelling.sr90.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.refuelling.sr90.1028c.json",
+      "steps": 1706,
+      "resolved_fraction_of_drawable_points": 1e0
+    },
+    {
+      "key": "s5.refuelling.heating1600.sr90.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.refuelling.heating1600.sr90.1028c.json",
+      "steps": 8383,
+      "resolved_fraction_of_drawable_points": 1e0
+    },
+    {
+      "key": "s5.refuelling.heating1700.sr90.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.refuelling.heating1700.sr90.1028c.json",
+      "steps": 8426,
+      "resolved_fraction_of_drawable_points": 1e0
+    },
+    {
+      "key": "s5.refuelling.heating1800.sr90.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.refuelling.heating1800.sr90.1028c.json",
+      "steps": 8469,
+      "resolved_fraction_of_drawable_points": 1e0
+    },
+    {
+      "key": "s5.steady-state.exploration.sr90.1197c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.steady-state.exploration.sr90.1197c.json",
+      "steps": 1241,
+      "resolved_fraction_of_drawable_points": 8.654311039484287e-1
+    },
+    {
+      "key": "s5.shutdown-cooldown.exploration.sr90.1197c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.shutdown-cooldown.exploration.sr90.1197c.json",
+      "steps": 1723,
+      "resolved_fraction_of_drawable_points": 1e0
+    },
+    {
+      "key": "s5.startup.exploration.sr90.1197c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.startup.exploration.sr90.1197c.json",
+      "steps": 1384,
+      "resolved_fraction_of_drawable_points": 8.422291993720565e-1
+    },
+    {
+      "key": "s5.control-rod-insertion.exploration.sr90.1197c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.control-rod-insertion.exploration.sr90.1197c.json",
+      "steps": 1302,
+      "resolved_fraction_of_drawable_points": 8.709677419354839e-1
+    },
+    {
+      "key": "s5.refuelling.exploration.sr90.1197c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.refuelling.exploration.sr90.1197c.json",
+      "steps": 1723,
+      "resolved_fraction_of_drawable_points": 1e0
+    },
+    {
+      "key": "s2.steady-state.cs137.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s2.steady-state.cs137.1028c.json",
+      "steps": 1241,
+      "resolved_fraction_of_drawable_points": 0e0
+    },
+    {
+      "key": "s3.steady-state.cs137.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s3.steady-state.cs137.1028c.json",
+      "steps": 1241,
+      "resolved_fraction_of_drawable_points": 0e0
+    },
+    {
+      "key": "s5.steady-state.cs137.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.steady-state.cs137.1028c.json",
+      "steps": 1241,
+      "resolved_fraction_of_drawable_points": 0e0
+    },
+    {
+      "key": "s5.steady-state.cycles.cs137.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.steady-state.cycles.cs137.1028c.json",
+      "steps": 1246,
+      "resolved_fraction_of_drawable_points": 0e0
+    },
+    {
+      "key": "s5.shutdown-cooldown.cs137.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.shutdown-cooldown.cs137.1028c.json",
+      "steps": 1706,
+      "resolved_fraction_of_drawable_points": 0e0
+    },
+    {
+      "key": "s5.startup.cs137.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.startup.cs137.1028c.json",
+      "steps": 1384,
+      "resolved_fraction_of_drawable_points": 0e0
+    },
+    {
+      "key": "s5.control-rod-insertion.cs137.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.control-rod-insertion.cs137.1028c.json",
+      "steps": 1302,
+      "resolved_fraction_of_drawable_points": 0e0
+    },
+    {
+      "key": "s5.refuelling.cs137.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.refuelling.cs137.1028c.json",
+      "steps": 1706,
+      "resolved_fraction_of_drawable_points": 0e0
+    },
+    {
+      "key": "s5.refuelling.heating1600.cs137.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.refuelling.heating1600.cs137.1028c.json",
+      "steps": 8383,
+      "resolved_fraction_of_drawable_points": 8.588642867901792e-1
+    },
+    {
+      "key": "s5.refuelling.heating1700.cs137.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.refuelling.heating1700.cs137.1028c.json",
+      "steps": 8426,
+      "resolved_fraction_of_drawable_points": 8.846153846153846e-1
+    },
+    {
+      "key": "s5.refuelling.heating1800.cs137.1028c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.refuelling.heating1800.cs137.1028c.json",
+      "steps": 8469,
+      "resolved_fraction_of_drawable_points": 8.853531598513011e-1
+    },
+    {
+      "key": "s5.steady-state.exploration.cs137.1197c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.steady-state.exploration.cs137.1197c.json",
+      "steps": 1241,
+      "resolved_fraction_of_drawable_points": 5.455278001611603e-1
+    },
+    {
+      "key": "s5.shutdown-cooldown.exploration.cs137.1197c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.shutdown-cooldown.exploration.cs137.1197c.json",
+      "steps": 1723,
+      "resolved_fraction_of_drawable_points": 1e0
+    },
+    {
+      "key": "s5.startup.exploration.cs137.1197c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.startup.exploration.cs137.1197c.json",
+      "steps": 1384,
+      "resolved_fraction_of_drawable_points": 5.450885668276972e-1
+    },
+    {
+      "key": "s5.control-rod-insertion.exploration.cs137.1197c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.control-rod-insertion.exploration.cs137.1197c.json",
+      "steps": 1302,
+      "resolved_fraction_of_drawable_points": 5.668202764976958e-1
+    },
+    {
+      "key": "s5.refuelling.exploration.cs137.1197c",
+      "context": "scenario",
+      "supported": true,
+      "curve_file": "curves/s5.refuelling.exploration.cs137.1197c.json",
+      "steps": 1723,
+      "resolved_fraction_of_drawable_points": 1e0
+    },
+    {
+      "context": "scenario",
+      "nuclide": "Ag-110m",
+      "supported": false,
+      "reason": "no direct fission-yield source term (decision 15)"
+    },
+    {
+      "context": "scenario",
+      "nuclide": "Cs-134",
+      "supported": false,
+      "reason": "no direct fission-yield source term (decision 15)"
+    },
+    {
+      "context": "scenario",
+      "nuclide": "Eu-154",
+      "supported": false,
+      "reason": "no direct fission-yield source term (decision 15) and no diffusivity (DATA UNAVAILABLE)"
+    }
+  ],
+  "exploration": [
+    {
+      "nuclide": "Ag-110m",
+      "phases": [
+        {
+          "phase": "irradiation",
+          "temperatures_c": [9.55e2,1.028e3,1.136e3,1.197e3],
+          "layers": [
+            {
+              "layer": "kernel",
+              "register_rows": [
+                "C15-01"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "buffer",
+              "register_rows": [
+                "C15-13"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "IPyC",
+              "register_rows": [
+                "C15-02"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "SiC",
+              "register_rows": [
+                "C15-03"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "OPyC",
+              "register_rows": [
+                "C15-02"
+              ],
+              "published_range_c": null
+            }
+          ]
+        },
+        {
+          "phase": "heating test",
+          "temperatures_c": [4e2,1e3,1.075e3,1.15e3,1.25e3,1.3e3,1.375e3,1.45e3,1.6e3,1.7e3,1.8e3],
+          "layers": [
+            {
+              "layer": "kernel",
+              "register_rows": [
+                "C16-01"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "buffer",
+              "register_rows": [
+                "C16-22"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "IPyC",
+              "register_rows": [
+                "C16-02"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "SiC",
+              "register_rows": [
+                "C16-03"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "OPyC",
+              "register_rows": [
+                "C16-02"
+              ],
+              "published_range_c": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nuclide": "Cs-134",
+      "phases": [
+        {
+          "phase": "irradiation",
+          "temperatures_c": [9.55e2,1.028e3,1.136e3,1.197e3],
+          "layers": [
+            {
+              "layer": "kernel",
+              "register_rows": [
+                "C15-05"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "buffer",
+              "register_rows": [
+                "C15-13"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "IPyC",
+              "register_rows": [
+                "C15-06"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "SiC",
+              "register_rows": [
+                "C15-07"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "OPyC",
+              "register_rows": [
+                "C15-06"
+              ],
+              "published_range_c": null
+            }
+          ]
+        },
+        {
+          "phase": "heating test",
+          "temperatures_c": [4e2,1e3,1.075e3,1.15e3,1.25e3,1.3e3,1.375e3,1.45e3,1.6e3,1.7e3,1.8e3],
+          "layers": [
+            {
+              "layer": "kernel",
+              "register_rows": [
+                "C16-05",
+                "C16-06"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "buffer",
+              "register_rows": [
+                "C16-22"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "IPyC",
+              "register_rows": [
+                "C16-07"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "SiC",
+              "register_rows": [
+                "C16-08",
+                "C16-09"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "OPyC",
+              "register_rows": [
+                "C16-07"
+              ],
+              "published_range_c": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nuclide": "Sr-90",
+      "phases": [
+        {
+          "phase": "irradiation",
+          "temperatures_c": [9.55e2,1.028e3,1.136e3,1.197e3],
+          "layers": [
+            {
+              "layer": "kernel",
+              "register_rows": [
+                "C15-09"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "buffer",
+              "register_rows": [
+                "C15-13"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "IPyC",
+              "register_rows": [
+                "C15-10"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "SiC",
+              "register_rows": [
+                "C15-11"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "OPyC",
+              "register_rows": [
+                "C15-10"
+              ],
+              "published_range_c": null
+            }
+          ]
+        },
+        {
+          "phase": "heating test",
+          "temperatures_c": [4e2,1e3,1.075e3,1.15e3,1.25e3,1.3e3,1.375e3,1.45e3,1.6e3,1.7e3,1.8e3],
+          "layers": [
+            {
+              "layer": "kernel",
+              "register_rows": [
+                "C16-11"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "buffer",
+              "register_rows": [
+                "C16-22"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "IPyC",
+              "register_rows": [
+                "C16-12"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "SiC",
+              "register_rows": [
+                "C16-13",
+                "C16-14"
+              ],
+              "published_range_c": null
+            },
+            {
+              "layer": "OPyC",
+              "register_rows": [
+                "C16-12"
+              ],
+              "published_range_c": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "method_b_note": "Method B is exact for the baseline and for a constant temperature; the extensions for decay (B2) and for a piecewise-constant kernel source (B3) to (B5) apply at a constant temperature and a value is drawn only where the drawing mask accepts it (a withheld value carries its reason code in the curve file); it is never shown when the temperature changes in time"
+}

@@ -1,0 +1,18 @@
+# STRATO experimental comparison: spatial convergence of the release fraction; all five regions share the diffusion coefficient 4.316e-14 m²/s, the outer radius is 394.2 µm, the kernel radius 175.0 µm, the end time 100 h, so the dimensionless Fourier number D t / R² of the whole sphere, with R the outer radius, is 0.1; the reference is the exact series of a sphere with the same diffusivity everywhere.
+# label: numerical solution of the stated model; not experimental validation; the comparison with the register is a comparison of release behaviour, not a validation
+# solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1
+# commit: 3fa7031
+# model_limitations: kernel-only start (inventory-matched start node); constant diffusion coefficient per layer evaluated at the test temperature from the first hour (heating ramps are not modelled); no radioactive decay and no fission-product generation in the solver yet; perfect interface contact; absorbing outer surface; one intact particle, no matrix; the model fraction is a fraction of the particle's own inventory
+# parameter_source: geometry design AGR1-B-M16 (register rows G-01 G-02 G-03 G-04 G-05); diffusion coefficients chosen by the strato-data selection function (decision 47) for the heating-test phase, that is the rows of register sets C16-T2 and C16-BUF as printed, evaluated at the test temperature (the kernel rows are UO2 surrogates: no UCO measurement exists, decision 40); the class of each coefficient (owner ruling 16) and its phase of use are in the sensitivity file and in the coefficient_sets of comparison.json
+# parameter_class: coefficients are the published heating-test correlation of the register (class and phase per row in the sensitivity file); radii are the registered measured baseline geometry; every measurement keeps its register row id
+# release_measurements_sha256: 29f0d7bec6f40fb97c52c0bf7972782d7849a58f5f910527fe8efa8afa9ddda9
+# arrhenius_sha256: 2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4
+# geometry_sha256: 8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f
+# temperature_histories_sha256: b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d
+Refinement factor (dimensionless),Kernel mesh width (m),Number of nodes or steps (dimensionless),"Release fraction, BTCS (dimensionless)","Release fraction, analytical (dimensionless)",Truncation bound of the analytical series (dimensionless),Absolute error of the release fraction (dimensionless),Observed order (dimensionless)
+1,4.375e-5,16,4.0841675644559094e-1,4.0565140255997045e-1,3.557962413313863e-17,2.7653538856204918e-3,
+2,2.1875e-5,31,4.0634596099559e-1,4.0565140255997045e-1,3.557962413313863e-17,6.945584356195522e-4,1.9932961322890759e0
+4,1.09375e-5,61,4.058251859751901e-1,4.0565140255997045e-1,3.557962413313863e-17,1.7378341521961937e-4,1.9988056711584796e0
+8,5.46875e-6,121,4.056948331068444e-1,4.0565140255997045e-1,3.557962413313863e-17,4.3430546873945985e-5,2.0005083827930608e0
+16,2.734375e-6,241,4.0566223543646124e-1,4.0565140255997045e-1,3.557962413313863e-17,1.0832876490785015e-5,2.003293741636032e0
+32,1.3671875e-6,481,4.056540854356061e-1,4.0565140255997045e-1,3.557962413313863e-17,2.682875635651172e-6,2.013564292248526e0

@@ -1,0 +1,403 @@
+{
+  "schema_version": "1",
+  "what": "numerical verification: conservation of the inventory balance",
+  "provenance": {
+    "label": "numerical solution of the stated model; not experimental validation",
+    "solver": "STRATO BTCS five-layer spherical finite difference",
+    "solver_version": "1.0.1",
+    "pipeline": "strato-results 0.1.0",
+    "schema_version": "1",
+    "commit": "461aa1d",
+    "solver_source_sha256": "02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275",
+    "input_sha256": {
+      "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
+      "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
+      "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
+      "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
+      "temperature_histories.csv": "b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d",
+      "release_measurements.csv": "29f0d7bec6f40fb97c52c0bf7972782d7849a58f5f910527fe8efa8afa9ddda9",
+      "agr1_irradiation_conditions.csv": "31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d",
+      "agr1_burnup_by_cycle.csv": "e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f",
+      "agr1_power_history_digitised.csv": "25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a",
+      "scenarios/s1_normal_operation.csv": "c420e1e04e043ed0418099c27156cabda8188f40ce2fb239d1ce3916cccc7970",
+      "scenarios/s2_shutdown_cooldown.csv": "f575e9a42670e52293083907b3658fd7e3a99c279912861999f0cb847cbf6044",
+      "scenarios/s3_startup.csv": "bf2b6bd01168d0aa72f9db61f5fa4eae60ff39a81928eaed515ae8279916bfa7",
+      "scenarios/s4_control_rod_insertion.csv": "93856f2003ca65b7a7258d60819a47b8a651d695dffeff0fd7dc664b90309759",
+      "scenarios/s5_fuel_removal.csv": "4cad00101259e2fdbeec585f27d8910502a1858ab38bce59899c132b0caad9bb"
+    }
+  },
+  "statement": "the balance residual of (F41) is reported beside its derived rounding bound ((F46) for runs with generation, decay or a changing temperature; the baseline bound otherwise); a ratio of at most 1 means the balance closes within the documented bound",
+  "entries": [
+    {
+      "key": "s1.exp.ag110m.1600c",
+      "steps": 8000,
+      "max_abs_residual_over_derived_bound": 6.461004648223694e-3,
+      "max_relative_residual": 2.6865487032368566e-9,
+      "within_bound": true
+    },
+    {
+      "key": "s3.exp.ag110m.1600c",
+      "steps": 8000,
+      "max_abs_residual_over_derived_bound": 4.4270128603637986e-2,
+      "max_relative_residual": 2.066038924114582e-8,
+      "within_bound": true
+    },
+    {
+      "key": "s4.exp.ag110m.1600c",
+      "steps": 8624,
+      "max_abs_residual_over_derived_bound": 1.2593854167689345e-2,
+      "max_relative_residual": 2.7495168328321903e-9,
+      "within_bound": true
+    },
+    {
+      "key": "s1.exp.ag110m.1700c",
+      "steps": 8000,
+      "max_abs_residual_over_derived_bound": 7.0861356304237465e-3,
+      "max_relative_residual": 1.8550298567824458e-9,
+      "within_bound": true
+    },
+    {
+      "key": "s3.exp.ag110m.1700c",
+      "steps": 8000,
+      "max_abs_residual_over_derived_bound": 4.198960704791965e-2,
+      "max_relative_residual": 1.2390696490749023e-8,
+      "within_bound": true
+    },
+    {
+      "key": "s4.exp.ag110m.1700c",
+      "steps": 8664,
+      "max_abs_residual_over_derived_bound": 1.2593854167689345e-2,
+      "max_relative_residual": 1.9234836700544013e-9,
+      "within_bound": true
+    },
+    {
+      "key": "s1.exp.cs134.1600c",
+      "steps": 8000,
+      "max_abs_residual_over_derived_bound": 2.806468764709077e-3,
+      "max_relative_residual": 2.1812444501629843e-9,
+      "within_bound": true
+    },
+    {
+      "key": "s3.exp.cs134.1600c",
+      "steps": 8000,
+      "max_abs_residual_over_derived_bound": 5.622287146168192e-2,
+      "max_relative_residual": 4.956375887869293e-8,
+      "within_bound": true
+    },
+    {
+      "key": "s4.exp.cs134.1600c",
+      "steps": 8624,
+      "max_abs_residual_over_derived_bound": 9.71898418156404e-3,
+      "max_relative_residual": 2.1686070688891126e-9,
+      "within_bound": true
+    },
+    {
+      "key": "s1.exp.cs134.1700c",
+      "steps": 8000,
+      "max_abs_residual_over_derived_bound": 1.1565935229483416e-2,
+      "max_relative_residual": 8.231089377219595e-9,
+      "within_bound": true
+    },
+    {
+      "key": "s3.exp.cs134.1700c",
+      "steps": 8000,
+      "max_abs_residual_over_derived_bound": 5.595083674632609e-2,
+      "max_relative_residual": 4.517206118302342e-8,
+      "within_bound": true
+    },
+    {
+      "key": "s4.exp.cs134.1700c",
+      "steps": 8664,
+      "max_abs_residual_over_derived_bound": 9.854430220398428e-3,
+      "max_relative_residual": 8.237148054539243e-9,
+      "within_bound": true
+    },
+    {
+      "key": "s1.exp.cs134.1800c",
+      "steps": 8000,
+      "max_abs_residual_over_derived_bound": 3.0344913250157043e-3,
+      "max_relative_residual": 1.6777430904255951e-9,
+      "within_bound": true
+    },
+    {
+      "key": "s3.exp.cs134.1800c",
+      "steps": 8000,
+      "max_abs_residual_over_derived_bound": 5.908293401836518e-2,
+      "max_relative_residual": 3.708201442357483e-8,
+      "within_bound": true
+    },
+    {
+      "key": "s4.exp.cs134.1800c",
+      "steps": 8704,
+      "max_abs_residual_over_derived_bound": 9.71898418156404e-3,
+      "max_relative_residual": 1.6424355416715978e-9,
+      "within_bound": true
+    },
+    {
+      "key": "s1.exp.sr90.1600c",
+      "steps": 8000,
+      "max_abs_residual_over_derived_bound": 1.1146343236910777e-2,
+      "max_relative_residual": 7.267557170947582e-10,
+      "within_bound": true
+    },
+    {
+      "key": "s3.exp.sr90.1600c",
+      "steps": 8000,
+      "max_abs_residual_over_derived_bound": 6.124575860570736e-3,
+      "max_relative_residual": 4.5062170485391684e-10,
+      "within_bound": true
+    },
+    {
+      "key": "s4.exp.sr90.1600c",
+      "steps": 8624,
+      "max_abs_residual_over_derived_bound": 1.3363889646951321e-2,
+      "max_relative_residual": 7.257522225760007e-10,
+      "within_bound": true
+    },
+    {
+      "key": "s1.exp.sr90.1700c",
+      "steps": 8000,
+      "max_abs_residual_over_derived_bound": 3.517931246976119e-3,
+      "max_relative_residual": 2.8599061235865236e-10,
+      "within_bound": true
+    },
+    {
+      "key": "s3.exp.sr90.1700c",
+      "steps": 8000,
+      "max_abs_residual_over_derived_bound": 7.527871221803534e-3,
+      "max_relative_residual": 6.936528166162404e-10,
+      "within_bound": true
+    },
+    {
+      "key": "s4.exp.sr90.1700c",
+      "steps": 8664,
+      "max_abs_residual_over_derived_bound": 1.3363889646951321e-2,
+      "max_relative_residual": 2.84280843083219e-10,
+      "within_bound": true
+    },
+    {
+      "key": "s2.steady-state.sr90.1028c",
+      "steps": 1241,
+      "max_abs_residual_over_derived_bound": 2.7892109175246048e-3,
+      "max_relative_residual": 3.051148503358258e-11,
+      "within_bound": true
+    },
+    {
+      "key": "s3.steady-state.sr90.1028c",
+      "steps": 1241,
+      "max_abs_residual_over_derived_bound": 2.7215486212765268e-2,
+      "max_relative_residual": 2.9274767038530177e-10,
+      "within_bound": true
+    },
+    {
+      "key": "s5.steady-state.sr90.1028c",
+      "steps": 1241,
+      "max_abs_residual_over_derived_bound": 2.7215486212765268e-2,
+      "max_relative_residual": 2.9274767038530177e-10,
+      "within_bound": true
+    },
+    {
+      "key": "s5.steady-state.cycles.sr90.1028c",
+      "steps": 1246,
+      "max_abs_residual_over_derived_bound": 2.2137899753193364e-2,
+      "max_relative_residual": 1.9106104351856056e-10,
+      "within_bound": true
+    },
+    {
+      "key": "s5.shutdown-cooldown.sr90.1028c",
+      "steps": 1706,
+      "max_abs_residual_over_derived_bound": 2.7215486212765268e-2,
+      "max_relative_residual": 2.927501784739376e-10,
+      "within_bound": true
+    },
+    {
+      "key": "s5.startup.sr90.1028c",
+      "steps": 1384,
+      "max_abs_residual_over_derived_bound": 3.574512533646371e-2,
+      "max_relative_residual": 3.8406048618548207e-10,
+      "within_bound": true
+    },
+    {
+      "key": "s5.control-rod-insertion.sr90.1028c",
+      "steps": 1302,
+      "max_abs_residual_over_derived_bound": 1.450929570635881e-2,
+      "max_relative_residual": 5.8075147810184905e-11,
+      "within_bound": true
+    },
+    {
+      "key": "s5.refuelling.sr90.1028c",
+      "steps": 1706,
+      "max_abs_residual_over_derived_bound": 2.7215486212765268e-2,
+      "max_relative_residual": 2.927501784739376e-10,
+      "within_bound": true
+    },
+    {
+      "key": "s5.refuelling.heating1600.sr90.1028c",
+      "steps": 8383,
+      "max_abs_residual_over_derived_bound": 2.7215486212765268e-2,
+      "max_relative_residual": 4.970992419209741e-10,
+      "within_bound": true
+    },
+    {
+      "key": "s5.refuelling.heating1700.sr90.1028c",
+      "steps": 8426,
+      "max_abs_residual_over_derived_bound": 2.7215486212765268e-2,
+      "max_relative_residual": 3.8312081553852604e-10,
+      "within_bound": true
+    },
+    {
+      "key": "s5.refuelling.heating1800.sr90.1028c",
+      "steps": 8469,
+      "max_abs_residual_over_derived_bound": 2.7215486212765268e-2,
+      "max_relative_residual": 5.719597731814366e-10,
+      "within_bound": true
+    },
+    {
+      "key": "s5.steady-state.exploration.sr90.1197c",
+      "steps": 1241,
+      "max_abs_residual_over_derived_bound": 2.2068885313361764e-2,
+      "max_relative_residual": 2.3927770031889533e-9,
+      "within_bound": true
+    },
+    {
+      "key": "s5.shutdown-cooldown.exploration.sr90.1197c",
+      "steps": 1723,
+      "max_abs_residual_over_derived_bound": 2.2068885313361764e-2,
+      "max_relative_residual": 2.3933752651749232e-9,
+      "within_bound": true
+    },
+    {
+      "key": "s5.startup.exploration.sr90.1197c",
+      "steps": 1384,
+      "max_abs_residual_over_derived_bound": 2.9928888304266658e-2,
+      "max_relative_residual": 2.911913414898924e-9,
+      "within_bound": true
+    },
+    {
+      "key": "s5.control-rod-insertion.exploration.sr90.1197c",
+      "steps": 1302,
+      "max_abs_residual_over_derived_bound": 6.113244474901556e-3,
+      "max_relative_residual": 3.302326219597226e-10,
+      "within_bound": true
+    },
+    {
+      "key": "s5.refuelling.exploration.sr90.1197c",
+      "steps": 1723,
+      "max_abs_residual_over_derived_bound": 2.2068885313361764e-2,
+      "max_relative_residual": 2.3933752651749232e-9,
+      "within_bound": true
+    },
+    {
+      "key": "s2.steady-state.cs137.1028c",
+      "steps": 1241,
+      "max_abs_residual_over_derived_bound": 4.422518862714863e-3,
+      "max_relative_residual": 6.701812708411376e-8,
+      "within_bound": true
+    },
+    {
+      "key": "s3.steady-state.cs137.1028c",
+      "steps": 1241,
+      "max_abs_residual_over_derived_bound": 1.343573549309667e-2,
+      "max_relative_residual": 2.0072381020126494e-7,
+      "within_bound": true
+    },
+    {
+      "key": "s5.steady-state.cs137.1028c",
+      "steps": 1241,
+      "max_abs_residual_over_derived_bound": 1.343573549309667e-2,
+      "max_relative_residual": 2.0072381020126494e-7,
+      "within_bound": true
+    },
+    {
+      "key": "s5.steady-state.cycles.cs137.1028c",
+      "steps": 1246,
+      "max_abs_residual_over_derived_bound": 1.3897767183821238e-2,
+      "max_relative_residual": 8.362849752645867e-8,
+      "within_bound": true
+    },
+    {
+      "key": "s5.shutdown-cooldown.cs137.1028c",
+      "steps": 1706,
+      "max_abs_residual_over_derived_bound": 1.343573549309667e-2,
+      "max_relative_residual": 2.0072381020126494e-7,
+      "within_bound": true
+    },
+    {
+      "key": "s5.startup.cs137.1028c",
+      "steps": 1384,
+      "max_abs_residual_over_derived_bound": 2.401236667752782e-2,
+      "max_relative_residual": 3.653010315864573e-8,
+      "within_bound": true
+    },
+    {
+      "key": "s5.control-rod-insertion.cs137.1028c",
+      "steps": 1302,
+      "max_abs_residual_over_derived_bound": 8.54805431250207e-3,
+      "max_relative_residual": 1.3609078029030714e-7,
+      "within_bound": true
+    },
+    {
+      "key": "s5.refuelling.cs137.1028c",
+      "steps": 1706,
+      "max_abs_residual_over_derived_bound": 1.343573549309667e-2,
+      "max_relative_residual": 2.0072381020126494e-7,
+      "within_bound": true
+    },
+    {
+      "key": "s5.refuelling.heating1600.cs137.1028c",
+      "steps": 8383,
+      "max_abs_residual_over_derived_bound": 1.343573549309667e-2,
+      "max_relative_residual": 2.0072381020126494e-7,
+      "within_bound": true
+    },
+    {
+      "key": "s5.refuelling.heating1700.cs137.1028c",
+      "steps": 8426,
+      "max_abs_residual_over_derived_bound": 1.343573549309667e-2,
+      "max_relative_residual": 2.0072381020126494e-7,
+      "within_bound": true
+    },
+    {
+      "key": "s5.refuelling.heating1800.cs137.1028c",
+      "steps": 8469,
+      "max_abs_residual_over_derived_bound": 1.343573549309667e-2,
+      "max_relative_residual": 2.0072381020126494e-7,
+      "within_bound": true
+    },
+    {
+      "key": "s5.steady-state.exploration.cs137.1197c",
+      "steps": 1241,
+      "max_abs_residual_over_derived_bound": 1.1085521281544506e-2,
+      "max_relative_residual": 1.827060323438149e-7,
+      "within_bound": true
+    },
+    {
+      "key": "s5.shutdown-cooldown.exploration.cs137.1197c",
+      "steps": 1723,
+      "max_abs_residual_over_derived_bound": 1.1085521281544506e-2,
+      "max_relative_residual": 1.827060323438149e-7,
+      "within_bound": true
+    },
+    {
+      "key": "s5.startup.exploration.cs137.1197c",
+      "steps": 1384,
+      "max_abs_residual_over_derived_bound": 2.3782887532516964e-2,
+      "max_relative_residual": 8.596194117110045e-8,
+      "within_bound": true
+    },
+    {
+      "key": "s5.control-rod-insertion.exploration.cs137.1197c",
+      "steps": 1302,
+      "max_abs_residual_over_derived_bound": 8.109888120750504e-3,
+      "max_relative_residual": 1.5458199084587602e-7,
+      "within_bound": true
+    },
+    {
+      "key": "s5.refuelling.exploration.cs137.1197c",
+      "steps": 1723,
+      "max_abs_residual_over_derived_bound": 1.1085521281544506e-2,
+      "max_relative_residual": 1.827060323438149e-7,
+      "within_bound": true
+    }
+  ]
+}
