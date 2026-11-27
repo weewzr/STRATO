@@ -222,6 +222,8 @@ describe('the explanation of the selected scenario', () => {
       expect(box.textContent).toContain(SCENARIO_LABEL[s]);
       expect(box.textContent).toContain(SCENARIO_KIND);
       expect(box.textContent).toContain(SCENARIOS[s].explanation[0]);
+      // The sentence stays once, beside the scenario name: the live-region announcement does not repeat it.
+      expect((document.body.textContent ?? '').split(SCENARIO_KIND).length - 1, s).toBe(1);
     }
   });
 

@@ -4,7 +4,7 @@ import { layerColour } from '../design/layers';
 import { clamp, sciText } from '../format';
 import { unsupportedMessage } from '../equation/capability';
 import { useSelectionSupport } from '../equation/useCapability';
-import { configDifferences, useStrato } from '../state/store';
+import { configDifferences, selectionKey, useStrato } from '../state/store';
 import { Sci } from './Badge';
 import { NumberField } from './NumberField';
 
@@ -89,6 +89,13 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
 
   const changed = useMemo(() => configDifferences(baseline, config).length, [baseline, config]);
   const [announce, setAnnounce] = useState('');
+  // An announcement of a run ("Running the current inputs.") belongs to the selection it was made under.
+  const selKey = useStrato((s) => selectionKey(s.selection));
+  const [announcedUnder, setAnnouncedUnder] = useState(selKey);
+  if (announcedUnder !== selKey) {
+    setAnnouncedUnder(selKey);
+    setAnnounce('');
+  }
   // A reset or a case load must also clear an unsent draft, even when the stored value did not change.
   const [resetCount, setResetCount] = useState(0);
   const fieldsKey = `${caseId}:${resetCount}`;
@@ -194,11 +201,11 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
             ))}
           </ul>
         </div>
-      ) : (
+      ) : support.supported ? (
         <p className="panel__issues panel__issues--ok" role="status" data-testid="issue-count">
           {changed === 0 ? 'Inputs equal the baseline.' : changed === 1 ? '1 input differs from the baseline.' : `${changed} inputs differ from the baseline.`}
         </p>
-      )}
+      ) : null}
       <div className="panel__buttons">
         <button
           type="button"

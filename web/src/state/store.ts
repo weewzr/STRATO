@@ -72,6 +72,22 @@ export interface RunInfo {
 /** A key of the physics and the scenario of a selection (the expanded regions are display state and are not part of it). */
 export const selectionKey = (sel: { physics: PhysicsId; scenario: ScenarioId | null }): string => `${sel.physics}|${sel.scenario ?? ''}`;
 
+/**
+ * The one condition under which a computed status may be shown (badge, research-status chip of a result,
+ * result label in the footer, run-derived text): the stored run belongs to the current selection and to the
+ * current inputs, and the build supports the selection. Everything that presents a result as computed or
+ * verified reads this, so that a run of another selection is never described as the result of this one.
+ */
+export function runIsCurrent(
+  s: { run: unknown; runInfo: RunInfo | null; config: CaseConfig; selection: { physics: PhysicsId; scenario: ScenarioId | null } },
+  supported: boolean,
+): boolean {
+  if (!supported || s.run === null || s.run === undefined || s.runInfo === null) return false;
+  // A reply sent without a selection key (older callers) counts as belonging to the current selection, as in solver/shown.ts.
+  const sameSelection = s.runInfo.selectionKey === undefined || s.runInfo.selectionKey === selectionKey(s.selection);
+  return sameSelection && s.runInfo.inputKey === inputKey(s.config);
+}
+
 /** The comparison of the current inputs with the baseline (compare), run while the Compare section is open (web phase 5). */
 export interface ComparisonState {
   status: 'idle' | 'running' | 'ok' | 'rejected' | 'error';

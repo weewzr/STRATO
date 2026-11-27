@@ -14,6 +14,7 @@ import { Plot } from '../plots/Plot';
 import { precomputedUrl, usePrecomputed } from '../plots/precomputed';
 import { usePlotTheme } from '../plots/theme';
 import { hrefDocumentation } from '../route';
+import { useRunIsCurrent } from '../equation/useCapability';
 import { useStrato } from '../state/store';
 import { Badge, Sci } from './Badge';
 import { TableBox } from '../sections/common';
@@ -221,7 +222,9 @@ export function ObservedOrdersTable() {
 /** Figure 4: the mass-balance residual of the native run, with the residual of the live run beside it. */
 export function BalancePanelVerify() {
   const { doc, error } = usePrecomputed<RunDoc>('btcs_run.json');
-  const live = useStrato((s) => s.run);
+  const stored = useStrato((s) => s.run);
+  const current = useRunIsCurrent();
+  const live = current ? stored : null;
   const theme = usePlotTheme();
   const fig = useMemo(() => (doc ? residualFigure(doc, theme) : null), [doc, theme]);
   if (!doc || !fig) return <Loading error={error} what="native run" />;
