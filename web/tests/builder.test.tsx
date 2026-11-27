@@ -9,18 +9,16 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { App } from '../src/App';
 import { BTCS_CAPABILITY } from '../src/equation/availability';
-import { CoupledSystem, StepBody } from '../src/equation/EquationBuilder';
+import { StepBody } from '../src/equation/EquationBuilder';
 import { NumericalInterpretation } from '../src/equation/NumericalInterpretation';
 import { ITEM_IDS, itemExpandId, NUMERICAL_ITEMS, visibleItems } from '../src/equation/numerics';
 import { STAGES } from '../src/equation/terms';
 import { ControlPanel } from '../src/panels/ControlPanel';
-import { CATALOGUE, CatalogueContext, parseCatalogue, type Catalogue } from '../src/research/catalogue';
+import { parseCatalogue } from '../src/research/catalogue';
 import { Explore } from '../src/sections/Explore';
+import { hrefFor } from '../src/route';
 import { useStrato } from '../src/state/store';
 
-function withCatalogue(cat: Catalogue, ui: React.ReactElement) {
-  return <CatalogueContext.Provider value={cat}>{ui}</CatalogueContext.Provider>;
-}
 
 /** Text of an element without KaTeX output, equation and section references and item numbers. */
 function plainText(el: HTMLElement): string {
@@ -383,40 +381,13 @@ describe('the controls hold no second mechanism control', () => {
 });
 
 describe('catalogue rows with coupled equations', () => {
-  const press = async (el: HTMLElement) => {
-    const user = userEvent.setup();
-    await user.click(el);
-    el.focus();
-    await user.keyboard('{Enter}');
-    await user.keyboard(' ');
-  };
-
-  it('a catalogue mechanism with coupled equations is shown as a system with a disabled switch', async () => {
-    const raw = JSON.parse(JSON.stringify(CATALOGUE)) as Catalogue;
-    const row = {
-      ...raw.mechanisms[0]!,
-      mechanism_id: 'fixture_trapping',
-      name: 'Fixture trapping',
-      status: 'PENDING' as const,
-      builder_stage: 6,
-      coupled: true,
-      entry: 'docs/research/fixture.md',
-    };
-    const cat: Catalogue = {
-      ...raw,
-      mechanisms: [...raw.mechanisms, row],
-      entries: { 'docs/research/fixture.md': { path: 'docs/research/fixture.md', title: 'Fixture', concept_equations: [String.raw`\frac{\partial c_t}{\partial t} = k c`] } },
-    };
-    render(withCatalogue(cat, <StepBody stage={17} physics="baseline" showTitle={false} />));
-    const sys = screen.getByTestId('coupled-fixture_trapping');
-    expect(sys.textContent).toMatch(/Coupled system, research concept, not solved by STRATO/);
-    expect(sys.querySelector('.katex')).not.toBeNull();
-    const sw = screen.getByTestId('catalogue-switch-fixture_trapping');
-    expect(sw.getAttribute('aria-disabled')).toBe('true');
-    await press(sw);
-    expect(sw.getAttribute('aria-checked')).toBe('false');
-    // Rendering CoupledSystem alone gives the same disabled switch.
-    render(<CoupledSystem row={row} catalogue={cat} />);
+  // The coupled systems and disabled switches of the species-specific rows are shown on the Research page
+  // (e2e/research.spec.ts); the last derivation step only links there (decision 71), so no switch is rendered in the step.
+  it('the last step links to the research catalogue and renders no catalogue switch', () => {
+    render(<StepBody stage={17} physics="baseline" showTitle={false} />);
+    const note = screen.getByTestId('stage6');
+    expect(note.querySelector('a')?.getAttribute('href')).toBe(hrefFor('research'));
+    expect(document.querySelectorAll('[role="switch"]')).toHaveLength(0);
   });
 
   it('rejects a catalogue whose status is not one of the five words', () => {

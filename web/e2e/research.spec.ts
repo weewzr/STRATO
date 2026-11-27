@@ -115,24 +115,14 @@ test.describe('catalogue switches by keyboard', () => {
     expect(await solverRequests(page)).toBe(before);
   });
 
-  test('the last step of the builder lists the catalogue rows behind one disclosure, with disabled switches', async ({ page, problems }) => {
+  test('the last step of the builder links to the research catalogue and holds no switch', async ({ page, problems }) => {
     void problems;
     // The last step is the temperature step, in item 11, which the temperature-dependent physics reveals.
     await gotoNumerical(page, [11], 'physics=temperature');
     await expect(page.getByTestId('num-item-11').getByTestId('equation-builder')).toHaveAttribute('data-stage', '17');
-    const toggle = page.getByTestId('stage6-toggle');
-    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-    const before = await solverRequests(page);
-    await toggle.click();
-    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-    const switches = page.getByTestId('stage6').locator('[role="switch"]');
-    expect(await switches.count()).toBeGreaterThan(0);
-    for (const s of await switches.all()) await expect(s).toHaveAttribute('aria-disabled', 'true');
-    // The click is sent to the switch itself: a forced click at its coordinates can land on the footer that covers the edge of the window.
-    await switches.first().dispatchEvent('click');
-    await expect(switches.first()).toHaveAttribute('aria-checked', 'false');
-    expect(await checkStatuses(page, '[data-testid="stage6"]')).toBeGreaterThan(0);
-    expect(await solverRequests(page)).toBe(before);
+    const note = page.getByTestId('stage6');
+    await expect(note.getByRole('link', { name: 'research catalogue' })).toHaveAttribute('href', /#\/research/);
+    await expect(note.locator('[role="switch"]')).toHaveCount(0);
     if (dir) await page.getByTestId('block-c').screenshot({ path: join(dir, 'explore-last-step-1440.png') });
   });
 

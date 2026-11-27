@@ -181,7 +181,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           </>
         ) : (
           <p className="sim-alert" role="status" data-testid="unsupported-results">
-            <strong className="sim-alert__title">No result for this selection.</strong> {note}
+            <strong className="sim-alert__title">No simulation was run:</strong> no result is shown for this selection (see Live simulation).
           </p>
         )}
       </section>

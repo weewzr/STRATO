@@ -1,7 +1,5 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { statusOf, useCatalogue, type Catalogue, type MechanismRow } from '../research/catalogue';
-import { distinctStatuses, entryHref, rowKey } from '../research/entries';
-import { CatalogueSwitch, RowChip } from '../research/parts';
+import { statusOf, useCatalogue, type Catalogue } from '../research/catalogue';
 import { StatusChip } from '../research/StatusChip';
 import { hrefFor } from '../route';
 import { physicsStatus, type PhysicsId } from './capability';
@@ -262,100 +260,16 @@ function TermList({
   );
 }
 
-/** A decimal or exponent number in TeX (the "no numbers" rule of the builder tests). */
-const NUMERIC_CONSTANT = /\d\.\d|\de[+-]?\d/;
-
-/** A catalogue mechanism that needs coupled equations: shown as a system beside the transport equation. */
-export function CoupledSystem({ row, catalogue }: { row: MechanismRow; catalogue: Catalogue }) {
-  const entry = row.entry ? catalogue.entries[row.entry] : undefined;
-  // The Numerical Interpretation shows no number apart from equation numbers and units: a research-concept
-  // equation that carries numerical constants is named here and shown on its entry page instead.
-  const all = entry?.concept_equations ?? [];
-  const concepts = all.filter((c) => !NUMERIC_CONSTANT.test(c));
-  const withConstants = all.length - concepts.length;
-  return (
-    <section className="coupled" data-testid={`coupled-${row.mechanism_id}`} aria-label={`${row.name}: research concept`}>
-      <p className="coupled__head">
-        <span className="coupled__name">{row.entry ? <a href={entryHref(row.entry)}>{row.name}</a> : row.name}</span>
-        <StatusChip status={row.status} mechanism={row.mechanism_id} row={rowKey(row)} compact />
-      </p>
-      {concepts.length > 0 ? (
-        <div className="coupled__system">
-          <p className="coupled__label">Coupled system, research concept, not solved by STRATO</p>
-          {concepts.map((c) => (
-            <div className="eq-box eq-box--small" key={c}>
-              <Tex display latex={c} />
-            </div>
-          ))}
-        </div>
-      ) : all.length === 0 ? (
-        <p className="coupled__label">No candidate equation in the catalogue entry yet.</p>
-      ) : null}
-      {withConstants > 0 && row.entry ? (
-        <p className="coupled__label" data-testid={`coupled-more-${row.mechanism_id}`}>
-          Further candidate equations with numerical constants are on the{' '}
-          <a href={entryHref(row.entry, 'candidate-governing-equations-research-concepts')}>entry page</a>.
-        </p>
-      ) : null}
-      <button
-        type="button"
-        role="switch"
-        aria-checked="false"
-        aria-disabled="true"
-        className="mech__switch mech__switch--catalogue"
-        data-testid={`catalogue-switch-${row.mechanism_id}`}
-      >
-        <span className="mech__name">Live simulation</span>
-        <span className="mech__term">Not available: status {row.status}; not implemented in STRATO</span>
-        <span className="mech__state">Off</span>
-      </button>
-    </section>
-  );
-}
-
 /**
- * The species-specific catalogue rows (prompt/DESIGN_SPECIFICATION.md Section 3.1): none is implemented,
- * so the list sits behind one disclosure, closed by default, at the end of the last step of the
- * Numerical Interpretation. A mechanism with coupled equations is shown once as its coupled system;
- * every other row as a line with its status and its disabled switch.
- */
-function Stage6Catalogue({ rows, catalogue }: { rows: MechanismRow[]; catalogue: Catalogue }) {
-  const [open, setOpen] = useState(false);
-  const panel = useId();
-  const coupledShown = new Set<string>();
-  return (
-    <div className="stage6" data-testid="stage6">
-      <button type="button" className="stage6__toggle" aria-expanded={open} aria-controls={panel} onClick={() => setOpen(!open)} data-testid="stage6-toggle">
-        <span className="stage6__title">Species-specific catalogue entries (research list, not part of this step)</span>
-        <span className="stage6__counts">
-          <span className="stage6__n">{distinctStatuses(rows).length === 1 ? 'every row at' : 'rows at'}</span>
-          {distinctStatuses(rows).map((s) => (
-            <StatusChip key={s} status={s} legend compact />
-          ))}
-        </span>
-      </button>
-      <div id={panel} className="stage6__panel" hidden={!open}>
-        {rows.map((r) => {
-          if (r.coupled) {
-            if (coupledShown.has(r.mechanism_id)) return null;
-            coupledShown.add(r.mechanism_id);
-            return <CoupledSystem key={rowKey(r)} row={r} catalogue={catalogue} />;
-          }
-          return (
-            <div className="stage6__row" key={rowKey(r)}>
-              <p className="stage6__name">
-                {r.entry ? <a href={entryHref(r.entry)}>{r.name}</a> : r.name} <RowChip row={r} compact />
-              </p>
-              <CatalogueSwitch row={r} compact />
-            </div>
-          );
-        })}
-        <p className="stage6__more">
-          Full entries in the <a href={hrefFor('research')}>research catalogue</a>.
-        </p>
-      </div>
-    </div>
-  );
+* The species-specific catalogue rows are research entries, none implemented: they are listed once on the
+* Research page (with their status and coupled systems), and the last step links there.
+*/
+function Stage6Catalogue() {
+ return (
+   <p className="stage6__more" data-testid="stage6">
+     Species-specific mechanisms are research entries, not part of this step: <a href={hrefFor('research')}>research catalogue</a>.
+   </p>
+ );
 }
 
 interface MoreItem {
@@ -427,12 +341,19 @@ function Additions({ stage, physics }: { stage: Stage; physics: PhysicsId }) {
   const add = physicsAdditions(stage, physics);
   const { cap, loading } = useBuildCapability();
   if (add.note === null && add.equations.length === 0) return null;
+  // A note of several sentence groups is one paragraph each (the first beside the status), so that none grows beyond a short block.
+  const [first, ...rest] = add.note === null ? [] : add.note.split('\n');
   return (
     <div className="step-additions" data-testid="physics-additions" data-physics={physics}>
       <p className="step-additions__head">
         <StatusTag status={physicsStatus(cap, physics)} loading={loading} />
-        <span className="step-additions__note">{add.note === null ? null : <RichText text={add.note} />}</span>
+        <span className="step-additions__note">{first === undefined ? null : <RichText text={first} />}</span>
       </p>
+      {rest.map((p) => (
+        <p className="step-additions__more" key={p}>
+          <RichText text={p} />
+        </p>
+      ))}
       {add.equations.map((e) => (
         <ShownEq key={e.id} eq={e} />
       ))}
@@ -613,7 +534,7 @@ export function StepBody({ stage, physics, showTitle }: { stage: Stage; physics:
           <p className="eq-where" data-testid="equation-caption">
             {def.summary}
           </p>
-          {stage === STAGES[STAGES.length - 1] && catalogueRows.length > 0 ? <Stage6Catalogue rows={catalogueRows} catalogue={catalogue} /> : null}
+          {stage === STAGES[STAGES.length - 1] && catalogueRows.length > 0 ? <Stage6Catalogue /> : null}
         </div>
         <div className="builder__side">
           <TermList stage={stage} catalogue={catalogue} shown={shown} onPreview={setPreview} pinned={pinned} onPin={setPinned} cardId={cardId} />

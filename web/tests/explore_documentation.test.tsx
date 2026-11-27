@@ -48,6 +48,7 @@ describe('Scientific Documentation holds what left Explore', () => {
     expect(entry('explore-case')).toContain('no result from this case is a prediction of real fission-product release');
     expect(entry('explore-scope')).toContain('Method A: BTCS implements the baseline spherical diffusion in the five layers');
     expect(entry('explore-results')).toContain('model output only; no experimental data are shown there');
+    expect(entry('explore-results')).toContain('none is available in this build');
     const scenarios = entry('explore-scenarios');
     expect(scenarios).toContain(SCENARIO_RULE_FULL);
     expect(scenarios).toContain(NO_SCENARIO_TEXT_FULL);
@@ -55,11 +56,27 @@ describe('Scientific Documentation holds what left Explore', () => {
   });
 
   it('holds the identity and the notes of the balance as the wrapper returns them', () => {
+    act(() => {
+      useStrato.getState().setSolver({ state: 'ready' });
+      useStrato.getState().setCapabilities([BTCS_CAPABILITY]);
+    });
     render(<Documentation />);
     const text = norm(entry('explore-balance'));
     expect(text).toContain(norm(native.data.balance.statement).replace(/\.$/, ''));
     expect(text).toContain(norm(native.data.balance.generated_and_decayed_note));
     expect(text).toContain('a measurement of the browser, not a result');
+  });
+
+  it('does not state the no-source, no-decay balance before the build has reported what it computes', () => {
+    render(<Documentation />);
+    expect(norm(entry('explore-balance'))).not.toContain('no source and no decay');
+  });
+
+  it('names the live simulation on Explore, never "below", in the notes of the derivation', () => {
+    render(<Documentation />);
+    const text = entry('explore-numerical');
+    expect(text).not.toMatch(/\bbelow\b/);
+    expect(text).toContain('in the live simulation on Explore');
   });
 
   it('holds the details of the three figures and of the controls', () => {

@@ -1304,8 +1304,9 @@ function accountingNote(gen: boolean, dec: boolean): string {
   const g =
     'With a source the generated amount is booked, and the release gains the source of the half-interval next to the outer surface, $\\bar Q_N^j$. For the approved kernel-only source $\\bar Q_N^j$ is zero, so the release is the baseline release. The release fraction $F^j$ needs $M^0 > 0$ and can exceed one with a source; for a fresh particle, as in every operating scenario, it is not reported, and $F_{\\mathrm{gen}}^j$ and $\\beta^{j+1}$ are reported instead.';
   const d = 'With decay the decayed amount is booked apart from the release, which is unchanged: the release is the flow through the outer surface only.';
-  const both = ' The balance below is the general one: its generated amount is zero without a source and its decayed amount is zero without decay.';
-  return `${gen ? g : ''}${gen && dec ? ' ' : ''}${dec ? d : ''}${both}`;
+  const both = 'The balance below is the general one: its generated amount is zero without a source and its decayed amount is zero without decay.';
+  // One paragraph per sentence group, separated by a line feed (the page renders each in its own paragraph).
+  return [gen ? g : '', dec ? d : '', both].filter((p) => p !== '').join('\n');
 }
 
 /** The physics selections that add to a baseline step (the baseline adds nothing). */
@@ -1364,7 +1365,7 @@ export function physicsAdditions(stage: Stage, physics: PhysicsId): { equations:
       if (dec) lines.push('Decay: the matrix stays a non-singular M-matrix, and without a source the decaying solution follows the discrete decay factor (proved in the same document).');
       if (tmp) lines.push('Temperature: without source and decay the norms do not grow for any temperature history, the time order is first (proved for a fixed grid; a proof outline with constants independent of the grid), and a constant temperature gives the constant-diffusivity run (proved in the same document).');
       if (physics === 'combined') lines.push('Combined: the balance holds in exact arithmetic (proved); the convergence orders with source, decay and temperature history are observed, not proved.');
-      return { equations: [], note: lines.join(' ') };
+      return { equations: [], note: lines.join('\n') };
     }
     default:
       return none;

@@ -80,9 +80,16 @@ function ScenariosEntry() {
 }
 
 /** The notes that stood in the "Live values" disclosure of each derivation step, without the sentences that are registered elsewhere. */
+/** The notes were written for the page that shows the numbers; here that page is named instead of "below". */
+const onExplore = (s: string): string =>
+  s
+    .replace('in the live simulation below', 'in the live simulation on Explore')
+    .replace('are listed below,', 'are listed in the live simulation on Explore,')
+    .replace('in the numbers below and in the diagnostics under the live simulation', 'in the numbers and in the diagnostics of the live simulation on Explore');
+
 const LIVE_NOTES: { step: string; text: string }[] = Object.values(STEP_DEFS)
   .filter((d) => !d.live.startsWith('This step states mathematics') && !d.live.startsWith('The simulation below uses the synthetic'))
-  .map((d) => ({ step: d.name, text: d.live.replace(' These checks verify the numerical method and are not experimental validation.', '') }));
+  .map((d) => ({ step: d.name, text: onExplore(d.live.replace(' These checks verify the numerical method and are not experimental validation.', '')) }));
 
 function NumericalEntry() {
   return (
@@ -150,13 +157,17 @@ function TraceabilityEntry() {
 }
 
 function BalanceEntry() {
+  const { cap, loading } = useBuildCapability();
+  const { computed } = computedMechanisms(cap);
+  // Fixed text only while the build reports that it computes neither generation nor decay (it was the wrapper's own note).
+  const noSourceNoDecay = !loading && !computed.includes('generation') && !computed.includes('decay');
   return (
     <>
       <p>
         The inventory balance is taken at the end of the simulation; the residual is zero in exact arithmetic, and the solver reports the
         derived rounding bound beside it. The identity of the balance is: remaining + released + decayed − start − generated = residual
-        (equation F30); the directive writes the same identity with the opposite sign of the residual. The solved model has no source and
-        no decay, so both terms are exactly zero by construction; they are not measured.
+        (equation F30); the directive writes the same identity with the opposite sign of the residual.
+        {noSourceNoDecay ? ' The solved model has no source and no decay, so both terms are exactly zero by construction; they are not measured.' : ''}
       </p>
       <p>
         The inventory by layer is the sum over the grid intervals of each layer, from the wrapper. The solver wall time is a measurement of
@@ -273,8 +284,8 @@ export const explore: DocContribution = {
       title: 'Results of Explore',
       body: (
         <p>
-          The results on Explore are model output only; no experimental data are shown there. Experimental comparisons are under{' '}
-          <a href={hrefFor('validate')}>Validate</a>.
+          The results on Explore are model output only; no experimental data are shown there. Experimental comparisons will appear under{' '}
+          <a href={hrefFor('validate')}>Validate</a>; none is available in this build.
         </p>
       ),
     },

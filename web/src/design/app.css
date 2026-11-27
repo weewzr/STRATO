@@ -2858,6 +2858,23 @@ select.field__input {
   .refp__table .muted {
     display: none;
   }
+  /* The row id and the layer name stay on one line; the table box scrolls sideways instead. */
+  .refp__table td.mono,
+  .refp__table tbody th {
+    white-space: nowrap;
+  }
+}
+/* Touch targets of the particle view switch and of the Validate link at phone width. */
+@media (max-width: 559.98px) {
+  .segmented__item {
+    min-height: var(--touch-min);
+  }
+  #validation-layer-why a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--touch-min);
+    min-width: var(--touch-min);
+  }
 }
 .refp__note {
   margin: var(--space-3) 0 0;
@@ -3285,6 +3302,9 @@ select.field__input {
 }
 .step-additions__note {
   min-width: 0;
+}
+.step-additions__more {
+  margin: 0;
 }
 
 /* Block D: numerical controls under the simulation; block E: the results in the full width */
