@@ -297,33 +297,41 @@ function RoadmapPage({ cat }: { cat: Catalogue }) {
       <PageTitle>{entry?.title ?? 'Brick roadmap'}</PageTitle>
       <section className="bricks" aria-labelledby="bricks-now" data-testid="roadmap-bricks">
         <h2 id="bricks-now">Bricks and their catalogue rows</h2>
-        <ol className="brick-list">
-          {bricks(cat).map((b) => {
-            const rows = rowsOfBrick(cat, b);
-            const s = summary.get(b);
-            return (
-              <li key={b} className="brick" data-brick={b}>
-                <p className="brick__num">
-                  <span className="brick__word">Brick</span> {b}
-                </p>
-                <div className="brick__body">
-                  <p className="brick__adds">{s ? <Spans spans={s.adds} catalogue={cat} /> : null}</p>
-                  <ul className="brick__rows">
-                    {rows.map((r) => (
-                      <li key={rowKey(r)}>
-                        <span>
-                          {r.entry ? <a href={entryHref(r.entry)}>{r.name}</a> : r.name}
-                          {r.species !== 'all' ? ` (${r.species})` : ''}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
-      </section>
+        <TableBox label="Bricks of the development sequence and their catalogue rows">
+          <table className="table brick-table" data-testid="roadmap-table">
+            <thead>
+              <tr>
+                <th scope="col">Brick</th>
+                <th scope="col">Adds</th>
+                <th scope="col">Catalogue rows</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bricks(cat).map((b) => {
+                const rows = rowsOfBrick(cat, b);
+                const s = summary.get(b);
+                return (
+                  <tr key={b} className="brick" data-brick={b}>
+                    <th scope="row" className="num-col">
+                      {b}
+                    </th>
+                    <td>{s ? <Spans spans={s.adds} catalogue={cat} /> : null}</td>
+                    <td>
+                      <ul className="brick__rows">
+                        {rows.map((r) => (
+                          <li key={rowKey(r)}>
+                            {r.entry ? <a href={entryHref(r.entry)}>{r.name}</a> : r.name}
+                            {r.species !== 'all' ? ` (${r.species})` : ''}
+                          </li>
+                        ))}
+                      </ul>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </TableBox>      </section>
       <p className="roadmap-page__more" data-testid="roadmap-more">
         <a href={hrefDocumentation('research-roadmap-body')}>Brick narratives</a>
       </p>
