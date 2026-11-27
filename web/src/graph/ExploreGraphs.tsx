@@ -170,7 +170,7 @@ export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
           <Plot
             figure={figure}
             testId={`explore-plot-${graph}`}
-            height={320}
+            height={280}
             quiet
             label={`${GRAPH_LABEL[graph]}${name ? `, ${name}` : ''}${graph !== 'experiment' && temperature !== null ? `, ${String(temperature)} °C` : ''}`}
           />

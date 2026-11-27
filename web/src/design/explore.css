@@ -309,7 +309,7 @@
 /* The empty panel: the frame of the axes and nothing else (no text, no curve). */
 .gpanel__frame {
   box-sizing: border-box;
-  height: 320px;
+  height: 280px;
   border-left: 1px solid var(--border-strong);
   border-bottom: 1px solid var(--border-strong);
 }

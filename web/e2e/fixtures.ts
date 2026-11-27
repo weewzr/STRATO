@@ -51,11 +51,14 @@ export async function gotoNumerical(page: Page, sections: readonly string[] = []
 }
 
 /**
- * Opens the manual baseline solver (advanced/AdvancedSolver.tsx), which Scientific Documentation mounts under
- * "Advanced solver configuration" since the final layout of Explore (decision 77(f)): Explore no longer holds it.
+ * Opens the manual baseline solver (advanced/AdvancedSolver.tsx). Explore no longer holds it (decision 77(f));
+ * Scientific Documentation mounts it under "Advanced solver configuration" (another branch). So that these tests
+ * do not depend on that page, they mount the same component through the development-server harness
+ * (tests/harness/advanced.tsx), inside the header, status line and sections of the site.
  */
+const ADVANCED_HARNESS = 'http://127.0.0.1:4433/STRATO/advanced.html';
 export async function gotoAdvanced(page: Page): Promise<void> {
-  await page.goto('./#/documentation');
+  await page.goto(ADVANCED_HARNESS);
   const solver = page.getByTestId('advanced-solver');
   await expect(solver).toBeAttached({ timeout: 20_000 });
   await solver.scrollIntoViewIfNeeded();
