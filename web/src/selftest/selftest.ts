@@ -150,16 +150,18 @@ export async function runSelftest(): Promise<void> {
   await waitFor(() => document.querySelector('[data-section="explore"] h1') !== null);
   add('sections_render', missing.length === 0, missing.length === 0 ? `${SECTIONS.length} sections` : `missing: ${missing.join(', ')}`);
 
-  // 4b. Explore shows blocks A to E in this order (owner decision M7): document order and top edges.
-  const blocks = Array.from(document.querySelectorAll<HTMLElement>('[data-section="explore"] [data-block]'));
-  const letters = blocks.map((b) => b.dataset.block ?? '').join('');
-  const tops = blocks.map((b) => b.getBoundingClientRect().top);
-  const increasing = tops.every((t, i) => i === 0 || t > (tops[i - 1] ?? Number.NEGATIVE_INFINITY));
-  add('explore_block_order', letters === 'ABCDE' && increasing, `order=${letters} tops_increasing=${increasing}`);
+  // 4b. Explore shows its four areas in this order (final layout of 27 Nov 2026): model equation and operation,
+  //     governing equation, numerical interpretation, interactive graphs; document order.
+  const areas = Array.from(document.querySelectorAll<HTMLElement>('[data-section="explore"] [data-area]')).map((a) => a.dataset.area ?? '');
+  add('explore_area_order', areas.join(',') === 'controls,equation,numerical,graphs', `order=${areas.join(',')}`);
 
-  // 4c. Every research status shown equals the generated catalogue (value comparison only).
-  //     A chip of one catalogue row (data-status-row) is compared with that row.
-  await waitFor(() => document.querySelector('[data-status-for]') !== null);
+  // 4c. No status chip stands on Explore (decision 77(b)); every research status shown on the Research page
+  //     equals the generated catalogue (value comparison only). A chip of one catalogue row (data-status-row)
+  //     is compared with that row.
+  const exploreChips = document.querySelectorAll('[data-section="explore"] [data-status-for], [data-section="explore"] [data-status]').length;
+  add('explore_no_status', exploreChips === 0, `${exploreChips} status chips on Explore`);
+  window.location.hash = hrefResearch('');
+  await waitFor(() => document.querySelector('[data-section="research"] [data-status-for]') !== null);
   const chips = Array.from(document.querySelectorAll<HTMLElement>('[data-status-for]'));
   const wrong = chips.filter((c) => {
     const row = c.dataset.statusRow ? CATALOGUE.mechanisms.find((m) => `${m.mechanism_id}|${m.species}|${m.material_domain}` === c.dataset.statusRow) : undefined;
@@ -186,6 +188,8 @@ export async function runSelftest(): Promise<void> {
   );
 
   // 4e. KaTeX typeset the governing equation without an error.
+  window.location.hash = '#/explore';
+  await waitFor(() => document.querySelector('[data-section="explore"] .katex') !== null);
   const katexCount = document.querySelectorAll('[data-section="explore"] .katex').length;
   const katexErrors = document.querySelectorAll('.katex-error').length;
   add('katex_renders', katexCount > 0 && katexErrors === 0, `katex elements=${katexCount} errors=${katexErrors}`);
