@@ -7,8 +7,8 @@
     "solver_version": "2.1.0",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "7953c17",
-    "solver_source_sha256": "8786a3048e6415adc2aabbed2e0b79dfc823d3a54ef2b06d42b833d72bc16383",
+    "commit": "14a88d3",
+    "solver_source_sha256": "0ea05c504c44b19378319d02c9216ec75d660f2c5fd23317c03258c071028cbe",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
       "arrhenius.csv": "7af310fba1d4a994e9914523455ecafff927582295d8fa4a1b217cc6f12bd06e",
@@ -145,7 +145,7 @@
       "f_model_t_plus": [1.4049728994775858e-29,2.4975655028915897e-3,1.1197802062822768e-1,3.404994812263173e-1,5.172976712829049e-1,6.439894703360737e-1,7.377635330016018e-1,8.065910645182087e-1,8.573538731235779e-1,8.955943046472287e-1,9.581667760501481e-1,9.84589852042924e-1,9.950843620137763e-1,9.981660075060133e-1,9.994552572286313e-1,null],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-LP-4-4-2.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "81a88d7d13c737f8c6fb413956c8cafd90d377844cd92d9fb04cfc3952c3a03d",
         "refined_output_sha256": "015f3c91470d9e2bec739525a305dfa5d76aefe1adebebf5ebefefb25be5aaa6",
@@ -573,7 +573,7 @@
       "f_model_t_plus": [6.026755687156219e-32,2.0659866568707242e-4,2.6837671947505023e-2,1.0765317072369104e-1,1.8438919134134107e-1,2.457347611606215e-1,2.962299608123029e-1,3.382824614373994e-1,3.743090690136829e-1,4.0659005294557216e-1,4.832180925969908e-1,5.478983127784448e-1,6.072040822911808e-1,6.497768203818503e-1,6.942344332201377e-1,null],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-LP-4-4-2.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "787a4b2bf2243c1435e7ab01758c8077e2282d935fa613d8c8c70f2d0a559cc9",
         "refined_output_sha256": "ab212c9d592498af830b8d960ab428b6230b43be1739bdea09fc4c329469a8be",
@@ -977,7 +977,7 @@
       "f_model_t_plus": [1.7467843109388796e-7,1.0052218289963614e-2,3.152438298671577e-2,7.358105364417833e-2,1.4469649760976877e-1,2.1140638906473855e-1,2.737432107659703e-1,3.304765846829849e-1,3.8319865638772144e-1,6.187856310131613e-1],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ST-C16-1600.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "6ab735b6eaee35e407f024e3c5e0639bac73a32d5d4b4057d2cbe3a20f5df136",
         "refined_output_sha256": "00179370c3a8d0dbd540699985ff51609cad56c422e03758ddfb840040aef232",
@@ -1355,7 +1355,7 @@
       "f_model_t_plus": [6.679212153600803e-13,2.4977655082156193e-2,9.529521737677236e-2,2.2999490078673626e-1,3.462627152218917e-1,4.44789230718647e-1,5.502534077294687e-1,6.181659249275583e-1,6.756028057705062e-1,7.24493599350069e-1],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ASRUN-6-4-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "e2a35170f34065d39cc9475b45a0a2d0d1ad545fa950270a7edf0ead1c23bb1f",
         "refined_output_sha256": "d4a612751a2a435daf8324c0c727645578441ff678565886c35767e9fe440eca",
@@ -1745,7 +1745,7 @@
       "f_model_t_plus": [2.4253697922933222e-14,4.214713455348247e-4,2.476737041615314e-3,5.610246452928788e-3,9.497797058070984e-3,1.861811074525472e-2,2.8743788035072822e-2,4.25969722236951e-2,5.360661486955672e-2,6.458925836747538e-2,7.549821583842772e-2],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ASRUN-6-4-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "9a120492ce2d8743cf0fb83c3109df753914580217c671127dc84617ee8284c6",
         "refined_output_sha256": "aece4aa088311e2563b1d794fc2a99e028d59a7b24083e4cb9855848c8f7ee19",
@@ -2213,7 +2213,7 @@
       "f_model_t_plus": [1.6925338674520242e-4,1.4705823973995197e-2,4.22917143350756e-2,1.0468713728825296e-1,1.7166933154117006e-1,1.9006136294198095e-1,2.0986894677230641e-1,2.3730171934198063e-1,2.6908909757868954e-1,2.8232978350063115e-1,2.8666037536801203e-1,2.909232586719329e-1,3.2436368595334925e-1,3.336740422505423e-1,3.345883711930529e-1,3.353306030248065e-1,3.61750598490387e-1,3.7380750118688616e-1,3.740607736667289e-1,3.743277614326906e-1,4.107542005013206e-1,null,null,null,null,null,null,null,null],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ASRUN-4-2-2-MULTI.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "a973a2c8d09a91c64f01d16a42556f4c578381bab3d0d86e609af9f5eca04a25",
         "refined_output_sha256": "de9be3c0c7db46c581285e76f10ea8e024fd9c2d3eb1f50d0a8a4e0624425bec",
@@ -2685,7 +2685,7 @@
       "f_model_t_plus": [null,null,null],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "ca1e52e0626da6c289cc7e2b489fc33c88b419ff3bf214b0b3c84cb0abc56273",
         "refined_output_sha256": "0f01e366f61527f6beb808b2b7be22d654d50a48a0a16cb149a17ee72936fa55",
@@ -2835,7 +2835,7 @@
       "f_model_t_plus": [null,null,null],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "alpha_max_per_s": 2.5e-1,
         "modes": 590,
@@ -2989,7 +2989,7 @@
       "f_model_t_plus": [null,null,null,null],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "860912ea24c31f762f08a5355b5babd5a9992bac7f7a049bb188ab01ee78052f",
         "refined_output_sha256": "bb152a3e30a38b7aa7305f4c543377f2ab6d40e128565cca7bdd707aa0a1aa1f",
@@ -3144,7 +3144,7 @@
       "f_model_t_plus": [null,null,null,null],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "alpha_max_per_s": 2.5e-1,
         "modes": 175,
@@ -3346,7 +3346,7 @@
       "f_model_t_plus": [5.4079900521184e-246,8.70120630107278e-19,2.1771359499603914e-4,1.5337544138214886e-2,4.8140582293384e-2,8.445502588059021e-2,1.2096440895880246e-1,1.5699908749723573e-1,1.9111290203636278e-1,2.237429300162633e-1,3.142105862867403e-1,4.0078480273669836e-1,4.867050706395793e-1,5.508073896635465e-1,6.188464462567366e-1,null],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-LP-4-4-2.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "486f3456032ed6a969b2b54412f91cf074c00f2e9a3dbcf5d874d11c395ac465",
         "refined_output_sha256": "2615ba4efbcee87a0dde794c9de1f3ec703e88a28fa3f325f14a43b24dac0fe8",
@@ -3774,7 +3774,7 @@
       "f_model_t_plus": [1.742198804375991e-245,5.884528982715506e-18,2.281468137536483e-4,1.5449476693546986e-2,4.828876133290418e-2,8.476169913794748e-2,1.2111466023320822e-1,1.5728894677683528e-1,1.9125220786146796e-1,2.2401040728977675e-1,3.1432877173377155e-1,4.0088806944073097e-1,4.8688197431731994e-1,5.508848035083442e-1,6.189121354022473e-1,null],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-LP-4-4-2.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "d27998cc3f81729f016f4ce24abc906e4de7c846f4e9af33cad9b07aac647a43",
         "refined_output_sha256": "76644c5c82b269cf285dd6736f6e77e624d965e8ae01c5979f6f88eb91fc0bad",
@@ -4182,7 +4182,7 @@
       "f_model_t_plus": [2.856627801868765e-239,5.119521971217784e-94,2.66572734943684e-30,2.0629022191802553e-21,4.713407956759034e-15,1.754593775104536e-10,2.991980731111274e-8,6.282704733426614e-7,4.557389308203745e-6,1.8869013110942414e-5,9.451245265773835e-4],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-FACS-4-3-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "dc5bd79eec29b17b204aba13a724297f44b700e18295c620536775fecf950d6f",
         "refined_output_sha256": "6a2a98720dd7c7abb203529f93b1294b5e0be6ff7576726d12144d3911a87b05",
@@ -4566,7 +4566,7 @@
       "f_model_t_plus": [1.1982069778934852e-29,1.1707102454652946e-9,1.053986816774096e-4,4.6025533455367666e-4,1.52486932509141e-3,4.282873623958578e-3,7.916649793432408e-3,1.2152228235408421e-2,1.6731213467448037e-2,2.163787913799442e-2,5.3174016010627614e-2],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-FACS-4-3-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "5e84334e08893635057c732c885df3379077cf2e244c8919d8292d00a792ae4f",
         "refined_output_sha256": "ef59412dffe4c26bb292707eb69c5e63ef2df70214d1bfab74291b4759e294f5",
@@ -4994,7 +4994,7 @@
       "f_model_t_plus": [1.2274924706215821e-5,1.6727483027005132e-2,7.261610274862915e-2,1.544490424274749e-1,1.8193378385044942e-1,1.9977412483774099e-1,2.8728559917874413e-1,3.3292976806154395e-1,3.687256035906397e-1,4.140222951853193e-1,4.5003546200185174e-1,4.852568079742863e-1,5.19549260708025e-1,5.515571328927575e-1,5.791176490087375e-1,6.038934913283956e-1,6.323158631171487e-1,6.568111671960254e-1,6.779029542080054e-1,6.985309963756855e-1,7.170587555571343e-1,7.344478310212065e-1],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.CRP6-P4K3.T978-FRG.CRP6-8a.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "d9eefc2f99d697a149450d851900aa5cefadded9a7a2791eef76744a3d840ca7",
         "refined_output_sha256": "6797e7175c16dfc146465e4baa4ee6c17ef474c3d43217ac08f006394362e279",
@@ -5492,7 +5492,7 @@
       "f_model_t_plus": [2.005020840780748e-67,1.7351677538876009e-25,5.294235777330919e-14,2.666234742474577e-9,3.3979135258777224e-8,7.683662323544484e-8,3.6589562755593106e-6,1.507359936685043e-5,3.752509968168464e-5,9.173517887420786e-5,1.73358363071106e-4,2.9478044794895307e-4,4.8810010062951215e-4,7.141938002906057e-4,1.0227396052034205e-3,1.334350104845507e-3,1.7876062881684851e-3,2.3154824198683877e-3,2.8680716867747467e-3,3.4550857404004915e-3,4.1549217529327715e-3,4.822071638208764e-3],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.CRP6-P4K3.T978-FRG.CRP6-8a.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "1e17e7140baf6530ce4e01e91c01d1e6c5685110d193c9e1085badbb39ba816a",
         "refined_output_sha256": "2949f1926b7e76d7fd8fe5f6be09f8af8a29ee830d63f49a6d8d4d326ecd2dc9",
@@ -5982,7 +5982,7 @@
       "f_model_t_plus": [2.3910669797074863e-4,1.39073484121945e-3,4.3446961794981e-3,6.6366721392752326e-3,1.1755267228209784e-2,1.5027884425534327e-2,1.8298946871434595e-2,2.2264901673852838e-2,2.572273775539794e-2,2.90795327286984e-2,3.3089545431799e-2,3.6661206290370514e-2,4.0400202435632186e-2,4.382969631473509e-2,4.818656667919815e-2,5.175129065275408e-2,5.5604876659472405e-2,5.927849620229786e-2,6.277136752520372e-2,6.608413817825955e-2],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.CRP6-P4K3.T978-FRG.CRP6-8a.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "0db5520f399051895733659316f5f962d51ecc270deb746ae54c1e2c39d10f90",
         "refined_output_sha256": "3bb3b2958213d3efea8f33ce651bf24ebfd3f37f24eec3d1e141a6b286e11f87",

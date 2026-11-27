@@ -7,8 +7,8 @@
     "solver_version": "2.1.0",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "7953c17",
-    "solver_source_sha256": "8786a3048e6415adc2aabbed2e0b79dfc823d3a54ef2b06d42b833d72bc16383",
+    "commit": "14a88d3",
+    "solver_source_sha256": "0ea05c504c44b19378319d02c9216ec75d660f2c5fd23317c03258c071028cbe",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
       "arrhenius.csv": "7af310fba1d4a994e9914523455ecafff927582295d8fa4a1b217cc6f12bd06e",
@@ -489,7 +489,7 @@
       "f_model_t_plus": [2.3910669797074863e-4,1.39073484121945e-3,4.3446961794981e-3,6.6366721392752326e-3,1.1755267228209784e-2,1.5027884425534327e-2,1.8298946871434595e-2,2.2264901673852838e-2,2.572273775539794e-2,2.90795327286984e-2,3.3089545431799e-2,3.6661206290370514e-2,4.0400202435632186e-2,4.382969631473509e-2,4.818656667919815e-2,5.175129065275408e-2,5.5604876659472405e-2,5.927849620229786e-2,6.277136752520372e-2,6.608413817825955e-2],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.CRP6-P4K3.T978-FRG.CRP6-8a.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "0db5520f399051895733659316f5f962d51ecc270deb746ae54c1e2c39d10f90",
         "refined_output_sha256": "3bb3b2958213d3efea8f33ce651bf24ebfd3f37f24eec3d1e141a6b286e11f87",

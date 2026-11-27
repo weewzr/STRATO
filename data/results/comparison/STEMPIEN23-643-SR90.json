@@ -7,8 +7,8 @@
     "solver_version": "2.1.0",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "7953c17",
-    "solver_source_sha256": "8786a3048e6415adc2aabbed2e0b79dfc823d3a54ef2b06d42b833d72bc16383",
+    "commit": "14a88d3",
+    "solver_source_sha256": "0ea05c504c44b19378319d02c9216ec75d660f2c5fd23317c03258c071028cbe",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
       "arrhenius.csv": "7af310fba1d4a994e9914523455ecafff927582295d8fa4a1b217cc6f12bd06e",
@@ -313,7 +313,7 @@
       "f_model_t_plus": [2.4253697922933222e-14,4.214713455348247e-4,2.476737041615314e-3,5.610246452928788e-3,9.497797058070984e-3,1.861811074525472e-2,2.8743788035072822e-2,4.25969722236951e-2,5.360661486955672e-2,6.458925836747538e-2,7.549821583842772e-2],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "7953c17",
+        "commit": "14a88d3",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ASRUN-6-4-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "9a120492ce2d8743cf0fb83c3109df753914580217c671127dc84617ee8284c6",
         "refined_output_sha256": "aece4aa088311e2563b1d794fc2a99e028d59a7b24083e4cb9855848c8f7ee19",
