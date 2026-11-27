@@ -377,7 +377,7 @@ describe('every equation is the text of Document 1 or Document 2', () => {
   });
 
   it('the previews show only the places that Document 2, Section 9 marks', () => {
-    const section9 = squash(sectionText('d2', '9. Placeholders for the approved additional physics (directive Section 17)'));
+    const section9 = squash(sectionText('d2', '9. Where the approved additional physics enters (directive Section 17)'));
     for (const s of PREVIEW_STAGES) {
       for (const e of STEP_DEFS[s].main) {
         expect(e.source.doc).toBe('d2');

@@ -101,6 +101,8 @@ test.describe('catalogue switches by keyboard', () => {
   test('a pending switch takes focus, stays off under Space and Enter, and sends no solver request', async ({ page, problems }) => {
     void problems;
     await gotoResearch(page, 'ag_trapping_detrapping');
+    // The module of the wrapper is larger since ABI 4 and loads later: take the count once the page's own first requests are posted.
+    await expect.poll(() => solverRequests(page), { timeout: 20_000 }).toBeGreaterThan(0);
     const before = await solverRequests(page);
     const sw = page.locator('[data-section="research"] [role="switch"]').first();
     await sw.focus();

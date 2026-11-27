@@ -133,7 +133,7 @@ const D2_5 = '5. The matrix rows';
 const D2_6 = '6. Right-hand side, initial vector and solution';
 const D2_7 = '7. Inventory, release and balance';
 const D2_8 = '8. Proven properties and their hypotheses';
-const D2_9 = '9. Placeholders for the approved additional physics (directive Section 17)';
+const D2_9 = '9. Where the approved additional physics enters (directive Section 17)';
 
 const L = (s: TemplateStringsArray) => String.raw(s);
 
@@ -280,8 +280,8 @@ const CODE = {
   coefficients: code('Coefficients::new, conductances and Fourier numbers', 'src/numerical/coefficients.rs', 31, 'pub fn new'),
   assemble: code('assemble, the rows of the matrix', 'src/numerical/btcs.rs', 153, 'pub fn assemble'),
   tridiagonal: code('Tridiagonal, the three diagonals', 'src/numerical/btcs.rs', 125, 'pub struct Tridiagonal'),
-  step: code('Stepper::step, one implicit step', 'src/numerical/btcs.rs', 240, 'pub fn step'),
-  run: code('run_input, the time loop', 'src/numerical/btcs.rs', 309, 'pub fn run_input'),
+  step: code('Stepper::step, one implicit step', 'src/numerical/btcs.rs', 275, 'pub fn step'),
+  run: code('run_input, the time loop', 'src/numerical/btcs.rs', 365, 'pub fn run_input'),
   thomas: code('ThomasFactors, the F24 factors', 'src/numerical/tridiagonal.rs', 152, 'pub struct ThomasFactors'),
   thomasNew: code('ThomasFactors::new, the forward sweep', 'src/numerical/tridiagonal.rs', 169, 'pub fn new'),
   thomasSolve: code('ThomasFactors::solve, the back substitution', 'src/numerical/tridiagonal.rs', 230, 'pub fn solve'),

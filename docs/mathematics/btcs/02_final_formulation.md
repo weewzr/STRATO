@@ -437,6 +437,25 @@ The placeholders of the first version of this section are now derived (D5) and s
 
 With every source zero, $\lambda = 0$ and constant temperature, Section 11 reduces to Sections 3 to 7 bit for bit (P19, P29 and the $\lambda = 0$ limit of P25).
 
+### 9.1 The placeholders of the first version, kept verbatim
+
+The text below is the first version of this section, which marked where the physics would enter before it was derived. It is superseded by the table above and by Section 11, and is kept unchanged because the preview stages of the website's equation builder cite it until the live simulation is wired to Section 11.
+
+**G1, generation.** A volumetric source $G$ (in $\mathrm{mol\ m^{-3}\ s^{-1}}$) enters
+
+- the right-hand side (F20): $b_i^j = C_i^j + \left[\text{G1 source term}\right]$;
+- the balance (F29) and residual (F30), through a generated amount $M_{\mathrm{gen}}^j$ (in $\mathrm{mol}$), so that the identity becomes $M^0 + M_{\mathrm{gen}}^j = M^j + M_{\mathrm{rel}}^j + \left[\text{G2 decayed amount}\right]$;
+- possibly the release (F26): derivation B found that a source that is non-zero at $R_5$ breaks the cancellation behind P12, so the G1 derivation must decide the release formula in that case (D1, Section 11, item 5).
+
+The G1 derivation must also fix the time level of the source, its weighting at interface nodes where the source differs between materials, and at the centre node, where $V_0 = 0$.
+
+**G2, radioactive decay.** A decay constant $\lambda$ (in $\mathrm{s^{-1}}$) enters
+
+- the diagonal (F11), (F12), (F17): $B_i = 1 + \left|L_i\right| + \left|U_i\right| + \left[\text{G2 decay term}\right]$;
+- the balance (F29), through a decayed amount $M_{\mathrm{dec}}^j$ (in $\mathrm{mol}$), booked separately from the physical release $M_{\mathrm{rel}}^j$.
+
+**G3, temperature-dependent diffusivity.** The diffusivities in (F4) become $D_{\mathrm{material}}(T)$ (in $\mathrm{m^2\ s^{-1}}$). Every quantity that depends on them, (F6), (F8), (F11), (F12), (F14), (F16) and (F26), is evaluated with the same values, and $\mathbf{A}$ is reassembled whenever $T$ changes (Section 5.8). The G3 derivation must fix the time level at which $T$ is evaluated in a step.
+
 ---
 
 ## 10. Decisions fixed by this formulation
