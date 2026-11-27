@@ -37,7 +37,7 @@ const BUILD_CONTENTS: { part: string; here: boolean; phase: string }[] = [
   { part: 'Particle view with concentration colouring, layer inventory shares, playback and the AGR-1 reference particle (in the manual solver of Scientific Documentation)', here: true, phase: '4' },
   { part: 'Radial profile, release curves, model comparison, verification plots, downloads of results (verification plots and downloads in Scientific Documentation)', here: true, phase: '5' },
   { part: 'Research catalogue: transport regimes, species entries, Materials Studio gallery, brick roadmap', here: true, phase: '5.5' },
-  { part: 'Radioactive decay, fission-product generation, temperature-dependent diffusivity and their combination (stages 2 to 5 of the wrapper, drawn on Explore)', here: true, phase: '6' },
+  { part: 'Radioactive decay, fission-product generation, temperature-dependent diffusivity and their combination (stages 2 to 5 of the wrapper; radioactive decay and temperature-dependent diffusion are drawn on Explore, generation and the combined model are computed but not drawn)', here: true, phase: '6' },
   { part: 'Measured release data with model curves, captions and citations on Explore (R² only where a record holds a value)', here: true, phase: '7' },
 ];
 
@@ -130,8 +130,9 @@ export const about: DocContribution = {
               diffusivity per layer and the initial inventory in the kernel. Verified on a synthetic case.
             </li>
             <li>
-              Solved through the run_stage function of the wrapper (stages 1 to 5) and drawn on Explore for Steady-state operation: baseline
-              diffusion, fission-product generation, radioactive decay, temperature-dependent diffusion and the combined model. Experimental
+              Solved through the run_stage function of the wrapper (stages 1 to 5) and computed for Steady-state operation. Drawn on Explore are baseline
+              diffusion, radioactive decay (Sr-90, Cs-137) and temperature-dependent diffusion; generation and the combined model are computed by
+              run_stage but not drawn (fresh particle). Experimental
               comparisons are drawn on Explore with captions and citations; an R² is shown only where a record holds a value.
             </li>
           </ul>

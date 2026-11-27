@@ -4,7 +4,7 @@
 import { METHOD_1, METHOD_2 } from '../methods';
 import type { ComparisonFile, MethodId, Source } from './contract';
 
-/** Fixed colours of the graph (decision 53): Method A blue, Method B red, observations black. */
+/** Fixed colours of the graph (decision 53): Method A red, Method B blue, observations black. */
 export const COLOURS = { A: '#DC2626', B: '#2563EB', observations: '#111111' } as const;
 
 export type TraceRole = 'method_a' | 'method_b' | 'measurement' | 'upper_bound';

@@ -68,7 +68,7 @@
     },
     {
       "path": "docs/research/roadmap.md",
-      "sha256": "841ec3e0e52a4407bef8dfd082671e4c526e09304506bfbd2996f32ef40736f9"
+      "sha256": "5b1d554ab08ffe889c0cc0a5beda4e1db3d87fe356bf777ce3d51020adf9ecdc"
     },
     {
       "path": "docs/research/species-ag.md",
@@ -14302,7 +14302,7 @@
             "c": [
               {
                 "t": "text",
-                "v": "Every future phase on this page is described only as planned. No phase is dated and no result is promised. Nothing is VALIDATED: no computed model-to-measurement comparison exists yet, and no experimental-agreement figure is written anywhere until such comparisons are computed at each temperature from the public data (AGR-1 safety tests, CRP-6 cases) after Phase 2.2 is implemented and verified."
+                "v": "Every future phase on this page is described only as planned. No phase is dated and no result is promised. Nothing is VALIDATED: computed model curves next to the measurements exist for the compared datasets (Method A for all, Method B for two JAERI cases) and are drawn on Explore, but no agreement is claimed and no experimental-agreement figure is written anywhere until such comparisons are assessed at each temperature from the public data (AGR-1 safety tests, CRP-6 cases) after Phase 2.2 is implemented and verified."
               }
             ]
           },
