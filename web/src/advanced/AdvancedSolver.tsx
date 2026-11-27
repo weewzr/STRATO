@@ -13,6 +13,7 @@ import { ReferenceParticle } from '../particle/ReferenceParticle';
 import { SimPlots } from '../plots/SimPlots';
 import { hrefDocumentation } from '../route';
 import { configDifferences, inputKey, useStrato } from '../state/store';
+import { useMediaQuery } from '../theme';
 
 /**
  * The manual baseline solver of the earlier Explore page, moved here unchanged in behaviour: the Run button
@@ -20,10 +21,13 @@ import { configDifferences, inputKey, useStrato } from '../state/store';
  * initial concentration, duration, output step), the results and the numerical diagnostics. It runs the
  * baseline problem with the solver of the page (Method A) whatever model equation and operation Explore has
  * selected. Explore no longer mounts it; Scientific Documentation mounts it under "Advanced solver
- * configuration" (`compact` and `onOpenControls` are the bottom-sheet entry of the phone layout; without
- * `onOpenControls` the controls are shown inline at every width).
+ * configuration". `compact` (one plot at a time on a phone) follows the width of the window unless the caller
+ * says otherwise; `onOpenControls` is the optional entry of a bottom sheet for the controls on a phone, and
+ * without it the controls are shown inline at every width.
  */
-export function AdvancedSolver({ compact = false, onOpenControls }: { compact?: boolean; onOpenControls?: () => void }) {
+export function AdvancedSolver({ compact: compactProp, onOpenControls }: { compact?: boolean; onOpenControls?: () => void }) {
+  const tabletUp = useMediaQuery('(min-width: 768px)');
+  const compact = compactProp ?? !tabletUp;
   const config = useStrato((s) => s.config);
   const baseline = useStrato((s) => s.baselineConfig);
   const caseId = useStrato((s) => s.caseId);
