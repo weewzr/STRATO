@@ -4,6 +4,10 @@ All notable changes to STRATO are recorded here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Added
+- WebAssembly interface of ABI 4 (schema 3): `run_stage` (equation stages 1 to 5 with the source, decay and a temperature history), `run_scenario` (the operating scenarios of `data/scenarios/` through the scenario engine, with the normal-operation reference), `btcs_system` (the assembled BTCS rows and right-hand side of one step for a small grid, with the terms each mechanism adds), `analytical` (Method B with its applicability, reason and drawing mask) and `options` (stages, scenarios, nuclides and temperatures from the embedded definitions). Every function of ABI 3 is unchanged. The registers and scenario files are embedded in the module, which grows from 0.78 MB to 4.5 MB (257 KB to 647 KB after gzip).
+- The library crate `crates/strato-scenarios` (scenario definitions, register-based diffusivity laws, registered geometry and the one Method B function), moved unchanged out of `strato-results` and `strato-compare` so that the pipeline and the wrapper build every history with the same code.
+
 Next: the second integration (experimental-data layer, generation, decay and temperature-dependent diffusivity in the BTCS scheme, final native and WebAssembly parity and regression verification). The plan written before the BTCS solver existed is archived in [docs/archive/finite-volume/development/v1_to_v2_changes.md](docs/archive/finite-volume/development/v1_to_v2_changes.md).
 
 ## [2.0.0] - 2026-11-26

@@ -17,6 +17,12 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 strato = { path = "../.." }
+# The scenario definitions, the register-based diffusivity laws and the one Method B function,
+# the same code that writes data/results (decision 59); no file access, no clock.
+strato-scenarios = { path = "../strato-scenarios" }
+# The typed registers and scenario files. The wrapper embeds the files at build time and reads
+# them from memory (embedded.rs); strato-data has no dependency of its own.
+strato-data = { path = "../strato-data" }
 anyhow = "1"
 serde = { version = "1", features = ["derive"] }
 # float_roundtrip: every decimal in a request is read as the nearest double, exactly as the

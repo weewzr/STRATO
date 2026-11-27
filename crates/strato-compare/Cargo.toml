@@ -20,6 +20,8 @@ path = "src/bin/strato_compare.rs"
 strato = { path = "../.." }
 # Typed readers of the scientific registers (no dependency of its own).
 strato-data = { path = "../strato-data" }
+# The registered geometry (the five radii), shared with the WebAssembly wrapper.
+strato-scenarios = { path = "../strato-scenarios" }
 # Static figures as SVG. The verified package already uses plotters for its figures
 # (src/postprocessing/plots.rs); this crate takes the same crate with the pure Rust SVG backend
 # only (no font library, no bitmap backend). It lives in the tools workspace, so it never reaches

@@ -26,20 +26,26 @@ const OUT: &str = "web/src/solver/pkg";
 const WASM_NAME: &str = "strato_wasm";
 const TARGET: &str = "wasm32-unknown-unknown";
 
-/// The functions the web worker calls (BTCS interface, ABI 3) and the module's own status
-/// functions. The page calls no other export.
-pub const WEB_EXPORTS: [&str; 6] = [
+/// The functions of the wrapper (BTCS interface, ABI 4) and the module's own status functions:
+/// the six of ABI 3, which the web worker calls today, and the five of ABI 4 (equation stages,
+/// scenarios, the assembled system, the analytical method and the options of the selectors).
+pub const WEB_EXPORTS: [&str; 11] = [
     "abi_version",
     "build_info",
     "validate",
     "run",
     "compare",
     "export_run",
+    "run_stage",
+    "run_scenario",
+    "btcs_system",
+    "analytical",
+    "options",
 ];
 /// Every export the module may have: the web contract. The finite-volume functions of ABI 1 and 2
 /// (`validate_config`, `run_v1`, `analytical_release`, `compare_v1`) are retired; one of them in
 /// the module fails the check "no unexpected exports".
-pub const REQUIRED_EXPORTS: [&str; 6] = WEB_EXPORTS;
+pub const REQUIRED_EXPORTS: [&str; 11] = WEB_EXPORTS;
 /// The names of the retired finite-volume exports, which the tests keep out of the contract.
 #[cfg(test)]
 const RETIRED_EXPORTS: [&str; 4] = [

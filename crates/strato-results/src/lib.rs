@@ -16,7 +16,8 @@
 pub mod curves;
 pub mod experiment;
 pub mod labels;
-pub mod methodb;
+// The one Method B function lives in `strato-scenarios`, shared with the WebAssembly wrapper.
+pub use strato_scenarios::methodb;
 pub mod output;
 pub mod params;
 pub mod pipeline;

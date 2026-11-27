@@ -167,6 +167,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "strato-data"
+version = "0.1.0"
+
+[[package]]
+name = "strato-scenarios"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "strato",
+ "strato-data",
+]
+
+[[package]]
 name = "strato-wasm"
 version = "2.0.0"
 dependencies = [
@@ -175,6 +188,8 @@ dependencies = [
  "serde",
  "serde_json",
  "strato",
+ "strato-data",
+ "strato-scenarios",
  "toml",
  "wasm-bindgen",
 ]

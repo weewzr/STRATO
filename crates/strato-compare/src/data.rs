@@ -8,7 +8,6 @@
 use std::path::Path;
 
 use strato_data::arrhenius::{BoundKind, DiffusionLayer, Form, GasConstant};
-use strato_data::geometry::GeometryValue;
 use strato_data::select::{
     ParticleLayer, Phase, Selection, Selector, Variant, GAS_CONSTANT_ASSUMED,
 };
@@ -16,8 +15,9 @@ use strato_data::table::Vocabulary;
 use strato_data::temperature::TemperaturePoint;
 use strato_data::Register;
 
-/// The registered geometry used for every run: the measured AGR-1 baseline particle.
-pub const GEOMETRY_DESIGN: &str = "AGR1-B-M16";
+// The registered radii are built by `strato-scenarios`, shared with the WebAssembly wrapper.
+pub use strato_scenarios::geometry::{radii, Radii, GEOMETRY_DESIGN};
+
 /// The registered set of diffusion coefficients of the heating tests (Collin 2016, Table 2).
 pub const HEATING_SET: &str = "C16-T2";
 /// The registered buffer coefficient of the heating-test set.
@@ -65,71 +65,6 @@ impl Species {
 
     /// All three, in a fixed order.
     pub const ALL: [Species; 3] = [Species::Ag, Species::Cs, Species::Sr];
-}
-
-/// The five radii in metre and the register rows they come from.
-#[derive(Debug, Clone)]
-pub struct Radii {
-    /// Outer radius of kernel, buffer, IPyC, SiC and OPyC, in metre.
-    pub outer_m: [f64; 5],
-    /// Ids of the geometry rows used.
-    pub row_ids: Vec<String>,
-}
-
-/// Build the radii of [`GEOMETRY_DESIGN`]: kernel radius is half the registered diameter, each
-/// further radius adds the registered thickness.
-pub fn radii(reg: &Register) -> Result<Radii, String> {
-    let mut diameter_um = None;
-    let mut thickness_um = [None; 4];
-    let mut ids = Vec::new();
-    for row in reg
-        .geometry
-        .rows
-        .iter()
-        .filter(|r| r.design_id == GEOMETRY_DESIGN)
-    {
-        let value = match &row.value {
-            GeometryValue::Point(p) => p.value,
-            _ => continue,
-        };
-        if row.unit.as_str() != "um" {
-            continue;
-        }
-        match (row.layer.as_str(), row.quantity.as_str()) {
-            ("kernel", "diameter") => {
-                diameter_um = Some(value);
-                ids.push(row.id.clone());
-            }
-            ("buffer", "thickness") => {
-                thickness_um[0] = Some(value);
-                ids.push(row.id.clone());
-            }
-            ("IPyC", "thickness") => {
-                thickness_um[1] = Some(value);
-                ids.push(row.id.clone());
-            }
-            ("SiC", "thickness") => {
-                thickness_um[2] = Some(value);
-                ids.push(row.id.clone());
-            }
-            ("OPyC", "thickness") => {
-                thickness_um[3] = Some(value);
-                ids.push(row.id.clone());
-            }
-            _ => {}
-        }
-    }
-    let d = diameter_um.ok_or("the geometry register has no kernel diameter for the design")?;
-    let mut outer = [0.0; 5];
-    outer[0] = d / 2.0 * 1e-6;
-    for k in 0..4 {
-        let t = thickness_um[k].ok_or("the geometry register lacks a coating thickness")?;
-        outer[k + 1] = outer[k] + t * 1e-6;
-    }
-    Ok(Radii {
-        outer_m: outer,
-        row_ids: ids,
-    })
 }
 
 /// One selection of register rows that gives the five diffusion coefficients of a particle.

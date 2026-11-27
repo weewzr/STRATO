@@ -19,7 +19,7 @@ use crate::curves::{
 use crate::experiment::{bound_json, bounds, row_nuclide, row_temperature, BoundRec};
 use crate::labels::labels_json;
 use crate::output::{json_file, masked, Files, Prov, SCHEMA_VERSION};
-use crate::params::{generation_nuclides, rate_density, reference_generation, Laws};
+use crate::params::{generation_nuclides, laws_json, rate_density, reference_generation, Laws};
 use crate::r2run::run_all;
 use crate::scen;
 use crate::verification::{agreement, conservation, convergence, Conservation};
@@ -855,10 +855,13 @@ fn parameters_json(
         let irradiation = Laws::new(reg, s.label(), Phase::Irradiation)?;
         species.push(J::obj(vec![
             ("element", J::s(s.label())),
-            ("heating_test_rows", heating.json(&[1600.0, 1700.0, 1800.0])),
+            (
+                "heating_test_rows",
+                laws_json(&heating, &[1600.0, 1700.0, 1800.0]),
+            ),
             (
                 "irradiation_rows",
-                irradiation.json(&[955.0, 1028.0, 1136.0, 1197.0]),
+                laws_json(&irradiation, &[955.0, 1028.0, 1136.0, 1197.0]),
             ),
         ]));
     }
