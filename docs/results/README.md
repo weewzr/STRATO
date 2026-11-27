@@ -33,9 +33,9 @@ cargo run --release --locked --manifest-path crates/Cargo.toml -p strato-results
 - The numbers are produced by floating-point arithmetic; a different compiler, target or maths
   library can change the last digits, and then `--check` reports the files as stale on that machine.
   Regenerate on the machine that checks.
-- A full run takes about 2.5 minutes (159 s measured) in a release build on the development
-  machine and writes about 7.8 MB (7 774 161 bytes) in 123 files. The numerical crates are optimised in the development profile of the tools
-  workspace, so that the tests run in about a minute.
+- A full run takes under 3 minutes (162 s measured) on the development machine and writes about
+  8.4 MB (8 446 706 bytes) in 138 files. The numerical crates are optimised in the development
+  profile of the tools workspace, so that the tests run in about a minute and a half.
 
 ## Layout (web specification part 4, with the differences noted)
 
@@ -46,10 +46,11 @@ cargo run --release --locked --manifest-path crates/Cargo.toml -p strato-results
 | `curves/<key>.json` | One curve file per cell. Keys: `s1.exp.<nuclide>.<T>c` (stage 1, experimental-comparison context), `s3.exp...` and `s4.exp...` (decay and temperature-dependent stages in that context), `s1.expl...` (model exploration), `s<N>.<scenario>.<nuclide>.<T>c` for scenario runs (variants: `.exploration` at 1197 degC, `.cycles`, `.heating1600/1700/1800`). |
 | `experiment/agr1.<nuclide>.<T>c.json` | Experimental observations of one dataset: bound markers and window bounds with value, reading interval, status, premises (BP1, BP2, A1) and source; point markers only where a point comparison exists (none today). Every bound carries `comparison_class`, `denominator` (as the comparison program states them), `time_window` and `particle_applicability` (the register row's cells), and, for the ten matrix-corrected rows E-010..E-014 and E-033..E-037, `premise_source` and `window_end_origin`: class "window upper bound under premise BP1", denominator "as-run calculated compact inventory", the window from about 24 h at temperature to the end of the 300 h plateau or the shorter test end. Which rows these are comes from the comparison program, not from a list in the pipeline. |
 | `bounds.json`, `csv/bounds.csv` | All bound comparisons with their statuses (technical section). |
-| `nrmse.json`, `csv/nrmse.csv` | The NRMSE records exactly as `metric-nrmse.md` Section 7 defines them. Today N = 0 everywhere: each record states its exclusion reasons and no value is produced. This file replaces `deviations.json` of the specification (decision 64). The model slope behind the time-reading term is the difference over the actual spacing of two samples; where no difference is possible the reading uncertainty is "not available", never computed with a zero slope. |
+| `r2.json`, `csv/r2.csv` | The ² records of `metric-r2.md` Section 7.1, two per registered experimental curve (Method A then Method B), in the order of `data/experimental/curve_assessment.csv`. ² is the only whole-curve agreement metric (decision 69). With the registers of today no record has a value: each says which check failed first (`reason_code`, with its fixed caption), every failing check (`failed_checks`) and the premises. This file replaces `deviations.json` of the specification and the superseded records of decisions 64 and 65. |
+| `comparison/<curve_id>.json` | One file per curve: the experimental points as registered (value, time, qualifier, reading uncertainty, class, status; markers, never connected), the Method A curve computed over the registered history with the diffusivity rows the assessment names (or the reason that none was computed), Method B only where the applicability function allows it and the mask passes, the two ² records and the caption record. |
 | `scenarios.json`, `csv/scenario_histories.csv` | The scenario definitions as run: histories, source ids, labels. |
 | `csv/scenario_series.csv`, `csv/curves.csv` | The decimated series of the scenario runs and the curves of the experimental and exploration cells. |
-| `labels.json` | Colours, the NRMSE display rule and label templates (LaTeX and plain), and the label texts of the graphs generated in Rust. |
+| `labels.json` | Colours, the ² display rule and label templates (LaTeX and plain), the label texts of the graphs generated in Rust, the ² labels of the records (empty where no value exists) and the caption record of every curve (`r2_captions`). |
 | `verification/convergence.json` | Observed orders in space and in time against the exact series. |
 | `verification/agreement.json` | Solver-to-solver agreement of Method A and Method B at the stage 1 cells. |
 | `verification/conservation.json` | Balance residuals against their derived bounds (Document 5, F46), for every curve. |
@@ -59,7 +60,7 @@ cargo run --release --locked --manifest-path crates/Cargo.toml -p strato-results
 
 | Item | Specification | Here |
 |---|---|---|
-| `deviations.json` | listed | replaced by `nrmse.json` and `bounds.json` (decision 64) |
+| `deviations.json` | listed | replaced by `r2.json`, `comparison/*.json` and `bounds.json` (decisions 64, 69 and 72) |
 | Keys of scenario curves | `s<N>.<scenario>.<nuclide>.<T>c` | a variant segment is added (`.exploration`, `.cycles`, `.heating1600/1700/1800`) |
 | Extra files | not listed | `bounds.json`, `labels.json`, `manifest.json`, `csv/*` |
 | Refined series | refined `F` and `Phi` in scenario curve files | not written; the scenario curve files carry the resolution flag of every point, the largest base-to-refined difference of the inventory, and the base series; the refined runs are not stored |
@@ -96,6 +97,23 @@ Every matrix-corrected window row (decision 67) in `bounds.json` and `experiment
 and 28 h, labelled prescribed input (assumed), because the source gives no exact start ("about
 24 h"); the value used for the status is that at 24 h.
 
+## R² records and the experimental curves
+
+`r2.json`, `csv/r2.csv` and `comparison/*.json` apply the definition `metric-r2.md`
+(definition id `R2_LINEAR_PER_CURVE_V1`; decisions 69, 72 and 74). R² = 1 - SS_res / SS_tot over the
+N matched points of one curve, computed per curve and never pooled; the model value at each point is
+the solver output at an exact step boundary of the run (no interpolation of the model enters any
+number). The record of a curve and method has `status` `available` only when all seventeen checks
+pass (M0, C1 to C6, D1, C7, C8, M1, M2, B1, B2, D2, C0, V1); otherwise `r2`, `display` and the labels
+are `null`, `reason_code` is the first failing check and `failed_checks` lists every failing one.
+Today every record is unavailable. The registered histories are used with their ramps; where the
+register does not state the start temperature of the first ramp the run starts at the end of that ramp
+and the record says so (premise `first_ramp_not_modelled`, check C5 fails); the German sphere curves
+use the FRG reference correlations of IAEA-TECDOC-978 (decision 72(b)). The assessment file has no
+columns for `decay_reference`, `inventory_reference`, `inventory_reference_offset_h` and
+`counting_delay_h`: they are `null` in every record (never defaulted), which is why checks C6 and D1
+list them. The independent recomputation (V1) and the independent verification of the curve
+assessment (C0) are recorded nowhere yet, so those checks also fail.
 ## Units and conventions
 
 - Release fraction: dimensionless, cumulative, fraction of the inventory of one particle (stage 1) or

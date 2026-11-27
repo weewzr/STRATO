@@ -1102,14 +1102,6 @@ pub fn classes_of(c: &CurveInput) -> Vec<PointClass> {
     prepare(c).classes
 }
 
-fn lowercase_first(s: &str) -> String {
-    let mut ch = s.chars();
-    match ch.next() {
-        Some(f) => f.to_lowercase().collect::<String>() + ch.as_str(),
-        None => String::new(),
-    }
-}
-
 /// The reason lines of a curve (Section 7.4): none where both methods are available; one line
 /// where both fail the same check; otherwise one line per unavailable method, prefixed by the
 /// method where the outcomes differ, never for B1 and B2 whose sentences name Method B.
@@ -1131,7 +1123,6 @@ pub fn reason_lines(a: &R2Record, b: &R2Record) -> Vec<String> {
             )
         }
     };
-    let _ = lowercase_first;
     match (a.reason, b.reason) {
         (None, None) => vec![],
         (Some(x), Some(y)) if x == y => vec![x.caption().to_string()],

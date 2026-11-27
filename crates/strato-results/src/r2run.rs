@@ -99,7 +99,8 @@ fn source_info(table: &[SourceRow], source: &str, link: &str, location: &str) ->
     };
     let row = by_key.or_else(by_report);
     let (apa, base_key) = match row {
-        Some(r) => (r.apa.clone(), r.key.clone()),
+        // The register writes titles in markdown italics; the record carries plain text.
+        Some(r) => (r.apa.replace('*', ""), r.key.clone()),
         None => (
             format!("{source} (the register holds no APA reference for this source key)"),
             source.to_string(),
@@ -1303,6 +1304,7 @@ mod tests {
         assert_eq!(t.len(), 3);
         let s = source_info(&t, "IAEA (1997)", "https://iaea", "Fig. 1; printed p. 2");
         assert!(s.apa.starts_with("International Atomic Energy Agency."));
+        assert!(!s.apa.contains('*'), "markdown italics are removed");
         assert_eq!(s.link_status, "verified");
         let h = source_info(
             &t,
