@@ -20,7 +20,10 @@
 //! exp/cos/sin routines, so those values may differ by up to that floor in absolute terms. The
 //! floor is read from the native reply of the same case and added to the allowance of those
 //! values only; `accuracy_floor` and `min_flux_ratio` themselves, and every BTCS value, keep the
-//! strict rule. Every leaf of
+//! strict rule. The top-level `release_fraction`, `release_fraction_of_total`, `missing_weight`
+//! and `withheld_reason_codes` count as series values only in replies of the `analytical`
+//! function (cases named `analytical_*`); in the replies of `run`, `compare` and `run_stage` the
+//! top-level `release_fraction` is the BTCS series and stays strict. Every leaf of
 //! the reply is compared, including the diagnostics; nothing is left out. Every leaf that fails
 //! is reported with its path (array positions shown as `[]`), the number of failures, the
 //! first failing pair and the worst relative difference. The exit status is 1 when any value
@@ -338,6 +341,8 @@ struct Failure {
 
 #[derive(Default)]
 struct Tally {
+    /// The case name; it says which function produced the reply.
+    case: String,
     compared: usize,
     identical: usize,
     worst_rel: f64,
@@ -347,22 +352,26 @@ struct Tally {
 /// Fields that come from the independent Sturm-Liouville series, or from a difference with it.
 /// The label only classifies a failure for the report; it never excuses one.
 /// A `compare` reply holds two runs, `.baseline` and `.modified`, each with its own series.
-fn is_series_derived(pattern: &str) -> bool {
+fn is_series_derived(case: &str, pattern: &str) -> bool {
     let p = pattern
         .strip_prefix(".baseline")
         .or_else(|| pattern.strip_prefix(".modified"))
         .unwrap_or(pattern);
-    // The `analytical` function of ABI 4 returns the series at the top level of its reply, and
-    // `run_scenario` returns it in `.method_b`; `run_stage` only says whether it applies.
+    // The top-level series fields are the series only in the reply of the `analytical` function
+    // (its cases are named `analytical_*`). In the replies of `run`, `compare` and `run_stage`
+    // the top-level `release_fraction[]` is the BTCS model series and stays on the bare rule.
+    // `run_scenario` returns the series under `.method_b`; `run_stage` only says whether it applies.
+    let analytical_reply = case.starts_with("analytical");
     p.starts_with(".analytical.")
         || p.starts_with(".diagnostics.analytical_comparison")
         || p.starts_with(".method_b.release_fraction")
-        || p.starts_with(".release_fraction[]")
-        || p.starts_with(".release_fraction_of_total[]")
-        || p.starts_with(".missing_weight")
-        || p.starts_with(".withheld_reason_codes")
         || p.starts_with(".method_b.missing_weight")
         || p.starts_with(".method_b.withheld_reason_codes")
+        || (analytical_reply
+            && (p.starts_with(".release_fraction[]")
+                || p.starts_with(".release_fraction_of_total[]")
+                || p.starts_with(".missing_weight")
+                || p.starts_with(".withheld_reason_codes")))
 }
 
 /// The series accuracy floor of the native reply that a leaf belongs to: that of the run itself, or
@@ -408,9 +417,9 @@ fn fail(t: &mut Tally, path: &str, a: String, b: String, rel: f64) {
 
 /// The absolute allowance added to the per-value rule for one leaf: the series accuracy floor of
 /// the case for series-derived values, except for the two numbers that define the floor.
-fn extra_allowance(path: &str, native: &Value) -> f64 {
+fn extra_allowance(case: &str, path: &str, native: &Value) -> f64 {
     let pat = pattern(path);
-    if is_series_derived(&pat)
+    if is_series_derived(case, &pat)
         && !pat.ends_with(".accuracy_floor")
         && !pat.ends_with(".min_flux_ratio")
     {
@@ -434,7 +443,7 @@ fn walk(path: &str, a: &Value, b: &Value, native: &Value, t: &mut Tally) {
             }
             let rel = (x - y).abs() / x.abs().max(y.abs());
             t.worst_rel = t.worst_rel.max(rel);
-            if (x - y).abs() > PARITY_RTOL * x.abs().max(y.abs()) + extra_allowance(path, native) {
+            if (x - y).abs() > PARITY_RTOL * x.abs().max(y.abs()) + extra_allowance(&t.case, path, native) {
                 fail(t, path, format!("{x:e}"), format!("{y:e}"), rel);
             }
         }
@@ -519,7 +528,10 @@ fn main() -> ExitCode {
                     any_fail = true;
                     continue;
                 };
-                let mut t = Tally::default();
+                let mut t = Tally {
+                    case: name.clone(),
+                    ..Tally::default()
+                };
                 walk("", nv, wv, nv, &mut t);
                 let status = if t.failures.is_empty() {
                     "PASS"
@@ -532,7 +544,7 @@ fn main() -> ExitCode {
                 );
                 for (pat, f) in &t.failures {
                     let (a, b) = f.first.clone().unwrap_or_default();
-                    let kind = if is_series_derived(pat) {
+                    let kind = if is_series_derived(name, pat) {
                         series_fail += 1;
                         "series-derived"
                     } else {

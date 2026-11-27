@@ -643,6 +643,7 @@ fn run_stage_value(raw: &str) -> Result<Value, Vec<String>> {
             "diffusivity_used_m2_s": "m^2/s, per layer kernel, buffer, IPyC, SiC, OPyC, in the step that ends at the row (temperature in the middle of the step, F36); null at the first row",
             "source_step_average_mol_m3_s": "mol/(m^3 s), per layer, the step average of the source (F32) of the step that ends at the row; null at the first row",
             "c_mol_per_m3": "mol/m^3",
+            "steps_of_rows": "1 (index of the time step that each row ends at)",
         },
         "messages": messages,
     }))
@@ -770,6 +771,8 @@ pub(crate) fn method_b_json(answer: &MethodB, times_s: &[f64]) -> Value {
             "release_fraction_of_total": "1 (released / (M0 + generated)), null where withheld",
             "accuracy_floor": "1 (absolute)", "valid_from_s": "s", "valid_from_h": "h",
             "alpha_max_per_s": "1/s",
+            "modes": "1 (count of eigenmodes of the series)",
+            "missing_weight": "1 (one minus the sum of the mode weights, dimensionless)",
         },
     });
     let m = obj.as_object_mut().expect("an object");
