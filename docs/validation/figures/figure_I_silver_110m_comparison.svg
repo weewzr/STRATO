@@ -1,5 +1,5 @@
-<svg width="1560" height="1447" viewBox="0 0 1560 1447" xmlns="http://www.w3.org/2000/svg">
-<rect x="0" y="0" width="1560" height="1447" opacity="1" fill="#FFFFFF" stroke="none"/>
+<svg width="1560" height="1428" viewBox="0 0 1560 1428" xmlns="http://www.w3.org/2000/svg">
+<rect x="0" y="0" width="1560" height="1428" opacity="1" fill="#FFFFFF" stroke="none"/>
 <text x="24" y="14" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="20.967741935483872" opacity="1" fill="#191919">
 I. Silver-110m (Ag-110m): measurements, BTCS prediction, analytical prediction and why no deviation is defined
 </text>
@@ -1149,42 +1149,39 @@ E-037 | 1700 °C | window 24-300 h at temperature | bound 2.800e-3 (digitised, m
 model over bound 2.760e2 | window upper bound under premise BP1: not a point comparison, so no deviation, no relative deviation and no whole-curve metric is formed
 </text>
 <text x="24" y="1141" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-No Ag-110m row supports a point comparison, so the absolute deviation, the relative deviation in percent and the log-space root-mean-square deviation are not defined for Ag-110m; no number
+No Ag-110m row supports a point comparison, so the absolute deviation and the relative deviation in percent are not defined for Ag-110m; no number is substituted.
 </text>
-<text x="24" y="1160" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#191919">
-is substituted.
-</text>
-<text x="24" y="1193" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+<text x="24" y="1174" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 Experimental values: Collin et al. (2016); IAEA (1997); IAEA (2012); Morris et al. (2016); Stempien et al. (2023). Only the rows whose status supports a comparison are drawn in colour; rows that are NOT DIRECTLY
 </text>
-<text x="24" y="1211" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+<text x="24" y="1192" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 COMPARABLE are muted grey context, because they measure another quantity than the model computes (failed particles, totals that include release in the reactor, another fuel, fuel spheres). A bar on a marker is the
 </text>
-<text x="24" y="1229" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+<text x="24" y="1210" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 reading uncertainty of the register (the error of reading the point off the published figure); it is not a measurement uncertainty, and the sources report no per-value measurement uncertainty for these rows (a
 </text>
-<text x="24" y="1247" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+<text x="24" y="1228" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 general 5 percent systematic gamma-measurement error stated for the Stempien 2023 values is not a per-value uncertainty and changes no status), so no other error bar is drawn. Compact values are not single-particle
 </text>
-<text x="24" y="1265" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+<text x="24" y="1246" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 values; rows at a temperature outside 1600 to 1800 °C or whose value is not a fraction are not drawn. Not drawn because the time at temperature lies beyond the 420 h axis (the value is never moved onto the edge):
 </text>
-<text x="24" y="1283" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+<text x="24" y="1264" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 E-613 (428 h), E-614 (452 h), E-615 (475 h), E-658 (500 h). Analytical-series values are drawn only where the criterion holds: a value of the independent analytical series is exported only where (1) the time is not
 </text>
-<text x="24" y="1301" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+<text x="24" y="1282" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 earlier than the series&apos; own minimum valid time (omitted modes below exp(-40) of their weight) and (2) the value exceeds the series&apos; estimated absolute accuracy (about 2.2e-16 over the smallest flux ratio of the
 </text>
-<text x="24" y="1319" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+<text x="24" y="1300" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 shooting solution), and is positive; otherwise it is left empty. The early part of every BTCS curve is not converged in time: where the release is still rising steeply from zero, the base run and the run with half
 </text>
-<text x="24" y="1337" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+<text x="24" y="1318" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 the step differ by a large factor, and the report states for each curve the time after which they agree within 10 percent (a reading aid, not a tolerance). Model: STRATO BTCS five-layer spherical finite difference,
 </text>
-<text x="24" y="1355" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-package version 1.0.1, commit 7b83700; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at the
+<text x="24" y="1336" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+package version 1.0.1, commit 3fa7031; registered AGR1-B-M16 geometry; published heating-test diffusion coefficients chosen by the strato-data selection function (register sets C16-T2 and C16-BUF), evaluated at the
 </text>
-<text x="24" y="1373" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
+<text x="24" y="1354" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 test temperature; kernel-only start; constant temperature; decay and generation are not in the solver. This is a numerical comparison, not an experimental validation.
 </text>
 </svg>

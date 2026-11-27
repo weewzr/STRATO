@@ -3,7 +3,7 @@
   "provenance": {
     "solver": "STRATO BTCS five-layer spherical finite difference",
     "solver_package_version": "1.0.1",
-    "commit": "7b83700",
+    "commit": "3fa7031",
     "label": "numerical solution of the stated model; not experimental validation",
     "release_measurements_sha256": "29f0d7bec6f40fb97c52c0bf7972782d7849a58f5f910527fe8efa8afa9ddda9",
     "arrhenius_sha256": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",

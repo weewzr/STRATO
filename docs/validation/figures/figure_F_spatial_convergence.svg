@@ -209,7 +209,7 @@ the dimensionless Fourier number D t / R² of the whole sphere, with R the outer
 everywhere. It is a numerical verification case, not physical data. The orders printed are observed between neighbouring levels; they are reported, not required to meet a
 </text>
 <text x="24" y="608" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
-target (decision 7). Solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit 7b83700. The case is a numerical verification case on the
+target (decision 7). Solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1, commit 3fa7031. The case is a numerical verification case on the
 </text>
 <text x="24" y="626" dy="0.76em" text-anchor="start" font-family="sans-serif" font-size="10.483870967741936" opacity="1" fill="#191919">
 registered AGR1-B-M16 radii with the same synthetic diffusion coefficient in all five regions, kernel-only start, absorbing outer surface; the reference is the exact
