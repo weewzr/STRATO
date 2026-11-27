@@ -12,7 +12,7 @@ use strato_data::register::{Register, RegisterTexts};
 use strato_data::scenarios::{ScenarioTexts, Scenarios};
 
 /// The embedded files: the path below `data/` and the size in bytes.
-pub const EMBEDDED_FILES: [(&str, usize); 14] = [
+pub const EMBEDDED_FILES: [(&str, usize); 15] = [
     (
         "geometry/geometry.csv",
         include_str!("../../../data/geometry/geometry.csv").len(),
@@ -36,6 +36,10 @@ pub const EMBEDDED_FILES: [(&str, usize); 14] = [
     (
         "experimental/release_measurements.csv",
         include_str!("../../../data/experimental/release_measurements.csv").len(),
+    ),
+    (
+        "experimental/curve_assessment.csv",
+        include_str!("../../../data/experimental/curve_assessment.csv").len(),
     ),
     (
         "irradiation/agr1_irradiation_conditions.csv",
@@ -80,6 +84,9 @@ fn register_texts() -> RegisterTexts {
         temperature: include_str!("../../../data/temperature/temperature_histories.csv")
             .to_string(),
         release: include_str!("../../../data/experimental/release_measurements.csv").to_string(),
+        curve_assessment: include_str!("../../../data/experimental/curve_assessment.csv")
+            .to_string(),
+        audit_log: None,
         irradiation_conditions: include_str!(
             "../../../data/irradiation/agr1_irradiation_conditions.csv"
         )

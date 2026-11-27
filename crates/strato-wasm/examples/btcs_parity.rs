@@ -10,29 +10,20 @@
 //!                                     compares a native reply file with a reply file produced
 //!                                     by the WebAssembly module for the same requests
 //!
-//! The rule is the existing per-value rule of the wrapper (`tolerances::PARITY_RTOL`): every
-//! number of the two replies must satisfy |a - b| <= rtol * max(|a|, |b|), array lengths and
-//! object keys must be identical, and strings, booleans and nulls must be equal. One stated
-//! addition applies to the values that come from the independent Sturm-Liouville series
-//! (`analytical.*` and `diagnostics.analytical_comparison.*`, see `tolerances::SERIES_FLOOR_RULE`):
-//! the series itself reports an absolute accuracy `accuracy_floor` (its own estimate, from the
-//! cancellation in its shooting solution), and the native and WebAssembly builds use different
-//! exp/cos/sin routines, so those values may differ by up to that floor in absolute terms. The
-//! floor is read from the native reply of the same case and added to the allowance of those
-//! values only; `accuracy_floor` and `min_flux_ratio` themselves, and every BTCS value, keep the
-//! strict rule. The top-level `release_fraction`, `release_fraction_of_total`, `missing_weight`
-//! and `withheld_reason_codes` count as series values only in replies of the `analytical`
-//! function (cases named `analytical_*`); in the replies of `run`, `compare` and `run_stage` the
-//! top-level `release_fraction` is the BTCS series and stays strict. Every leaf of
-//! the reply is compared, including the diagnostics; nothing is left out. Every leaf that fails
-//! is reported with its path (array positions shown as `[]`), the number of failures, the
-//! first failing pair and the worst relative difference. The exit status is 1 when any value
-//! fails. The module must be built with the same `STRATO_BUILD_COMMIT` as this example so that
-//! the build stamp in the replies agrees.
-
+//! The rules are those of `strato_wasm::parity` (read its header): the per-value rule of the
+//! wrapper (`tolerances::PARITY_RTOL`, relative 1e-12) for every physical value, with the series'
+//! own `accuracy_floor` added for the values of the independent Sturm-Liouville series
+//! (`tolerances::SERIES_FLOOR_RULE`); the residual rule for the balance residuals (within the
+//! derived bound on both platforms); the flag rule for the drawn-or-withheld flags at the margin
+//! of the drawing mask. Every leaf of the reply is compared, including the diagnostics; nothing is
+//! left out. Every leaf that fails is reported with its path (array positions shown as `[]`), the
+//! number of failures, the first failing pair and the worst relative difference; each case line
+//! says how many fields the residual rule and the flag rule cover and how many of them needed
+//! the rule. The exit status is 1 when any value fails. The module must be built with the same
+//! `STRATO_BUILD_COMMIT` as this example so that the build stamp in the replies agrees.
 use serde_json::{json, Map, Value};
-use std::{collections::BTreeMap, env, fs, process::ExitCode};
-use strato_wasm::tolerances::PARITY_RTOL;
+use std::{env, fs, process::ExitCode};
+use strato_wasm::parity::{compare_case, kind_of};
 
 const SYNTHETIC: &str = "inputs/synthetic/synthetic_five_layer.toml";
 
@@ -332,160 +323,6 @@ fn call(function: &str, input: &str) -> String {
     }
 }
 
-#[derive(Default)]
-struct Failure {
-    count: usize,
-    first: Option<(String, String)>,
-    worst_rel: f64,
-}
-
-#[derive(Default)]
-struct Tally {
-    /// The case name; it says which function produced the reply.
-    case: String,
-    compared: usize,
-    identical: usize,
-    worst_rel: f64,
-    failures: BTreeMap<String, Failure>,
-}
-
-/// Fields that come from the independent Sturm-Liouville series, or from a difference with it.
-/// The label only classifies a failure for the report; it never excuses one.
-/// A `compare` reply holds two runs, `.baseline` and `.modified`, each with its own series.
-fn is_series_derived(case: &str, pattern: &str) -> bool {
-    let p = pattern
-        .strip_prefix(".baseline")
-        .or_else(|| pattern.strip_prefix(".modified"))
-        .unwrap_or(pattern);
-    // The top-level series fields are the series only in the reply of the `analytical` function
-    // (its cases are named `analytical_*`). In the replies of `run`, `compare` and `run_stage`
-    // the top-level `release_fraction[]` is the BTCS model series and stays on the bare rule.
-    // `run_scenario` returns the series under `.method_b`; `run_stage` only says whether it applies.
-    let analytical_reply = case.starts_with("analytical");
-    p.starts_with(".analytical.")
-        || p.starts_with(".diagnostics.analytical_comparison")
-        || p.starts_with(".method_b.release_fraction")
-        || p.starts_with(".method_b.missing_weight")
-        || p.starts_with(".method_b.withheld_reason_codes")
-        || (analytical_reply
-            && (p.starts_with(".release_fraction[]")
-                || p.starts_with(".release_fraction_of_total[]")
-                || p.starts_with(".missing_weight")
-                || p.starts_with(".withheld_reason_codes")))
-}
-
-/// The series accuracy floor of the native reply that a leaf belongs to: that of the run itself, or
-/// for a `compare` reply that of the run (`.baseline` or `.modified`) the leaf lies in.
-fn floor_at(native: &Value, path: &str) -> f64 {
-    let run = if path.starts_with(".baseline") {
-        &native["baseline"]
-    } else if path.starts_with(".modified") {
-        &native["modified"]
-    } else {
-        native
-    };
-    run["analytical"]["accuracy_floor"]
-        .as_f64()
-        .or_else(|| run["method_b"]["accuracy_floor"].as_f64())
-        .or_else(|| run["accuracy_floor"].as_f64())
-        .unwrap_or(0.0)
-}
-
-fn pattern(path: &str) -> String {
-    let mut out = String::new();
-    let mut in_index = false;
-    for ch in path.chars() {
-        match ch {
-            '[' => {
-                in_index = true;
-                out.push_str("[]");
-            }
-            ']' => in_index = false,
-            c if !in_index => out.push(c),
-            _ => {}
-        }
-    }
-    out
-}
-
-fn fail(t: &mut Tally, path: &str, a: String, b: String, rel: f64) {
-    let f = t.failures.entry(pattern(path)).or_default();
-    f.count += 1;
-    f.worst_rel = f.worst_rel.max(rel);
-    f.first.get_or_insert((a, b));
-}
-
-/// The absolute allowance added to the per-value rule for one leaf: the series accuracy floor of
-/// the case for series-derived values, except for the two numbers that define the floor.
-fn extra_allowance(case: &str, path: &str, native: &Value) -> f64 {
-    let pat = pattern(path);
-    if is_series_derived(case, &pat)
-        && !pat.ends_with(".accuracy_floor")
-        && !pat.ends_with(".min_flux_ratio")
-    {
-        floor_at(native, path)
-    } else {
-        0.0
-    }
-}
-
-fn walk(path: &str, a: &Value, b: &Value, native: &Value, t: &mut Tally) {
-    match (a, b) {
-        (Value::Number(x), Value::Number(y)) => {
-            let (x, y) = (
-                x.as_f64().unwrap_or(f64::NAN),
-                y.as_f64().unwrap_or(f64::NAN),
-            );
-            t.compared += 1;
-            if x.to_bits() == y.to_bits() || x == y {
-                t.identical += 1;
-                return;
-            }
-            let rel = (x - y).abs() / x.abs().max(y.abs());
-            t.worst_rel = t.worst_rel.max(rel);
-            if (x - y).abs() > PARITY_RTOL * x.abs().max(y.abs()) + extra_allowance(&t.case, path, native) {
-                fail(t, path, format!("{x:e}"), format!("{y:e}"), rel);
-            }
-        }
-        (Value::Array(x), Value::Array(y)) => {
-            if x.len() != y.len() {
-                fail(
-                    t,
-                    &format!("{path}.length"),
-                    x.len().to_string(),
-                    y.len().to_string(),
-                    f64::INFINITY,
-                );
-            }
-            for (i, (p, q)) in x.iter().zip(y).enumerate() {
-                walk(&format!("{path}[{i}]"), p, q, native, t);
-            }
-        }
-        (Value::Object(x), Value::Object(y)) => {
-            for k in x.keys().chain(y.keys().filter(|k| !x.contains_key(*k))) {
-                match (x.get(k), y.get(k)) {
-                    (Some(p), Some(q)) => walk(&format!("{path}.{k}"), p, q, native, t),
-                    _ => fail(
-                        t,
-                        &format!("{path}.{k} (key)"),
-                        "present/absent".into(),
-                        "absent/present".into(),
-                        f64::INFINITY,
-                    ),
-                }
-            }
-        }
-        (p, q) => {
-            t.compared += 1;
-            if p == q {
-                t.identical += 1;
-            } else {
-                fail(t, path, p.to_string(), q.to_string(), f64::INFINITY);
-            }
-        }
-    }
-}
-
 fn main() -> ExitCode {
     let args: Vec<String> = env::args().skip(1).collect();
     match args.first().map(String::as_str) {
@@ -522,35 +359,35 @@ fn main() -> ExitCode {
             };
             let mut any_fail = false;
             let (mut solver_fail, mut series_fail) = (0usize, 0usize);
+            let (mut residual_total, mut flag_total) = ((0usize, 0usize), (0usize, 0usize));
             for (name, nv) in n {
                 let Some(wv) = w.get(name) else {
                     println!("FAIL {name}: missing from the WebAssembly file");
                     any_fail = true;
                     continue;
                 };
-                let mut t = Tally {
-                    case: name.clone(),
-                    ..Tally::default()
-                };
-                walk("", nv, wv, nv, &mut t);
+                let t = compare_case(name, nv, wv);
                 let status = if t.failures.is_empty() {
                     "PASS"
                 } else {
                     "FAIL"
                 };
                 println!(
-                    "{status} {name}: {} values, {} bit-identical, worst relative difference {:e}",
-                    t.compared, t.identical, t.worst_rel
+                    "{status} {name}: {} values, {} bit-identical, worst relative difference {:e}; residual rule covers {} field(s) ({} needed it), flag rule covers {} field(s) ({} needed it)",
+                    t.compared, t.identical, t.worst_rel, t.residual_covered, t.residual_excused, t.flag_covered, t.flag_excused
                 );
+                residual_total.0 += t.residual_covered;
+                residual_total.1 += t.residual_excused;
+                flag_total.0 += t.flag_covered;
+                flag_total.1 += t.flag_excused;
                 for (pat, f) in &t.failures {
                     let (a, b) = f.first.clone().unwrap_or_default();
-                    let kind = if is_series_derived(name, pat) {
+                    let kind = kind_of(name, pat);
+                    if kind == "series-derived" {
                         series_fail += 1;
-                        "series-derived"
                     } else {
                         solver_fail += 1;
-                        "BTCS"
-                    };
+                    }
                     println!(
                         "    outside the rule [{kind}]: {pat}: {} value(s), worst relative {:e}, first native {a} wasm {b}",
                         f.count, f.worst_rel
@@ -562,6 +399,10 @@ fn main() -> ExitCode {
                 println!("FAIL {name}: missing from the native file");
                 any_fail = true;
             }
+            println!(
+                "RULES residual rule: {} field(s) covered over all cases, {} needed it; flag rule: {} field(s) covered, {} needed it",
+                residual_total.0, residual_total.1, flag_total.0, flag_total.1
+            );
             println!(
                 "RESULT {} ({solver_fail} failing BTCS field(s), {series_fail} failing series-derived field(s))",
                 if any_fail { "FAIL" } else { "PASS" }

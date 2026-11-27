@@ -760,11 +760,11 @@ fn run_prepared(p: &Prepared) -> Result<Value, Vec<String>> {
         "profile_times_requested": p.requested,
         "balance": {
             "form": "btcs-F30",
-            "statement": "remaining + released + decayed - start - generated = residual (equation F30); the directive writes the same identity with the opposite sign of the residual",
+            "statement": "Remaining + released + decayed - start - generated = residual (equation F30); the same identity written the other way round gives the residual the opposite sign",
             "source": "docs/mathematics/btcs/02_final_formulation.md, equations F25, F27, F29, F30",
             "generated_mol": 0.0,
             "decayed_mol": 0.0,
-            "generated_and_decayed_note": "the solved model has no source and no decay, so both terms are exactly zero by construction; they are not measured",
+            "generated_and_decayed_note": "The solved model has no source and no decay, so both terms are exactly zero by construction; they are not measured",
             "start_inventory_mol": m0,
             "final": {
                 "t_s": last_t,

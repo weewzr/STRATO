@@ -662,7 +662,7 @@ fn the_options_come_from_the_embedded_definitions() {
     assert_eq!(main["cs134"], json!([1600.0, 1700.0, 1800.0]));
     let expl = v["temperatures"]["exploration"].as_array().unwrap();
     assert_eq!(expl.len(), 3);
-    assert_eq!(v["embedded_files"].as_array().unwrap().len(), 14);
+    assert_eq!(v["embedded_files"].as_array().unwrap().len(), 15);
     // The same text twice, and an empty request is accepted.
     assert_eq!(
         strato_wasm::options(""),

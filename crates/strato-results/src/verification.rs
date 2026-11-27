@@ -142,7 +142,7 @@ pub fn conservation(prov: &Prov, entries: &[Conservation]) -> (String, Vec<Vec<S
             vec![
                 (
                     "statement",
-                    J::s("the balance residual of (F41) is reported beside its derived rounding bound ((F46) for runs with generation, decay or a changing temperature; the baseline bound otherwise); a ratio of at most 1 means the balance closes within the documented bound"),
+                    J::s("The balance residual of (F41) is reported beside its derived rounding bound ((F46) for runs with generation, decay or a changing temperature; the baseline bound otherwise); a ratio of at most 1 means the balance closes within the documented bound"),
                 ),
                 ("entries", J::Arr(rows)),
             ],
@@ -199,7 +199,7 @@ pub fn agreement(prov: &Prov, curves: &[Stage1]) -> (String, Vec<Vec<String>>) {
             vec![
                 (
                     "statement",
-                    J::s("the two methods solve the same stage-1 problem independently; the relative difference is taken where both are drawn (resolved Method A, masked Method B). This is solver-to-solver verification, not agreement with an experiment."),
+                    J::s("The two methods solve the same stage-1 problem independently; the relative difference is taken where both are drawn (resolved Method A, masked Method B). This is solver-to-solver verification, not agreement with an experiment."),
                 ),
                 ("entries", J::Arr(entries)),
             ],

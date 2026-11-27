@@ -21,6 +21,7 @@
 
 pub mod btcs_api;
 pub mod embedded;
+pub mod parity;
 pub mod scenario_api;
 pub mod stage_api;
 pub mod tolerances;
