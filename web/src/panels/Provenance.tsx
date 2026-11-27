@@ -120,7 +120,7 @@ export function ParameterProvenance({ entry }: { entry: CaseEntry }) {
         <table className="table" data-testid="input-table">
           <caption className="table__caption">
             <strong>Table 1.</strong> {entry.title}: case-file and current value of every input.{' '}
-            <a href={hrefDocumentation('data-case-file')}>Provenance</a>
+            <a className="link-target" href={hrefDocumentation('data-case-file')}>Provenance</a>
           </caption>
           <thead>
             <tr>

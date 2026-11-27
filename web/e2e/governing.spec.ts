@@ -86,7 +86,7 @@ test.describe('hierarchy and selection at 1440 x 900', () => {
     for (const id of ['generation', 'decay', 'temperature', 'combined']) await expect(page.getByTestId(`physics-status-${id}`)).toHaveText('Planned');
     await page.getByTestId('physics-generation').click();
     await expect(page.getByTestId('unsupported-simulation')).toContainText('does not implement fission-product generation');
-    await expect(page.getByTestId('unsupported-simulation')).toContainText('no result is shown for this selection');
+    await expect(page.getByTestId('unsupported-simulation')).toContainText('No simulation for this selection: the solver in this build does not implement');
     await expect(page.getByTestId('block-e')).toHaveCount(0);
     await expect(page.getByTestId('particle')).toHaveCount(0);
     await expect(page.getByTestId('release-readout')).toHaveCount(0);

@@ -134,7 +134,7 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
           </>
         ) : (
           <p className="sim-alert" role="status" data-testid="unsupported-simulation">
-            <strong className="sim-alert__title">No simulation for this selection.</strong> {note}
+            <strong className="sim-alert__title">No simulation for this selection:</strong> {note.charAt(0).toLowerCase() + note.slice(1)}
           </p>
         )}
         <div className="controls-block" role="group" aria-label="Numerical controls" data-testid="controls-block">

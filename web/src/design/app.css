@@ -243,32 +243,6 @@ h2[tabindex='-1']:focus {
   flex: 0 0 auto;
 }
 
-/* Tablet width: the seven links and the tools do not fit beside the wordmark in one row, so the header takes a second row for the navigation and nothing is clipped or overlapped. */
-@media (min-width: 768px) and (max-width: 1099.98px) {
-  :root {
-    --header-height: 92px;
-  }
-  .header {
-    flex-wrap: wrap;
-    gap: 0 var(--space-5);
-    align-content: flex-start;
-    min-height: 0;
-    height: var(--header-height);
-  }
-  .header__brand {
-    flex: 1 1 100%;
-    height: 44px;
-    align-items: center;
-  }
-  .nav {
-    flex: 1 1 100%;
-    height: 48px;
-  }
-  .nav__link {
-    padding: 0 var(--space-2);
-  }
-}
-
 /* Phone menu: the nav opens below the header as a vertical list. */
 .nav--compact {
   position: absolute;

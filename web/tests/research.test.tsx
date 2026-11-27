@@ -470,14 +470,14 @@ describe('roadmap, future phases and block E', () => {
     expect(within(roadmap).getByTestId('roadmap-bricks').querySelectorAll('[data-brick]')).toHaveLength(9);
     expect(within(roadmap).getByTestId('roadmap-more').querySelector('a')?.getAttribute('href')).toBe('#/documentation/research-roadmap-body');
     cleanup();
-    // The full document body is in Scientific Documentation, with the two future items, the summary and its Delivered by column.
+    // The full document body is in Scientific Documentation, with the two future items and the summary (its process column Delivered by was dropped in the clean-up).
     render(<Documentation />);
     const body = document.getElementById('doc-research-roadmap-body')?.textContent ?? '';
     expect(body).toMatch(/Materials Studio calculations/);
     expect(body).toMatch(/FLiBe and cover-gas transport/);
     expect(body).toMatch(/planned for a future phase/);
     expect(body).toMatch(/Status gates \(all bricks\)/);
-    expect(body).toMatch(/Delivered by/);
+    expect(body).not.toMatch(/Delivered by/);
   });
 
   // The summary of the catalogue left the Explore page with the hierarchy of 26 Nov 2026 (block E is now

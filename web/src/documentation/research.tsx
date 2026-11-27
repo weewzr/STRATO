@@ -96,6 +96,16 @@ function onRoadmap(blocks: Block[]): Block[] {
   ) as Block[];
 }
 
+/** The summary table without its column "Delivered by", a project-process column that is not scientific content (clean-up directive). */
+function withoutProcessColumn(blocks: Block[]): Block[] {
+  return blocks.map((b) => {
+    if (b.t !== 'table') return b;
+    const col = b.head.findIndex((cell) => cell.map((s) => ('v' in s ? s.v : '')).join('') === 'Delivered by');
+    if (col < 0) return b;
+    const drop = <T,>(row: T[]): T[] => row.filter((_, i) => i !== col);
+    return { ...b, head: drop(b.head), rows: b.rows.map(drop) };
+  });
+}
 function RoadmapIntro() {
   const cat = useCatalogue();
   return (
@@ -115,7 +125,7 @@ function RoadmapBody() {
   return (
     <Files>
       <div className="prose" data-testid="research-roadmap-body">
-        <Blocks blocks={onRoadmap(body)} catalogue={cat} shift={2} />
+        <Blocks blocks={withoutProcessColumn(onRoadmap(body))} catalogue={cat} shift={2} />
       </div>
     </Files>
   );

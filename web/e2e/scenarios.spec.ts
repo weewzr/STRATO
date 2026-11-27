@@ -64,7 +64,7 @@ test.describe('scenario row at 1440 x 900', () => {
       await expect(page.locator('.katex-error')).toHaveCount(0);
       await expect(page.getByTestId('scenario-explanation')).toContainText(`${LABELS[SCENARIOS.indexOf(s)]}`);
       await expect(page.getByTestId('unsupported-simulation')).toContainText('does not implement');
-      await expect(page.getByTestId('unsupported-simulation')).toContainText('no result is shown for this selection');
+      await expect(page.getByTestId('unsupported-simulation')).toContainText('No simulation for this selection: the solver in this build does not implement');
       await expect(page.getByTestId('block-e')).toHaveCount(0);
       await expect(page.getByTestId('particle')).toHaveCount(0);
     }

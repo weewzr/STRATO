@@ -164,5 +164,5 @@ export function missingList(support: SelectionSupport): string {
 /** One sentence for the simulation and results blocks when the selection cannot be run. */
 export function unsupportedMessage(support: SelectionSupport): string {
   const list = missingList(support);
-  return `The solver in this build does not implement ${list}, so no simulation is run and no result is shown for this selection. The equation and the explanations above remain available.`;
+  return `The solver in this build does not implement ${list}.`;
 }

@@ -31,8 +31,7 @@ function CaseEntry() {
       ) : (
         'the case file of the build'
       )}
-      . Its radii and diffusivities were chosen to test the solver, and no result from this case is a prediction of real fission-product
-      release. The statements on the nature of the synthetic values are under{' '}
+      . What the synthetic values are, and what no result from them is, are stated under{' '}
       <a href={hrefDocumentation('compare-limits')}>What a comparison shows</a> and{' '}
       <a href={hrefDocumentation('data-case-file')}>Parameters in use and their case file</a>.
     </p>

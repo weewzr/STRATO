@@ -293,7 +293,7 @@ describe('the simulation and results follow the selection and the capability of 
     expect(screen.getByTestId('block-d').dataset.supported).toBe('false');
     expect(screen.getByTestId('unsupported-simulation').textContent).toMatch(/does not implement fission-product generation/);
     // The condition is stated once, in D; E (the results) is not shown at all.
-    expect(screen.getByTestId('unsupported-simulation').textContent).toMatch(/no result is shown for this selection/);
+    expect(screen.getByTestId('unsupported-simulation').textContent).toMatch(/^No simulation for this selection: the solver in this build does not implement fission-product generation\.$/);
     expect(screen.queryByTestId('block-e')).toBeNull();
     expect(screen.queryByTestId('active-model')).toBeNull();
     expect(screen.queryByTestId('run-unsupported')).toBeNull();

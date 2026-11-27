@@ -75,7 +75,7 @@ export function SolverStatus() {
   const chip = status ? <StatusChip status={status} mechanism={BTCS_CAPABILITY} compact /> : 'unknown';
   return (
     <p className={cls} data-testid={testId} data-state="ready">
-      <strong>{METHOD_1}</strong> v<span data-testid="solver-version-line">{solver.version}</span> <Badge label={solver.label} /> {chip}
+      <strong>{METHOD_1}</strong> v<span data-testid="solver-version-line">{solver.version}</span> {run ? <Badge label={solver.label} /> : null} {chip}
     </p>
   );
 }

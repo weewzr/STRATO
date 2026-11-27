@@ -348,7 +348,7 @@ describe('status and enabled state come from the capability object', () => {
       const sim = screen.getByTestId('unsupported-simulation').textContent ?? '';
       expect(sim, s).toContain(`the ${SCENARIO_NAME[s]} scenario`);
       expect(sim, s).toMatch(/does not implement/);
-      expect(sim, s).toMatch(/no result is shown for this selection/);
+      expect(sim, s).toMatch(/^No simulation for this selection: the solver in this build does not implement/);
       expect(screen.queryByTestId('block-e'), s).toBeNull();
       expect(screen.queryByTestId('particle'), s).toBeNull();
       expect(screen.queryByTestId('release-readout'), s).toBeNull();

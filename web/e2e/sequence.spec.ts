@@ -39,7 +39,7 @@ async function expectNothingSubstituted(page: Page, name: string) {
   await expect(page.getByTestId('block-d')).toHaveAttribute('data-run-status', 'none');
   await expect(page.getByTestId('unsupported-simulation')).toContainText('does not implement');
   await expect(page.getByTestId('unsupported-simulation')).toContainText(name);
-  await expect(page.getByTestId('unsupported-simulation')).toContainText('no result is shown for this selection');
+  await expect(page.getByTestId('unsupported-simulation')).toContainText('No simulation for this selection: the solver in this build does not implement');
   await expect(page.getByTestId('block-e')).toHaveCount(0);
   // The solver stays identified in D by its status line, and the physics of the build by one line.
   await expect(page.getByTestId('solver-status-line').first()).toContainText('Method A: BTCS');

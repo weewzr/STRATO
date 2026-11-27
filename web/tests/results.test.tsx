@@ -169,7 +169,13 @@ describe('solver version and verification status', () => {
     expect(screen.getByTestId('solver-version-line').textContent).toBe(RUN.solver.version);
     // The build commit is not on the page: it is in the build table of Scientific Documentation.
     expect(el.textContent).not.toContain(RUN.solver.commit);
-    expect(el.querySelector('.badge')?.textContent).toBe('COMPUTED v2.0');
+    // No run of the current selection yet: no result label is shown (it labels a result, not the solver).
+    expect(el.querySelector('.badge')).toBeNull();
+    act(() => {
+      const s = useStrato.getState();
+      s.setRunOutcome({ run: RUN, info: { elapsedMs: 1, requestId: 1, inputKey: inputKey(s.config), dropped: [] } });
+    });
+    expect(screen.getByTestId('solver-status-line').querySelector('.badge')?.textContent).toBe('COMPUTED v2.0');
     // the status is read from the generated research catalogue
     expect(el.querySelector('[data-status-for]')?.getAttribute('data-status')).toBe('VERIFIED');
   });
