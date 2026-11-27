@@ -172,3 +172,9 @@
   font-family: var(--font-ui);
   font-size: var(--fs-small);
 }
+/* The manual solver sits in the reading column of this page, narrower than the window: its areas stack in
+   one column at every window width, as the media queries of the instrument layout would otherwise squeeze them. */
+.advanced-solver .sim,
+.advanced-solver .results {
+  grid-template-columns: minmax(0, 1fr);
+}

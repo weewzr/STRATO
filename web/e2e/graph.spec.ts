@@ -48,13 +48,13 @@ async function paint(page: Page, f: ComparisonFile) {
 test.describe('graph in the harness, desktop', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('Method A is a blue and Method B a red solid line of equal width; observations are black markers', async ({ page, problems }) => {
+  test('Method A is a red and Method B a blue solid line of equal width; observations are black markers', async ({ page, problems }) => {
     void problems;
     await open(page, 'both');
     const p = await paint(page, BOTH);
     expect(p.lines).toHaveLength(2);
-    expect(p.lines[0]?.stroke).toBe('rgb(37, 99, 235)');
-    expect(p.lines[1]?.stroke).toBe('rgb(220, 38, 38)');
+    expect(p.lines[0]?.stroke).toBe('rgb(220, 38, 38)');
+    expect(p.lines[1]?.stroke).toBe('rgb(37, 99, 235)');
     expect(p.lines[0]?.width).toBe(p.lines[1]?.width);
     expect(p.lines[0]?.width).toBe('2px');
     for (const l of p.lines) expect(['none', '']).toContain(l.dash);
@@ -114,11 +114,11 @@ test.describe('graph in the harness, desktop', () => {
     const notes = async (f: ComparisonFile) =>
       graph(page, f).evaluate((el) => Array.from(el.querySelectorAll('.annotation-text')).map((a) => ({ text: a.textContent ?? '', fill: getComputedStyle(a).fill })));
     expect(await notes(BOTH)).toEqual([
-      { text: BOTH.r2[0]!.label_plain, fill: 'rgb(37, 99, 235)' },
-      { text: BOTH.r2[1]!.label_plain, fill: 'rgb(220, 38, 38)' },
+      { text: BOTH.r2[0]!.label_plain, fill: 'rgb(220, 38, 38)' },
+      { text: BOTH.r2[1]!.label_plain, fill: 'rgb(37, 99, 235)' },
     ]);
-    expect(await notes(NEG)).toEqual([{ text: 'R² (Method A: BTCS) = -0.42', fill: 'rgb(37, 99, 235)' }]);
-    expect(await notes(ABSENT)).toEqual([{ text: ABSENT.r2[0]!.label_plain, fill: 'rgb(37, 99, 235)' }]);
+    expect(await notes(NEG)).toEqual([{ text: 'R² (Method A: BTCS) = -0.42', fill: 'rgb(220, 38, 38)' }]);
+    expect(await notes(ABSENT)).toEqual([{ text: ABSENT.r2[0]!.label_plain, fill: 'rgb(220, 38, 38)' }]);
     expect(await notes(BOUNDS)).toEqual([]);
     const plotText = await page.getByTestId(`exp-plot-${BOUNDS.id}`).innerText();
     expect(plotText).not.toMatch(/R²|pending|unavailable|upper bound\b(?!s)/i);

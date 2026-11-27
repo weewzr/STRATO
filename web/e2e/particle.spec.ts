@@ -281,7 +281,7 @@ test.describe('3D cutaway', () => {
       const b = (await page.getByTestId(id).boundingBox())!;
       expect(b.x + b.width, id).toBeLessThanOrEqual(canvasBox.x + canvasBox.width + 0.5);
       expect(b.y + b.height, id).toBeLessThanOrEqual(canvasBox.y + canvasBox.height + 0.5);
-      // In the narrower reading column of Scientific Documentation the stage has no room for the right-hand strip of the earlier layout; the buttons stay inside the stage box (asserted above).
+      expect(b.x, id).toBeGreaterThanOrEqual(canvasBox.x + canvasBox.width / 2 + 0.46 * canvasBox.height);
     }
     const drawing3d = (await page.locator('.particle__drawing').boundingBox())!.height;
     await page.getByTestId('view-2d').click();
