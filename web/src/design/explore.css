@@ -52,6 +52,7 @@
   color: var(--text-muted);
 }
 .section .xarea__title {
+  margin: 0;
   font-size: var(--fs-small);
 }
 .xcontrols {
