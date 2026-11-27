@@ -20,6 +20,16 @@
 //!    fields `cover_relative_difference[]` and `relative_error_estimate[]` and the threshold from
 //!    `mask_relative_tolerance` of the same object; a reply without them gives no evidence, and a
 //!    differing flag then fails.
+//! 4. The reason-swap rule (second integration, fix of the verifier's finding on
+//!    `analytical_stage_5_constant`; a ruling to be confirmed by the coordinator), by field
+//!    identity ([`reason_swap_identity`]): the reason code of a value that BOTH platforms withhold
+//!    may differ between exactly the two codes `COVER_SENSITIVITY` and `ERROR_ESTIMATE_UNDEFINED`.
+//!    Both are tests of the same mask, applied in a fixed order, at a value whose released amount
+//!    is at rounding level: the first test fails when the reduced-cover series differs by more
+//!    than the threshold, the second where the released amount is not positive; which of them
+//!    fires first depends on the sign of rounding noise. The value is `null` on both platforms,
+//!    so no physical value and no drawn-or-withheld decision is involved. A code against `null`
+//!    (drawn on one platform) never passes this rule, nor does any other pair of codes.
 
 use crate::tolerances::PARITY_RTOL;
 use serde_json::Value;
@@ -62,6 +72,10 @@ pub struct Tally {
     pub flag_covered: usize,
     /// Of those, the leaves that differ and pass by the flag rule.
     pub flag_excused: usize,
+    /// Leaves whose field identity is covered by the reason-swap rule (the reason codes).
+    pub swap_covered: usize,
+    /// Of those, the leaves that differ and pass by the reason-swap rule.
+    pub swap_excused: usize,
 }
 
 /// The kinds of residual field.
@@ -116,6 +130,30 @@ pub fn flag_identity(pattern: &str) -> bool {
     ]
     .iter()
     .any(|name| pattern.ends_with(name))
+}
+
+/// The identity of a field of the reason-swap rule: the reason codes of withheld values.
+pub fn reason_swap_identity(pattern: &str) -> bool {
+    [
+        ".withheld_reason_codes[]",
+        ".withheld_reason_codes_of_total[]",
+    ]
+    .iter()
+    .any(|name| pattern.ends_with(name))
+}
+
+/// The one pair of codes the reason-swap rule admits, in either order.
+pub const SWAPPABLE_REASONS: [&str; 2] = ["COVER_SENSITIVITY", "ERROR_ESTIMATE_UNDEFINED"];
+
+/// The reason-swap rule for one leaf: two different codes (text, so withheld on both platforms)
+/// that are the two of [`SWAPPABLE_REASONS`].
+pub fn reason_swap_passes(a: &Value, b: &Value) -> bool {
+    match (a.as_str(), b.as_str()) {
+        (Some(x), Some(y)) => {
+            x != y && SWAPPABLE_REASONS.contains(&x) && SWAPPABLE_REASONS.contains(&y)
+        }
+        _ => false,
+    }
 }
 
 /// Fields that come from the independent Sturm-Liouville series, or from a difference with it.
@@ -377,6 +415,10 @@ fn walk(path: &str, a: &Value, b: &Value, native: &Value, wasm: &Value, t: &mut 
     if flag {
         t.flag_covered += 1;
     }
+    let swap = reason_swap_identity(&pat);
+    if swap {
+        t.swap_covered += 1;
+    }
     match (a, b) {
         (Value::Number(x), Value::Number(y)) => {
             let (x, y) = (
@@ -441,6 +483,8 @@ fn walk(path: &str, a: &Value, b: &Value, native: &Value, wasm: &Value, t: &mut 
                 t.identical += 1;
             } else if flag && flag_passes(native, wasm, path) {
                 t.flag_excused += 1;
+            } else if swap && reason_swap_passes(p, q) {
+                t.swap_excused += 1;
             } else {
                 fail(t, path, p.to_string(), q.to_string(), f64::INFINITY);
             }

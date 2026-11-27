@@ -5,7 +5,9 @@
 //! no physical field is in the identity lists.
 
 use serde_json::{json, Value};
-use strato_wasm::parity::{compare_case, flag_identity, pattern, residual_identity};
+use strato_wasm::parity::{
+    compare_case, flag_identity, pattern, reason_swap_identity, residual_identity,
+};
 
 /// A small reply of the shape of `run_stage`: release fractions (physical), residuals with their
 /// bounds, generated amounts.
@@ -152,14 +154,9 @@ fn a_flag_without_evidence_fails() {
         [json!("COVER_SENSITIVITY"), json!("COVER_SENSITIVITY")],
         [0.06, 0.06],
     );
-    let w = analytical_reply(
-        [
-            json!("ERROR_ESTIMATE_UNDEFINED"),
-            json!("COVER_SENSITIVITY"),
-        ],
-        [0.06, 0.06],
-    );
-    // The estimates agree but do not lie on either side of the threshold: no margin.
+    let w = analytical_reply([json!(null), json!("COVER_SENSITIVITY")], [0.06, 0.06]);
+    // The estimates agree but do not lie on either side of the threshold: no margin; a code
+    // against null (drawn on one platform) is not a swap between two withheld values.
     let t = compare_case("analytical_stage_5_constant", &n, &w);
     assert!(t.failures.contains_key(".withheld_reason_codes[]"));
     // A reply without estimates gives no evidence either.
@@ -167,7 +164,7 @@ fn a_flag_without_evidence_fails() {
     let t = compare_case(
         "analytical_stage_5_constant",
         &bare(json!("COVER_SENSITIVITY")),
-        &bare(json!("ERROR_ESTIMATE_UNDEFINED")),
+        &bare(json!(null)),
     );
     assert!(t.failures.contains_key(".withheld_reason_codes[]"));
 }
@@ -201,13 +198,15 @@ fn a_flag_at_the_margin_with_agreeing_estimates_passes() {
         [json!("COVER_SENSITIVITY"), json!("COVER_SENSITIVITY")],
         [0.0508, 0.06],
     );
-    let w = analytical_reply(
+    let mut w = analytical_reply(
         [
             json!("ERROR_ESTIMATE_UNDEFINED"),
             json!("COVER_SENSITIVITY"),
         ],
         [0.0484, 0.06],
     );
+    // (a swap of two withheld codes is the business of the reason-swap rule, not of this one)
+    w["withheld_reason_codes"][0] = json!(null);
     let t = compare_case("analytical_stage_5_constant", &n, &w);
     assert!(t.failures.contains_key(".withheld_reason_codes[]"));
 }
@@ -230,4 +229,56 @@ fn a_drawn_flag_that_changes_with_a_physical_value_fails() {
     w["release_fraction"] = json!([null, 0.2 * (1.0 + 1.0e-3)]);
     let t = compare_case("run_stage_1", &n, &w);
     assert!(t.failures.contains_key(".release_fraction[]"));
+}
+
+#[test]
+fn a_swap_between_two_withheld_reasons_passes_and_is_counted() {
+    let n = analytical_reply(
+        [json!("COVER_SENSITIVITY"), json!("COVER_SENSITIVITY")],
+        [0.06, 0.06],
+    );
+    let w = analytical_reply(
+        [
+            json!("ERROR_ESTIMATE_UNDEFINED"),
+            json!("COVER_SENSITIVITY"),
+        ],
+        [0.06, 0.06],
+    );
+    let t = compare_case("analytical_stage_5_constant", &n, &w);
+    assert!(t.failures.is_empty(), "{:?}", t.failures);
+    assert_eq!((t.swap_covered, t.swap_excused), (2, 1));
+    assert_eq!(t.flag_excused, 0);
+}
+
+#[test]
+fn the_swap_rule_admits_nothing_else() {
+    let n = analytical_reply(
+        [json!("COVER_SENSITIVITY"), json!("COVER_SENSITIVITY")],
+        [0.06, 0.06],
+    );
+    // Another pair of codes.
+    let w = analytical_reply(
+        [json!("BELOW_ACCURACY_FLOOR"), json!("COVER_SENSITIVITY")],
+        [0.06, 0.06],
+    );
+    let t = compare_case("analytical_stage_5_constant", &n, &w);
+    assert!(t.failures.contains_key(".withheld_reason_codes[]"));
+    // A swapped pair with a physical value that differs: the value fails by the per-value rule.
+    let mut n = analytical_reply(
+        [json!("COVER_SENSITIVITY"), json!("COVER_SENSITIVITY")],
+        [0.06, 0.06],
+    );
+    n["release_fraction"] = json!([0.2, null]);
+    let mut w = n.clone();
+    w["withheld_reason_codes"][0] = json!("ERROR_ESTIMATE_UNDEFINED");
+    w["release_fraction"] = json!([0.2 * (1.0 + 1.0e-3), null]);
+    let t = compare_case("analytical_stage_5_constant", &n, &w);
+    assert!(t.failures.contains_key(".release_fraction[]"));
+    // A text field that is not a reason code is never excused.
+    let n = json!({"label": "COVER_SENSITIVITY"});
+    let w = json!({"label": "ERROR_ESTIMATE_UNDEFINED"});
+    assert!(!compare_case("run_stage_1", &n, &w).failures.is_empty());
+    assert!(!reason_swap_identity(".label"));
+    assert!(!reason_swap_identity(".release_fraction[]"));
+    assert!(reason_swap_identity(".withheld_reason_codes_of_total[]"));
 }
