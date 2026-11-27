@@ -1277,3 +1277,58 @@ pub fn register_text_checks(rep: &mut Report, t: &crate::register::RegisterTexts
         }
     }
 }
+
+/// The coefficients that the comparability assessment establishes as fitted to a dataset, with
+/// that dataset (`fitted_to` of `arrhenius.csv`): the Cs-in-SiC rows A3-14 and E410-01 were fitted
+/// to the JAERI heating tests of IAEA-TECDOC-978 Table 4-9 (assessment item 9; register notes
+/// "fitted to Table 4-9 data").
+const FITTED_ROWS: [(&str, &str); 2] = [
+    ("A3-14", "IAEA (1997) | Table 4-9"),
+    ("E410-01", "IAEA (1997) | Table 4-9"),
+];
+
+/// The register field that the independence rule of the R2 records reads: exactly the rows of
+/// [`FITTED_ROWS`] carry `fitted_to`, each with its dataset, and the audit log has an entry for
+/// each of them (no measured value changes).
+pub fn fitted_to_checks(rep: &mut Report, t: &crate::register::RegisterTexts) {
+    let id = "DI.arrhenius.fitted-to";
+    let desc = "the register field fitted_to of arrhenius.csv is set on exactly the rows that the comparability assessment establishes as fitted to a dataset (A3-14 and E410-01, to IAEA (1997) Table 4-9), each entry reads `<source> | <location prefix>`, and the audit log has an entry for each row";
+    let table = match crate::table::Table::parse(
+        crate::arrhenius::FILE,
+        &t.arrhenius,
+        &crate::arrhenius::HEADER,
+    ) {
+        Ok(table) => table,
+        Err(e) => {
+            rep.add(id, false, desc, e.to_string());
+            return;
+        }
+    };
+    let mut wrong = Vec::new();
+    for row in table.rows() {
+        let (rid, fitted) = match (row.text("id"), row.text("fitted_to")) {
+            (Ok(a), Ok(b)) => (a.to_string(), b.to_string()),
+            _ => continue,
+        };
+        let want = FITTED_ROWS.iter().find(|(r, _)| *r == rid).map(|(_, f)| *f);
+        match want {
+            Some(w) if fitted == w => {}
+            None if fitted.is_empty() => {}
+            _ => wrong.push(rid),
+        }
+    }
+    let missing_in_log: Vec<&str> = match &t.audit_log {
+        None => Vec::new(),
+        Some(log) => FITTED_ROWS
+            .iter()
+            .filter(|(r, _)| !log.contains(&format!("| {r} |")))
+            .map(|(r, _)| *r)
+            .collect(),
+    };
+    rep.add(
+        id,
+        wrong.is_empty() && missing_in_log.is_empty(),
+        desc,
+        format!("wrong rows {wrong:?}; without audit entry {missing_in_log:?}"),
+    );
+}

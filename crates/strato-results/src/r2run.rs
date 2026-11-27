@@ -32,7 +32,7 @@ use strato_data::Register;
 
 use crate::curves::lin;
 use crate::experiment::{A1, BP1, BP2};
-use crate::methodb::{method_b, temperature_of, MethodB, Needs, NotAvailable};
+use crate::methodb::{method_b, temperature_of, Available, MethodB, Needs, NotAvailable};
 use crate::output::{json_file, Files, Prov};
 use crate::params::{decay_constant, Laws, LAYERS};
 use crate::r2::{self, ReasonCode};
@@ -456,18 +456,15 @@ fn frg_laws<'a>(reg: &'a Register, element: &str) -> Result<Laws<'a>, String> {
     Ok(Laws { sel })
 }
 
-/// `calibration_check` if a diffusivity row used carries the statement "fitted to <table> data" and
-/// the curve is read from that table; otherwise `not_established` (the register records no
-/// independence of the rows from these data).
-fn independence_of(laws: &Laws<'_>, location: &str) -> &'static str {
-    let fitted_here = laws.sel.iter().flat_map(|s| s.rows.iter()).any(|r| {
-        r.notes.split(';').any(|part| {
-            part.trim()
-                .strip_prefix("fitted to ")
-                .map(|rest| rest.trim_end_matches(" data").trim())
-                .is_some_and(|target| !target.is_empty() && location.contains(target))
-        })
-    });
+/// `calibration_check` if a diffusivity row used carries, in the register field `fitted_to`, the
+/// dataset the curve is read from (source and location prefix); otherwise `not_established` (the
+/// register records no independence of the rows from these data).
+fn independence_of(laws: &Laws<'_>, source: &str, location: &str) -> &'static str {
+    let fitted_here = laws
+        .sel
+        .iter()
+        .flat_map(|s| s.rows.iter())
+        .any(|r| r.fitted_to_dataset(source, location));
     if fitted_here {
         "calibration_check"
     } else {
@@ -973,15 +970,7 @@ fn build(
                     // `e_i = |V_alpha_max - V_alpha_max/4| + accuracy_floor` (Section 2.3). Where the
                     // quarter-cover value is not defined the error estimate is not defined and the
                     // value is `None`: the point is not resolved (M2), never silently resolved.
-                    let at = |t_s: f64| -> Option<(f64, Option<f64>)> {
-                        let k = a.times_s.iter().position(|x| (x - t_s).abs() < 1e-6)?;
-                        a.values[k].map(|v| {
-                            (
-                                v,
-                                a.quarter_cover_values[k].map(|q| (v - q).abs() + a.accuracy_floor),
-                            )
-                        })
-                    };
+                    let at = |t_s: f64| method_b_point(&a, t_s);
                     let mut mask = true;
                     for (i, t) in t_mod.iter().enumerate() {
                         let Some(t) = t else {
@@ -1096,7 +1085,7 @@ fn build(
     // `independence` follows from the source records of the diffusivity rows actually used
     // (metric-r2.md Section 7.1), never from the name of the dataset.
     let independence = laws.as_ref().map_or("not_established", |l| {
-        independence_of(l, &curve.source_location)
+        independence_of(l, &curve.source, &curve.source_location)
     });
     let lambda_per_h = decay_constant(reg, &curve.nuclide).ok().map(|l| l * H);
     let u_value_summary = rows.iter().find_map(|r| match &r.reading_uncertainty {
@@ -1338,9 +1327,88 @@ pub fn run_all(prov: &Prov, reg: &Register, repo: &Path, quick: bool) -> Result<
     Ok(out)
 }
 
+/// The error estimate `e = |V_alpha_max - V_alpha_max/4| + accuracy_floor` of a Method B value
+/// (`metric-r2.md` Section 2.3), `None` where the series with the eigenvalue cover reduced by a
+/// factor 4 has no value at that time: the estimate is then not defined and the point is not
+/// resolved, never silently resolved.
+fn series_error_estimate(
+    value: f64,
+    quarter_cover_value: Option<f64>,
+    accuracy_floor: f64,
+) -> Option<f64> {
+    quarter_cover_value.map(|q| (value - q).abs() + accuracy_floor)
+}
+
+/// The Method B value at the time `t_s` (s) and its error estimate, `None` where the time is not
+/// among the times of the series or the value is withheld by the drawing mask.
+fn method_b_point(a: &Available, t_s: f64) -> Option<(f64, Option<f64>)> {
+    let k = a.times_s.iter().position(|x| (x - t_s).abs() < 1e-6)?;
+    a.values[k].map(|v| {
+        (
+            v,
+            series_error_estimate(v, a.quarter_cover_values[k], a.accuracy_floor),
+        )
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn series(values: Vec<Option<f64>>, quarter: Vec<Option<f64>>) -> Available {
+        let n = values.len();
+        Available {
+            times_s: (1..=n).map(|k| k as f64 * 3600.0).collect(),
+            withheld: values
+                .iter()
+                .map(|v| v.is_none().then_some("COVER_SENSITIVITY"))
+                .collect(),
+            values,
+            quarter_cover_values: quarter,
+            extension: None,
+            accuracy_floor: 4.0e-12,
+            valid_from_s: 0.0,
+            modes: 10,
+            alpha_max_per_s: 1.0,
+            missing_weight: 0.0,
+        }
+    }
+
+    #[test]
+    fn the_method_b_error_estimate_is_the_cover_difference_plus_the_floor() {
+        // |0.30 - 0.29| + 4e-12
+        let e = series_error_estimate(0.30, Some(0.29), 4.0e-12).unwrap();
+        assert!((e - (0.01 + 4.0e-12)).abs() < 1e-15, "{e}");
+        // Symmetric in the sign of the difference, and the floor alone where the two agree.
+        assert_eq!(
+            series_error_estimate(0.29, Some(0.30), 0.0),
+            Some(0.30 - 0.29)
+        );
+        assert_eq!(
+            series_error_estimate(0.5, Some(0.5), 4.0e-12),
+            Some(4.0e-12)
+        );
+    }
+
+    #[test]
+    fn a_missing_quarter_cover_value_leaves_the_point_unresolved() {
+        let a = series(
+            vec![Some(0.3), Some(0.4), None],
+            vec![Some(0.29), None, Some(0.1)],
+        );
+        // A drawn value with a quarter-cover value: resolved, with its estimate.
+        let (v, e) = method_b_point(&a, 3600.0).unwrap();
+        assert_eq!(v, 0.3);
+        assert!(e.is_some());
+        // A drawn value without one: the value is returned, the estimate is not defined, so the
+        // caller marks the point unresolved.
+        let (v, e) = method_b_point(&a, 7200.0).unwrap();
+        assert_eq!(v, 0.4);
+        assert_eq!(e, None);
+        // A value the mask withholds has no point at all, and an unknown time has none either.
+        assert_eq!(method_b_point(&a, 10800.0), None);
+        assert_eq!(method_b_point(&a, 5000.0), None);
+    }
 
     #[test]
     fn the_particle_count_is_read_from_the_registered_text() {

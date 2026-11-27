@@ -256,8 +256,10 @@ fn a_range_without_its_kind_or_a_kind_without_a_range_is_a_load_error() {
         .find(|l| l.starts_with("C16-22,"))
         .unwrap()
         .to_string();
-    assert!(hit.ends_with(",heating test,,,"), "{hit}");
-    t.arrhenius = t.arrhenius.replace(&hit, &format!("{hit}fitted"));
+    assert!(hit.ends_with(",heating test,,,,"), "{hit}");
+    t.arrhenius = t
+        .arrhenius
+        .replace(&hit, &format!("{}fitted,", &hit[..hit.len() - 1]));
     assert!(Register::from_texts(&t).is_err());
 }
 
@@ -310,8 +312,8 @@ fn a_row_with_a_printed_range_changed_to_fitted_fails() {
         .find(|l| l.starts_with("C16-20,"))
         .unwrap()
         .to_string();
-    assert!(hit.ends_with(",printed"), "{hit}");
-    let changed = format!("{}fitted", &hit[..hit.len() - "printed".len()]);
+    assert!(hit.ends_with(",printed,"), "{hit}");
+    let changed = format!("{}fitted,", &hit[..hit.len() - "printed,".len()]);
     t.arrhenius = t.arrhenius.replace(&hit, &changed);
     assert_fails(&t, "DI.select.schappel-range");
 }
@@ -365,6 +367,21 @@ fn a_matrix_corrected_intact_row_without_premise_bp1_in_its_applicability_fails(
         "",
     );
     assert_fails(&t, "DI.release.window-label");
+}
+
+#[test]
+fn a_fitted_to_entry_on_a_row_the_assessment_does_not_establish_fails() {
+    let mut t = real_texts();
+    t.arrhenius = mutate_line(
+        &t.arrhenius,
+        "A3-15,",
+        ",,,printed,",
+        ",,,printed,IAEA (1997) | Table 4-9",
+    );
+    assert_fails(&t, "DI.arrhenius.fitted-to");
+    let mut t = real_texts();
+    t.arrhenius = mutate_line(&t.arrhenius, "A3-14,", "IAEA (1997) | Table 4-9", "");
+    assert_fails(&t, "DI.arrhenius.fitted-to");
 }
 
 #[test]

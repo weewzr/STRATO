@@ -590,3 +590,12 @@ An independent verifier of the range 7de5bdb..8ce463f found one blocker and two 
 | E-658 | IAEA97-K31-AG110M | 500 | 2.7e-2 | interior centroid (1110.7, 470.3) px, 3 px; outline centroid (1111, 470.7) px; reading uncertainty 8 % and 3 h |
 
 **Totals after 12.9.** `release_measurements.csv` holds E-541..E-658 as the experiment-data integration's rows (118 rows); `curve_assessment.csv` still holds 15 curve assessments, of which the Ag-110m record now counts 22 points. No earlier value, id or tolerance was changed.
+
+## 13. Register field fitted_to: which diffusivity rows were fitted to a dataset (decision 45 procedure, decisions 72(f) and 76(d), task integration-2a, 2026-11-27)
+
+The independence rule of the R2 records (`metric-r2.md` Section 6) read the sentence "fitted to <table> data" from the free-text notes of a diffusivity row. It now reads a register field. `data/diffusivity/arrhenius.csv` gains the column `fitted_to` (last column, empty on every row except the two below). An entry reads `<source> | <location prefix>`; a curve is read from that dataset when its source equals the entry's source and its location starts with the entry's prefix. The comparability assessment (`experiment-comparability.md`, row R.6 and item 9 of Section 6) establishes that the Cs-in-SiC coefficients A3-14 and E410-01 were fitted to the JAERI heating tests of IAEA-TECDOC-978 Table 4-9 (the notes of both rows already say "fitted to Table 4-9 data"); no other row is established as fitted to a registered dataset. The AGR-1 rows of Schappel et al. (2020) are fitted to the AGR-1 heating tests, but those tests are not a registered curve of `curve_assessment.csv` and the assessment makes no statement on them, so they stay without an entry. No measured value, no coefficient and no other cell changed; the check `DI.arrhenius.fitted-to` requires exactly these two entries and one audit entry per row.
+
+| Row | Column | Before | After | Basis |
+|---|---|---|---|---|
+| A3-14 | fitted_to | (column absent; the note said "fitted to Table 4-9 data") | IAEA (1997) &#124; Table 4-9 | assessment R.6 and item 9: fitted to the JAERI tests of Table 4-9 |
+| E410-01 | fitted_to | (column absent; the note said "fitted to Table 4-9 data") | IAEA (1997) &#124; Table 4-9 | assessment R.6 and item 9: fitted to the JAERI tests of Table 4-9 |

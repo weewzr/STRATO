@@ -18,7 +18,7 @@ use crate::table::{Printed, Row, Table, Vocabulary};
 pub const FILE: &str = "diffusivity/arrhenius.csv";
 
 /// The exact header.
-pub const HEADER: [&str; 28] = [
+pub const HEADER: [&str; 29] = [
     "id",
     "set_id",
     "nuclide",
@@ -47,6 +47,7 @@ pub const HEADER: [&str; 28] = [
     "reference_radius_um",
     "fluence_definition",
     "range_kind",
+    "fitted_to",
 ];
 
 /// Kernel radius of the reduced coefficients of TECDOC-1674 Table 7.1, metre (250 um, register note of T71-01).
@@ -356,6 +357,10 @@ pub struct ArrheniusRow {
     pub reference_radius_um: Option<Printed>,
     /// How the fluence of the `exp(Gamma/5)` factor is defined, or that the factor is not applied (empty when the row has no factor).
     pub fluence_definition: String,
+    /// The datasets this row was fitted to, `<source> | <location prefix>` separated by `;`
+    /// (empty when the register does not record that the row was fitted to a dataset). Set only
+    /// where the comparability assessment establishes it; the audit log has one entry per row.
+    pub fitted_to: String,
 }
 
 /// A diffusion coefficient with the kind of number it is.
@@ -368,6 +373,19 @@ pub struct Diffusivity {
 }
 
 impl ArrheniusRow {
+    /// Whether this row was fitted to the dataset that has this source and location (the
+    /// register field `fitted_to`: an entry is `<source> | <location prefix>`, the source equal to
+    /// `source` and the location starting with the prefix).
+    pub fn fitted_to_dataset(&self, source: &str, location: &str) -> bool {
+        self.fitted_to.split(';').any(|entry| {
+            entry.split_once(" | ").is_some_and(|(s, prefix)| {
+                !prefix.trim().is_empty()
+                    && s.trim() == source.trim()
+                    && location.trim().starts_with(prefix.trim())
+            })
+        })
+    }
+
     /// The class as printed in the file.
     pub fn coefficient_class_text(&self) -> &'static str {
         use crate::table::Vocabulary;
@@ -585,6 +603,7 @@ fn read_row(row: Row<'_>) -> Result<ArrheniusRow> {
         phase_of_use: row.vocab("phase_of_use")?,
         reference_radius_um: row.opt_number("reference_radius_um")?,
         fluence_definition: row.text("fluence_definition")?.to_string(),
+        fitted_to: row.text("fitted_to")?.to_string(),
     })
 }
 

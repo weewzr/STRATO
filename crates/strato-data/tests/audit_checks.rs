@@ -170,6 +170,7 @@ const ALL_IDS: &[&str] = &[
     "DI.irr.step9",
     "DI.irr.derived-series",
     "DI.register-md.matches-csv",
+    "DI.arrhenius.fitted-to",
     "EX.curve.rows-agree",
     "EX.curve.one-definition",
     "EX.curve.times-monotone",
@@ -973,4 +974,8 @@ fn di_select_scaling_labels() {
 #[test]
 fn di_register_md_matches_csv() {
     passes("DI.register-md.matches-csv");
+}
+#[test]
+fn di_arrhenius_fitted_to() {
+    passes("DI.arrhenius.fitted-to");
 }

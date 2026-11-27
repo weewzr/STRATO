@@ -396,6 +396,8 @@ struct Prepared {
     premises: Vec<(String, String)>,
     /// `t_d,i` for the used rows, where D1 passes and the correction is not stated.
     t_d: Option<Vec<f64>>,
+    /// The conditions that made check C6 fail, one phrase each (empty where C6 passes).
+    missing_conditions: Vec<String>,
 }
 
 const PREMISE_EARLY: &str = "early points are bounds; R\u{b2} covers the measured points from t_1";
@@ -512,16 +514,38 @@ fn prepare(c: &CurveInput) -> Prepared {
         DecayCorrection::NotStated => c.inventory_reference.is_none(),
         DecayCorrection::NotCorrected => false,
     };
-    add(
-        &mut failed,
-        Check::C6,
-        !c.missing_conditions.is_empty()
-            || c.specimen_level.is_none()
-            || c.source_aggregated.is_none()
-            || c.coating_failure_basis.is_none()
-            || unclassified
-            || decay_unset,
-    );
+    // The conditions themselves are kept, so that the record says which ones they are.
+    let mut c6: Vec<String> = c
+        .missing_conditions
+        .iter()
+        .map(|m| format!("not stated in the source: {m}"))
+        .collect();
+    if c.specimen_level.is_none() {
+        c6.push("specimen level not set in the curve assessment".to_string());
+    }
+    if c.source_aggregated.is_none() {
+        c6.push(
+            "whether the source aggregates particles not set in the curve assessment".to_string(),
+        );
+    }
+    if c.coating_failure_basis.is_none() {
+        c6.push("coating-failure basis not set in the curve assessment".to_string());
+    }
+    if unclassified {
+        let ids: Vec<&str> = used
+            .iter()
+            .filter(|i| classes[**i] == PointClass::Unclassified)
+            .map(|i| c.rows[*i].id.as_str())
+            .collect();
+        c6.push(format!("point class not set for {}", ids.join(", ")));
+    }
+    if decay_unset {
+        c6.push(match c.decay_correction {
+            DecayCorrection::Corrected => "decay reference of the correction not set".to_string(),
+            _ => "inventory reference of the decay not set".to_string(),
+        });
+    }
+    add(&mut failed, Check::C6, !c6.is_empty());
     // D1 (Section 2.5).
     let delays_missing = used.iter().any(|i| c.rows[*i].counting_delay_h.is_none());
     let d1 = match c.decay_correction {
@@ -588,6 +612,7 @@ fn prepare(c: &CurveInput) -> Prepared {
         failed,
         premises,
         t_d,
+        missing_conditions: c6,
     }
 }
 
@@ -991,6 +1016,7 @@ fn one_record(
             "failed_checks",
             J::Arr(failed.iter().map(|ch| J::s(ch.id())).collect()),
         ),
+        ("missing_conditions", jstrs(&prep.missing_conditions)),
         (
             "coating_failure_basis",
             jopts(c.coating_failure_basis.as_deref()),

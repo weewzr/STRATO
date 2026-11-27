@@ -515,3 +515,29 @@ fn the_hfr_k3_1_curves_are_sphere_curves_and_the_cs_curve_keeps_its_time_order()
     assert_eq!(ag.row_ids.len(), 22);
     assert_eq!(ag.row_ids.last().map(String::as_str), Some("E-658"));
 }
+
+#[test]
+fn the_fitted_to_field_names_the_dataset_a_row_was_fitted_to() {
+    let r = common::real_register();
+    let a = r.arrhenius.get("A3-14").unwrap();
+    let e = r.arrhenius.get("E410-01").unwrap();
+    for row in [a, e] {
+        assert!(row.fitted_to_dataset(
+            "IAEA (1997)",
+            "Table 4-9; printed p. 164 (0-based PDF index 170)"
+        ));
+        // Another table of the same source, another source, and an empty location are not it.
+        assert!(!row.fitted_to_dataset("IAEA (1997)", "Fig. 4-7 left; printed p. 137"));
+        assert!(!row.fitted_to_dataset("Hunn et al. (2016; ORNL/TM-2015/161)", "Table 4-9"));
+        assert!(!row.fitted_to_dataset("IAEA (1997)", ""));
+    }
+    // Every other row carries no entry.
+    let others = r
+        .arrhenius
+        .rows
+        .iter()
+        .filter(|x| x.id != "A3-14" && x.id != "E410-01")
+        .filter(|x| !x.fitted_to.is_empty())
+        .count();
+    assert_eq!(others, 0);
+}
