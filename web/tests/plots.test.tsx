@@ -136,8 +136,8 @@ describe('release figure', () => {
     expect(cursor?.x).toEqual([RUN.times_s[row]]);
     expect(cursor?.y).toEqual([RUN.release_fraction[row]]);
     // Decision 53: both methods are solid lines of equal width, Method A blue and Method B red.
-    expect(b?.line).toEqual({ color: '#2563eb', width: 2 });
-    expect(c?.line).toEqual({ color: '#dc2626', width: 2 });
+    expect(b?.line).toEqual({ color: '#dc2626', width: 2 });
+    expect(c?.line).toEqual({ color: '#2563eb', width: 2 });
   });
 
   it('draws no dashed or dotted line in any figure, and writes every hover line as name (unit) = value (decisions 30, 52, 53)', () => {

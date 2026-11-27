@@ -49,10 +49,10 @@
   margin: 0;
 }
 .basis__method--a {
-  border-left-color: #2563eb;
+  border-left-color: #dc2626;
 }
 .basis__method--b {
-  border-left-color: #dc2626;
+  border-left-color: #2563eb;
 }
 @media (max-width: 767px) {
   .basis__pair,

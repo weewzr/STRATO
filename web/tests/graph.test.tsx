@@ -114,8 +114,8 @@ describe('plot model', () => {
 
   it('gives one label per applicable method that holds a value, verbatim, and the caption of the others', () => {
     expect(toPlotModel(BOTH).r2Labels).toEqual([
-      { method: 'A', text: BOTH.r2[0]!.label_plain, colour: '#2563EB' },
-      { method: 'B', text: BOTH.r2[1]!.label_plain, colour: '#DC2626' },
+      { method: 'A', text: BOTH.r2[0]!.label_plain, colour: '#DC2626' },
+      { method: 'B', text: BOTH.r2[1]!.label_plain, colour: '#2563EB' },
     ]);
     expect(toPlotModel(BOTH).caption).toBeNull();
     // A negative value is shown as it is.
@@ -133,13 +133,13 @@ describe('figure', () => {
   it('draws Method A blue and Method B red as solid lines of equal width, observations as black markers', () => {
     const fig = comparisonFigure(toPlotModel(BOTH), THEME);
     const [a, b, o] = fig.data;
-    expect(a?.line).toEqual({ color: '#2563EB', width: 2, dash: 'solid' });
-    expect(b?.line).toEqual({ color: '#DC2626', width: 2, dash: 'solid' });
+    expect(a?.line).toEqual({ color: '#DC2626', width: 2, dash: 'solid' });
+    expect(b?.line).toEqual({ color: '#2563EB', width: 2, dash: 'solid' });
     expect(a?.mode).toBe('lines');
     expect(o?.mode).toBe('markers');
     expect(o?.marker?.color).toBe('#111111');
     expect(o?.marker?.symbol).toBe('circle');
-    expect(COLOURS).toEqual({ A: '#2563EB', B: '#DC2626', observations: '#111111' });
+    expect(COLOURS).toEqual({ A: '#DC2626', B: '#2563EB', observations: '#111111' });
     expect(a?.x).toBe(BOTH.method_a.t);
     expect(a?.y).toBe(BOTH.method_a.f);
   });
@@ -157,8 +157,8 @@ describe('figure', () => {
     expect(title(fig.layout.yaxis)).toBe('Cumulative release fraction (dimensionless)');
     const notes = fig.layout.annotations as { text: string; font: { color: string } }[];
     expect(notes.map((n) => [n.text, n.font.color])).toEqual([
-      [BOTH.r2[0]!.label_plain, '#2563EB'],
-      [BOTH.r2[1]!.label_plain, '#DC2626'],
+      [BOTH.r2[0]!.label_plain, '#DC2626'],
+      [BOTH.r2[1]!.label_plain, '#2563EB'],
     ]);
     expect(comparisonFigure(toPlotModel(BOUNDS), THEME).layout.annotations).toEqual([]);
     expect(JSON.stringify(comparisonFigure(toPlotModel(BOUNDS), THEME).layout)).not.toMatch(/R²|pending|unavailable/i);

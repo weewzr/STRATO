@@ -62,7 +62,7 @@ describe('the traces are the replies, element by element', () => {
     const t = fig.data[0];
     expect(t?.x).toBe(stage.series.times_h);
     expect(t?.y).toBe(stage.series.release_fraction);
-    expect(t?.line).toMatchObject({ color: '#2563EB', dash: 'solid' });
+    expect(t?.line).toMatchObject({ color: '#DC2626', dash: 'solid' });
     expect(t?.mode).toBe('lines');
     for (let i = 0; i < stage.series.times_h.length; i++) {
       expect(t?.x[i]).toBe(stage.series.times_h[i]);
@@ -77,7 +77,7 @@ describe('the traces are the replies, element by element', () => {
     expect(b?.x).toBe(analytical.times_h);
     expect(b?.y).toBe(analytical.release_fraction);
     expect(b?.y[1]).toBeNull();
-    expect(b?.line).toMatchObject({ color: '#DC2626', dash: 'solid' });
+    expect(b?.line).toMatchObject({ color: '#2563EB', dash: 'solid' });
     expect(methodsFigure(stage, null, theme)).toBeNull();
     expect(methodsFigure(stage, { ...analytical, applicable: false }, theme)).toBeNull();
     expect(methodsFigure(stage, { ...analytical, release_fraction: [null, null, null] }, theme)).toBeNull();
@@ -103,7 +103,7 @@ describe('the traces are the replies, element by element', () => {
       const a = fig.data[0];
       expect(a?.x, file.curve_id).toBe(file.model.method_a.time_h);
       expect(a?.y, file.curve_id).toBe(file.model.method_a.release_fraction);
-      expect(a?.line?.color).toBe('#2563EB');
+      expect(a?.line?.color).toBe('#DC2626');
       const measured = file.experiment.points.filter((p) => !isBound(p.point_class));
       const bounds = file.experiment.points.filter((p) => isBound(p.point_class));
       const m = fig.data.find((d) => d.meta?.id === 'exp-measurements');
@@ -129,7 +129,7 @@ describe('the traces are the replies, element by element', () => {
     file.r2_records = [{ method: 'A', status: 'available', label_plain: 'R² = 0.95' }, { method: 'B', status: 'unavailable', label_plain: null }];
     const ann = experimentFigure(file, theme).layout.annotations as { text: string; font: { color: string } }[];
     expect(ann).toHaveLength(1);
-    expect(ann[0]).toMatchObject({ text: 'R² = 0.95', font: { color: '#2563EB' } });
+    expect(ann[0]).toMatchObject({ text: 'R² = 0.95', font: { color: '#DC2626' } });
   });
 });
 

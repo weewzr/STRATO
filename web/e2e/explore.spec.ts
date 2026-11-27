@@ -193,7 +193,7 @@ test.describe('interactive graphs', () => {
     });
     expect(trace.n).toBeGreaterThan(10);
     expect(trace.ny).toBe(trace.n);
-    expect(trace.colour).toBe('#2563EB');
+    expect(trace.colour).toBe('#DC2626');
     expect(trace.dash).toBe('solid');
     // The release fraction of one particle lies between 0 and 1.
     expect(trace.last).toBeGreaterThanOrEqual(0);

@@ -5,7 +5,7 @@ All notable changes to STRATO are recorded here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
-The website's live simulation is wired to the solver of 2.1.0 in the following change. The plan written before the BTCS solver existed is archived in [docs/archive/finite-volume/development/v1_to_v2_changes.md](docs/archive/finite-volume/development/v1_to_v2_changes.md).
+The website is rebuilt as four pages (Explore, Basis, Research Catalogue, Scientific Documentation). Explore has six Model Equation and five Operation buttons selected independently, the governing equation with its variable legend, the Numerical Interpretation and interactive graphs with a temperature selector in 100 degC steps; a selection without a results file shows an empty graph panel. Status badges, the live-simulation panel, the numerical controls and the build hash left Explore, Basis and the Research Catalogue; the manual solver with its 3D view (loaded only when opened), the statuses, the parameter table and the downloads are in Scientific Documentation, which reads the same results files as the graphs. Method A is drawn in red and Method B in blue. The plan written before the BTCS solver existed is archived in [docs/archive/finite-volume/development/v1_to_v2_changes.md](docs/archive/finite-volume/development/v1_to_v2_changes.md).
 
 ## [2.1.0] - 2026-11-27
 

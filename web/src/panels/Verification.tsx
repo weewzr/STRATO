@@ -107,7 +107,7 @@ export function MethodComparisonPanel() {
         anchor="verify-methods"
         caption={
           <>
-            Release fraction from {METHOD_1} (blue) and {METHOD_2} (red).
+            Release fraction from {METHOD_1} (red) and {METHOD_2} (blue).
           </>
         }
       >

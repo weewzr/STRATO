@@ -20,7 +20,7 @@ const MOVED: { from: string; kind: 'T' | 'C'; what: string }[] = [
   { from: 'Compare', kind: 'T', what: 'the comparison shows the effect of the inputs, not of new physics' },
   { from: 'Compare', kind: 'T', what: 'Runs with different output times are not compared' },
   { from: 'Compare', kind: 'C', what: 'comparison-evidence' },
-  { from: 'Compare', kind: 'T', what: 'Fraction of the initial inventory released: baseline (grey) and current inputs (blue)' },
+  { from: 'Compare', kind: 'T', what: 'Fraction of the initial inventory released: baseline (grey) and current inputs (red)' },
   { from: 'Compare', kind: 'C', what: 'no-diffs' },
   // Validate
   { from: 'Validate', kind: 'T', what: 'A constant-temperature result of Method A: BTCS is never compared with heating-test data' },

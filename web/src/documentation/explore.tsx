@@ -206,8 +206,8 @@ function FiguresEntry() {
         grey line is the start profile at time 0 s. The axis stays fixed during playback, so the frames compare.
       </p>
       <p>
-        <strong>Figure 3</strong> shows the fraction of the initial inventory released through the outer surface, from {METHOD_1} (blue
-        line) and from {METHOD_2} (red line), at the output times the solver recorded; the thin vertical line and the ring mark the
+        <strong>Figure 3</strong> shows the fraction of the initial inventory released through the outer surface, from {METHOD_1} (red
+        line) and from {METHOD_2} (blue line), at the output times the solver recorded; the thin vertical line and the ring mark the
         playback time. {METHOD_2} is valid from a time that the plot marks (shaded before) and is accurate to the accuracy floor that the
         numerical diagnostics report (the thin grey horizontal line on the logarithmic axis); it uses the eigenmodes that the diagnostics
         count. Where {METHOD_2} was not computed for the inputs, the reason is listed under the numerical diagnostics.

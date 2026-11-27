@@ -285,7 +285,7 @@ export const verify: DocContribution = {
       title: `${METHOD_1} against ${METHOD_2}`,
       body: (
         <p>
-          The release fractions of {METHOD_1} (blue line) and {METHOD_2} (red line), the multilayer Sturm-Liouville series, are plotted as
+          The release fractions of {METHOD_1} (red line) and {METHOD_2} (blue line), the multilayer Sturm-Liouville series, are plotted as
           the native program wrote them.
         </p>
       ),

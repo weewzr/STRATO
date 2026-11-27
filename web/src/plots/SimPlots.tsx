@@ -144,7 +144,7 @@ export function ReleaseCurves() {
         testId="release-plot"
         height={PLOT_HEIGHT}
         minIntervalMs={playing ? PLAYING_REDRAW_MS : 0}
-        label={`Release fraction against time: ${METHOD_1} (blue line) and ${METHOD_2} (red line) as the solver returned them, ${log ? 'on a logarithmic axis' : 'on a linear axis'}, with the playback time marked.`}
+        label={`Release fraction against time: ${METHOD_1} (red line) and ${METHOD_2} (blue line) as the solver returned them, ${log ? 'on a logarithmic axis' : 'on a linear axis'}, with the playback time marked.`}
         exportInfo={{ name: `strato-release-${run.engine.commit}`, source: runSource(run) }}
       />
       <figcaption className="figure__caption">

@@ -51,7 +51,7 @@ function ComparisonFigure() {
           figure={figure}
           testId="compare-plot"
           height={320}
-          label={`Release fraction against time for the baseline${showBaseline ? ' (grey line)' : ' (hidden)'} and the current inputs (blue line)${showDifference ? ', with the difference current minus baseline on the right axis (green line), as compare returned it' : ''}.`}
+          label={`Release fraction against time for the baseline${showBaseline ? ' (grey line)' : ' (hidden)'} and the current inputs (red line)${showDifference ? ', with the difference current minus baseline on the right axis (green line), as compare returned it' : ''}.`}
           exportInfo={{
             name: `strato-comparison-${reply.engine.commit}`,
             source: `STRATO ${METHOD_1}, solver version ${reply.solver.version}, Rust solver in WebAssembly (build ${reply.engine.commit}), compare; ${reply.label}; synthetic five-layer verification case, not physical data; page build ${BUILD.commit}.`,
@@ -93,7 +93,7 @@ function ComparisonFigure() {
         </p>
       ) : null}
       <figcaption className="figure__caption">
-        <strong>Figure 1.</strong> Fraction of the initial inventory released: baseline (grey) and current inputs (blue), with their difference
+        <strong>Figure 1.</strong> Fraction of the initial inventory released: baseline (grey) and current inputs (red), with their difference
         (green, right axis) when switched on. <a href={hrefDocumentation('compare-limits')} className="link-target">
           Method and limits
         </a>
