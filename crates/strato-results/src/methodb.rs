@@ -123,6 +123,10 @@ pub struct Available {
     pub values: Vec<Option<f64>>,
     /// The code of the reason a value is withheld, `None` where it is drawn.
     pub withheld: Vec<Option<&'static str>>,
+    /// The value with the eigenvalue cover reduced by a factor 4 (`V_{alpha_max/4}`), at every
+    /// requested time where it is defined: with the full value it gives the series error estimate
+    /// `|V_alpha_max - V_alpha_max/4| + accuracy_floor` of `metric-r2.md` Section 2.3.
+    pub quarter_cover_values: Vec<Option<f64>>,
     /// The extension through which the series is computed, `None` for the existing series.
     pub extension: Option<Extension>,
     /// Estimated absolute accuracy of the series (`accuracy_floor`).
@@ -307,6 +311,15 @@ pub fn method_b(
     };
     let mut values = Vec::with_capacity(times_s.len());
     let mut withheld = Vec::with_capacity(times_s.len());
+    let quarter_cover_values: Vec<Option<f64>> = times_s
+        .iter()
+        .map(|&t| {
+            run.value_cap(q, t, Some(full.lambda_covered / 4.0))
+                .ok()
+                .flatten()
+                .filter(|v| v.is_finite())
+        })
+        .collect();
     for &t in times_s {
         match run.drawn(q, t) {
             Ok(Drawn::Value(v)) if v.is_finite() => {
@@ -352,6 +365,7 @@ pub fn method_b(
         times_s: times_s.to_vec(),
         values,
         withheld,
+        quarter_cover_values,
         extension,
         accuracy_floor: full.accuracy_floor(),
         valid_from_s: full.min_valid_time(),

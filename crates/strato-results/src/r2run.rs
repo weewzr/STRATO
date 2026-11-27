@@ -32,7 +32,7 @@ use strato_data::Register;
 
 use crate::curves::lin;
 use crate::experiment::{A1, BP1, BP2};
-use crate::methodb::{method_b, temperature_of, MethodB, Needs};
+use crate::methodb::{method_b, temperature_of, MethodB, Needs, NotAvailable};
 use crate::output::{json_file, Files, Prov};
 use crate::params::{decay_constant, Laws, LAYERS};
 use crate::r2::{self, ReasonCode};
@@ -156,13 +156,18 @@ fn value_of(row: &ReleaseRow) -> Option<f64> {
     }
 }
 
-fn axis_scale(first_notes: &str) -> &'static str {
-    if first_notes.contains("linear or logarithmic") {
-        "linear"
-    } else if first_notes.contains("logarithmic") {
-        "log"
+/// The value-axis scale that the register states for a digitised figure; `None` where it does not
+/// (`metric-r2.md` Section 1.3: no field is filled by a default). "Linear or logarithmic" is the
+/// statement that the gridlines fit both scales, so it states neither.
+fn axis_scale(notes: &str) -> Option<&'static str> {
+    if notes.contains("linear or logarithmic") {
+        None
+    } else if notes.contains("logarithmic") || notes.contains("per decade on the value axis") {
+        Some("log")
+    } else if notes.contains("linear-scale plot") {
+        Some("linear")
     } else {
-        "linear"
+        None
     }
 }
 
@@ -231,6 +236,22 @@ struct Hist {
     row_ids: Vec<String>,
     /// True if every row is verified (digitised rows are not: no structured verification).
     all_verified: bool,
+}
+
+impl Hist {
+    /// True if the registered history changes temperature anywhere (it registers a ramp).
+    fn registers_a_ramp(&self) -> bool {
+        self.knots
+            .windows(2)
+            .any(|w| (w[0].1 - w[1].1).abs() > 1e-9)
+    }
+}
+
+/// True where the register says that the time axis of the source figure runs through the heating
+/// ramp, so that the values include the release during the ramp ("negative values are the ramp").
+fn measurement_includes_ramp(rows: &[&ReleaseRow]) -> bool {
+    rows.iter()
+        .any(|r| r.notes.contains("negative values are the ramp"))
 }
 
 fn celsius(p: &Option<strato_data::temperature::TemperaturePoint>) -> Option<f64> {
@@ -408,6 +429,15 @@ fn frg_laws<'a>(reg: &'a Register, element: &str) -> Result<Laws<'a>, String> {
             );
         }
         let first = rows[0];
+        let mut labels = vec![
+            "FRG reference correlation of IAEA-TECDOC-978 (German fuel), not the AGR-1 heating-test set; no validity range printed".to_string(),
+        ];
+        if rows_ids.contains(&"A3-01") {
+            // The row has a fluence factor exp(Gamma/5); the register gives no fluence for these
+            // curves, so the factor is not applied (decision 39).
+            labels
+                .push("fluence factor exp(Gamma/5) of A3-01 not applied (decision 39)".to_string());
+        }
         sel.push(Selection {
             element: element.to_string(),
             layer: *layer,
@@ -419,13 +449,30 @@ fn frg_laws<'a>(reg: &'a Register, element: &str) -> Result<Laws<'a>, String> {
             published_range_c: None,
             range_kind: None,
             kernel_scale: None,
-            labels: vec![
-                "FRG reference correlation of IAEA-TECDOC-978 (German fuel), not the AGR-1 heating-test set; no validity range printed".to_string(),
-            ],
+            labels,
             rows,
         });
     }
     Ok(Laws { sel })
+}
+
+/// `calibration_check` if a diffusivity row used carries the statement "fitted to <table> data" and
+/// the curve is read from that table; otherwise `not_established` (the register records no
+/// independence of the rows from these data).
+fn independence_of(laws: &Laws<'_>, location: &str) -> &'static str {
+    let fitted_here = laws.sel.iter().flat_map(|s| s.rows.iter()).any(|r| {
+        r.notes.split(';').any(|part| {
+            part.trim()
+                .strip_prefix("fitted to ")
+                .map(|rest| rest.trim_end_matches(" data").trim())
+                .is_some_and(|target| !target.is_empty() && location.contains(target))
+        })
+    });
+    if fitted_here {
+        "calibration_check"
+    } else {
+        "not_established"
+    }
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -596,6 +643,11 @@ fn build(
         v
     };
     let hist = build_history(&hist_rows, t_c_number);
+    // The source's time axis runs through the heating ramp (its values include the release during
+    // it) but the registered history holds the hold only: the ramp is not modelled (Section 2.1,
+    // check C5; Method B is then not applicable, Section 5).
+    let ramp_missing =
+        !hist.idealised && measurement_includes_ramp(&rows) && !hist.registers_a_ramp();
     let at_temperature = !first.time_basis.contains("elapsed");
     let basis_offset_h = if at_temperature && !hist.idealised {
         hist.hold_start_h
@@ -676,7 +728,7 @@ fn build(
     if frg {
         premises.push((
             "frg_reference_correlations".into(),
-            "diffusivities: the FRG reference correlations of IAEA-TECDOC-978 Tables A-1 to A-3 (German fuel; rows A1-01..A1-04, BUF-01, A2-01..A2-03, A3-01..A3-05), not the AGR-1 heating-test set C16 (decision 72(b)); no validity range printed".into(),
+            format!("diffusivities: the FRG reference correlations of IAEA-TECDOC-978 Tables A-1 to A-3 (German fuel; rows A1-01..A1-04, BUF-01, A2-01..A2-03, A3-01..A3-05), not the AGR-1 heating-test set C16 (decision 72(b)); no validity range printed{}", if element == "Cs" { "; the row A3-01 is applied without its fluence factor exp(Gamma/5) (decision 39)" } else { "" }),
         ));
     } else {
         premises.push((
@@ -688,6 +740,12 @@ fn build(
         premises.push((
             "temperature_history_idealised".into(),
             format!("temperature ramp not modelled: the register gives no durations for the history {hist_id}; the run is isothermal at the registered test temperature from t = 0"),
+        ));
+    }
+    if ramp_missing {
+        premises.push((
+            "temperature_ramp_not_modelled".into(),
+            format!("temperature ramp not modelled: the time axis of the source runs through the heating ramp and the values include the release during it, but the registered history {hist_id} holds the hold only; the run is isothermal from the hold start"),
         ));
     }
     if let Some((rp, e)) = hist.omitted_first_ramp {
@@ -892,19 +950,37 @@ fn build(
             bt.retain(|t| *t > 0.0);
             bt.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
             bt.dedup_by(|a, b| (*a - *b).abs() < 1e-9);
-            match method_b(
-                &needs,
-                Quantity::ReleaseFraction,
-                1.0,
-                &radii.outer_m,
-                &d,
-                &bt,
-            ) {
+            // Method B on an isothermal idealisation of a ramped test is a different
+            // configuration with no R2 (metric-r2.md Section 5): it is not computed.
+            let b_answer = if ramp_missing {
+                MethodB::NotAvailable(NotAvailable {
+                    code: "RAMP_NOT_REGISTERED",
+                    reason: "the measurement includes the heating ramp and the registered history holds none; an isothermal idealisation is a different configuration".into(),
+                })
+            } else {
+                method_b(
+                    &needs,
+                    Quantity::ReleaseFraction,
+                    1.0,
+                    &radii.outer_m,
+                    &d,
+                    &bt,
+                )
+            };
+            match b_answer {
                 MethodB::Available(a) => {
                     b_input.applicable = true;
-                    let at = |t_s: f64| -> Option<(f64, f64)> {
+                    // `e_i = |V_alpha_max - V_alpha_max/4| + accuracy_floor` (Section 2.3). Where the
+                    // quarter-cover value is not defined the error estimate is not defined and the
+                    // value is `None`: the point is not resolved (M2), never silently resolved.
+                    let at = |t_s: f64| -> Option<(f64, Option<f64>)> {
                         let k = a.times_s.iter().position(|x| (x - t_s).abs() < 1e-6)?;
-                        a.values[k].map(|v| (v, a.accuracy_floor))
+                        a.values[k].map(|v| {
+                            (
+                                v,
+                                a.quarter_cover_values[k].map(|q| (v - q).abs() + a.accuracy_floor),
+                            )
+                        })
                     };
                     let mut mask = true;
                     for (i, t) in t_mod.iter().enumerate() {
@@ -916,8 +992,8 @@ fn build(
                             Some((v, e)) => {
                                 b_input.model_times_h[i] = Some(*t);
                                 b_input.f_model[i] = Some(v);
-                                b_input.e_num[i] = Some(e);
-                                b_input.resolved[i] = true;
+                                b_input.e_num[i] = e;
+                                b_input.resolved[i] = e.is_some();
                             }
                             None => mask = false,
                         }
@@ -940,7 +1016,8 @@ fn build(
                         ("model_config_id", J::s(model_config_id.clone())),
                         ("alpha_max_per_s", J::Num(a.alpha_max_per_s)),
                         ("modes", J::Int(a.modes as i64)),
-                        ("e_num_basis", J::s("the accuracy floor of the series; the difference to the series with a quarter of the eigenvalue cover is not returned by the single Method B function and is not added")),
+                        ("e_num_basis", J::s("|V_alpha_max - V_alpha_max/4| + accuracy_floor (metric-r2.md Section 2.3); V_alpha_max/4 is the series with the eigenvalue cover reduced by a factor 4")),
+                        ("accuracy_floor", J::Num(a.accuracy_floor)),
                     ]));
                     b_samples = Some((
                         xs.clone(),
@@ -973,6 +1050,7 @@ fn build(
     }
     let history_covers = hist.omitted_first_ramp.is_none()
         && !hist.idealised
+        && !ramp_missing
         && !hist.knots.is_empty()
         && needed_h <= hist_len_h + 1e-9;
     // ---- Labels, words, source.
@@ -984,10 +1062,18 @@ fn build(
         },
     };
     let l = Some(curve.specimen_level);
+    // The value-axis scale of the source figure as the register states it; a curve with no
+    // digitised point has no source figure and is formed on the linear fraction (Section 7.4).
+    let any_digitised = inputs.iter().any(|r| r.digitised);
+    let y_scale: Option<&'static str> = if any_digitised {
+        rows.iter().find_map(|r| axis_scale(&r.notes))
+    } else {
+        Some("linear")
+    };
     let words = CaptionWords {
         time_axis_label: time_axis_label(&first.time_basis),
         specimen_label: specimen_label(l, &first.compact_or_sample, Some(curve.source_aggregated)),
-        y_axis_scale: axis_scale(&first.notes).to_string(),
+        y_axis_scale: y_scale.map(str::to_string),
     };
     let denominator_established = match first.denominator {
         Denominator::ParticleInventory => count.is_some(),
@@ -1007,11 +1093,11 @@ fn build(
     } else {
         "mixed"
     };
-    let independence = if curve.dataset_id.contains("JAERI") {
-        "calibration_check"
-    } else {
-        "not_established"
-    };
+    // `independence` follows from the source records of the diffusivity rows actually used
+    // (metric-r2.md Section 7.1), never from the name of the dataset.
+    let independence = laws.as_ref().map_or("not_established", |l| {
+        independence_of(l, &curve.source_location)
+    });
     let lambda_per_h = decay_constant(reg, &curve.nuclide).ok().map(|l| l * H);
     let u_value_summary = rows.iter().find_map(|r| match &r.reading_uncertainty {
         ReadingUncertainty::Stated { value: Some(v), .. } => match v {
@@ -1042,6 +1128,9 @@ fn build(
     }
     if radii.is_err() {
         missing.push("particle geometry".into());
+    }
+    if y_scale.is_none() {
+        missing.push("axis scale of the digitised figure".into());
     }
     let register_marks_failure = rows
         .iter()
@@ -1292,8 +1381,20 @@ mod tests {
             specimen_label(Some(SpecimenLevel::Sphere), "HFR-K3/1 sphere", Some(true)),
             "fuel sphere HFR-K3/1, source mean"
         );
-        assert_eq!(axis_scale("logarithmic from 1e-9 to 1e0"), "log");
-        assert_eq!(axis_scale("linear or logarithmic scale to 0"), "linear");
+        assert_eq!(axis_scale("logarithmic from 1e-9 to 1e0"), Some("log"));
+        assert_eq!(
+            axis_scale("75 px per decade on the value axis"),
+            Some("log")
+        );
+        assert_eq!(axis_scale("a linear-scale plot"), Some("linear"));
+        // The gridlines fit both scales: the register states neither, so no value is written.
+        assert_eq!(
+            axis_scale(
+                "agree with a linear or logarithmic scale to 0.06 pt (0.1 pt at 120 pt per decade)"
+            ),
+            None
+        );
+        assert_eq!(axis_scale("nothing about the axis"), None);
         assert_eq!(degrees(1600.0), "1600 \u{b0}C");
     }
 

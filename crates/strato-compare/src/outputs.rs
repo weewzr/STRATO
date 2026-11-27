@@ -360,11 +360,7 @@ pub fn datasets_csv(prov: &Prov, sets: &[Dataset]) -> String {
             "Test temperatures (°C)",
             "Longest compared test duration (h)",
             "Point comparisons: number",
-            "Point comparisons: RMSE (dimensionless)",
-            "Point comparisons: MAE (dimensionless)",
             "Point comparisons: maximum absolute deviation (dimensionless)",
-            "Point comparisons: RMSE of log10 ratio (dimensionless)",
-            "Point comparisons: MAE of log10 ratio (dimensionless)",
             "Point comparisons: number with a defined relative deviation",
             "Upper bounds: number",
             "Upper bounds: satisfied",
@@ -403,17 +399,12 @@ pub fn datasets_csv(prov: &Prov, sets: &[Dataset]) -> String {
         match &d.point {
             Some(p) => {
                 c.push(p.n.to_string());
-                c.push(num(p.rmse));
-                c.push(num(p.mae));
                 c.push(num(p.max_absolute));
-                c.push(onum(p.rmse_log10));
-                c.push(onum(p.mae_log10));
                 c.push(p.n_relative.to_string());
             }
             None => {
                 c.push("0".into());
-                c.extend(std::iter::repeat_n(String::new(), 5));
-                c.push(String::new());
+                c.extend(std::iter::repeat_n(String::new(), 2));
             }
         }
         match &d.bound {
@@ -933,11 +924,7 @@ pub fn comparison_json(
             let pa = |p: &crate::metrics::PointAggregate| {
                 J::obj(vec![
                     ("n", J::Int(p.n as i64)),
-                    ("rmse", J::Num(p.rmse)),
-                    ("mae", J::Num(p.mae)),
                     ("max_absolute_deviation", J::Num(p.max_absolute)),
-                    ("rmse_log10_ratio", J::opt(p.rmse_log10)),
-                    ("mae_log10_ratio", J::opt(p.mae_log10)),
                     ("n_relative_deviation_defined", J::Int(p.n_relative as i64)),
                 ])
             };

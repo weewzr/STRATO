@@ -46,11 +46,11 @@ cargo run --release --locked --manifest-path crates/Cargo.toml -p strato-results
 | `curves/<key>.json` | One curve file per cell. Keys: `s1.exp.<nuclide>.<T>c` (stage 1, experimental-comparison context), `s3.exp...` and `s4.exp...` (decay and temperature-dependent stages in that context), `s1.expl...` (model exploration), `s<N>.<scenario>.<nuclide>.<T>c` for scenario runs (variants: `.exploration` at 1197 degC, `.cycles`, `.heating1600/1700/1800`). |
 | `experiment/agr1.<nuclide>.<T>c.json` | Experimental observations of one dataset: bound markers and window bounds with value, reading interval, status, premises (BP1, BP2, A1) and source; point markers only where a point comparison exists (none today). Every bound carries `comparison_class`, `denominator` (as the comparison program states them), `time_window` and `particle_applicability` (the register row's cells), and, for the ten matrix-corrected rows E-010..E-014 and E-033..E-037, `premise_source` and `window_end_origin`: class "window upper bound under premise BP1", denominator "as-run calculated compact inventory", the window from about 24 h at temperature to the end of the 300 h plateau or the shorter test end. Which rows these are comes from the comparison program, not from a list in the pipeline. |
 | `bounds.json`, `csv/bounds.csv` | All bound comparisons with their statuses (technical section). |
-| `r2.json`, `csv/r2.csv` | The ² records of `metric-r2.md` Section 7.1, two per registered experimental curve (Method A then Method B), in the order of `data/experimental/curve_assessment.csv`. ² is the only whole-curve agreement metric (decision 69). With the registers of today no record has a value: each says which check failed first (`reason_code`, with its fixed caption), every failing check (`failed_checks`) and the premises. This file replaces `deviations.json` of the specification and the superseded records of decisions 64 and 65. |
-| `comparison/<curve_id>.json` | One file per curve: the experimental points as registered (value, time, qualifier, reading uncertainty, class, status; markers, never connected), the Method A curve computed over the registered history with the diffusivity rows the assessment names (or the reason that none was computed), Method B only where the applicability function allows it and the mask passes, the two ² records and the caption record. |
+| `r2.json`, `csv/r2.csv` | The R² records of `metric-r2.md` Section 7.1, two per registered experimental curve (Method A then Method B), in the order of `data/experimental/curve_assessment.csv`. R² is the only whole-curve agreement metric (decision 69). With the registers of today no record has a value: each says which check failed first (`reason_code`, with its fixed caption), every failing check (`failed_checks`) and the premises. This file replaces `deviations.json` of the specification and the superseded records of decisions 64 and 65. |
+| `comparison/<curve_id>.json` | One file per curve: the experimental points as registered (value, time, qualifier, reading uncertainty, class, status; markers, never connected), the Method A curve computed over the registered history with the diffusivity rows the assessment names (or the reason that none was computed), Method B only where the applicability function allows it and the mask passes, the two R² records and the caption record. |
 | `scenarios.json`, `csv/scenario_histories.csv` | The scenario definitions as run: histories, source ids, labels. |
 | `csv/scenario_series.csv`, `csv/curves.csv` | The decimated series of the scenario runs and the curves of the experimental and exploration cells. |
-| `labels.json` | Colours, the ² display rule and label templates (LaTeX and plain), the label texts of the graphs generated in Rust, the ² labels of the records (empty where no value exists) and the caption record of every curve (`r2_captions`). |
+| `labels.json` | Colours, the R² display rule and label templates (LaTeX and plain), the label texts of the graphs generated in Rust, the R² labels of the records (empty where no value exists) and the caption record of every curve (`r2_captions`). |
 | `verification/convergence.json` | Observed orders in space and in time against the exact series. |
 | `verification/agreement.json` | Solver-to-solver agreement of Method A and Method B at the stage 1 cells. |
 | `verification/conservation.json` | Balance residuals against their derived bounds (Document 5, F46), for every curve. |
@@ -114,6 +114,33 @@ columns for `decay_reference`, `inventory_reference`, `inventory_reference_offse
 `counting_delay_h`: they are `null` in every record (never defaulted), which is why checks C6 and D1
 list them. The independent recomputation (V1) and the independent verification of the curve
 assessment (C0) are recorded nowhere yet, so those checks also fail.
+
+Further rules of the records, each stated in the record that it affects:
+
+- C4: a negative value passes only when the source presents it as a cumulative release fraction and
+  its magnitude does not exceed its stated uncertainty (`metric-r2.md` Section 3.1). No registered
+  curve has a negative value.
+- Ramp (C5): where the register says that the source's time axis runs through the heating ramp
+  ("negative values are the ramp") and the registered history holds the hold only (the two Stempien
+  (2023) compact 6-4-3 curves), C5 fails, the premise `temperature_ramp_not_modelled` is stated,
+  Method B is not applicable (B1) and is not drawn.
+- `y_axis_scale` is the value-axis scale that the register states for a digitised figure; where it
+  states none (or only that the gridlines fit a linear or a logarithmic scale), the field is `null`
+  and C6 lists "axis scale of the digitised figure". It is never defaulted.
+- `independence` follows from the source records of the diffusivity rows used: `calibration_check`
+  only where a row used is recorded as fitted to the table that the curve is read from. The JAERI
+  curves run with the C16 rows, none of which is recorded as fitted to Table 4-9, so they are
+  `not_established`.
+- Method B error estimate: `e_num` is `|V_alphamax - V_alphamax/4| + accuracy_floor` (the series with
+  the eigenvalue cover reduced by a factor 4, `metric-r2.md` Section 2.3); where the quarter-cover
+  value is not defined the point is unresolved and M2 fails.
+- The source line of a curve whose link has no recorded check says so (`source_link_note`); no link
+  has been checked by this pipeline. The independent coordinate verification of digitised rows and
+  the stored run outputs that route (i) of V1 needs are not recorded yet (`digitisation_verification_ref`
+  is `null`, `model_run_ref` holds hashes and no paths), so C0 and V1 fail.
+- The comparison program (`data/comparison`, `docs/validation`) writes per-point diagnostics only;
+  no aggregate deviation over points is computed there (decision 69(a)).
+
 ## Units and conventions
 
 - Release fraction: dimensionless, cumulative, fraction of the inventory of one particle (stage 1) or

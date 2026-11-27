@@ -174,8 +174,9 @@ pub struct CaptionWords {
     pub time_axis_label: String,
     /// `compact 6-4-3` and the like, with `, source mean` where aggregated.
     pub specimen_label: String,
-    /// `linear` or `log`.
-    pub y_axis_scale: String,
+    /// `linear` or `log`; `None` where the register does not state the value-axis scale of a
+    /// digitised figure (never filled by a default, `metric-r2.md` Section 1.3; check C6).
+    pub y_axis_scale: Option<String>,
 }
 
 /// Everything about one curve that the checks read.
@@ -489,10 +490,13 @@ fn prepare(c: &CurveInput) -> Prepared {
         matrix && !c.matrix_separated_by_source,
     );
     // C4.
+    // Section 3.1, C4: a negative value fails when the source does not present it as a cumulative
+    // release fraction, or its magnitude exceeds its stated uncertainty, or none is stated. It
+    // passes only when presented as a release fraction and `|value| <= u`.
     let negative_bad = used.iter().any(|i| {
         let r = &c.rows[*i];
         r.value < 0.0
-            && !(r.negative_presented_as_release && r.u_value.is_some_and(|u| r.value.abs() > u))
+            && !(r.negative_presented_as_release && r.u_value.is_some_and(|u| r.value.abs() <= u))
     });
     add(
         &mut failed,
@@ -1163,6 +1167,11 @@ pub fn caption_json(
     let source_kind = match c.data_kind.as_str() {
         "measured_tabulated" => "tabulated",
         "digitised" => "digitised",
+        // Points read from a figure stay labelled digitised when they are also converted
+        // (Section 4.2: a digitised point is labelled so in the legend).
+        "calculated" if c.rows.iter().any(|r| r.digitised) => {
+            "digitised; calculated from registered values"
+        }
         "calculated" => "calculated from registered values",
         _ => "tabulated and digitised",
     };
@@ -1217,7 +1226,7 @@ pub fn caption_json(
         ("specimen_label", J::s(c.words.specimen_label.clone())),
         ("temperature_label", J::s(c.temperature_label.clone())),
         ("y_axis_label", J::s("Cumulative release fraction")),
-        ("y_axis_scale", J::s(c.words.y_axis_scale.clone())),
+        ("y_axis_scale", jopts(c.words.y_axis_scale.as_deref())),
         ("legend_exp_label", J::s(legend_exp)),
         ("marker_colour_exp", J::s(COLOUR_EXP)),
         ("legend_methods", J::Arr(methods)),
@@ -1305,7 +1314,7 @@ pub(crate) mod fixtures {
             words: CaptionWords {
                 time_axis_label: "time at temperature (h)".into(),
                 specimen_label: "particle 1".into(),
-                y_axis_scale: "linear".into(),
+                y_axis_scale: Some("linear".into()),
             },
         }
     }
@@ -1440,6 +1449,20 @@ mod tests {
         );
         assert!(rec.premises.iter().any(|(k, _)| k == "early_bound"));
         assert!(rec.json.render().contains("\"early_bound_points\": [\n"));
+        // One early detection limit followed by measured points: excluded, N = 5, C1 passes.
+        let mut c1 = good_curve();
+        c1.rows.truncate(5);
+        let mut one = extra.clone();
+        one.id = "E-100".into();
+        one.qualifier = "<".into();
+        one.value_class = "M-ND".into();
+        one.time_h = -1.0;
+        one.time_el_h = -1.0;
+        c1.rows.insert(0, one);
+        let rec1 = &both(&c1)[0];
+        assert_eq!(rec1.n, 5, "{:?}", rec1.failed_checks);
+        assert!(rec1.available, "{:?}", rec1.failed_checks);
+        assert_eq!(rec1.rows_excluded, vec!["E-100:early_bound".to_string()]);
         // The same two limits followed by four measured points: too few points.
         let mut c4 = c.clone();
         c4.rows.pop();
@@ -1552,10 +1575,25 @@ mod tests {
         c.rows[0].value = -0.002;
         c.rows[0].registered_value = -0.002;
         assert!(failing(&c).contains(&"C4"));
-        // Presented as a release fraction, with a stated uncertainty smaller than its size.
+        // metric-r2.md Section 3.1, C4: presented as a release fraction, a negative value fails
+        // when it exceeds its stated uncertainty in magnitude, and passes when |v| <= u.
         c.rows[0].negative_presented_as_release = true;
         c.rows[0].u_value = Some(0.001);
-        assert!(!failing(&c).contains(&"C4"));
+        assert!(
+            failing(&c).contains(&"C4"),
+            "|-0.002| > u = 0.001 must fail"
+        );
+        c.rows[0].u_value = Some(0.002);
+        assert!(!failing(&c).contains(&"C4"), "|v| = u passes");
+        c.rows[0].u_value = Some(0.005);
+        assert!(!failing(&c).contains(&"C4"), "|v| < u passes");
+        // No stated uncertainty: fails.
+        c.rows[0].u_value = None;
+        assert!(failing(&c).contains(&"C4"));
+        // Not presented as a release fraction: fails even inside the uncertainty.
+        c.rows[0].u_value = Some(0.005);
+        c.rows[0].negative_presented_as_release = false;
+        assert!(failing(&c).contains(&"C4"));
     }
 
     #[test]
@@ -1575,6 +1613,26 @@ mod tests {
         c.missing_conditions = vec!["time unit".into()];
         assert_eq!(failing(&c), vec!["C6"]);
         assert_eq!(both(&c)[0].reason, Some(ReasonCode::MissingConditions));
+    }
+
+    #[test]
+    fn an_unstated_axis_scale_is_null_and_the_digitised_label_survives_the_conversion() {
+        let mut c = good_curve();
+        c.words.y_axis_scale = None;
+        c.missing_conditions = vec!["axis scale of the digitised figure".into()];
+        assert_eq!(failing(&c), vec!["C6"]);
+        let [a, b] = both(&c);
+        let cap = caption_json(&c, &a, &b, [true, true], None).render();
+        assert!(cap.contains("\"y_axis_scale\": null"), "{cap}");
+        // Digitised points converted to particle equivalents say both in the legend.
+        let mut c = good_curve();
+        c.data_kind = "calculated".into();
+        let [a, b] = both(&c);
+        let cap = caption_json(&c, &a, &b, [true, true], None).render();
+        assert!(
+            cap.contains("Experiment (digitised; calculated from registered values)"),
+            "{cap}"
+        );
     }
 
     #[test]

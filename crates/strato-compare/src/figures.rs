@@ -1743,14 +1743,12 @@ pub fn deviation_lines(records: &[RowRecord], species: Species) -> Vec<String> {
     }
     match crate::metrics::point_aggregate(&pairs) {
         Some(a) => out.push(format!(
-            "Over {} point comparisons: root-mean-square deviation {}, mean absolute deviation {}, log-space root-mean-square of log10 ratio {}.",
+            "Over {} point comparisons: largest absolute deviation {}; no aggregate deviation is formed (the whole-curve metric of the pipeline is R\u{b2}, in the results files).",
             a.n,
-            three(a.rmse),
-            three(a.mae),
-            a.rmse_log10.map_or("undefined".to_string(), three)
+            three(a.max_absolute)
         )),
         None => out.push(format!(
-            "No {nuc} row supports a point comparison, so the absolute deviation, the relative deviation in percent and the log-space root-mean-square deviation are not defined for {nuc}{}; no number is substituted.",
+            "No {nuc} row supports a point comparison, so the absolute deviation, and the relative deviation in percent are not defined for {nuc}{}; no number is substituted.",
             if any_scale {
                 " (the log10 ratios above are for scale only and enter no aggregate)"
             } else {

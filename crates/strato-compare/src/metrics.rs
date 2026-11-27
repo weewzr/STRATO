@@ -1,9 +1,10 @@
-//! The metrics of directive section 13 and the two additions of decision 18.
+//! The per-point diagnostics of directive section 13 and the signed log10 ratio of decision 18.
 //!
-//! Absolute deviation, relative deviation, RMSE, MAE, maximum absolute deviation and the
+//! Absolute deviation, relative deviation, the maximum absolute deviation and the
 //! uncertainty-normalised residual come from the verified `strato::validation::metrics` module.
-//! This file adds the signed log10 ratio and the log-space RMSE (decision 18), the upper-bound
-//! margin (decision 23) and the rules of decisions 17, 19 and 23. No accuracy threshold and no
+//! This file adds the signed log10 ratio, the upper-bound margin (decision 23) and the rules of
+//! decisions 17, 19 and 23. No whole-curve metric is formed here: the only whole-curve metric of
+//! the pipeline is R-squared (decision 69(a), `metric-r2.md`). No accuracy threshold and no
 //! near-zero floor is built in: a floor would have to be stated by the source (decision 17), and
 //! the register states none.
 
@@ -91,18 +92,10 @@ pub fn bound_margin(model: f64, limit: f64) -> Option<BoundMargin> {
 pub struct PointAggregate {
     /// Number of point values.
     pub n: usize,
-    /// Root mean square of `F_model - F_exp`.
-    pub rmse: f64,
-    /// Mean of `|F_model - F_exp|`.
-    pub mae: f64,
     /// Largest `|F_model - F_exp|`.
     pub max_absolute: f64,
-    /// Number of points with a positive model and measured value (the log metrics use these).
+    /// Number of points with a positive model and measured value (the log ratio is defined).
     pub n_log: usize,
-    /// Root mean square of `log10(F_model / F_exp)` (decision 18).
-    pub rmse_log10: Option<f64>,
-    /// Mean of `|log10(F_model / F_exp)|`.
-    pub mae_log10: Option<f64>,
     /// Number of points whose relative deviation is defined.
     pub n_relative: usize,
 }
@@ -128,23 +121,10 @@ pub fn point_aggregate(pairs: &[(f64, f64)]) -> Option<PointAggregate> {
         .iter()
         .filter(|&&(m, e)| e > 0.0 && m.is_finite())
         .count();
-    let (rmse_log, mae_log) = if logs.is_empty() {
-        (None, None)
-    } else {
-        let n = logs.len() as f64;
-        (
-            Some((logs.iter().map(|x| x * x).sum::<f64>() / n).sqrt()),
-            Some(logs.iter().map(|x| x.abs()).sum::<f64>() / n),
-        )
-    };
     Some(PointAggregate {
         n: a.count,
-        rmse: a.rmse,
-        mae: a.mae,
         max_absolute: a.max_absolute_deviation,
         n_log: logs.len(),
-        rmse_log10: rmse_log,
-        mae_log10: mae_log,
         n_relative: n_rel,
     })
 }
@@ -228,22 +208,18 @@ mod tests {
 
     #[test]
     fn aggregates_match_hand_values() {
-        // pairs (model, exp): errors +1, -3 -> RMSE sqrt(5), MAE 2, max 3
+        // pairs (model, exp): errors +1, -3 -> max 3; no aggregate deviation is formed
+        // (decision 69(a) removed every aggregate deviation over points)
         let a = point_aggregate(&[(2.0, 1.0), (1.0, 4.0)]).unwrap();
         assert_eq!(a.n, 2);
-        assert!((a.rmse - 5.0_f64.sqrt()).abs() < 1e-12);
-        assert!((a.mae - 2.0).abs() < 1e-12);
         assert!((a.max_absolute - 3.0).abs() < 1e-12);
-        // logs: log10(2) and log10(0.25)
-        let l1 = 2.0_f64.log10();
-        let l2 = 0.25_f64.log10();
-        assert!((a.rmse_log10.unwrap() - ((l1 * l1 + l2 * l2) / 2.0).sqrt()).abs() < 1e-12);
-        assert!((a.mae_log10.unwrap() - (l1.abs() + l2.abs()) / 2.0).abs() < 1e-12);
+        assert_eq!(a.n_log, 2);
+        assert_eq!(a.n_relative, 2);
         assert!(point_aggregate(&[]).is_none());
-        // n = 1: RMSE equals the absolute deviation and n is reported
+        // n = 1: the maximum equals the absolute deviation and n is reported
         let one = point_aggregate(&[(0.5, 0.25)]).unwrap();
         assert_eq!(one.n, 1);
-        assert!((one.rmse - 0.25).abs() < 1e-15);
+        assert!((one.max_absolute - 0.25).abs() < 1e-15);
     }
 
     #[test]

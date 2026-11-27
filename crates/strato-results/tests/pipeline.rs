@@ -23,6 +23,53 @@ fn temp(name: &str) -> PathBuf {
     d
 }
 
+/// Decision 69(a): no aggregate deviation over points is named, computed or shown in any committed
+/// output or document of the comparison and validation folders (the per-point diagnostics stay).
+#[test]
+fn no_committed_comparison_output_or_document_names_an_aggregate_deviation() {
+    fn walk(dir: &std::path::Path, out: &mut Vec<PathBuf>) {
+        let Ok(entries) = fs::read_dir(dir) else {
+            return;
+        };
+        for e in entries.flatten() {
+            let p = e.path();
+            if p.is_dir() {
+                walk(&p, out);
+            } else if matches!(
+                p.extension().and_then(|x| x.to_str()),
+                Some("csv" | "json" | "md" | "txt")
+            ) {
+                out.push(p);
+            }
+        }
+    }
+    let mut paths = Vec::new();
+    for sub in [
+        "data/comparison",
+        "docs/validation",
+        "docs/results",
+        "data/results",
+    ] {
+        walk(&repo().join(sub), &mut paths);
+    }
+    assert!(!paths.is_empty(), "no committed output found");
+    for p in paths {
+        let text = fs::read_to_string(&p).expect("a UTF-8 text file");
+        for word in text.split(|c: char| !c.is_alphanumeric()) {
+            assert!(
+                !matches!(word, "NRMSE" | "RMSE" | "MAE") && !word.to_lowercase().contains("rmse"),
+                "{}: the word {word}",
+                p.display()
+            );
+        }
+        assert!(
+            !text.to_lowercase().contains("log-space"),
+            "{}: a log-space aggregate",
+            p.display()
+        );
+    }
+}
+
 #[test]
 fn the_pipeline_writes_a_checked_and_clean_file_set() {
     let files: Files = generate(&Options {
@@ -128,6 +175,40 @@ fn the_pipeline_writes_a_checked_and_clean_file_set() {
     );
     let labels = &files["labels.json"];
     assert!(labels.contains("\"r2_captions\"") && labels.contains("\"r2_display_rule\""));
+
+    // The two AGR-1 compact curves whose source clock runs through the heating ramp while the
+    // registered history holds the hold only: C5 fails, the premise is stated, Method B is not
+    // applicable (B1) and is not drawn (metric-r2.md Sections 2.1 and 5).
+    for id in ["STEMPIEN23-643-AG110M", "STEMPIEN23-643-SR90"] {
+        let f = &files[&format!("comparison/{id}.json")];
+        assert!(
+            f.contains("\"C5\""),
+            "{id}: C5 is not among the failed checks"
+        );
+        assert!(
+            f.contains("\"code\": \"temperature_ramp_not_modelled\""),
+            "{id}: no ramp premise"
+        );
+        assert!(
+            f.contains("\"B1\"") && !f.contains("\"B2\""),
+            "{id}: Method B must fail B1"
+        );
+        assert!(
+            !f.contains("\"colour\": \"#DC2626\""),
+            "{id}: Method B is drawn"
+        );
+        assert!(
+            f.contains("\"y_axis_scale\": null"),
+            "{id}: the register states no axis scale"
+        );
+    }
+    // The JAERI curves run with the C16 rows, none of which is fitted to Table 4-9: no
+    // calibration check is claimed.
+    for id in ["IAEA97-JAERI-A-CS137-1600", "IAEA97-JAERI-A-CS137-1800"] {
+        let f = &files[&format!("comparison/{id}.json")];
+        assert!(f.contains("\"independence\": \"not_established\""), "{id}");
+        assert!(!f.contains("calibration_check"), "{id}");
+    }
 
     // The C15 documented-application label (science design 5.1): the cooldown, the startup ramp
     // and the 900 degC part carry it, in the file and (Scenario 4) in the panel title; normal

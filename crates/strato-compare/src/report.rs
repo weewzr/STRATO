@@ -362,7 +362,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     let st = crate::model::Settings::BASE;
     let _ = writeln!(
         s,
-        "\nNumerical settings of the base runs: intervals per layer {:?}, requested time step {} h; the numerical difference reported beside every model value is the difference to a run with twice the intervals and half the step. Metrics are those of directive section 13 (absolute deviation, relative percentage deviation, RMSE, MAE, maximum absolute deviation, uncertainty-normalised residual) plus the signed log10 ratio and the log-space RMSE (decision 18). No normalised root-mean-square error is computed or shown (decisions 64, 65 and 67): no registered row is a point comparison, so the set of compatible points has N = 0. Relative deviation is undefined for a measured value that is not positive, and no near-zero floor is applied because no row states a detection floor (decision 17). No accuracy threshold is used anywhere.\n",
+        "\nNumerical settings of the base runs: intervals per layer {:?}, requested time step {} h; the numerical difference reported beside every model value is the difference to a run with twice the intervals and half the step. The per-point diagnostics are those of directive section 13 (absolute deviation, relative percentage deviation, maximum absolute deviation, uncertainty-normalised residual) plus the signed log10 ratio (decision 18). No aggregate deviation over points is computed or shown here: the whole-curve metric of the pipeline is R-squared, defined in metric-r2.md (decision 69(a)) and written by the results pipeline. Relative deviation is undefined for a measured value that is not positive, and no near-zero floor is applied because no row states a detection floor (decision 17). No accuracy threshold is used anywhere.\n",
         st.intervals, st.dt_h
     );
 
@@ -579,7 +579,7 @@ pub fn render(inp: &ReportInput<'_>) -> String {
     let _ = writeln!(s, "## Aggregate metrics per dataset\n");
     let _ = writeln!(
         s,
-        "Aggregates are formed per dataset: the same programme, nuclide, group of particles and quantity definition, never across them. Bounds are counted, not averaged into a deviation. Rows that are DATA INCOMPLETE enter no aggregate. A group with no point comparison has no RMSE, MAE or maximum: they are undefined, not zero.\n"
+        "Aggregates are formed per dataset: the same programme, nuclide, group of particles and quantity definition, never across them. Bounds are counted, not averaged into a deviation. Rows that are DATA INCOMPLETE enter no aggregate. A group with no point comparison has no maximum absolute deviation: it is undefined, not zero.\n"
     );
     let _ = writeln!(
         s,
