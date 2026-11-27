@@ -374,7 +374,7 @@ const PSEUDO = {
 const TRACE: DocRef = { doc: 'd4', section: '2. Matrix of equations (D2 numbering)' };
 
 const NO_CODE = 'This step states the continuous mathematics that every later step discretises; no solver code belongs to it.';
-const NO_LIVE_MATH = 'This step states mathematics; it has no live value. The numbers of the current run are in the live simulation below.';
+const NO_LIVE_MATH = 'This step states mathematics; it has no live value. The numbers of a run are in the manual solver of Scientific Documentation.';
 
 // ---------------------------------------------------------------------------
 // The steps
@@ -607,7 +607,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       derivation: [doc1(D1_32), doc2(D2_3), doc2(D2_4)],
       note: 'Inside a material the central differences equal a difference of flows through the intervals between nodes. The solver uses this flux form at every node, so that it conserves the amount exactly and needs no special stencil at an interface.',
     },
-    live: 'The grid of the current run is set by the number of grid intervals per layer in the controls; the solver reports the nodes it used. The numbers of the current run are listed below, as the wrapper returns them.',
+    live: 'The grid of the current run is set by the number of grid intervals per layer in the controls of the manual solver; the solver reports the nodes it used. The numbers of a run are listed in the manual solver of Scientific Documentation, as the wrapper returns them.',
   },
   6: {
     stage: 6,
@@ -748,7 +748,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       derivation: [doc1(D1_5), doc2(D2_5)],
       note: 'The four interface rows are the general row at the four interface nodes. The two expressions for the flow through an interface are equal in exact arithmetic; their difference on a computed solution is a diagnostic.',
     },
-    live: 'The interface concentration and the flow through each interface are diagnostics of a run; they are listed with the diagnostics under the live simulation once the solver reports them.',
+    live: 'The interface concentration and the flow through each interface are diagnostics of a run; they are listed with the diagnostics of the manual solver in Scientific Documentation once the solver reports them.',
   },
   9: {
     stage: 9,
@@ -795,7 +795,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       derivation: [doc1(D1_6), doc2(D2_5), doc2(D2_7)],
       note: 'The release rate must use the stored conductance of the last interval, not a recomputed one; otherwise the balance stated under Numerical verification and convergence acquires a residual of discretisation size.',
     },
-    live: 'The release rate of the current run appears in the release readout and the release curve of the live simulation.',
+    live: 'The release rate of the current run appears in the release readout and the release curve of the manual solver in Scientific Documentation.',
   },
   10: {
     stage: 10,
@@ -897,7 +897,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       derivation: [doc2('6.3 Solution of the linear system'), TRACE],
       note: 'The links point at the solver branch. The routine that solves each step is ThomasFactors, coded in the form of the equation above. solve_in_place is the general Thomas solve, kept only as a cross-check utility. The right-hand side that each sweep solves is stated under Tridiagonal matrix assembly.',
     },
-    live: 'The solver of the current run is this algorithm; its version, commit and verification status are listed in the numbers below and in the diagnostics under the live simulation.',
+    live: 'The solver of the current run is this algorithm; its version and verification status are shown in the status line of the manual solver in Scientific Documentation; the build is under Technical implementation and build.',
   },
   12: {
     stage: 12,
@@ -943,7 +943,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       derivation: [doc2(D2_7), TRACE],
       note: 'The reported release fraction is the released amount over the exact start inventory. The complementary value, one minus the inventory over the start inventory, is a diagnostic that differs from it by the balance residual. The release rate is stated under Absorbing outer-boundary condition, the release fraction in the next step of this item, and the balance and its residual under Numerical verification and convergence.',
     },
-    live: 'The values of the inventory, the released amount and the balance residual for the current run are under Inventory balance in the live simulation below, as the Rust wrapper returns them; nothing is computed in the browser.',
+    live: 'The values of the inventory, the released amount and the balance residual for the current run are under Inventory balance in the manual solver of Scientific Documentation, as the Rust wrapper returns them; nothing is computed in the browser.',
   },
   13: {
     stage: 13,
@@ -996,7 +996,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       derivation: [doc2(D2_8), TRACE],
       note: 'Document 2, Section 8 lists each property with its hypotheses and its label: proved, proof outline, observed or not proven. The tests of the solver branch check them. Nothing on this page claims an accuracy against experimental data.',
     },
-    live: 'The Verify section reports the verification of the BTCS solver: its release fraction against the analytical solution, the observed orders and the balance. These checks verify the numerical method and are not experimental validation.',
+    live: 'The numerical verification evidence in Scientific Documentation reports the verification of the BTCS solver: its release fraction against the analytical solution, the observed orders and the balance. These checks verify the numerical method and are not experimental validation.',
   },
   14: {
     stage: 14,
@@ -1004,7 +1004,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
     short: 'Release fraction',
     kind: 'step',
     mechanism: null,
-    summary: 'The release fraction is the quantity that a comparison with measured release sets beside the measurement. An experimental comparison will appear under Validate; none is available in this build, and no measurement is shown here.',
+    summary: 'The release fraction is the quantity that a comparison with measured release sets beside the measurement. Explore draws registered experimental release curves beside the model curve of the same configuration, each with its caption and citation; where a dataset does not support the agreement metric, a caption says why.',
     main: [F28],
     parts: [
       part({
@@ -1014,7 +1014,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
         latex: String.raw`F^j = \frac{M_{\mathrm{rel}}^j}{M^0}`,
         meaning: 'The quantity of the model that a comparison sets beside a measured release fraction. A measured value is fixed data; the computed value changes with the inputs.',
         units: [U_F, U_MREL, U_M],
-        assumptions: ['No measurement is shown on this page and no agreement is claimed.', 'A comparison needs the data, the diffusivity rows and the assumptions stated beside every result; Validate gives its status.'],
+        assumptions: ['A model curve is drawn beside measurements only under temperature-dependent diffusion over the registered heating history, with the dataset named, and no agreement is claimed beyond the agreement metric that a record holds.', 'A comparison needs the data, the diffusivity rows and the assumptions stated beside every result; the experimental interpretation in Scientific Documentation gives its status.'],
         derivation: doc2(D2_7),
       }),
     ],
@@ -1023,9 +1023,9 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       code: [],
       pseudocode: [],
       derivation: [doc2(D2_7)],
-      note: 'The solver returns the release fraction; the comparison with measured release is not part of the solver and is under Validate.',
+      note: 'The solver returns the release fraction; the comparison with measured release is not part of the solver and is the experimental comparison graph of Explore.',
     },
-    live: 'The release fraction of the current run is under Results; the comparison with measured release is under Validate.',
+    live: 'The release fraction of the current run is in the manual solver of Scientific Documentation; the comparison with measured release is the experimental comparison graph of Explore.',
   },
   15: {
     stage: 15,
@@ -1096,7 +1096,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       derivation: [doc5(D5_12), doc5(D5_13), doc5(D5_15)],
       note: 'The right-hand side vector that results is written out with the assembled system. The weights at the interface, centre and outer nodes, and the release next to the outer surface, are derived in Document 5.',
     },
-    live: 'This mechanism has no live number of its own: its generated amount is part of the balance under Results when the build solves it.',
+    live: 'This mechanism has no live number of its own: its generated amount is part of the balance in the manual solver of Scientific Documentation, and the graphs of Explore draw it where the build solves it.',
   },
   16: {
     stage: 16,
@@ -1140,7 +1140,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       derivation: [doc5(D5_21), doc5(D5_22)],
       note: 'The off-diagonal entries are those of the baseline, so the matrix stays non-singular with a margin raised by the decay number. The decayed amount is accounted for with the inventory and the release.',
     },
-    live: 'This mechanism has no live number of its own: its decayed amount is part of the balance under Results when the build solves it.',
+    live: 'This mechanism has no live number of its own: its decayed amount is part of the balance in the manual solver of Scientific Documentation, and the graphs of Explore draw it where the build solves it.',
   },
   17: {
     stage: 17,
@@ -1200,7 +1200,7 @@ export const STEP_DEFS: Record<Stage, StepDef> = {
       derivation: [doc5(D5_31), doc5(D5_32)],
       note: 'The weights of the nodes, the start vector and the source weights do not depend on the diffusivity and are not computed again. With a constant temperature the run is the constant-diffusivity run.',
     },
-    live: 'This mechanism has no live number of its own; the diffusivities of a run are shown with the coefficients under Results when the build solves it.',
+    live: 'This mechanism has no live number of its own; the diffusivities of a run are shown with the coefficients in the manual solver of Scientific Documentation, and the graphs of Explore draw it where the build solves it.',
   },
 };
 

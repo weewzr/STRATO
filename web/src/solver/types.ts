@@ -277,6 +277,8 @@ export interface StageSeries {
   times_s: number[];
   times_h: number[];
   release_fraction: number[];
+  /** Released over (M0 + generated); the fraction that a fresh particle with a source is plotted by. */
+  release_fraction_of_total?: number[];
 }
 export interface StageProfile {
   t_s: number;
@@ -312,6 +314,8 @@ export interface AnalyticalReply {
   times_s: number[] | null;
   times_h: number[] | null;
   release_fraction: (number | null)[] | null;
+  /** Method B released over (M0 + generated), present where the configuration has a source. */
+  release_fraction_of_total?: (number | null)[] | null;
   drawn_count?: number;
 }
 

@@ -16,14 +16,12 @@ import type { DocContribution } from './types';
 // the scenarios, the notes of the Numerical Interpretation, the details of the figures, the balance and
 // diagnostics notes, the geometry note of the reference particle and the code traceability of the derivation.
 
-const capitalise = (s: string): string => (s === '' ? s : s.charAt(0).toUpperCase() + s.slice(1));
-
 function CaseEntry() {
   const caseId = useStrato((s) => s.caseId);
   const entry = findCase(caseId);
   return (
     <p>
-      The live simulation runs the {entry?.title ?? 'synthetic five-layer verification case'}, which is not AGR-1 data. Its case file is{' '}
+      The manual baseline solver of this page runs the {entry?.title ?? 'synthetic five-layer verification case'}, which is not AGR-1 data. Its case file is{' '}
       {entry ? (
         <a href={repoFile(entry.provenance.input_file)}>
           <code>{entry.provenance.input_file}</code>
@@ -42,7 +40,7 @@ function CaseEntry() {
 function ScopeEntry() {
   const { cap, loading } = useBuildCapability();
   if (loading) return <p>The capability of the build is loading.</p>;
-  const { computed, notComputed } = computedMechanisms(cap);
+  const { computed } = computedMechanisms(cap);
   const model = isSimulable(cap.baseline)
     ? `the baseline spherical diffusion in the five layers${
         computed.length > 0 ? ` with ${phrase(computed.map((m) => MECHANISM_NAME[m]))}` : ' (constant diffusivity in each layer, no generation and no decay)'
@@ -50,12 +48,12 @@ function ScopeEntry() {
     : 'no model of the site';
   return (
     <p>
-      {METHOD_1} implements {model}.
-      {notComputed.length > 0
-        ? ` ${capitalise(phrase(notComputed.map((m) => MECHANISM_NAME[m])))} ${notComputed.length > 1 ? 'are' : 'is'} not computed by this build, so no ${notComputed.length > 1 ? 'result of them' : 'result of it'} is shown.`
-        : ''}{' '}
-      Which physics and which scenarios are implemented, verified or planned is read from what the WebAssembly wrapper of the build
-      reports, never typed on the page.
+      {METHOD_1} implements {model}. Through the run_stage function of the wrapper this build computes the five model equations of Explore:
+      baseline diffusion (stage 1), fission-product generation (stage 2), radioactive decay (stage 3), temperature-dependent diffusion
+      (stage 4) and the combined model (stage 5), each with {METHOD_2} where it applies. Explore draws them for Steady-state operation; the
+      other operations and Future species-specific physics show their equation only. A source starts from a fresh particle, and its graphs
+      give the fraction of the generated inventory released. Which physics and which scenarios are implemented, verified or planned is
+      read from what the WebAssembly wrapper of the build reports, never typed on the page.
     </p>
   );
 }
@@ -78,35 +76,21 @@ function ScenariosEntry() {
   );
 }
 
-/** The notes that stood in the "Live values" disclosure of each derivation step, without the sentences that are registered elsewhere. */
-/** The notes were written for the page that shows the numbers; here that page is named instead of "below". */
-const onExplore = (s: string): string =>
-  s
-    .replace('in the live simulation below', 'in the live simulation on Explore')
-    .replace('are listed below,', 'are listed in the live simulation on Explore,')
-    .replace(
-      'its version, commit and verification status are listed in the numbers below and in the diagnostics under the live simulation',
-      'its version and verification status are shown in the status line of the live simulation on Explore; the build is under Technical implementation and build',
-    )
-    .replace(
-      'the comparison with measured release is under Validate.',
-      'the comparison with measured release will appear under Validate; none is available in this build.',
-    );
-
+/** The notes that stood in the "Live values" disclosure of each derivation step, without the sentences that are registered elsewhere. They name the manual solver of this page, where the numbers of a run are shown. */
 const LIVE_NOTES: { step: string; text: string }[] = Object.values(STEP_DEFS)
   .filter((d) => !d.live.startsWith('This step states mathematics') && !d.live.startsWith('The simulation below uses the synthetic'))
-  .map((d) => ({ step: d.name, text: onExplore(d.live.replace(' These checks verify the numerical method and are not experimental validation.', '')) }));
+  .map((d) => ({ step: d.name, text: d.live.replace(' These checks verify the numerical method and are not experimental validation.', '') }));
 
 function NumericalEntry() {
   return (
     <>
       <p>
         The Numerical Interpretation shows how the governing equation of Explore is discretised by the backward-time central-space (BTCS)
-        scheme and solved in Rust. When the build solves the selection, the simulation solves these equations with the verified
-        finite-difference BTCS Rust solver. Its fourteen items are those of the owner’s directive; each holds the derivation steps of the
-        BTCS documents, and the equations are those of the documents.
+        scheme and solved in Rust. The graphs of Explore are the replies of the verified finite-difference BTCS Rust solver for the
+        Model Equation chosen. Its fourteen items are those of the owner’s directive; each holds the derivation steps of the BTCS
+        documents, and the equations are those of the documents.
       </p>
-      <p>Notes on where the live simulation shows the numbers of a step:</p>
+      <p>Notes on where the manual solver of this page shows the numbers of a step:</p>
       <ul className="prose-list" data-testid="documentation-live-notes">
         {LIVE_NOTES.map((n) => (
           <li key={n.step}>
@@ -252,8 +236,8 @@ function ReferenceEntry() {
     <>
       <p>
         The reference fuel on Explore is geometry only (rule E2): the simulation stays the synthetic verification case, and AGR-1
-        dimensions are never combined with its diffusivities. AGR-1 runs need temperature-dependent diffusivities, which are derived but
-        not yet implemented.
+        dimensions are never combined with its diffusivities. The AGR-1 comparisons of Explore use the registered temperature-dependent
+        diffusivities and the registered heating histories, computed through run_stage.
       </p>
       <ul className="prose-list" data-testid="documentation-reference-sets">
         {reference.data.sets.map((s) => (
@@ -277,28 +261,31 @@ function ReferenceEntry() {
 }
 
 export const explore: DocContribution = {
-  assumptions: [{ id: 'explore-case', title: 'Simulation case of Explore', body: <CaseEntry /> }],
+  assumptions: [{ id: 'explore-case', title: 'Case of the manual solver', body: <CaseEntry /> }],
   limitations: [
     { id: 'explore-scope', title: 'What the build computes', body: <ScopeEntry /> },
     { id: 'explore-scenarios', title: 'Operating scenarios in full', body: <ScenariosEntry /> },
   ],
   derivations: [{ id: 'explore-numerical', title: 'Numerical Interpretation of Explore', body: <NumericalEntry /> }],
-  verification: [{ id: 'explore-balance', title: 'Balance, diagnostics and inspector of Explore', body: <BalanceEntry /> }],
+  verification: [{ id: 'explore-balance', title: 'Balance, diagnostics and inspector of the manual solver', body: <BalanceEntry /> }],
   interpretation: [
     {
       id: 'explore-results',
       title: 'Results of Explore',
       body: (
         <p>
-          The results on Explore are model output only; no experimental data are shown there. Experimental comparisons will appear under{' '}
-          <a href={hrefDocumentation('interpretation')}>the experimental interpretation</a>; none is available in this build.
+          The graphs of Explore are model output, except the experimental comparison, which draws registered measurements (black markers;
+          upper bounds as downward triangles) with a caption, an APA citation and a link. Its model curves are drawn only under
+          temperature-dependent diffusion, because a comparison file is computed with temperature-dependent diffusion over the registered
+          heating history; under another model equation the measurements stand alone. An R² is shown only where a record holds a value,
+          otherwise a caption says why. See <a href={hrefDocumentation('interpretation')}>the experimental interpretation</a>.
         </p>
       ),
     },
   ],
   implementation: [
-    { id: 'explore-figures', title: 'Figures of Explore', body: <FiguresEntry /> },
-    { id: 'explore-controls', title: 'Numerical controls of Explore', body: <ControlsEntry /> },
+    { id: 'explore-figures', title: 'Figures of the manual solver', body: <FiguresEntry /> },
+    { id: 'explore-controls', title: 'Numerical controls of the manual solver', body: <ControlsEntry /> },
     { id: 'explore-traceability', title: 'Code traceability of the derivation', body: <TraceabilityEntry /> },
   ],
   provenance: [{ id: 'explore-reference', title: 'Reference particle of Explore', body: <ReferenceEntry /> }],

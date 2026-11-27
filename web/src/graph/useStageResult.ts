@@ -39,7 +39,7 @@ export function useStageResult(request: StageRequest | null): StageResult | null
           void _omitted;
           try {
             const b = await client.analytical(withoutProfiles);
-            if (b.body.applicable && b.body.release_fraction !== null) analytical = b.body;
+            if (b.body.applicable && (b.body.release_fraction !== null || (b.body.release_fraction_of_total !== null && b.body.release_fraction_of_total !== undefined))) analytical = b.body;
           } catch (e) {
             if (e instanceof SolverError && e.reason === 'stale') return;
           }

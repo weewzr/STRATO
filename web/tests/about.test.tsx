@@ -77,6 +77,17 @@ describe('Basis page', () => {
     expect(page.querySelector('.badge, .status-chip, [data-label], [data-status]')).toBeNull();
     expect((page.textContent ?? '').split(/\s+/).length).toBeLessThan(450);
   });
+  it('no longer says that generation, decay, temperature-dependent diffusion or the comparison are missing', () => {
+    render(<Documentation />);
+    const text = document.body.textContent ?? '';
+    expect(text).not.toContain('are not computed by this build');
+    expect(text).not.toContain('Shown as previews with a label, not solved');
+    expect(text).not.toContain('derived, not implemented');
+    expect(text).not.toContain('which are derived but not yet implemented');
+    expect(text).not.toContain('will appear under Validate');
+    expect(text).not.toContain('No comparison is shown yet');
+  });
+
   it('has its scientific statements in Scientific Documentation, once each', () => {
     for (const id of ['about-model', 'about-implemented', 'about-method-b-scope', 'about-methods', 'about-labels', 'about-build-contents', 'about-credits']) {
       expect(allItemIds(), id).toContain(id);

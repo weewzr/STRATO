@@ -155,8 +155,13 @@ export const TIME_STEP_S = 1000;
 export const OUTPUT_EVERY_STEPS = 10;
 /** The times of the profiles asked for: a tenth, a half and the whole of the end time (an input of the request). */
 export const PROFILE_TIMES_S = [END_TIME_S / 10, END_TIME_S / 2, END_TIME_S] as const;
-/** The initial kernel concentration of a request, mol/m^3: the stage runs report fractions, so only the ratio matters. */
+/** The initial kernel concentration of a request without a source, mol/m^3: the stage runs report a fraction of the initial inventory, so only the ratio matters. */
 export const KERNEL_CONCENTRATION_MOL_M3 = 1;
+/** The initial kernel concentration of a request with a source: a fresh particle (C = 0), as in every operating scenario. */
+export const FRESH_PARTICLE_CONCENTRATION_MOL_M3 = 0;
+
+/** True where the model equation has a fission-product source: its graphs show the fraction of the generated inventory released (the fresh particle has no initial inventory). */
+export const hasSource = (physics: PhysicsId): boolean => physics === 'generation' || physics === 'combined';
 const KELVIN_OFFSET = 273.15;
 
 /** The equation stage of run_stage that a model equation maps to (null: no stage, nothing is computed). */
@@ -207,7 +212,7 @@ export function stageRequest(physics: PhysicsId, species: Species, temperatureC:
   const generation = params.generation[0];
   const nuclide = generation?.nuclides.find((n) => nuclideKey(n.nuclide) === nuclideKey(species.name));
   const physicsBody: Record<string, unknown> = {};
-  const withSource = physics === 'generation' || physics === 'combined';
+  const withSource = hasSource(physics);
   const withDecay = physics === 'decay' || physics === 'combined';
   const withTemperature = physics === 'temperature' || physics === 'combined';
   if (withSource || withDecay) {
@@ -227,9 +232,10 @@ export function stageRequest(physics: PhysicsId, species: Species, temperatureC:
   if (withTemperature) {
     const laws = arrheniusLaws(species.element);
     if (!laws) return null;
-    physicsBody.temperature = { unit: 'degC', value: temperatureC };
+    // The gas constant belongs to the temperature section of the physics table (the schema rejects it elsewhere).
+    const gas = gasConstant(species.element);
+    physicsBody.temperature = gas === null ? { unit: 'degC', value: temperatureC } : { unit: 'degC', value: temperatureC, gas_constant_j_mol_k: gas };
     physicsBody.arrhenius = laws;
-    physicsBody.gas_constant_j_mol_k = gasConstant(species.element);
   }
   const body: Record<string, unknown> = {
     schema: 3,
@@ -238,7 +244,7 @@ export function stageRequest(physics: PhysicsId, species: Species, temperatureC:
       species: species.name,
       temperature_k: temperatureC + KELVIN_OFFSET,
       regions,
-      initial: { kernel_concentration_mol_m3: KERNEL_CONCENTRATION_MOL_M3 },
+      initial: { kernel_concentration_mol_m3: withSource ? FRESH_PARTICLE_CONCENTRATION_MOL_M3 : KERNEL_CONCENTRATION_MOL_M3 },
       time: { dt_s: TIME_STEP_S, end_time_s: END_TIME_S, output_every_steps: OUTPUT_EVERY_STEPS },
     },
     stage,
@@ -254,6 +260,20 @@ export function stageRequest(physics: PhysicsId, species: Species, temperatureC:
 export function datasetsOf(species: Species | null, files: readonly ComparisonRecord[] = COMPARISONS): ComparisonRecord[] {
   if (!species) return [];
   return files.filter((f) => nuclideKey(f.nuclide) === nuclideKey(species.name));
+}
+
+/** The temperature in degC that a dataset's label states as one number, or null for a heating history that steps between temperatures. */
+export const datasetTemperatureC = (f: ComparisonRecord): number | null => {
+  const m = /^\s*(\d+(?:\.\d+)?)\s*\S?C\s*$/.exec(f.caption.temperature_label.replace(/[^\x20-\x7e]/g, ''));
+  return m ? Number(m[1]) : null;
+};
+
+/** The datasets that belong to the selected temperature: those held at it, and those whose heating history steps through temperatures (their label says so). */
+export function datasetsAt(list: readonly ComparisonRecord[], temperatureC: number | null): ComparisonRecord[] {
+  return list.filter((f) => {
+    const t = datasetTemperatureC(f);
+    return t === null || temperatureC === null || t === temperatureC;
+  });
 }
 
 /** The short name of a dataset in the select: the specimen and the temperature of the record's caption. */

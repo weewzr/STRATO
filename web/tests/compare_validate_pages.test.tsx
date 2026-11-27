@@ -24,9 +24,12 @@ describe('what left Compare and Validate is in Scientific Documentation', () => 
     expect(text('compare-difference-curve')).toContain('Runs with different output times are not compared');
     expect(text('compare-and-validate')).toContain('independent');
     expect(text('validate-limits')).toContain('A constant-temperature result of Method A: BTCS is never compared with heating-test data');
-    expect(text('validate-limits')).toContain('No comparison is shown yet.');
+    // Decision 78(b): a comparison file's model curves belong to temperature-dependent diffusion only; the old claim that no comparison exists is gone.
+    expect(text('validate-limits')).toContain('Explore therefore draws the model curves of a comparison file under temperature-dependent diffusion only');
+    expect(text('validate-limits')).not.toContain('No comparison is shown yet');
+    expect(text('validate-limits')).not.toContain('No model prediction exists');
     expect(text('validate-status')).toContain('It is a different question from verification');
-    expect(text('validate-status')).toContain('What the experimental comparison will show');
+    expect(text('validate-status')).toContain('What the experimental comparison shows');
     // R² is the only displayed agreement metric (decisions 69 and 74).
     expect(text('r2-requirements')).toContain('R² is the only displayed agreement metric');
     expect(text('r2-requirements')).toContain('computed in Rust, per release-versus-time curve');

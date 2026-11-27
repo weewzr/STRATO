@@ -53,8 +53,13 @@ describe('Scientific Documentation holds what left Explore', () => {
     expect(link?.getAttribute('href')).toBe(hrefDocumentation('about-implemented'));
     expect(document.querySelector(`#doc-explore-case a[href="${hrefDocumentation('compare-limits')}"]`)).toBeNull();
     expect(entry('explore-scope')).toContain('Method A: BTCS implements the baseline spherical diffusion in the five layers');
-    expect(entry('explore-results')).toContain('model output only; no experimental data are shown there');
-    expect(entry('explore-results')).toContain('none is available in this build');
+    // Decision 78: the graphs are model output except the experimental comparison, whose model curves belong to temperature-dependent diffusion only.
+    expect(entry('explore-results')).toContain('the experimental comparison, which draws registered measurements');
+    expect(entry('explore-results')).toContain('under another model equation the measurements stand alone');
+    expect(entry('explore-results')).not.toContain('none is available in this build');
+    expect(entry('explore-scope')).toContain('stage 5');
+    expect(entry('explore-scope')).not.toContain('not computed by this build');
+    expect(entry('explore-scope')).toContain('fraction of the generated inventory');
     const scenarios = entry('explore-scenarios');
     expect(scenarios).toContain(SCENARIO_RULE_FULL);
     expect(scenarios).toContain(NO_SCENARIO_TEXT_FULL);
@@ -78,21 +83,31 @@ describe('Scientific Documentation holds what left Explore', () => {
     expect(norm(entry('explore-balance'))).not.toContain('no source and no decay');
   });
 
-  it('names the live simulation on Explore, never "below", in the notes of the derivation', () => {
+  it('names the manual solver of Scientific Documentation, never "below" or Explore, in the notes of the derivation', () => {
     render(<Documentation />);
     const text = entry('explore-numerical');
     expect(text).not.toMatch(/\bbelow\b/);
-    expect(text).toContain('in the live simulation on Explore');
+    expect(text).not.toContain('live simulation');
+    expect(text).toContain('the manual solver of Scientific Documentation');
   });
 
-  it('points only to what Explore shows: no commit on Explore, and no comparison under Validate yet', () => {
+  it('points only to pages that exist: the manual solver for the numbers, the comparison graph of Explore for measurements, no Validate page', () => {
     render(<Documentation />);
     const text = entry('explore-numerical');
     expect(text).not.toContain('version, commit and verification status');
-    expect(text).toContain('its version and verification status are shown in the status line of the live simulation on Explore');
+    expect(text).toContain('its version and verification status are shown in the status line of the manual solver in Scientific Documentation');
     expect(text).toContain('the build is under Technical implementation and build');
-    expect(text).toContain('the comparison with measured release will appear under Validate; none is available in this build.');
-    expect(text).not.toContain('measured release is under Validate');
+    expect(text).toContain('the comparison with measured release is the experimental comparison graph of Explore.');
+    expect(text).not.toContain('under Validate');
+    expect(text).not.toContain('none is available in this build');
+  });
+
+  it('states the independent Model Equation and Operation, never that a scenario selects the combined model', () => {
+    render(<Documentation />);
+    const text = entry('explore-scenarios');
+    expect(text).toContain('chosen independently');
+    expect(text).not.toContain('selects the combined model');
+    expect(text).not.toContain('clears the scenario');
   });
 
   it('holds the details of the three figures and of the controls', () => {

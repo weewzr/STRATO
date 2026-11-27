@@ -26,14 +26,14 @@ export const SCENARIO_KIND = 'Prescribed-input simulation, not a validated react
  * The one rule that couples the two controls (never silent; stated on the page in this sentence): every scenario
  * is a prescribed history of the generation G and of the temperature (steady-state operation: constant ones, from
  * a fresh particle) with decay continuing, so it requires all three mechanisms. Choosing a scenario selects the
- * combined model; choosing another physics clears the scenario.
+ * combined model. Model Equation and Operation are nevertheless chosen independently (decision 77): neither choice changes the other.
  */
 export const SCENARIO_RULE =
-  'A scenario selects the combined model; choosing another physics clears the scenario.';
+  'Model Equation and Operation are chosen independently; choosing one never changes the other.';
 
 /** The rule in full, as verified (Scientific Documentation). */
 export const SCENARIO_RULE_FULL =
-  'Rule: every scenario shown here (a history from a fresh particle) needs generation, decay and temperature-dependent diffusion, so choosing one selects the combined model, and choosing another physics clears the scenario.';
+  'Rule: the Model Equation and the Operation are chosen independently, and choosing one never changes the other. Every operation is a history from a fresh particle with decay continuing, so its complete description uses generation, decay and temperature-dependent diffusion; the page still shows the governing equation of the Model Equation chosen. Graphs are drawn for Steady-state operation (constant inputs); the other operations have their equation and Numerical Interpretation but an empty graph panel.';
 
 /** Every scenario requires the combined model; no scenario at all requires nothing. */
 export const requiresCombined = (scenario: ScenarioId | null): boolean => scenario !== null;
@@ -175,20 +175,20 @@ export function paramsFor(scenario: ScenarioId, active: readonly Mechanism[]): S
 }
 
 /** What the page announces when the scenario changes (the live-region sentence). */
-export function scenarioChange(scenario: ScenarioId, physicsChanged: boolean): string {  const tail = physicsChanged ? ' The combined model is selected, because this scenario requires it.' : '';
+export function scenarioChange(scenario: ScenarioId): string {
   // The sentence on what every scenario is stays once, beside the scenario name (SCENARIO_KIND); it is not repeated here.
-  return `${SCENARIO_LABEL[scenario]} selected.${tail}`;
+  return `${SCENARIO_LABEL[scenario]} selected.`;
 }
 
 /** What the page announces when choosing a physics cleared the scenario. */
-export const SCENARIO_RESET = 'No operating scenario selected, because the physics chosen is not the combined model.';
+export const SCENARIO_RESET = 'No operating scenario selected.';
 
 /** Shown in block B while no scenario is selected. */
 export const NO_SCENARIO_TEXT =
-  'No scenario selected: the physics above is taken with constant inputs.';
+  'No scenario selected: the Model Equation is taken with constant inputs.';
 
 /** The text in full, as verified (Scientific Documentation). */
 export const NO_SCENARIO_TEXT_FULL =
-  'No operating scenario is selected: the physics chosen above is taken with constant inputs, and the simulation block says whether this build runs it; it is labelled by that physics, not by a scenario. Choose a scenario to see its prescribed histories.';
+  'Steady-state operation takes the Model Equation chosen with constant inputs; it is the operation for which Explore draws graphs. Choose another operation to see its prescribed histories in the equation and the Numerical Interpretation; its graph panel stays empty.';
 
 export { SCENARIO_IDS };

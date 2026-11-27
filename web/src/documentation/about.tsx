@@ -22,23 +22,23 @@ const LABELS: { label: ResultLabel; meaning: string }[] = [
 
 const BUILD_CONTENTS: { part: string; here: boolean; phase: string }[] = [
   {
-    part: 'Equation-first page: governing equation, live simulation, controls, explanation and future research, in this order, with placeholders for later phases',
+    part: 'Equation-first page of the first web phase (later replaced by the four-page layout: Explore, Basis, Research Catalogue, Scientific Documentation)',
     here: true,
     phase: '1',
   },
-  { part: 'Controls bound to the inputs, input checks, light and dark themes', here: true, phase: '1' },
+  { part: 'Controls bound to the inputs of the manual solver, input checks, light and dark themes', here: true, phase: '1' },
   { part: 'Particle cross-section drawn to the input radii, one colour per layer (ILLUSTRATIVE)', here: true, phase: '1' },
-  { part: 'Staged equation builder (KaTeX, numbered equations) and the research status of each mechanism', here: true, phase: '2' },
+  { part: 'Staged equation builder (KaTeX, numbered equations) and the research status of each mechanism (Explore: independent Model Equation and Operation)', here: true, phase: '2' },
   {
     part: `${METHOD_1} in the browser (Rust compiled to WebAssembly, in a worker): release fraction, inventory balance with its residual, layer inventories and numerical diagnostics of every run, with ${METHOD_2} beside it; precomputed native output with provenance`,
     here: true,
     phase: '3',
   },
-  { part: 'Particle view with concentration colouring, layer inventory shares, playback and the AGR-1 reference particle', here: true, phase: '4' },
-  { part: 'Radial profile, release curves, model comparison, verification plots, downloads of results', here: true, phase: '5' },
+  { part: 'Particle view with concentration colouring, layer inventory shares, playback and the AGR-1 reference particle (in the manual solver of Scientific Documentation)', here: true, phase: '4' },
+  { part: 'Radial profile, release curves, model comparison, verification plots, downloads of results (verification plots and downloads in Scientific Documentation)', here: true, phase: '5' },
   { part: 'Research catalogue: transport regimes, species entries, Materials Studio gallery, brick roadmap', here: true, phase: '5.5' },
-  { part: 'Decay, generation and temperature-dependent diffusivity (derived, not implemented)', here: false, phase: '6' },
-  { part: 'Measured release data and, after phase 6, model predictions', here: false, phase: '7' },
+  { part: 'Radioactive decay, fission-product generation, temperature-dependent diffusivity and their combination (stages 2 to 5 of the wrapper, drawn on Explore)', here: true, phase: '6' },
+  { part: 'Measured release data with model curves, captions and citations on Explore (R² only where a record holds a value)', here: true, phase: '7' },
 ];
 
 /** What the build contains, by web phase (checked against prompt/PROGRESS.md by the unit test). */
@@ -126,12 +126,13 @@ export const about: DocContribution = {
         <>
           <ul className="prose-list">
             <li>
-              Solved by {METHOD_1}: diffusion through the five layers at constant temperature, with a constant diffusivity per layer and the
-              initial inventory in the kernel. Verified on a synthetic case.
+              The manual solver of this page runs {METHOD_1}: diffusion through the five layers at constant temperature, with a constant
+              diffusivity per layer and the initial inventory in the kernel. Verified on a synthetic case.
             </li>
             <li>
-              Shown as previews with a label, not solved: fission-product generation, radioactive decay and temperature-dependent diffusivity.
-              The comparison with experimental measurements is a placeholder.
+              Solved through the run_stage function of the wrapper (stages 1 to 5) and drawn on Explore for Steady-state operation: baseline
+              diffusion, fission-product generation, radioactive decay, temperature-dependent diffusion and the combined model. Experimental
+              comparisons are drawn on Explore with captions and citations; an R² is shown only where a record holds a value.
             </li>
           </ul>
           <p>

@@ -3,7 +3,7 @@ import { Plot } from '../plots/Plot';
 import { usePlotTheme } from '../plots/theme';
 import { GRAPH_IDS, type GraphId } from '../equation/selectionIds';
 import { useStrato } from '../state/store';
-import { datasetLabel, datasetsOf, offeredTemperatures, speciesFromOptions, stageRequest, type ComparisonRecord, type Species, type StageRequest } from './exploreData';
+import { datasetLabel, datasetsAt, datasetsOf, hasSource, offeredTemperatures, speciesFromOptions, stageRequest, type ComparisonRecord, type Species, type StageRequest } from './exploreData';
 import { experimentFigure, methodsFigure, profileFigure, releaseFigure } from './exploreFigures';
 import { useOptions, useStageResult, type StageResult } from './useStageResult';
 
@@ -40,7 +40,8 @@ export function useGraphChoices(): GraphChoices {
   const current = species.find((s) => s.id === sel.species) ?? species[0] ?? null;
   const temperatures = useMemo(() => (current ? offeredTemperatures(current.element) : []), [current]);
   const temperature = sel.temperature !== null && temperatures.includes(sel.temperature) ? sel.temperature : (temperatures[0] ?? null);
-  const datasets = useMemo(() => datasetsOf(current), [current]);
+  // The datasets of the species that belong to the selected temperature (the model curve of a file is computed at its own temperature).
+  const datasets = useMemo(() => datasetsAt(datasetsOf(current), temperature), [current, temperature]);
   const dataset = datasets.find((d) => d.curve_id === sel.dataset) ?? datasets[0] ?? null;
   // Only steady-state operation has curves; the other operations and future physics have none (their request is null).
   const request = useMemo(
@@ -105,14 +106,18 @@ export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
   const expected = useMemo(() => (drawable && current !== null && temperature !== null ? stageRequest(physics, current, temperature) : null), [drawable, physics, current, temperature]);
   const result = expected !== null && choices.result?.key === expected.key ? choices.result : null;
 
+  // The model curves of a comparison file are temperature-dependent diffusion over the registered heating history.
+  const withModelCurve = physics === 'temperature';
   const figure = useMemo(() => {
     if (!drawable) return null;
-    if (graph === 'experiment') return dataset !== null ? experimentFigure(dataset, theme) : null;
+    if (graph === 'experiment') return dataset !== null ? experimentFigure(dataset, theme, withModelCurve) : null;
     if (result === null) return null;
-    if (graph === 'release') return releaseFigure(result.reply, theme);
+    // A source starts from a fresh particle: the fraction of the generated inventory is plotted, never a fraction of an arbitrary initial one.
+    const generated = hasSource(physics);
+    if (graph === 'release') return releaseFigure(result.reply, theme, generated);
     if (graph === 'profile') return profileFigure(result.reply, theme);
-    return methodsFigure(result.reply, result.analytical, theme);
-  }, [drawable, graph, dataset, result, theme]);
+    return methodsFigure(result.reply, result.analytical, theme, generated);
+  }, [drawable, graph, dataset, result, theme, physics, withModelCurve]);
 
   const showExperiment = graph === 'experiment' && figure !== null && dataset !== null;
   const name = current?.name ?? '';
@@ -172,7 +177,7 @@ export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
             testId={`explore-plot-${graph}`}
             height={280}
             quiet
-            label={`${GRAPH_LABEL[graph]}${name ? `, ${name}` : ''}${graph !== 'experiment' && temperature !== null ? `, ${String(temperature)} °C` : ''}`}
+            label={`${GRAPH_LABEL[graph]}${name ? `, ${name}` : ''}${graph === 'experiment' ? (dataset !== null ? `, ${dataset.caption.temperature_label}` : '') : temperature !== null ? `, ${String(temperature)} °C` : ''}`}
           />
         )}
       </div>
@@ -181,6 +186,11 @@ export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
           <p className="gcite__caption" data-testid="experiment-caption">
             {dataset.caption.caption_text}
           </p>
+          {withModelCurve ? (
+            <p className="gcite__caption" data-testid="experiment-model-note">
+              Model curves: temperature-dependent diffusion over the registered heating history of this dataset, {dataset.caption.temperature_label}.
+            </p>
+          ) : null}
           <p className="gcite__source">
             <span data-testid="experiment-apa">{dataset.caption.source_citation_apa}</span>{' '}
             <a href={dataset.caption.source_link} target="_blank" rel="noopener noreferrer" data-testid="experiment-link">

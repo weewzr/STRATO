@@ -9,7 +9,9 @@ import { arrheniusLaws, gasConstant } from '../src/graph/arrhenius';
 import {
   COMPARISONS,
   datasetLabel,
+  datasetsAt,
   datasetsOf,
+  datasetTemperatureC,
   heatingRows,
   nuclideKey,
   offeredTemperatures,
@@ -125,15 +127,28 @@ describe('the request of run_stage', () => {
     expect(body('baseline', SR)?.physics).toBeUndefined();
     expect(Object.keys(phys('generation'))).toEqual(['source']);
     expect(Object.keys(phys('decay'))).toEqual(['decay']);
-    expect(Object.keys(phys('temperature')).sort()).toEqual(['arrhenius', 'gas_constant_j_mol_k', 'temperature']);
-    expect(Object.keys(phys('combined')).sort()).toEqual(['arrhenius', 'decay', 'gas_constant_j_mol_k', 'source', 'temperature']);
+    // The gas constant is a field of physics.temperature (the Rust schema rejects it at the level of physics).
+    expect(Object.keys(phys('temperature')).sort()).toEqual(['arrhenius', 'temperature']);
+    expect(Object.keys(phys('combined')).sort()).toEqual(['arrhenius', 'decay', 'source', 'temperature']);
+    for (const p of ['temperature', 'combined'] as const) {
+      expect(phys(p)).not.toHaveProperty('gas_constant_j_mol_k');
+      expect(phys(p).temperature).toEqual({ unit: 'degC', value: 1600, gas_constant_j_mol_k: gasConstant('Sr') });
+    }
     const nuclide = PARAMETERS.generation[0]?.nuclides.find((n) => n.nuclide === 'Sr-90');
     expect((phys('decay').decay as { decay_constant_per_s: number }).decay_constant_per_s).toBe(nuclide?.decay_constant_per_s);
     expect((phys('generation').source as { yield_atoms_per_fission: number }).yield_atoms_per_fission).toBe(nuclide?.cumulative_yield_per_fission);
-    expect((phys('temperature').temperature as { unit: string; value: number })).toEqual({ unit: 'degC', value: 1600 });
     expect(body('combined', SR)?.stage).toBe(5);
     expect(body('baseline', SR)?.stage).toBe(1);
     expect(body('baseline', SR)?.schema).toBe(3);
+  });
+
+  it('starts a model equation with a source from a fresh particle, and every other from the unit kernel concentration', () => {
+    const c0 = (p: (typeof PHYSICS_IDS)[number]) => ((body(p, SR)?.config as { initial: { kernel_concentration_mol_m3: number } }).initial.kernel_concentration_mol_m3);
+    expect(c0('generation')).toBe(0);
+    expect(c0('combined')).toBe(0);
+    expect(c0('baseline')).toBe(1);
+    expect(c0('decay')).toBe(1);
+    expect(c0('temperature')).toBe(1);
   });
 
   it('takes the radii and the diffusivities of the five layers from the results file, at the selected temperature', () => {
@@ -174,6 +189,19 @@ describe('the experimental datasets', () => {
       expect(f.experiment.points.length, f.curve_id).toBeGreaterThan(0);
       expect(f.model.method_a.time_h.length, f.curve_id).toBe(f.model.method_a.release_fraction.length);
     }
+  });
+
+  it('are narrowed to the selected temperature, keeping a heating history that steps between temperatures', () => {
+    const all = COMPARISONS.filter((f) => f.nuclide === 'Cs-137');
+    for (const t of [1600, 1800]) {
+      for (const f of datasetsAt(all, t)) expect(datasetTemperatureC(f)).toBe(t);
+    }
+    expect(datasetsAt(all, 1700)).toEqual([]);
+    const ag = COMPARISONS.filter((f) => f.nuclide === 'Ag-110m');
+    const stepped = ag.filter((f) => datasetTemperatureC(f) === null);
+    expect(stepped.length).toBeGreaterThan(0);
+    for (const t of [1600, 1800]) for (const s of stepped) expect(datasetsAt(ag, t)).toContain(s);
+    expect(datasetsAt(all, null)).toEqual(all);
   });
 
   it('are listed for the species they belong to, and for none other', () => {

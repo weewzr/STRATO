@@ -58,8 +58,8 @@ beforeEach(() => {
 describe('the traces are the replies, element by element', () => {
   it('draws Method A of the stage reply as a solid blue line with the very arrays of the reply', () => {
     const fig = releaseFigure(stage, theme);
-    expect(fig.data).toHaveLength(1);
-    const t = fig.data[0];
+    expect(fig?.data).toHaveLength(1);
+    const t = fig?.data[0];
     expect(t?.x).toBe(stage.series.times_h);
     expect(t?.y).toBe(stage.series.release_fraction);
     expect(t?.line).toMatchObject({ color: '#DC2626', dash: 'solid' });
@@ -68,6 +68,27 @@ describe('the traces are the replies, element by element', () => {
       expect(t?.x[i]).toBe(stage.series.times_h[i]);
       expect(t?.y[i]).toBe(stage.series.release_fraction[i]);
     }
+  });
+
+  it('plots the fraction of the generated inventory for a fresh particle with a source, never the fraction of an arbitrary initial one', () => {
+    const total = [0, 0.001, 0.002];
+    const fresh: StageOk = { ...stage, series: { ...stage.series, release_fraction: [0, 9, 9], release_fraction_of_total: total } };
+    const fig = releaseFigure(fresh, theme, true);
+    expect(fig?.data[0]?.y).toBe(total);
+    expect(JSON.stringify(fig?.layout)).toContain('generated inventory');
+    expect(releaseFigure(stage, theme, true)).toBeNull();
+    const totalB = [null, 0.001, 0.003];
+    const m = methodsFigure(fresh, { ...analytical, release_fraction: [null, null, null], release_fraction_of_total: totalB }, theme, true);
+    expect(m?.data[1]?.y).toBe(totalB);
+    expect(methodsFigure(fresh, { ...analytical, release_fraction_of_total: null }, theme, true)).toBeNull();
+  });
+
+  it('draws the model curves of a comparison file only when asked, and the measurements alone otherwise', () => {
+    const file = COMPARISONS[0]!;
+    const alone = experimentFigure(file, theme, false);
+    expect(alone.data.some((d) => d.meta?.id === 'exp-method-a' || d.meta?.id === 'exp-method-b')).toBe(false);
+    expect(alone.data.some((d) => d.meta?.id === 'exp-measurements' || d.meta?.id === 'exp-upper-bounds')).toBe(true);
+    expect(experimentFigure(file, theme, true).data.some((d) => d.meta?.id === 'exp-method-a')).toBe(true);
   });
 
   it('draws Method B red and solid from the reply of analytical, with nulls kept as gaps, and none where the wrapper gave no value', () => {
@@ -200,6 +221,15 @@ describe('the panel of the graphs', () => {
     // The experimental comparison is empty again as soon as the operation is not steady-state operation.
     act(() => useStrato.getState().setSelection({ scenario: 'startup' }));
     expect(screen.queryByTestId('experiment-citation')).toBeNull();
+  });
+
+  it('names the model configuration beneath the experimental graph only under temperature-dependent diffusion', () => {
+    render(<ExploreGraphs choices={choices()} />);
+    act(() => useStrato.getState().setSelection({ graph: 'experiment', scenario: 'steady', physics: 'baseline' }));
+    expect(screen.queryByTestId('experiment-model-note')).toBeNull();
+    expect(screen.getByTestId('experiment-caption')).toBeTruthy();
+    act(() => useStrato.getState().setSelection({ physics: 'temperature' }));
+    expect(screen.getByTestId('experiment-model-note').textContent).toMatch(/temperature-dependent diffusion/);
   });
 
   it('has four compact toggles, one species select, one temperature select in 100 degC steps shown in degC, and a dataset select for the experiment', async () => {

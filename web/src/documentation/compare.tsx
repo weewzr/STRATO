@@ -57,7 +57,7 @@ export const compare: DocContribution = {
       body: (
         <p>
           The comparison and the validation layers are independent: the switches of the comparison change only its figure, and the
-          measurements and predictions of the Validate section are not drawn there.
+          measurements and model curves of the experimental comparison on Explore are not drawn there.
         </p>
       ),
     },
