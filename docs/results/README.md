@@ -33,7 +33,14 @@ cargo run --release --locked --manifest-path crates/Cargo.toml -p strato-results
 - CI runs the check on every push and pull request (job `results` of `.github/workflows/ci.yml`: `strato-results run --check`), so a stale results file fails the build. Whoever changes a solver source, a register file or a scenario file regenerates `data/results/` with `run` and commits it.
 - The numbers are produced by floating-point arithmetic; a different compiler, target or maths
   library can change the last digits, and then `--check` reports the files as stale on that machine.
-  Regenerate on the machine that checks.
+  Regenerate on the machine that checks. The committed files are those of the CI platform
+  (Linux, the runner of job `results`): a run on Windows differs from them in the last digits of
+  the Method B series (for example 5.26571804252709e-2 against 5.265718042852252e-2), of the
+  series-truncation weight and of the hashes of the refined runs, so `--check` reports 37 of the
+  138 files as stale there although nothing is wrong. Every run of the job attaches the files
+  regenerated on the runner as the artifact `data-results-linux`; after a change that alters
+  the results, download it and commit its files (the `commit` line of the provenance names the
+  commit whose run produced them).
 - A full run takes under 3 minutes (162 s measured) on the development machine and writes about
   8.4 MB (8 446 706 bytes) in 138 files. The numerical crates are optimised in the development
   profile of the tools workspace, so that the tests run in about a minute and a half.

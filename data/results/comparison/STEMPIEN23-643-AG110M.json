@@ -7,7 +7,7 @@
     "solver_version": "2.1.0",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "55b1046",
+    "commit": "7953c17",
     "solver_source_sha256": "8786a3048e6415adc2aabbed2e0b79dfc823d3a54ef2b06d42b833d72bc16383",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
@@ -294,7 +294,7 @@
       "f_model_t_plus": [6.679212153600803e-13,2.4977655082156193e-2,9.529521737677236e-2,2.2999490078673626e-1,3.462627152218917e-1,4.44789230718647e-1,5.502534077294687e-1,6.181659249275583e-1,6.756028057705062e-1,7.24493599350069e-1],
       "model_run_ref": {
         "solver_package_version": "2.1.0",
-        "commit": "55b1046",
+        "commit": "7953c17",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ASRUN-6-4-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "e2a35170f34065d39cc9475b45a0a2d0d1ad545fa950270a7edf0ead1c23bb1f",
         "refined_output_sha256": "d4a612751a2a435daf8324c0c727645578441ff678565886c35767e9fe440eca",
