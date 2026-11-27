@@ -14,12 +14,10 @@ import { COLOURS } from './plotModel';
 const LINE_WIDTH = 2;
 const TIME_TITLE = 'Time (h)';
 const RELEASE_TITLE = 'Cumulative release fraction (dimensionless)';
-/** The axis of a fresh particle with a source: the fraction of the generated inventory (released over M0 + generated, M0 = 0). */
-const GENERATED_TITLE = 'Fraction of the generated inventory released (dimensionless)';
 
-const hoverRelease = (unit: string, name: string, title: string = RELEASE_TITLE): string => `Time (${unit}) = %{x:.6~g}<br>${title} = %{y:.6~g}<extra>${name}</extra>`;
+const hoverRelease = (unit: string, name: string): string => `Time (${unit}) = %{x:.6~g}<br>Cumulative release fraction (dimensionless) = %{y:.6~g}<extra>${name}</extra>`;
 
-function methodA(t: readonly number[], f: readonly number[], id: string, title: string = RELEASE_TITLE): Trace {
+function methodA(t: readonly number[], f: readonly number[], id: string): Trace {
   return {
     type: 'scatter',
     name: METHOD_1,
@@ -27,12 +25,12 @@ function methodA(t: readonly number[], f: readonly number[], id: string, title: 
     y: f,
     mode: 'lines',
     line: { color: COLOURS.A, width: LINE_WIDTH, dash: 'solid' },
-    hovertemplate: hoverRelease('h', METHOD_1, title),
+    hovertemplate: hoverRelease('h', METHOD_1),
     meta: { id, label: METHOD_1, unit: '1' },
   };
 }
 
-function methodB(t: readonly number[], f: readonly (number | null)[], id: string, title: string = RELEASE_TITLE): Trace {
+function methodB(t: readonly number[], f: readonly (number | null)[], id: string): Trace {
   return {
     type: 'scatter',
     name: METHOD_2,
@@ -40,50 +38,37 @@ function methodB(t: readonly number[], f: readonly (number | null)[], id: string
     y: f,
     mode: 'lines',
     line: { color: COLOURS.B, width: LINE_WIDTH, dash: 'solid' },
-    hovertemplate: hoverRelease('h', METHOD_2, title),
+    hovertemplate: hoverRelease('h', METHOD_2),
     meta: { id, label: METHOD_2, unit: '1' },
   };
 }
 
-const releaseLayout = (theme: PlotTheme, timeUnit: string, extra: Record<string, unknown> = {}, yTitle: string = RELEASE_TITLE) =>
+const releaseLayout = (theme: PlotTheme, timeUnit: string, extra: Record<string, unknown> = {}) =>
   baseLayout(theme, {
     xaxis: axis(theme, timeUnit === 'h' ? TIME_TITLE : `Time (${timeUnit})`, { rangemode: 'tozero', hoverformat: '.6~g' }),
-    yaxis: axis(theme, yTitle, { rangemode: 'tozero' }),
+    yaxis: axis(theme, RELEASE_TITLE, { rangemode: 'tozero' }),
     ...extra,
   });
 
-/**
- * Method B of the reply of analytical as a trace, or null where the wrapper gave no drawable value. With
- * `generated` (a fresh particle with a source) the trace is the fraction of the generated inventory.
- */
-export function methodBTrace(a: AnalyticalReply | null, generated = false): Trace | null {
-  if (a === null || !a.applicable || a.times_h === null) return null;
-  const values = generated ? (a.release_fraction_of_total ?? null) : a.release_fraction;
-  if (values === null || !values.some((v) => v !== null)) return null;
-  return methodB(a.times_h, values, 'stage-method-b', generated ? GENERATED_TITLE : RELEASE_TITLE);
+/** Method B of the reply of analytical as a trace, or null where the wrapper gave no drawable value. */
+export function methodBTrace(a: AnalyticalReply | null): Trace | null {
+  if (a === null || !a.applicable || a.times_h === null || a.release_fraction === null) return null;
+  if (!a.release_fraction.some((v) => v !== null)) return null;
+  return methodB(a.times_h, a.release_fraction, 'stage-method-b');
 }
 
-/** The Method A series of a stage reply: the fraction of the initial inventory, or with `generated` the fraction of the generated inventory (null if the reply holds none). */
-function stageSeries(stage: StageOk, generated: boolean): readonly number[] | null {
-  return generated ? (stage.series.release_fraction_of_total ?? null) : stage.series.release_fraction;
-}
-
-/** Cumulative release fraction against time: Method A of the stage reply (or null where the reply lacks the series). */
-export function releaseFigure(stage: StageOk, theme: PlotTheme, generated = false): Figure | null {
-  const y = stageSeries(stage, generated);
-  if (y === null) return null;
-  const title = generated ? GENERATED_TITLE : RELEASE_TITLE;
-  return { data: [methodA(stage.series.times_h, y, 'stage-method-a', title)], layout: releaseLayout(theme, 'h', { showlegend: false }, title) };
+/** Cumulative release fraction against time: Method A of the stage reply. */
+export function releaseFigure(stage: StageOk, theme: PlotTheme): Figure {
+  return { data: [methodA(stage.series.times_h, stage.series.release_fraction, 'stage-method-a')], layout: releaseLayout(theme, 'h', { showlegend: false }) };
 }
 
 /** Method A against Method B: both curves where Method B answered; null otherwise (no figure, the panel stays empty). */
-export function methodsFigure(stage: StageOk, analytical: AnalyticalReply | null, theme: PlotTheme, generated = false): Figure | null {
-  const b = methodBTrace(analytical, generated);
-  const y = stageSeries(stage, generated);
-  if (b === null || y === null) return null;
-  const title = generated ? GENERATED_TITLE : RELEASE_TITLE;
-  return { data: [methodA(stage.series.times_h, y, 'stage-method-a', title), b], layout: releaseLayout(theme, 'h', {}, title) };
+export function methodsFigure(stage: StageOk, analytical: AnalyticalReply | null, theme: PlotTheme): Figure | null {
+  const b = methodBTrace(analytical);
+  if (b === null) return null;
+  return { data: [methodA(stage.series.times_h, stage.series.release_fraction, 'stage-method-a'), b], layout: releaseLayout(theme, 'h') };
 }
+
 /** Radial concentration profile of Method A at the times the reply gives, node by node. */
 export function profileFigure(stage: StageOk, theme: PlotTheme): Figure | null {
   if (stage.profiles.length === 0) return null;

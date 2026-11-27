@@ -3,7 +3,7 @@ import { Plot } from '../plots/Plot';
 import { usePlotTheme } from '../plots/theme';
 import { GRAPH_IDS, type GraphId } from '../equation/selectionIds';
 import { useStrato } from '../state/store';
-import { datasetLabel, datasetsAt, datasetsOf, hasSource, offeredTemperatures, speciesFromOptions, stageRequest, type ComparisonRecord, type Species, type StageRequest } from './exploreData';
+import { datasetLabel, datasetsAt, datasetsOf, offeredTemperatures, speciesFromOptions, stageRequest, type ComparisonRecord, type Species, type StageRequest } from './exploreData';
 import { experimentFigure, methodsFigure, profileFigure, releaseFigure } from './exploreFigures';
 import { useOptions, useStageResult, type StageResult } from './useStageResult';
 
@@ -112,12 +112,10 @@ export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
     if (!drawable) return null;
     if (graph === 'experiment') return dataset !== null ? experimentFigure(dataset, theme, withModelCurve) : null;
     if (result === null) return null;
-    // A source starts from a fresh particle: the fraction of the generated inventory is plotted, never a fraction of an arbitrary initial one.
-    const generated = hasSource(physics);
-    if (graph === 'release') return releaseFigure(result.reply, theme, generated);
+    if (graph === 'release') return releaseFigure(result.reply, theme);
     if (graph === 'profile') return profileFigure(result.reply, theme);
-    return methodsFigure(result.reply, result.analytical, theme, generated);
-  }, [drawable, graph, dataset, result, theme, physics, withModelCurve]);
+    return methodsFigure(result.reply, result.analytical, theme);
+  }, [drawable, graph, dataset, result, theme, withModelCurve]);
 
   const showExperiment = graph === 'experiment' && figure !== null && dataset !== null;
   const name = current?.name ?? '';

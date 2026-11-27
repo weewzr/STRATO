@@ -10,6 +10,7 @@ import {
   COMPARISONS,
   datasetLabel,
   datasetsAt,
+  hasSource,
   datasetsOf,
   datasetTemperatureC,
   heatingRows,
@@ -125,32 +126,31 @@ describe('the request of run_stage', () => {
   it('switches on exactly the mechanisms of the model equation, and gives each the registered inputs', () => {
     const phys = (p: (typeof PHYSICS_IDS)[number]) => (body(p, SR)?.physics ?? {}) as Record<string, unknown>;
     expect(body('baseline', SR)?.physics).toBeUndefined();
-    expect(Object.keys(phys('generation'))).toEqual(['source']);
     expect(Object.keys(phys('decay'))).toEqual(['decay']);
     // The gas constant is a field of physics.temperature (the Rust schema rejects it at the level of physics).
     expect(Object.keys(phys('temperature')).sort()).toEqual(['arrhenius', 'temperature']);
-    expect(Object.keys(phys('combined')).sort()).toEqual(['arrhenius', 'decay', 'source', 'temperature']);
-    for (const p of ['temperature', 'combined'] as const) {
-      expect(phys(p)).not.toHaveProperty('gas_constant_j_mol_k');
-      expect(phys(p).temperature).toEqual({ unit: 'degC', value: 1600, gas_constant_j_mol_k: gasConstant('Sr') });
-    }
+    expect(phys('temperature')).not.toHaveProperty('gas_constant_j_mol_k');
+    expect(phys('temperature').temperature).toEqual({ unit: 'degC', value: 1600, gas_constant_j_mol_k: gasConstant('Sr') });
     const nuclide = PARAMETERS.generation[0]?.nuclides.find((n) => n.nuclide === 'Sr-90');
     expect((phys('decay').decay as { decay_constant_per_s: number }).decay_constant_per_s).toBe(nuclide?.decay_constant_per_s);
-    expect((phys('generation').source as { yield_atoms_per_fission: number }).yield_atoms_per_fission).toBe(nuclide?.cumulative_yield_per_fission);
-    expect(body('combined', SR)?.stage).toBe(5);
+    expect(body('temperature', SR)?.stage).toBe(4);
     expect(body('baseline', SR)?.stage).toBe(1);
     expect(body('baseline', SR)?.schema).toBe(3);
   });
 
-  it('starts a model equation with a source from a fresh particle, and every other from the unit kernel concentration', () => {
-    const c0 = (p: (typeof PHYSICS_IDS)[number]) => ((body(p, SR)?.config as { initial: { kernel_concentration_mol_m3: number } }).initial.kernel_concentration_mol_m3);
-    expect(c0('generation')).toBe(0);
-    expect(c0('combined')).toBe(0);
-    expect(c0('baseline')).toBe(1);
-    expect(c0('decay')).toBe(1);
-    expect(c0('temperature')).toBe(1);
+  it('gives no request to a model equation with a source: it needs a fresh particle, which run_stage refuses, and no fraction of an arbitrary initial inventory is plotted instead', () => {
+    expect(hasSource('generation')).toBe(true);
+    expect(hasSource('combined')).toBe(true);
+    for (const p of PHYSICS_IDS.filter((x) => x !== 'generation' && x !== 'combined')) expect(hasSource(p)).toBe(false);
+    for (const sp of [SR, CS]) {
+      expect(stageRequest('generation', sp, 1600)).toBeNull();
+      expect(stageRequest('combined', sp, 1600)).toBeNull();
+    }
+    // Every request that exists starts from the unit kernel concentration (a fraction of the initial inventory).
+    for (const p of ['baseline', 'decay', 'temperature'] as const) {
+      expect((body(p, SR)?.config as { initial: { kernel_concentration_mol_m3: number } }).initial.kernel_concentration_mol_m3).toBe(1);
+    }
   });
-
   it('takes the radii and the diffusivities of the five layers from the results file, at the selected temperature', () => {
     for (const t of [1600, 1700, 1800]) {
       const cfg = body('baseline', CS, t)?.config as { regions: { outer_radius_m: number; diffusivity_m2_s: number; intervals: number }[]; temperature_k: number };

@@ -222,26 +222,31 @@ test.describe('interactive graphs', () => {
     }
   });
 
-  test('draw a curve for every model equation, and a source starts from a fresh particle: the fraction of the generated inventory', async ({ page, problems }) => {
+  test('draw a curve for baseline diffusion, decay and temperature-dependent diffusion, and none for a source, which needs a fresh particle', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     await expect(page.getByTestId('explore-plot-release-graph')).toBeVisible({ timeout: 30_000 });
-    for (const physics of ['baseline', 'generation', 'decay', 'temperature', 'combined']) {
+    await page.getByTestId('species-select').selectOption('sr90');
+    for (const physics of ['baseline', 'decay', 'temperature']) {
       await page.getByTestId(`physics-${physics}`).click();
       const plot = page.getByTestId('explore-plot-release-graph');
-      await expect(plot).toBeVisible({ timeout: 30_000 });
+      await expect(plot, physics).toBeVisible({ timeout: 30_000 });
       await expect(page.getByTestId('graph-empty')).toHaveCount(0);
       const last = await plot.evaluate((el) => {
         const y = (el as unknown as { data: { y: number[] }[] }).data[0]?.y ?? [];
         return y[y.length - 1] ?? Number.NaN;
       });
-      // Every plotted fraction (of the initial or of the generated inventory) lies between 0 and 1.
+      // The fraction of the initial inventory lies between 0 and 1.
       expect(last, physics).toBeGreaterThanOrEqual(0);
       expect(last, physics).toBeLessThanOrEqual(1);
-      if (physics === 'generation' || physics === 'combined') await expect(page.getByTestId('graph-panel')).toContainText('generated inventory');
+    }
+    // A source starts from a fresh particle, which run_stage refuses: the panel is empty, never a fraction of an arbitrary initial inventory.
+    for (const physics of ['generation', 'combined']) {
+      await page.getByTestId(`physics-${physics}`).click();
+      await expect(page.getByTestId('graph-panel')).toHaveAttribute('data-empty', 'true');
+      expect(((await page.getByTestId('graph-panel').textContent()) ?? '').trim()).toBe('');
     }
   });
-
   test('draw the registered experimental data with its caption, citation and link beneath, and its model curves only under temperature-dependent diffusion', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');

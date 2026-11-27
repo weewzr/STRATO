@@ -157,10 +157,13 @@ export const OUTPUT_EVERY_STEPS = 10;
 export const PROFILE_TIMES_S = [END_TIME_S / 10, END_TIME_S / 2, END_TIME_S] as const;
 /** The initial kernel concentration of a request without a source, mol/m^3: the stage runs report a fraction of the initial inventory, so only the ratio matters. */
 export const KERNEL_CONCENTRATION_MOL_M3 = 1;
-/** The initial kernel concentration of a request with a source: a fresh particle (C = 0), as in every operating scenario. */
-export const FRESH_PARTICLE_CONCENTRATION_MOL_M3 = 0;
 
-/** True where the model equation has a fission-product source: its graphs show the fraction of the generated inventory released (the fresh particle has no initial inventory). */
+/**
+ * True where the model equation has a fission-product source. Such a model starts from a fresh particle (C = 0), as in every
+ * operating scenario, and its release is the fraction of the generated inventory. The wrapper's run_stage refuses C = 0 (the
+ * initial kernel concentration must exceed 0), so no request exists for these model equations and their panel stays empty:
+ * a fraction of an arbitrary initial inventory is never plotted in its place.
+ */
 export const hasSource = (physics: PhysicsId): boolean => physics === 'generation' || physics === 'combined';
 const KELVIN_OFFSET = 273.15;
 
@@ -199,7 +202,7 @@ export interface StageRequest {
  */
 export function stageRequest(physics: PhysicsId, species: Species, temperatureC: number, params: ParametersFile = PARAMETERS): StageRequest | null {
   const stage = stageOf(physics);
-  if (stage === null) return null;
+  if (stage === null || hasSource(physics)) return null;
   const rows = heatingRows(species.element, params);
   if (!rows || rows.length !== LAYER_REGIONS.length) return null;
   const regions = [];
@@ -212,24 +215,12 @@ export function stageRequest(physics: PhysicsId, species: Species, temperatureC:
   const generation = params.generation[0];
   const nuclide = generation?.nuclides.find((n) => nuclideKey(n.nuclide) === nuclideKey(species.name));
   const physicsBody: Record<string, unknown> = {};
-  const withSource = hasSource(physics);
-  const withDecay = physics === 'decay' || physics === 'combined';
-  const withTemperature = physics === 'temperature' || physics === 'combined';
-  if (withSource || withDecay) {
-    if (!generation || !nuclide) return null;
+  // Decay and temperature-dependent diffusion only: a model equation with a source has no request (above).
+  if (physics === 'decay') {
+    if (!nuclide) return null;
+    physicsBody.decay = { decay_constant_per_s: nuclide.decay_constant_per_s };
   }
-  if (withSource && generation && nuclide) {
-    physicsBody.source = {
-      mode: 'kernel_fission_yield',
-      product: 'direct_fission_product',
-      yield_kind: 'cumulative',
-      yield_atoms_per_fission: nuclide.cumulative_yield_per_fission,
-      fission_rate_origin: generation.label,
-      fission_rate_density: { value: generation.fission_rate_density_per_m3_s },
-    };
-  }
-  if (withDecay && nuclide) physicsBody.decay = { decay_constant_per_s: nuclide.decay_constant_per_s };
-  if (withTemperature) {
+  if (physics === 'temperature') {
     const laws = arrheniusLaws(species.element);
     if (!laws) return null;
     // The gas constant belongs to the temperature section of the physics table (the schema rejects it elsewhere).
@@ -244,7 +235,7 @@ export function stageRequest(physics: PhysicsId, species: Species, temperatureC:
       species: species.name,
       temperature_k: temperatureC + KELVIN_OFFSET,
       regions,
-      initial: { kernel_concentration_mol_m3: withSource ? FRESH_PARTICLE_CONCENTRATION_MOL_M3 : KERNEL_CONCENTRATION_MOL_M3 },
+      initial: { kernel_concentration_mol_m3: KERNEL_CONCENTRATION_MOL_M3 },
       time: { dt_s: TIME_STEP_S, end_time_s: END_TIME_S, output_every_steps: OUTPUT_EVERY_STEPS },
     },
     stage,

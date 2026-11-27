@@ -48,11 +48,13 @@ function ScopeEntry() {
     : 'no model of the site';
   return (
     <p>
-      {METHOD_1} implements {model}. Through the run_stage function of the wrapper this build computes the five model equations of Explore:
+      {METHOD_1} implements {model}. Through the run_stage function of the wrapper this build computes the stages of the model equations of Explore:
       baseline diffusion (stage 1), fission-product generation (stage 2), radioactive decay (stage 3), temperature-dependent diffusion
-      (stage 4) and the combined model (stage 5), each with {METHOD_2} where it applies. Explore draws them for Steady-state operation; the
-      other operations and Future species-specific physics show their equation only. A source starts from a fresh particle, and its graphs
-      give the fraction of the generated inventory released. Which physics and which scenarios are implemented, verified or planned is
+      (stage 4) and the combined model (stage 5), each with {METHOD_2} where it applies. Explore draws baseline diffusion, radioactive
+      decay and temperature-dependent diffusion for Steady-state operation. A source (generation, combined) starts from a fresh particle,
+      whose release is a fraction of the generated inventory; run_stage accepts only an initial kernel concentration above zero, so the
+      graph panel of a source stays empty and a fraction of an arbitrary initial inventory is never plotted in its place. The other
+      operations and Future species-specific physics show their equation only. Which physics and which scenarios are implemented, verified or planned is
       read from what the WebAssembly wrapper of the build reports, never typed on the page.
     </p>
   );

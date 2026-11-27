@@ -59,7 +59,7 @@ describe('Scientific Documentation holds what left Explore', () => {
     expect(entry('explore-results')).not.toContain('none is available in this build');
     expect(entry('explore-scope')).toContain('stage 5');
     expect(entry('explore-scope')).not.toContain('not computed by this build');
-    expect(entry('explore-scope')).toContain('fraction of the generated inventory');
+    expect(entry('explore-scope')).toContain('never plotted in its place');
     const scenarios = entry('explore-scenarios');
     expect(scenarios).toContain(SCENARIO_RULE_FULL);
     expect(scenarios).toContain(NO_SCENARIO_TEXT_FULL);
