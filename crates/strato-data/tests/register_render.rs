@@ -106,7 +106,10 @@ fn hand_written_text_beside_the_tables_survives_a_write() {
 fn a_broken_marker_is_an_error_and_never_a_silent_rewrite() {
     let tables = Tables::read(&real_texts()).unwrap();
     let doc = document();
-    let unterminated = doc.replacen(END, "", 1);
+    // The marker also appears in the prose of the document: remove a closing marker line.
+    let closing_line = format!("\n{END}\n");
+    assert!(doc.contains(&closing_line));
+    let unterminated = doc.replacen(&closing_line, "\n", 1);
     assert!(process(&unterminated, &tables, true).is_err());
     let unknown = doc.replacen("table geom", "table nothing", 1);
     assert!(process(&unknown, &tables, true).is_err());
