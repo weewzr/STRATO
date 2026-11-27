@@ -21,7 +21,10 @@
 //!    `mask_relative_tolerance` of the same object; a reply without them gives no evidence, and a
 //!    differing flag then fails.
 //! 4. The reason-swap rule (second integration, fix of the verifier's finding on
-//!    `analytical_stage_5_constant`; a ruling to be confirmed by the coordinator), by field
+//!    `analytical_stage_5_constant`; ruling of the implementer, confirmed in the review of the
+//!    second integration on 27 Nov 2026 because it is bound to these two codes and to the
+//!    reason-code arrays, which hold `null` wherever a value is drawn, so it can never cover a
+//!    physical value or a drawn-or-withheld difference), by field
 //!    identity ([`reason_swap_identity`]): the reason code of a value that BOTH platforms withhold
 //!    may differ between exactly the two codes `COVER_SENSITIVITY` and `ERROR_ESTIMATE_UNDEFINED`.
 //!    Both are tests of the same mask, applied in a fixed order, at a value whose released amount

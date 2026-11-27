@@ -1183,8 +1183,24 @@ mod tests {
     }
 
     /// The factors of the floor terms carry the margin of 2 stated in Document 6 over the excess
-    /// at the points whose reference has a computed rounding bound, and they are not far above
-    /// what is observed at any point (a factor divided by 8 would be violated).
+    /// at the points whose reference has a computed rounding bound (SAFETY), and they are not
+    /// grossly above what is observed there (TIGHTNESS).
+    ///
+    /// Tightness on this committed set is asserted at one sixteenth of the factor, not one
+    /// eighth (Document 6, Section 8.5, "Tightness"). The excess exists only in floating point:
+    /// in exact arithmetic the error of a self-referenced row at `t >= t_v` is of order
+    /// `exp(-40)`, so its excess is negative, and no platform-independent lower bound of it
+    /// exists. Its maximum on this set is a difference at the level of one floor term in the
+    /// 1600 C particle at N = 64 (0.80 for `M` on Windows, 0.73 on the Linux runner, 0.82 for
+    /// `M_rel` and `Phi` on Windows): it moves with the last digits of the platform library,
+    /// and `c / 8 = 0.75` lies inside that spread. The allowance for that movement is stated as
+    /// `c / 16` floor terms (0.375, about six times the observed spread of 0.064), which gives
+    /// the threshold `c / 8 - c / 16 = c / 16`. The test still fails if a factor were grossly
+    /// too large: any factor above about 12 (twice the present 6) fails it. The statement that a
+    /// factor divided by 8 would be violated holds on the full set (largest excess 1.86, Table
+    /// 8.2) and is asserted there (`full_set_the_estimate_holds_and_has_the_stated_margin`).
+    /// Tightness uses the same points as safety: the physics-module row has no rounding bound
+    /// and its excess is noise of its reference, which must not count as evidence of need.
     #[test]
     fn the_factors_have_the_stated_margin_and_are_needed() {
         for q in [Q::Inventory, Q::Release, Q::Flux] {
@@ -1200,10 +1216,9 @@ mod tests {
                 "{q:?}: observed excess {bounded}, factor {}",
                 factor(q)
             );
-            let any = excess_of(all_points());
             assert!(
-                any > factor(q) / 8.0,
-                "{q:?}: observed excess {any} does not need factor {}",
+                bounded > factor(q) / 16.0,
+                "{q:?}: observed excess {bounded} does not need factor {}",
                 factor(q)
             );
         }
@@ -1543,6 +1558,20 @@ mod tests {
             assert!(
                 2.0 * m <= factor(q),
                 "{q:?}: excess {m}, factor {}",
+                factor(q)
+            );
+            // tightness at one eighth of the factor, over the rows whose reference has a
+            // computed rounding bound (Table 8.2: 1.86 for each quantity)
+            let bounded = runs
+                .iter()
+                .filter(|(name, _)| !name.contains("physics module"))
+                .flat_map(|(_, p)| p.iter())
+                .filter(|p| p.q == q)
+                .map(|p| p.excess())
+                .fold(f64::MIN, f64::max);
+            assert!(
+                bounded > factor(q) / 8.0,
+                "{q:?}: excess {bounded} does not need factor {}",
                 factor(q)
             );
         }
