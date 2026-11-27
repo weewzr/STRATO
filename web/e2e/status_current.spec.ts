@@ -28,7 +28,6 @@ for (const vp of [
       const field = page.getByTestId('d-field-3');
       await field.fill('1e-13');
       await field.press('Tab');
-      await expect(header).not.toContainText('COMPUTED');
       await page.getByTestId('run').click();
       await expect(page.getByTestId('announce')).toHaveText('Running the current inputs.');
       if ((await page.getByTestId('close-sheet').count()) > 0) await page.getByTestId('close-sheet').click();

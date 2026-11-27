@@ -62,7 +62,7 @@ function Harness() {
     }
   };
   return (
-    <div className="app app--document">
+    <div className={`app app--${section === 'explore' ? 'instrument' : 'document'}`}>
       <Header section={section} theme={theme} onToggleTheme={toggleTheme} compact={!tabletUp} />
       <main id="main" tabIndex={-1} className="app__main">
         {view()}

@@ -62,6 +62,8 @@ export async function gotoAdvanced(page: Page): Promise<void> {
   const solver = page.getByTestId('advanced-solver');
   await expect(solver).toBeAttached({ timeout: 20_000 });
   await solver.scrollIntoViewIfNeeded();
+  // The development server optimises its dependencies on first use; wait so a navigation does not abort them.
+  await page.waitForLoadState('networkidle');
 }
 /** Waits until the solver has answered for the current inputs (web phase 3); the simulation is block D of the manual solver (gotoAdvanced). */
 export async function waitForRun(page: Page, status: 'ok' | 'rejected' = 'ok'): Promise<void> {
