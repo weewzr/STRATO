@@ -1,28 +1,42 @@
 import { useEffect, useState } from 'react';
 
-// Sections of prompt/DESIGN_SPECIFICATION.md Section 2.2, in its order. Research holds the full
-// research catalogue (web phase 5.5), with its own pages under #/research/.
+// The four pages of the site (prompt/DESIGN_SPECIFICATION.md Section 12), in navigation order. Research
+// Catalogue holds the research catalogue with its own pages under #/research/; Scientific Documentation is
+// always the last entry.
 export const SECTIONS = [
   { id: 'explore', label: 'Explore' },
-  { id: 'compare', label: 'Compare' },
-  { id: 'validate', label: 'Validate' },
-  { id: 'verify', label: 'Verify' },
-  { id: 'research', label: 'Research' },
-  { id: 'data', label: 'Data' },
-  { id: 'about', label: 'About' },
-  // Always the last entry: the one page for assumptions, limitations, derivations, verification
-  // methodology, experimental interpretation and technical implementation (minimal-text rules).
+  { id: 'basis', label: 'Basis' },
+  { id: 'research', label: 'Research Catalogue' },
   { id: 'documentation', label: 'Scientific Documentation' },
 ] as const;
 
 export type SectionId = (typeof SECTIONS)[number]['id'];
 
-export function sectionFromHash(hash: string): SectionId {
+/**
+ * Addresses of the earlier layout and the place that now holds their content (an address with a sub-path,
+ * such as #/verify/balance, goes to the same place).
+ */
+export const LEGACY_ADDRESSES: Record<string, string> = {
+  compare: '#/documentation/evidence-comparison',
+  validate: '#/documentation/validate-status',
+  verify: '#/documentation/evidence-verification',
+  data: '#/documentation/evidence-parameters',
+  about: '#/basis',
+};
+
+/** The address that replaces an old one, or null when the hash is current. */
+export function redirectFromHash(hash: string): string | null {
   const id = hash.replace(/^#\/?/, '').split(/[/?]/)[0] ?? '';
-  return (SECTIONS.find((s) => s.id === id)?.id ?? 'explore') as SectionId;
+  return Object.prototype.hasOwnProperty.call(LEGACY_ADDRESSES, id) ? (LEGACY_ADDRESSES[id] as string) : null;
 }
 
-export function hrefFor(id: SectionId): string {
+export function sectionFromHash(hash: string): SectionId {
+  const target = redirectFromHash(hash);
+  const id = (target ?? hash).replace(/^#\/?/, '').split(/[/?]/)[0] ?? '';
+  return (SECTIONS.find((s) => s.id === id)?.id ?? 'explore') as SectionId;
+}
+/** The address of a page. An address of the earlier layout is accepted and redirects. */
+export function hrefFor(id: SectionId | keyof typeof LEGACY_ADDRESSES): string {
   return `#/${id}`;
 }
 
@@ -81,7 +95,13 @@ export function useResearchPath(): { page: string; anchor: string } {
 export function useSection(): SectionId {
   const [section, setSection] = useState<SectionId>(() => sectionFromHash(window.location.hash));
   useEffect(() => {
-    const on = () => setSection(sectionFromHash(window.location.hash));
+    // An address of the earlier layout is replaced by the address that now holds its content.
+    const on = () => {
+      const target = redirectFromHash(window.location.hash);
+      if (target) window.location.replace(target);
+      setSection(sectionFromHash(window.location.hash));
+    };
+    on();
     window.addEventListener('hashchange', on);
     return () => window.removeEventListener('hashchange', on);
   }, []);

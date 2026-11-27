@@ -21,16 +21,14 @@ import {
   rowsOfSpecies,
   rowKey,
 } from '../research/entries';
-import { Counts } from '../research/FutureResearch';
-import { GalleryItem, ReferenceList, RowChip, RowList, RowRecords, RowTable, StatusLegend } from '../research/parts';
-import { isImplementedStatus } from '../research/status';
+import { GalleryItem, ReferenceList, RowList, RowRecords, RowTable } from '../research/parts';
 import { hrefDocumentation, hrefFor, hrefResearch, useResearchPath } from '../route';
 import { SectionHeading, TableBox, useHeadingFocus } from './common';
 
 /**
  * Research section (prompt/DESIGN_SPECIFICATION.md Section 7; web phase 5.5): the research
- * catalogue, read only from the generated catalogue JSON. Pages: the overview (statuses, what is
- * implemented and what is research, three regimes, nine species, bricks), one page per entry file
+ * catalogue, read only from the generated catalogue JSON. Pages: the overview (three regimes, nine
+ * species, bricks), one page per entry file
  * (species, regime, mechanism), the Materials Studio gallery, the brick roadmap and the reference
  * list. Every live-simulation switch in it is disabled until the Rust solver implements and
  * verifies its mechanism; the statements of limits live in Scientific Documentation.
@@ -66,7 +64,7 @@ function Crumbs({ items }: { items: { label: string; href?: string }[] }) {
     <nav className="crumbs" aria-label="Research catalogue">
       <ol>
         <li>
-          <a href={hrefFor('research')}>Research catalogue</a>
+          <a href={hrefFor('research')}>Research Catalogue</a>
         </li>
         {items.map((it) => (
           <li key={it.label}>{it.href ? <a href={it.href}>{it.label}</a> : <span aria-current="page">{it.label}</span>}</li>
@@ -86,31 +84,13 @@ function PageTitle({ children }: { children: ReactNode }) {
 }
 
 function Overview({ cat }: { cat: Catalogue }) {
-  const implemented = cat.mechanisms.filter((m) => isImplementedStatus(m.status));
-  const builderResearch = cat.mechanisms.filter((m) => !isImplementedStatus(m.status) && m.regime.includes('baseline'));
   const summary = roadmapSummary(cat);
   return (
     <>
-      <SectionHeading>Research catalogue</SectionHeading>
+      <SectionHeading>Research Catalogue</SectionHeading>
 
       <div className="overview">
         <div className="overview__main">
-          <h2 id="implemented">Implemented, and research only</h2>
-          <div className="split split--wide">
-            <section className="split__side split__side--implemented" aria-labelledby="ov-impl" data-testid="overview-implemented">
-              <h3 id="ov-impl" className="split__title">
-                Implemented in the solver
-              </h3>
-              <RowList rows={implemented} label="Mechanisms implemented in the solver" />
-            </section>
-            <section className="split__side split__side--research" aria-labelledby="ov-builder" data-testid="overview-builder-research">
-              <h3 id="ov-builder" className="split__title">
-                Equation-builder mechanisms not yet implemented
-              </h3>
-              <RowList rows={builderResearch} label="Builder mechanisms not yet implemented" />
-            </section>
-          </div>
-
           <h2 id="regimes">Three transport regimes</h2>
           {REGIMES.map((g) => {
             const path = regimeEntry(g);
@@ -151,9 +131,6 @@ function Overview({ cat }: { cat: Catalogue }) {
                   <span className="record__lead">Regimes </span>
                   {s.regimes.join(', ')}
                 </p>
-                <p className="species-card__status">
-                  <Counts rows={rowsOfSpecies(cat, s.species)} />
-                </p>
               </li>
             ))}
           </ul>
@@ -165,7 +142,6 @@ function Overview({ cat }: { cat: Catalogue }) {
                 <tr>
                   <th scope="col">Brick</th>
                   <th scope="col">Adds</th>
-                  <th scope="col">Research status of its rows</th>
                 </tr>
               </thead>
               <tbody>
@@ -175,16 +151,12 @@ function Overview({ cat }: { cat: Catalogue }) {
                     <tr key={b}>
                       <td className="num-col">{b}</td>
                       <td>{s ? <Spans spans={s.adds} catalogue={cat} /> : null}</td>
-                      <td>
-                        <Counts rows={rowsOfBrick(cat, b)} />
-                      </td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
           </TableBox>
-          <StatusLegend />
           <nav className="research__links" aria-label="Further catalogue pages">
             <a href={hrefResearch('roadmap')}>Brick roadmap</a>
             <a href={hrefResearch('gallery')}>Materials Studio gallery</a>
@@ -246,7 +218,7 @@ function EntryPage({ cat, path, entry }: { cat: Catalogue; path: string; entry: 
           ) : null}
           <section className="facts" aria-labelledby="record-rows" data-testid="entry-rows">
             <p className="facts__title" id="record-rows">
-              {kind === 'species' ? 'Implementation status of its mechanisms' : kind === 'regime' ? 'Catalogue rows in this regime' : 'Catalogue rows of this entry'}
+              {kind === 'species' ? 'Catalogue rows of its mechanisms' : kind === 'regime' ? 'Catalogue rows in this regime' : 'Catalogue rows of this entry'}
             </p>
             {kind === 'regime' || kind === 'species' ? (
               <RowList rows={rows} label={kind === 'regime' ? 'Catalogue rows in this regime' : 'Catalogue rows of this species'} testId="entry-row-list" />
@@ -261,7 +233,7 @@ function EntryPage({ cat, path, entry }: { cat: Catalogue; path: string; entry: 
                 <ul className="mini-rows">
                   {general.map((r) => (
                     <li key={rowKey(r)}>
-                      <RowChip row={r} compact /> {r.entry ? <a href={entryHref(r.entry)}>{r.name}</a> : r.name}
+                      {r.entry ? <a href={entryHref(r.entry)}>{r.name}</a> : r.name}
                     </li>
                   ))}
                 </ul>
@@ -324,14 +296,13 @@ function RoadmapPage({ cat }: { cat: Catalogue }) {
       <Crumbs items={[{ label: 'Brick roadmap' }]} />
       <PageTitle>{entry?.title ?? 'Brick roadmap'}</PageTitle>
       <section className="bricks" aria-labelledby="bricks-now" data-testid="roadmap-bricks">
-        <h2 id="bricks-now">Status of every brick, from the catalogue rows</h2>
+        <h2 id="bricks-now">Bricks and their catalogue rows</h2>
         <ol className="brick-list">
           {bricks(cat).map((b) => {
             const rows = rowsOfBrick(cat, b);
             const s = summary.get(b);
-            const done = rows.some((r) => isImplementedStatus(r.status));
             return (
-              <li key={b} className={`brick${done ? ' brick--implemented' : ' brick--pending'}`} data-brick={b}>
+              <li key={b} className="brick" data-brick={b}>
                 <p className="brick__num">
                   <span className="brick__word">Brick</span> {b}
                 </p>
@@ -340,7 +311,6 @@ function RoadmapPage({ cat }: { cat: Catalogue }) {
                   <ul className="brick__rows">
                     {rows.map((r) => (
                       <li key={rowKey(r)}>
-                        <RowChip row={r} compact />
                         <span>
                           {r.entry ? <a href={entryHref(r.entry)}>{r.name}</a> : r.name}
                           {r.species !== 'all' ? ` (${r.species})` : ''}
@@ -355,7 +325,7 @@ function RoadmapPage({ cat }: { cat: Catalogue }) {
         </ol>
       </section>
       <p className="roadmap-page__more" data-testid="roadmap-more">
-        <a href={hrefDocumentation('research-roadmap-body')}>Status gates, summary and brick narratives</a>
+        <a href={hrefDocumentation('research-roadmap-body')}>Brick narratives</a>
       </p>
     </div>
   );

@@ -12,7 +12,7 @@ test.describe('Scientific Documentation', () => {
     await links.last().click();
     await expect(page.locator('[data-section="documentation"] h1')).toHaveText('Scientific Documentation');
     await expect(links.last()).toHaveAttribute('aria-current', 'page');
-    await expect(page.locator('main h2')).toHaveCount(7);
+    await expect(page.locator('details.doc__section > summary h2')).toHaveCount(11);
   });
 
   test('the contents links move to their section, and a deep link opens it', async ({ page, problems }) => {
@@ -24,6 +24,26 @@ test.describe('Scientific Documentation', () => {
     await expect(page.locator('#doc-implementation')).toBeInViewport();
     await page.goto('./#/documentation/provenance');
     await expect(page.locator('#doc-provenance')).toBeInViewport();
+  });
+
+  test('the text filter works by keyboard, and sections expand and collapse', async ({ page, problems }) => {
+    void problems;
+    await gotoSection(page, 'documentation');
+    await page.getByTestId('doc-filter').focus();
+    await page.keyboard.type('Sturm');
+    const shown = page.locator('[data-doc-item]:not([hidden])');
+    await expect.poll(async () => await shown.count()).toBeGreaterThan(0);
+    await expect(page.locator('[data-doc-item][hidden]').first()).toBeAttached();
+    await expect(page.getByTestId('doc-filter-count')).toContainText('entries');
+    await page.keyboard.press('Escape');
+    await expect(page.locator('[data-doc-item][hidden]')).toHaveCount(0);
+    // A section summary is a tab stop; Enter collapses it, Enter again expands it.
+    const summary = page.locator('details.doc__section > summary').first();
+    await summary.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('details.doc__section').first()).not.toHaveAttribute('open', '');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('details.doc__section').first()).toHaveAttribute('open', '');
   });
 
   test('the build table names the commit of this build', async ({ page, problems }) => {
@@ -58,7 +78,7 @@ test.describe('Scientific Documentation at phone width', () => {
       .getByRole('navigation', { name: 'Contents of Scientific Documentation' })
       .getByRole('link')
       .evaluateAll((els) => els.filter((e) => (e as HTMLElement).offsetParent !== null).map((e) => e.getBoundingClientRect().height));
-    expect(heights.length).toBeGreaterThanOrEqual(7);
+    expect(heights.length).toBeGreaterThanOrEqual(11);
     for (const h of heights) expect(h).toBeGreaterThanOrEqual(44);
   });
 });

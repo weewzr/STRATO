@@ -111,8 +111,8 @@ test.describe('scenario row at 1440 x 900', () => {
     await page.getByTestId('scenario-control-rod').click();
     await expect(page).toHaveURL(/#\/explore\?physics=combined&scenario=control-rod$/);
     const nav = page.getByRole('navigation', { name: 'Sections' });
-    await nav.getByRole('link', { name: 'Compare' }).click();
-    await expect(page.locator('[data-section="compare"] h1')).toBeVisible();
+    await nav.getByRole('link', { name: 'Basis' }).click();
+    await expect(page.locator('[data-section="basis"] h1')).toBeVisible();
     await nav.getByRole('link', { name: 'Explore' }).click();
     await expect(page.getByTestId('scenario-control-rod')).toHaveAttribute('aria-checked', 'true');
     await page.goto('./#/explore?scenario=refuelling');

@@ -1,0 +1,62 @@
+/* Basis page: diagram, tables and the two method cards. Colours come from tokens; Method A blue and Method B red. */
+.basis__block {
+  margin-block: 1.5rem;
+}
+.basis__pair {
+  display: grid;
+  grid-template-columns: minmax(0, 18rem) minmax(0, 1fr);
+  gap: 1rem 1.5rem;
+  align-items: start;
+}
+.basis__figure {
+  margin: 0;
+}
+.basis__svg {
+  width: 100%;
+  height: auto;
+  max-width: 18rem;
+  display: block;
+}
+.basis__ring {
+  fill: var(--ring);
+  stroke: var(--border-strong);
+  stroke-width: 0.6;
+}
+.basis__radius {
+  stroke: var(--text);
+  stroke-width: 1;
+  stroke-dasharray: 3 2;
+}
+.basis__note {
+  color: var(--text-muted, inherit);
+  margin-block: 0.5rem 0;
+}
+.basis__methods {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.basis__method {
+  border: 1px solid var(--border-strong);
+  border-left-width: 4px;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+}
+.basis__method h3 {
+  margin: 0 0 0.25rem;
+}
+.basis__method p {
+  margin: 0;
+}
+.basis__method--a {
+  border-left-color: #2563eb;
+}
+.basis__method--b {
+  border-left-color: #dc2626;
+}
+@media (max-width: 767px) {
+  .basis__pair,
+  .basis__methods {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

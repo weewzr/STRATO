@@ -2,13 +2,18 @@
 // derivation links (against the documents that crates/strato-docsite publishes).
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { allItemIds, DOC_SECTIONS } from '../src/documentation';
 import { documentationAnchorFromHash, hrefDocumentation, sectionFromHash, SECTIONS } from '../src/route';
 import { Documentation } from '../src/sections/Documentation';
 
 describe('Scientific Documentation in the navigation', () => {
+  it('has exactly four entries, in the decided order', () => {
+    expect(SECTIONS.map((s) => s.label)).toEqual(['Explore', 'Basis', 'Research Catalogue', 'Scientific Documentation']);
+  });
+
   it('is the last entry, with its own route', () => {
     expect(SECTIONS[SECTIONS.length - 1]).toEqual({ id: 'documentation', label: 'Scientific Documentation' });
     expect(sectionFromHash('#/documentation')).toBe('documentation');
@@ -24,13 +29,17 @@ describe('Scientific Documentation in the navigation', () => {
 });
 
 describe('Scientific Documentation page', () => {
-  it('has the seven sections with headings, contents links and anchors', () => {
+  it('has its sections with headings, contents links and anchors', () => {
     expect(DOC_SECTIONS.map((s) => s.title)).toEqual([
       'Assumptions',
       'Model limitations',
       'Derivations',
       'Verification methodology',
+      'Numerical verification evidence',
       'Experimental interpretation',
+      'Parameters, references and downloads',
+      'Research and implementation statuses',
+      'Advanced solver configuration',
       'Technical implementation and build',
       'Data provenance and research catalogue',
     ]);
@@ -63,6 +72,29 @@ describe('Scientific Documentation page', () => {
     }
   });
 
+  it('holds the statuses, the references, the downloads and the mount point of the advanced solver configuration', () => {
+    render(<Documentation />);
+    expect(within(screen.getByTestId('status-table')).getAllByRole('row').length).toBeGreaterThan(1);
+    expect(screen.getByTestId('downloads-evidence')).toBeTruthy();
+    expect(screen.getByTestId('references-evidence')).toBeTruthy();
+    expect(screen.getByTestId('r2-reasons').textContent).toContain('missing_conditions');
+    const mount = screen.getByTestId('advanced-solver-mount');
+    expect(mount.getAttribute('data-mount')).toBe('advanced-solver-configuration');
+    expect(mount.childElementCount).toBe(0);
+  });
+
+  it('builds an entry that runs the solver only when it is opened', async () => {
+    render(<Documentation />);
+    const item = screen.getByTestId('doc-item-evidence-comparison') as HTMLDetailsElement;
+    expect(item.open).toBe(false);
+    expect(screen.queryByTestId('comparison-evidence')).toBeNull();
+    await act(async () => {
+      item.open = true;
+      fireEvent(item, new Event('toggle'));
+    });
+    expect(screen.getByTestId('comparison-evidence')).toBeTruthy();
+  });
+
   it('holds the build, solver version and source paths, which no other page shows', () => {
     render(<Documentation />);
     const build = within(screen.getByTestId('documentation-build'));
@@ -88,4 +120,28 @@ describe('Scientific Documentation page', () => {
       expect(hrefs.some((x) => x.endsWith(`/${src}`)), `${src} is linked on GitHub too`).toBe(true);
     }
   });
+});
+
+describe('Scientific Documentation filter', () => {
+  it('filters the entries by typed text, by keyboard, and Escape shows them all again', async () => {
+    const user = userEvent.setup();
+    render(<Documentation />);
+    const total = allItemIds().length;
+    const filter = screen.getByTestId('doc-filter');
+    await user.tab();
+    await user.click(filter);
+    expect(document.activeElement).toBe(filter);
+    await user.keyboard('Sturm');
+    const shown = Array.from(document.querySelectorAll<HTMLElement>('[data-doc-item]')).filter((e) => !e.hidden);
+    expect(shown.length).toBeGreaterThan(0);
+    expect(shown.length).toBeLessThan(total);
+    expect(screen.getByTestId('doc-filter-count').textContent).toBe(`${shown.length} of ${total} entries`);
+    await user.keyboard('qqqzzzxx');
+    expect(screen.getByTestId('doc-filter-count').textContent).toBe('No entry contains this text.');
+    expect(screen.getByTestId('doc-section-assumptions').hidden).toBe(true);
+    await user.keyboard('{Escape}');
+    expect(Array.from(document.querySelectorAll<HTMLElement>('[data-doc-item]')).every((e) => !e.hidden)).toBe(true);
+    expect((filter as HTMLInputElement).value).toBe('');
+  });
+
 });

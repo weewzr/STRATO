@@ -22,7 +22,6 @@ import {
   rowsOfBrick,
   sectionBlocks,
 } from '../src/research/entries';
-import { FutureResearch } from '../src/research/FutureResearch';
 import { GalleryItem } from '../src/research/parts';
 import { pathLabel } from '../src/research/PathLink';
 import { STATUS_INFO, STATUSES, type ResearchStatus } from '../src/research/status';
@@ -228,51 +227,38 @@ describe('species, regime and mechanism pages', () => {
   });
 });
 
-describe('statuses shown equal the catalogue, as word and shape', () => {
-  it('shows only the five words, each chip of a row equal to that row, on every Research page and in block E', () => {
-    const check = (where: string) => {
-      const chips = Array.from(document.querySelectorAll<HTMLElement>('.status-chip'));
-      // The references page and the gallery (one status line, no placeholder cards) carry no status chip.
-      if (where !== 'references' && where !== 'gallery') expect(chips.length, where).toBeGreaterThan(0);
-      for (const c of chips) {
-        const word = c.querySelector('.status-chip__word')?.textContent ?? '';
-        expect(STATUSES as readonly string[], `${where}: ${word}`).toContain(word);
-        expect(c.dataset.status).toBe(word);
-        expect(c.querySelector('svg.status-chip__shape'), where).not.toBeNull();
-        if (c.dataset.statusRow) expect(rowOf(c.dataset.statusRow)?.status, `${where}: ${c.dataset.statusRow}`).toBe(word);
-      }
-    };
+describe('no research status on the Research Catalogue; the statuses are in Scientific Documentation', () => {
+  const STATUS_WORDS = /\b(?:pending|researched|implemented|verified|validated|computed|precomputed|not verified)\b/i;
+
+  it('shows no status chip, badge, legend or status word as a badge on any Research page', () => {
     for (const page of ALL_PAGES) {
-      const { unmount } = renderPage(page);
-      check(page || 'overview');
+      const { unmount, container } = renderPage(page);
+      expect(container.querySelector('.status-chip, .badge, [data-status], [data-label], [data-testid="status-legend"]'), page || 'overview').toBeNull();
+      for (const el of Array.from(container.querySelectorAll('.tag, .chip, [class*="badge"], [class*="chip"]'))) expect(el.textContent ?? '', page).not.toMatch(STATUS_WORDS);
       unmount();
     }
-    render(<FutureResearch />);
-    check('block E');
   });
 
-  it('counts the rows of each status correctly in the summaries', () => {
-    render(<FutureResearch />);
-    const bricks = screen.getByTestId('future-bricks');
-    for (const li of Array.from(bricks.querySelectorAll<HTMLElement>('[data-brick]'))) {
-      const rows = rowsOfBrick(CATALOGUE, Number(li.dataset.brick));
-      const shown = Array.from(li.querySelectorAll<HTMLElement>('[data-status-count]')).map((c) => [c.dataset.status, Number(c.dataset.statusCount)]);
-      const expected = STATUSES.map((s) => [s, rows.filter((r) => r.status === s).length]).filter(([, n]) => (n as number) > 0);
-      expect(shown, `brick ${li.dataset.brick}`).toEqual(expected);
+  it('names the three regimes, the nine species and the bricks on the overview, without an implemented-or-research split', () => {
+    renderPage('');
+    expect(screen.getAllByTestId(/^overview-regime-/)).toHaveLength(3);
+    expect(screen.getByTestId('overview-species').querySelectorAll('[data-species]')).toHaveLength(9);
+    expect(screen.queryByTestId('overview-implemented')).toBeNull();
+    expect(screen.queryByTestId('overview-builder-research')).toBeNull();
+    expect(screen.getByTestId('overview-bricks')).toBeTruthy();
+  });
+
+  it('holds the status of every catalogue row once, in a table of Scientific Documentation generated from the same data', () => {
+    render(<Documentation />);
+    const rows = Array.from(screen.getByTestId('status-table').querySelectorAll<HTMLElement>('tbody tr'));
+    expect(rows).toHaveLength(CATALOGUE.mechanisms.length);
+    for (const tr of rows) {
+      const chip = tr.querySelector<HTMLElement>('.status-chip');
+      const word = chip?.querySelector('.status-chip__word')?.textContent ?? '';
+      expect(STATUSES as readonly string[]).toContain(word);
+      expect(rowOf(tr.dataset.row ?? '')?.status, tr.dataset.row).toBe(word);
     }
   });
-
-  // The definitions of the five statuses moved from the legend to Scientific Documentation (minimal-text
-  // rules): the legend is one row of the five words, the definitions are printed once, in the documentation.
-  it('shows a legend of the five statuses as one row, with a link to their definitions', () => {
-    renderPage('');
-    const legend = screen.getByTestId('status-legend');
-    const words = Array.from(legend.querySelectorAll('.status-chip__word')).map((w) => w.textContent);
-    expect(words).toEqual([...STATUSES]);
-    expect(legend.querySelectorAll('dd')).toHaveLength(0);
-    expect(within(legend).getByRole('link', { name: 'Definitions' }).getAttribute('href')).toBe('#/documentation/research-status-scale');
-  });
-
   it('defines all five statuses once, in Scientific Documentation', () => {
     render(<Documentation />);
     const rows = Array.from(screen.getByTestId('research-status-scale').querySelectorAll('tbody tr'));
@@ -353,7 +339,8 @@ describe('no pending mechanism has an enabled switch', () => {
         expect(sw.hasAttribute('disabled')).toBe(false);
         sw.focus();
         expect(document.activeElement).toBe(sw);
-        expect(sw.textContent).toContain(`status ${row.status}`);
+        expect(sw.textContent).toContain('Not available');
+        expect(sw.textContent).not.toContain(row.status);
         const why = document.getElementById(sw.getAttribute('aria-describedby') ?? '');
         expect(why?.textContent, rowKey(row)).toContain(row.missing_work || 'No missing work');
         await press(sw);
@@ -363,7 +350,7 @@ describe('no pending mechanism has an enabled switch', () => {
     }
   });
 
-  it('has no switch without aria-disabled anywhere in the Research section or block E, and sends no solver request', { timeout: 120_000 }, async () => {
+  it('has no switch without aria-disabled anywhere in the Research Catalogue, and sends no solver request', { timeout: 120_000 }, async () => {
     let asked = 0;
     act(() => {
       useStrato.getState().setCapabilities(['diffusion_btcs_layered']);
@@ -378,8 +365,6 @@ describe('no pending mechanism has an enabled switch', () => {
       for (const s of switches.slice(0, 2)) await press(s);
       unmount();
     }
-    render(<FutureResearch />);
-    for (const s of Array.from(document.querySelectorAll<HTMLElement>('[role="switch"]'))) expect(s.getAttribute('aria-disabled')).toBe('true');
     expect(asked).toBe(0);
     expect(JSON.stringify(useStrato.getState().config)).toBe(config);
     expect(JSON.stringify(useStrato.getState().selection)).toBe(selection);
@@ -455,8 +440,8 @@ describe('Materials Studio gallery', () => {
   });
 });
 
-describe('roadmap, future phases and block E', () => {
-  it('names both future items on the roadmap page and in block E, planned for a future phase', () => {
+describe('roadmap and future phases', () => {
+  it('names both future items on the roadmap page, planned for a future phase', () => {
     const planned = sectionBlocks(CATALOGUE.entries[ROADMAP_ENTRY], 'two-items-among-the-future-phases');
     expect(planned.length).toBeGreaterThan(0);
     renderPage('roadmap');
@@ -480,22 +465,12 @@ describe('roadmap, future phases and block E', () => {
     expect(body).not.toMatch(/Delivered by/);
   });
 
-  // The summary of the catalogue left the Explore page with the hierarchy of 26 Nov 2026 (block E is now
-  // the results); the Research overview holds the same content, and the component keeps its own test here.
-  it('the catalogue summary separates what the solver implements from the research, and links the Research section', () => {
-    render(<FutureResearch />);
-    const e = screen.getByTestId('future-research');
-    const impl = within(e).getByTestId('future-implemented');
-    const pending = within(e).getByTestId('future-pending');
-    for (const c of Array.from(impl.querySelectorAll<HTMLElement>('[data-status-row]'))) expect(['IMPLEMENTED', 'VERIFIED', 'VALIDATED']).toContain(c.dataset.status);
-    expect(pending.querySelectorAll('[data-status-row]').length).toBe(0);
-    expect(within(e).getByTestId('future-species').querySelectorAll('[data-species]')).toHaveLength(9);
-    expect(within(e).getByTestId('future-regimes').children).toHaveLength(3);
-    expect(within(e).getByTestId('future-planned').textContent).toMatch(/planned for a future phase/);
-    expect(within(e).getByTestId('status-legend')).toBeTruthy();
-    expect(e.querySelector('a[href="#/research"]')).not.toBeNull();
+  it('the overview names the three regimes and the nine species and links the other catalogue pages', () => {
+    renderPage('');
+    expect(screen.getByRole('link', { name: 'Brick roadmap' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'References' })).toBeTruthy();
+    expect(screen.getByTestId('overview-species').querySelectorAll('[data-species]')).toHaveLength(9);
   });
-
   it('the Explore page no longer carries the catalogue summary', () => {
     render(<App />);
     expect(screen.queryByTestId('future-research')).toBeNull();

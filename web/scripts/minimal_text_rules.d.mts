@@ -5,6 +5,7 @@ export const PROSE_MAX_WORDS_BY_PAGE: Record<string, number>;
 export const DOCUMENTATION_PAGE: string;
 export const RULES: string[];
 export const RULE_MESSAGES: Record<string, string>;
+export const STATUS_WORDS: RegExp;
 export const HASH_PATTERN: RegExp;
 export const PATH_PATTERN: RegExp;
 export const DISCLAIMERS: { id: string; pattern: RegExp }[];
@@ -15,6 +16,8 @@ export interface PageSnapshot {
   page: string;
   text: string;
   shellText?: string;
+  badges?: string[];
+  shellBadges?: string[];
   captions: string[];
   proseWords: number;
   longestBlockWords?: number;

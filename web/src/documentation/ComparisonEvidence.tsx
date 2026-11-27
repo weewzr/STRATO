@@ -1,6 +1,5 @@
 import { useEffect, useMemo } from 'react';
 import { BUILD } from '../build';
-import { ExperimentalComparisons } from '../graph/Comparisons';
 import { plain } from '../format';
 import { METHOD_1 } from '../methods';
 import { Badge, Sci } from '../panels/Badge';
@@ -9,7 +8,7 @@ import { Plot } from '../plots/Plot';
 import { usePlotTheme } from '../plots/theme';
 import { hrefDocumentation, hrefFor } from '../route';
 import { comparisonKey, configDifferences, useStrato } from '../state/store';
-import { SectionHeading, TableBox } from './common';
+import { TableBox } from '../sections/common';
 
 // The Compare section (web phase 5; prompt/DESIGN_SPECIFICATION.md Section 8.1): the baseline and the
 // current release curves from compare, and the optional difference curve that compare computes
@@ -103,7 +102,8 @@ function ComparisonFigure() {
   );
 }
 
-export function Compare() {
+/** The comparison with the baseline (moved from the Compare page): the figure, its summary and the inputs that differ. */
+export function ComparisonEvidence() {
   const config = useStrato((s) => s.config);
   const baseline = useStrato((s) => s.baselineConfig);
   const ready = useStrato((s) => s.solver.state === 'ready');
@@ -118,14 +118,8 @@ export function Compare() {
   }, [ready, key, comparisonKeyNow, requestCompare]);
 
   return (
-    <article className="section" data-section="compare">
-      <SectionHeading>Compare with the baseline</SectionHeading>
-
+    <div data-testid="comparison-evidence">
       <ComparisonFigure />
-
-      <div data-mount="experimental-comparison-graph" data-testid="experimental-comparison-mount">
-        <ExperimentalComparisons />
-      </div>
 
       {diffs.length === 0 ? (
         <p data-testid="no-diffs">
@@ -163,6 +157,6 @@ export function Compare() {
           </TableBox>
         </>
       )}
-    </article>
+    </div>
   );
 }

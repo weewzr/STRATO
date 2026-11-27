@@ -58,9 +58,9 @@ test.describe('hierarchy and selection at 1440 x 900', () => {
     await expect(page.getByTestId('num-toggle-10')).toHaveAttribute('aria-expanded', 'false');
     // Through the navigation links and back.
     const nav = page.getByRole('navigation', { name: 'Sections' });
-    for (const name of ['Compare', 'Validate', 'Verify', 'Research', 'Data', 'About']) {
+    for (const [name, section] of [['Basis', 'basis'], ['Research Catalogue', 'research'], ['Scientific Documentation', 'documentation']] as const) {
       await nav.getByRole('link', { name }).click();
-      await expect(page.locator(`[data-section="${name.toLowerCase()}"] h1`)).toBeVisible();
+      await expect(page.locator(`[data-section="${section}"] h1`)).toBeVisible();
     }
     await nav.getByRole('link', { name: 'Explore' }).click();
     await expect(page.locator('[data-section="explore"] h1')).toBeVisible();

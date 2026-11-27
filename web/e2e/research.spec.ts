@@ -56,13 +56,13 @@ for (const vp of [
   test.describe(`research catalogue at ${vp.label}`, () => {
     test.use({ viewport: { width: vp.width, height: vp.height }, isMobile: vp.mobile, hasTouch: vp.mobile, deviceScaleFactor: vp.mobile ? 3 : 1 });
 
-    test('every page: statuses equal the catalogue, switches disabled, no image, no sideways scroll', async ({ page, problems }) => {
+    test('every page: no status badge, switches disabled, no image, no sideways scroll', async ({ page, problems }) => {
       void problems;
       for (const p of PAGES) {
         await gotoResearch(page, p.page);
-        const n = await checkStatuses(page, '[data-section="research"]');
-        // The references page and the gallery (one status line) carry no status chip.
-        if (p.page !== 'references' && p.page !== 'gallery') expect(n, p.name).toBeGreaterThan(0);
+        // No status chip, badge or legend on any page of the Research Catalogue: the statuses are in Scientific Documentation.
+        expect(await checkStatuses(page, '[data-section="research"]'), p.name).toBe(0);
+        await expect(page.locator('[data-section="research"] .badge, [data-section="research"] [data-testid="status-legend"]')).toHaveCount(0);
         const switches = page.locator('[data-section="research"] [role="switch"]');
         for (const s of await switches.all()) await expect(s).toHaveAttribute('aria-disabled', 'true');
         await expect(page.locator('[data-section="research"] img')).toHaveCount(0);
@@ -78,14 +78,14 @@ for (const vp of [
     // The summary of the catalogue left the Explore page with the hierarchy of 26 Nov 2026 (block E is now the
     // results); the Research overview carries the same content: implemented and research only, the three
     // regimes, the nine species, the five statuses.
-    test('the Research overview separates what the solver implements from the research, and Explore carries no catalogue summary', async ({ page, problems }) => {
+    test('the Research overview carries the regimes and the species with no status, and Explore carries no catalogue summary', async ({ page, problems }) => {
       void problems;
       await gotoResearch(page, '');
-      await expect(page.getByTestId('overview-implemented')).toBeVisible();
-      await expect(page.getByTestId('overview-builder-research')).toBeVisible();
+      await expect(page.getByTestId('overview-implemented')).toHaveCount(0);
+      await expect(page.getByTestId('overview-builder-research')).toHaveCount(0);
       await expect(page.getByTestId('overview-species').locator('[data-species]')).toHaveCount(9);
       await expect(page.locator('[data-testid^="overview-regime-"]')).toHaveCount(3);
-      await expect(page.getByTestId('status-legend').locator('.status-chip')).toHaveCount(5);
+      await expect(page.getByTestId('status-legend')).toHaveCount(0);
       expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
       await gotoSection(page, 'explore');
      await expect(page.getByTestId('future-research')).toHaveCount(0);
@@ -111,7 +111,7 @@ test.describe('catalogue switches by keyboard', () => {
     await page.keyboard.press('Enter');
     await sw.click({ force: true });
     await expect(sw).toHaveAttribute('aria-checked', 'false');
-    await expect(sw).toContainText('Not available: status PENDING');
+    await expect(sw).toContainText('Not available');
     expect(await solverRequests(page)).toBe(before);
   });
 

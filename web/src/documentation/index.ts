@@ -1,6 +1,7 @@
 import { about } from './about';
 import { compare } from './compare';
 import { data } from './data';
+import { evidence } from './evidence';
 import { explore } from './explore';
 import { research } from './research';
 import { site } from './site';
@@ -15,7 +16,7 @@ export type { DocContribution, DocItem, DocSectionId } from './types';
  * One content module per source page. Each page task puts the scientific material that leaves its page
  * into its own module (and edits no other); the order here is the order of the entries in a section.
  */
-const CONTRIBUTIONS: DocContribution[] = [site, explore, compare, validate, verify, research, data, about];
+const CONTRIBUTIONS: DocContribution[] = [site, explore, compare, validate, verify, research, data, about, evidence];
 
 /** The entries of a section, in the order of the modules. */
 export function itemsOf(section: DocSectionId): DocItem[] {

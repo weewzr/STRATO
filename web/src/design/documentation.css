@@ -105,3 +105,63 @@
     display: block;
   }
 }
+
+/* Expandable sections and entries, and the text filter. */
+.doc__summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.doc__summary h2,
+.doc__summary h3 {
+  margin: 0;
+  flex: 1;
+}
+
+.doc__summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.doc__item > :not(summary) {
+  margin-top: 0.5rem;
+}
+
+.doc__filter {
+  margin-top: 1rem;
+  max-width: 32rem;
+}
+
+.doc__filter-label {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: var(--fs-label);
+  margin-bottom: 0.25rem;
+}
+
+.doc__filter-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 0.75rem;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface, transparent);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+}
+
+.doc__filter-input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.doc__filter-count {
+  min-height: 1.5rem;
+  margin: 0.25rem 0 0;
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+}

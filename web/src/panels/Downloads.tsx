@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { findCase, type CaseConfig } from '../data/case';
-import { hrefFor } from '../route';
+import { hrefDocumentation, hrefFor } from '../route';
 import { solverClient } from '../solver/session';
 import type { CompareOk, ExportFormat, RunOk } from '../solver/types';
 import { comparisonKey, configDifferences, inputKey, useStrato } from '../state/store';
@@ -148,7 +148,7 @@ export function LiveDownloads() {
       stale: compareStale,
       missing: (
         <>
-          Appears when a comparison has run: open <a href={hrefFor('compare')}>Compare</a>.
+          Appears when a comparison has run: open <a href={hrefDocumentation('evidence-comparison')}>the comparison with the baseline</a>.
         </>
       ),
       files: reply ? runFiles(reply.baseline, baselineConfig, 'strato-baseline') : [],
@@ -160,7 +160,7 @@ export function LiveDownloads() {
       stale: compareStale,
       missing: (
         <>
-          Appears when a comparison has run: open <a href={hrefFor('compare')}>Compare</a>.
+          Appears when a comparison has run: open <a href={hrefDocumentation('evidence-comparison')}>the comparison with the baseline</a>.
         </>
       ),
       files: reply

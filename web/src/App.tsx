@@ -3,15 +3,11 @@ import { ControlPanel } from './panels/ControlPanel';
 import { Header } from './panels/Header';
 import { StatusLine } from './panels/StatusLine';
 import { useSection, type SectionId } from './route';
-import { About } from './sections/About';
+import { Basis } from './sections/Basis';
 import { NavigatedContext } from './sections/common';
-import { Compare } from './sections/Compare';
-import { Data } from './sections/Data';
 import { Documentation } from './sections/Documentation';
 import { Explore } from './sections/Explore';
 import { Research } from './sections/Research';
-import { Validate } from './sections/Validate';
-import { Verify } from './sections/Verify';
 import { useMediaQuery, useTheme } from './theme';
 
 // STRATO's binding breakpoints (prompt/DESIGN_SPECIFICATION.md Section 2.1): desktop from 1200 px,
@@ -66,18 +62,10 @@ export function App() {
     switch (id) {
       case 'explore':
         return <Explore compact={!tabletUp} onOpenControls={openSheet} />;
-      case 'compare':
-        return <Compare />;
-      case 'validate':
-        return <Validate />;
-      case 'verify':
-        return <Verify />;
+      case 'basis':
+        return <Basis />;
       case 'research':
         return <Research />;
-      case 'data':
-        return <Data />;
-      case 'about':
-        return <About />;
       case 'documentation':
         return <Documentation />;
     }

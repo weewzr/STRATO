@@ -143,9 +143,9 @@ test.describe('Numerical Interpretation at 1440 x 900', () => {
     await page.getByTestId('num-toggle-2').click();
     await expect(page).toHaveURL(/#\/explore\?open=numerical,n2,n3,n8$/);
     const nav = page.getByRole('navigation', { name: 'Sections' });
-    for (const name of ['Compare', 'Validate']) {
+    for (const [name, section] of [['Basis', 'basis'], ['Scientific Documentation', 'documentation']] as const) {
       await nav.getByRole('link', { name }).click();
-      await expect(page.locator(`[data-section="${name.toLowerCase()}"] h1`)).toBeVisible();
+      await expect(page.locator(`[data-section="${section}"] h1`)).toBeVisible();
     }
     await nav.getByRole('link', { name: 'Explore' }).click();
     await expect(page.locator('[data-section="explore"] h1')).toBeVisible();

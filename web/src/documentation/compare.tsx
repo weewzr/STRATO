@@ -1,5 +1,5 @@
 import { findCase } from '../data/case';
-import { hrefDocumentation, hrefFor } from '../route';
+import { hrefDocumentation } from '../route';
 import { useStrato } from '../state/store';
 import type { DocContribution } from './types';
 
@@ -12,7 +12,7 @@ function CompareSource() {
     <>
       <p>
         The case file of both runs is <code>{caseFile}</code>. The CSV of the comparison, written by the solver in Rust with its
-        provenance header, is under <a href={hrefFor('data')}>Data</a>.
+        provenance header, is under <a href={hrefDocumentation('evidence-downloads')}>Data downloads</a>.
       </p>
     </>
   );

@@ -9,7 +9,11 @@ export const DOC_SECTIONS = [
   { id: 'limitations', title: 'Model limitations' },
   { id: 'derivations', title: 'Derivations' },
   { id: 'verification', title: 'Verification methodology' },
+  { id: 'evidence', title: 'Numerical verification evidence' },
   { id: 'interpretation', title: 'Experimental interpretation' },
+  { id: 'data', title: 'Parameters, references and downloads' },
+  { id: 'statuses', title: 'Research and implementation statuses' },
+  { id: 'advanced', title: 'Advanced solver configuration' },
   { id: 'implementation', title: 'Technical implementation and build' },
   { id: 'provenance', title: 'Data provenance and research catalogue' },
 ] as const;
@@ -25,6 +29,8 @@ export interface DocItem {
   id: string;
   title: string;
   body: ReactNode;
+  /** True for an entry that runs the solver or reads files: its body is built when the entry is opened. */
+  lazy?: boolean;
 }
 
 /** What one source page contributes: entries per section. A page task fills its own module only. */

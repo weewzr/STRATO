@@ -76,8 +76,12 @@ async function download(page: Page, testId: string): Promise<{ name: string; tex
   return { name: dl.suggestedFilename(), text: readFileSync(path, 'utf8') };
 }
 
+/** The pages that hold what the old Compare, Validate, Verify and Data sections held: entries of Scientific Documentation. */
+const ENTRY: Record<string, string> = { Compare: 'evidence-comparison', Validate: 'validate-status', Verify: 'evidence-verification', Data: 'evidence-downloads' };
+
 async function nav(page: Page, name: string): Promise<void> {
-  await page.getByRole('navigation', { name: 'Sections' }).getByRole('link', { name }).click();
+  await page.goto(`./#/documentation/${ENTRY[name] ?? ''}`);
+  await expect(page.locator('[data-section="documentation"] h1')).toBeVisible();
 }
 
 test.describe('block B plots', () => {
@@ -191,7 +195,7 @@ test.describe('phone layout of the plots', () => {
 test.describe('comparison', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('the plotted difference is the series compare returned; toggles are independent of validation', async ({ page, problems }) => {
+  test('the plotted difference is the series compare returned; the toggles keep their state', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     await waitForRun(page);
@@ -229,12 +233,7 @@ test.describe('comparison', () => {
     await page.getByTestId('toggle-comparison').uncheck();
     await expect.poll(async () => (await drawn(page, 'compare-plot')).map((t) => t.id)).toEqual(['compare-modified', 'compare-difference']);
     await nav(page, 'Validate');
-    const v = page.getByTestId('toggle-validation');
-    await expect(v).toHaveAttribute('aria-disabled', 'true');
-    await expect(v).toHaveAttribute('aria-checked', 'false');
-    await v.click({ force: true });
-    await v.press('Enter');
-    await expect(v).toHaveAttribute('aria-checked', 'false');
+    await expect(page.getByTestId('toggle-validation')).toHaveCount(0);
     await nav(page, 'Compare');
     await expect(page.getByTestId('toggle-comparison')).not.toBeChecked();
     await expect(page.getByTestId('toggle-difference')).toBeChecked();
@@ -321,7 +320,7 @@ test.describe('downloads', () => {
 
   test('the parameter table can be searched', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'data');
+    await page.goto('./#/documentation/evidence-parameters');
     await page.getByTestId('provenance-search').fill('sic diffusivity');
     await expect(page.getByTestId('input-table').locator('tbody tr')).toHaveCount(1);
     await expect(page.getByTestId('input-table').locator('tbody tr')).toHaveAttribute('data-key', 'regions[3].diffusivity_m2_s');
@@ -334,7 +333,7 @@ test.describe('verification panel', () => {
 
   test('plots the precomputed native output with its label and provenance, and the observed orders from the file', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'verify');
+    await nav(page, 'Verify');
     const diff = await drawn(page, 'verify-bc-difference-plot');
     expect(identical(diff[0]!.y, COMPARISON.data.abs_difference)).toBe(true);
     expect(identical(diff[0]!.x, COMPARISON.data.t_s)).toBe(true);

@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Locator, Page } from '@playwright/test';
 import type { ComparisonFile } from '../src/graph/contract';
-import { expect, gotoSection, horizontalOverflow, test } from './fixtures';
+import { expect, horizontalOverflow, test } from './fixtures';
 
 // The experimental-comparison graph in a real browser: styles read from the rendered SVG, the plotted
 // arrays against the file, the R² label rule, the caption, citation and link below the graph, the
@@ -195,10 +195,11 @@ for (const width of [768, 390]) {
 }
 
 test.describe('pages and build', () => {
-  test('Compare and Validate show no comparison graph while the build holds no comparison file', async ({ page, problems }) => {
+  test('the comparison and the experimental graphs of Scientific Documentation show no comparison graph while the build holds no comparison file', async ({ page, problems }) => {
     void problems;
-    for (const id of ['compare', 'validate']) {
-      await gotoSection(page, id);
+    for (const id of ['evidence-comparison', 'evidence-experimental']) {
+      await page.goto(`./#/documentation/${id}`);
+      await expect(page.locator('[data-section="documentation"] h1')).toBeVisible();
       await expect(page.getByTestId('exp-comparisons')).toHaveCount(0);
       await expect(page.locator('[data-testid^="exp-"]')).toHaveCount(0);
     }

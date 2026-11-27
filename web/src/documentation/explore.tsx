@@ -7,7 +7,7 @@ import { STEP_DEFS } from '../equation/terms';
 import { useBuildCapability } from '../equation/useCapability';
 import reference from '../generated/agr1_reference.json';
 import { METHOD_1, METHOD_2 } from '../methods';
-import { hrefDocumentation, hrefFor } from '../route';
+import { hrefDocumentation } from '../route';
 import { useStrato } from '../state/store';
 import type { DocContribution } from './types';
 
@@ -216,10 +216,10 @@ function FiguresEntry() {
         The pointwise difference of the two curves is not drawn on Explore: it is a difference of two nearly equal numbers, sensitive to
         their last digits, which differ between this browser build and the native build of the solver. The largest and the final
         difference that the solver returns are in the numerical diagnostics; the pointwise difference of the verified case, from the
-        native program, is plotted under <a href={hrefFor('verify')}>Verify</a>.
+        native program, is plotted under <a href={hrefDocumentation('evidence-verification')}>the verification evidence</a>.
       </p>
       <p>
-        The values plotted are those returned by the solver; the CSV and JSON of the run are under <a href={hrefFor('data')}>Data</a>, and
+        The values plotted are those returned by the solver; the CSV and JSON of the run are under <a href={hrefDocumentation('evidence-downloads')}>Data downloads</a>, and
         each figure can be saved as SVG or PNG with its source line, which carries the solver version and the build.
       </p>
     </>
@@ -291,7 +291,7 @@ export const explore: DocContribution = {
       body: (
         <p>
           The results on Explore are model output only; no experimental data are shown there. Experimental comparisons will appear under{' '}
-          <a href={hrefFor('validate')}>Validate</a>; none is available in this build.
+          <a href={hrefDocumentation('interpretation')}>the experimental interpretation</a>; none is available in this build.
         </p>
       ),
     },

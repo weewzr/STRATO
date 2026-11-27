@@ -4,7 +4,8 @@
 // sentence about the internal comparison or an agreement figure of that sentence, or a local
 // absolute path. It also renders the pages in a browser and applies the mechanical guards of the
 // minimal-text rules (scripts/minimal_text_rules.mjs): no build hash or file path in the main interface,
-// short figure captions, a limit on prose before the first control, each registered disclaimer once.
+// short figure captions, a limit on prose before the first control, each registered disclaimer once,
+// and no status word (planned, pending, ..., computed) rendered as a badge or chip outside Scientific Documentation.
 // Prints one PASS or FAIL line per rule.
 // Options: --snapshots <file.json> uses page snapshots from a file instead of rendering the build;
 //          --no-render skips the rendered guards (static rules only).

@@ -7,7 +7,7 @@ import { precomputedUrl, usePrecomputed } from '../plots/precomputed';
 import { statusOf, useCatalogue } from '../research/catalogue';
 import { StatusChip } from '../research/StatusChip';
 import { TableBox } from '../sections/common';
-import { hrefDocumentation, hrefFor } from '../route';
+import { hrefDocumentation } from '../route';
 import { useStrato } from '../state/store';
 import type { DocContribution } from './types';
 
@@ -269,7 +269,7 @@ export const verify: DocContribution = {
           <p>
             The checks run in the repository’s continuous integration. The output of the native STRATO programs for the synthetic case is
             published with this site as precomputed files (label PRECOMPUTED, with commit, input hash, solver version and command; see{' '}
-            <a href={hrefFor('data')}>Data</a>); the figures on <a href={hrefFor('verify')}>Verify</a> plot them as they are. The live
+            <a href={hrefDocumentation('evidence-downloads')}>Data downloads</a>); the figures on <a href={hrefDocumentation('evidence-verification')}>the verification evidence</a> plot them as they are. The live
             simulation on the Explore page reports its own balance residual and its largest and final difference from {METHOD_2} (label
             COMPUTED v2.0). All of this is verification on the synthetic case; none of it compares the model with a measurement.
           </p>
