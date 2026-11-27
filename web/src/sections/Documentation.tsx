@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import '../design/documentation.css';
 import { DOC_SECTIONS, itemsOf } from '../documentation';
+import { AdvancedSolver } from '../advanced/AdvancedSolver';
 import { hrefDocumentation, useDocumentationAnchor } from '../route';
 import { SectionHeading } from './common';
 
@@ -65,6 +66,10 @@ export function Documentation() {
           ))}
         </div>
       </div>
+      {/* PREVIEW ONLY (not for merge): the page of the other agent mounts AdvancedSolver under Advanced solver configuration. */}
+      <section aria-label="Advanced solver configuration" id="doc-advanced">
+        <AdvancedSolver compact={false} />
+      </section>
     </article>
   );
 }
