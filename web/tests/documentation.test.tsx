@@ -72,15 +72,16 @@ describe('Scientific Documentation page', () => {
     }
   });
 
-  it('holds the statuses, the references, the downloads and the mount point of the advanced solver configuration', () => {
+  it('holds the statuses, the references, the downloads and the lazy advanced solver configuration', () => {
     render(<Documentation />);
     expect(within(screen.getByTestId('status-table')).getAllByRole('row').length).toBeGreaterThan(1);
     expect(screen.getByTestId('downloads-evidence')).toBeTruthy();
     expect(screen.getByTestId('references-evidence')).toBeTruthy();
     expect(screen.getByTestId('r2-reasons').textContent).toContain('missing_conditions');
-    const mount = screen.getByTestId('advanced-solver-mount');
-    expect(mount.getAttribute('data-mount')).toBe('advanced-solver-configuration');
-    expect(mount.childElementCount).toBe(0);
+    // The advanced solver and its 3D view are lazy: closed, nothing of it is built or loaded.
+    const item = screen.getByTestId('doc-item-advanced-solver') as HTMLDetailsElement;
+    expect(item.open).toBe(false);
+    expect(screen.queryByTestId('advanced-solver-mount')).toBeNull();
   });
 
   it('builds an entry that runs the solver only when it is opened', async () => {

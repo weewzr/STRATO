@@ -51,21 +51,16 @@ export async function gotoNumerical(page: Page, sections: readonly string[] = []
 }
 
 /**
- * Opens the manual baseline solver (advanced/AdvancedSolver.tsx). Explore no longer holds it (decision 77(f));
- * Scientific Documentation mounts it under "Advanced solver configuration" (another branch). So that these tests
- * do not depend on that page, they mount the same component through the development-server harness
- * (tests/harness/advanced.tsx), inside the header, status line and sections of the site.
+ * Opens the manual baseline solver (advanced/AdvancedSolver.tsx) where the site mounts it: the entry
+ * "Advanced solver configuration" of Scientific Documentation, opened by its address.
  */
-const ADVANCED_HARNESS = 'http://127.0.0.1:4433/STRATO/advanced.html';
 export async function gotoAdvanced(page: Page): Promise<void> {
-  await page.goto(ADVANCED_HARNESS);
+  await page.goto('./#/documentation/advanced-solver');
   const solver = page.getByTestId('advanced-solver');
-  await expect(solver).toBeAttached({ timeout: 20_000 });
+  await expect(solver).toBeAttached({ timeout: 30_000 });
   await solver.scrollIntoViewIfNeeded();
-  // The development server optimises its dependencies on first use; wait so a navigation does not abort them.
   await page.waitForLoadState('networkidle');
-}
-/** Waits until the solver has answered for the current inputs (web phase 3); the simulation is block D of the manual solver (gotoAdvanced). */
+}/** Waits until the solver has answered for the current inputs (web phase 3); the simulation is block D of the manual solver (gotoAdvanced). */
 export async function waitForRun(page: Page, status: 'ok' | 'rejected' = 'ok'): Promise<void> {
   const b = page.getByTestId('block-d');
   await expect(b).toHaveAttribute('data-run-status', status, { timeout: 20_000 });

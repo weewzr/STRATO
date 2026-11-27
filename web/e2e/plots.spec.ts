@@ -5,7 +5,7 @@ import { parseCsv } from '../src/downloads/serialise';
 import { compareArrays } from '../src/solver/compare';
 import { PARITY_RTOL } from '../src/solver/tolerances';
 import type { CompareOk, RunOk } from '../src/solver/types';
-import { expect, gotoAdvanced, gotoSection, horizontalOverflow, solverRequests, test, waitForRun } from './fixtures';
+import { expect, gotoAdvanced, horizontalOverflow, solverRequests, test, waitForRun } from './fixtures';
 
 // Web phase 5: the scientific graphs (prompt/TESTING_AND_VALIDATION.md Section 3, row 5). The plotted
 // arrays equal the wrapper's values; the plotted difference curve is the series compare returned

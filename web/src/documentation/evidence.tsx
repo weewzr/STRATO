@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { isRowAvailable } from '../equation/availability';
 import { ExperimentalComparisons } from '../graph/Comparisons';
 import { METHOD_1 } from '../methods';
@@ -74,6 +75,19 @@ export function ResearchStatusTable() {
         </table>
       </PathStyle.Provider>
     </TableBox>
+  );
+}
+
+const AdvancedSolver = lazy(() => import('../advanced/AdvancedSolver').then((m) => ({ default: m.AdvancedSolver })));
+
+/** The manual baseline solver and its 3D view; the code loads only when the entry is opened. */
+export function AdvancedSolverMount() {
+  return (
+    <div data-mount="advanced-solver-configuration" data-testid="advanced-solver-mount">
+      <Suspense fallback={null}>
+        <AdvancedSolver />
+      </Suspense>
+    </div>
   );
 }
 
@@ -162,12 +176,9 @@ export const evidence: DocContribution = {
   advanced: [
     {
       id: 'advanced-solver',
-      title: 'Mount point of the advanced controls',
-      body: (
-        <div data-mount="advanced-solver-configuration" data-testid="advanced-solver-mount">
-          {/* Mount point: the component web/src/advanced/AdvancedSolver.tsx arrives by merge and renders here. */}
-        </div>
-      ),
+      title: 'Manual baseline solver and numerical controls',
+      lazy: true,
+      body: <AdvancedSolverMount />,
     },
   ],
 };
