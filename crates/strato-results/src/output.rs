@@ -206,6 +206,26 @@ pub fn masked(text: &str) -> String {
         .join("\n")
 }
 
+/// The first line at which the committed text and the regenerated text differ, each cut to 100
+/// characters, for the report of the check mode (empty where only the length differs).
+fn first_difference(committed: &str, regenerated: &str) -> String {
+    let cut = |s: &str| s.chars().take(100).collect::<String>();
+    committed
+        .lines()
+        .zip(regenerated.lines())
+        .enumerate()
+        .find(|(_, (a, b))| a != b)
+        .map(|(i, (a, b))| {
+            format!(
+                " (line {}: committed `{}`, regenerated `{}`)",
+                i + 1,
+                cut(a.trim()),
+                cut(b.trim())
+            )
+        })
+        .unwrap_or_default()
+}
+
 /// Write every file below `out`.
 ///
 /// # Errors
@@ -230,8 +250,12 @@ pub fn stale(out: &Path, files: &Files) -> Vec<String> {
         match fs::read_to_string(out.join(rel)) {
             Err(_) => bad.push(format!("{rel}: missing")),
             Ok(old) => {
-                if masked(&old.replace("\r\n", "\n")) != masked(text) {
-                    bad.push(format!("{rel}: differs from the regenerated file"));
+                let (a, b) = (masked(&old.replace("\r\n", "\n")), masked(text));
+                if a != b {
+                    bad.push(format!(
+                        "{rel}: differs from the regenerated file{}",
+                        first_difference(&a, &b)
+                    ));
                 }
             }
         }
