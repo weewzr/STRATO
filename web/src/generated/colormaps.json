@@ -3,10 +3,10 @@
   "label": "DISPLAY",
   "kind": "colormaps",
   "generator": "strato-webtools v1",
-  "strato_version": "2.0.0",
-  "commit": "d86e5824527019f991cceba6047ae89e8b7fc594",
+  "strato_version": "2.1.0",
+  "commit": "55b1046767b4b0b0caa7557b0de1081a07413ff5",
   "command": "strato-webtools colormaps",
-  "created_utc": "2026-11-26T10:20:50Z",
+  "created_utc": "2026-11-27T02:02:29Z",
   "note": "Colour tables for displaying solver values; not data and not a result label. Copied from matplotlib 3.11.2 lib/matplotlib/_cm_listed.py (see data/colormaps/README.md). rgb8 = int(255 * rgb), matplotlib's bytes conversion.",
   "inputs": [
     {

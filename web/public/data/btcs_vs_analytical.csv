@@ -1,15 +1,15 @@
 # label: PRECOMPUTED
 # kind: btcs_vs_analytical
 # solver: STRATO BTCS five-layer spherical finite difference
-# generator: strato 2.0.0
+# generator: strato 2.1.0
 # converter: strato-webtools precomputed v2
-# strato_version: 2.0.0
-# commit: d86e5824527019f991cceba6047ae89e8b7fc594
+# strato_version: 2.1.0
+# commit: 55b1046767b4b0b0caa7557b0de1081a07413ff5
 # input_file: inputs/synthetic/synthetic_five_layer.toml
 # input_file_sha256: 257fe9933a4c1dee38a44545209bfafea7fc06945f389fad9aeb5f0d739afa93
 # command: cargo run --locked --release --manifest-path crates/strato-wasm/Cargo.toml --example native_btcs_run -- inputs/synthetic/synthetic_five_layer.toml
 # rustc: rustc 1.100.0 (0ef1bc386 2026-11-09)
-# created_utc: 2026-11-26T10:22:27Z
+# created_utc: 2026-11-27T02:03:49Z
 Time (s),Release fraction by Method A: BTCS (dimensionless),Release fraction by Method B: Sturm–Liouville (dimensionless),Absolute difference of the release fractions (dimensionless)
 0.0,0.0,,
 2000.0,3.596614551259437e-10,-8.548717289613705e-14,3.5974694229883986e-10

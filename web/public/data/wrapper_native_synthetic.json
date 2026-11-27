@@ -3,15 +3,15 @@
   "label": "PRECOMPUTED",
   "kind": "wrapper_native_run",
   "solver": "STRATO BTCS five-layer spherical finite difference",
-  "generator": "strato 2.0.0",
+  "generator": "strato 2.1.0",
   "converter": "strato-webtools precomputed v2",
-  "strato_version": "2.0.0",
-  "commit": "3f116a8884d2b8697522960683c38af17e84eb5b",
+  "strato_version": "2.1.0",
+  "commit": "55b1046767b4b0b0caa7557b0de1081a07413ff5",
   "input_file": "inputs/synthetic/synthetic_five_layer.toml",
   "input_file_sha256": "257fe9933a4c1dee38a44545209bfafea7fc06945f389fad9aeb5f0d739afa93",
   "command": "cargo run --locked --release --manifest-path crates/strato-wasm/Cargo.toml --example native_btcs_run -- inputs/synthetic/synthetic_five_layer.toml",
   "rustc": "rustc 1.100.0 (0ef1bc386 2026-11-09)",
-  "created_utc": "2026-11-26T23:44:47Z",
+  "created_utc": "2026-11-27T02:03:49Z",
   "note": "run reply of the native wrapper (x86_64), the reference of the browser parity test.",
   "data": {
     "analytical": {
@@ -236,13 +236,13 @@
         "t_s": 200000.0
       },
       "form": "btcs-F30",
-      "generated_and_decayed_note": "the solved model has no source and no decay, so both terms are exactly zero by construction; they are not measured",
+      "generated_and_decayed_note": "The solved model has no source and no decay, so both terms are exactly zero by construction; they are not measured",
       "generated_mol": 0.0,
       "max_abs_residual_mol": 2.316170338633833e-22,
       "max_abs_residual_relative": 6.911811720682569e-12,
       "source": "docs/mathematics/btcs/02_final_formulation.md, equations F25, F27, F29, F30",
       "start_inventory_mol": 3.351032163829113e-11,
-      "statement": "remaining + released + decayed - start - generated = residual (equation F30); the directive writes the same identity with the opposite sign of the residual",
+      "statement": "Remaining + released + decayed - start - generated = residual (equation F30); the same identity written the other way round gives the residual the opposite sign",
       "tolerance": {
         "final_bound_relative": 1.1482785606393389e-08,
         "kind": "a-posteriori rounding bound (coordinator decision 6); not a discretisation error",
@@ -626,9 +626,9 @@
     },
     "engine": {
       "abi": 4,
-      "commit": "3f116a8",
+      "commit": "55b1046",
       "solver": "btcs_five_layer",
-      "strato_version": "2.0.0"
+      "strato_version": "2.1.0"
     },
     "grid": {
       "interface_nodes": [
@@ -28881,14 +28881,14 @@
     "schema": 2,
     "solver": {
       "capability": "diffusion_btcs_layered",
-      "commit": "3f116a8",
+      "commit": "55b1046",
       "formulation": "docs/mathematics/btcs/02_final_formulation.md",
       "id": "btcs_five_layer",
       "label": "COMPUTED v2.0",
       "method": "BTCS five-layer spherical finite difference (nodal)",
       "nature": "numerical solution of the stated model; not experimental validation",
       "scope": "constant diffusivity in each layer, no source, no decay, constant temperature (recorded, not used), kernel-only start, absorbing outer surface",
-      "version": "2.0.0"
+      "version": "2.1.0"
     },
     "status": "ok",
     "steps_of_rows": [
