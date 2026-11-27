@@ -1,6 +1,6 @@
 import { BUILD } from '../build';
 import { useRunIsCurrent, useSelectionSupport } from '../equation/useCapability';
-import { hrefDocumentation } from '../route';
+import { hrefDocumentation, useSection } from '../route';
 import { useStrato } from '../state/store';
 
 /**
@@ -16,6 +16,8 @@ export function StatusLine({ compact = false }: { compact?: boolean }) {
   const status = useStrato((s) => s.status);
   const support = useSelectionSupport();
   const current = useRunIsCurrent();
+  // The result of the manual solver is reported only where that solver lives, in Scientific Documentation.
+  const showResult = useSection() === 'documentation';
   const solverText =
     solver.state === 'ready'
       ? status === 'running'
@@ -28,15 +30,17 @@ export function StatusLine({ compact = false }: { compact?: boolean }) {
         : 'Solver: loading';
   return (
     <footer className={`status${compact ? ' status--compact' : ''}`} aria-label="Status">
-      <span className="status__item" data-testid="status-result">
-        {!support.supported ? (
-          'Result: none for the selection on Explore'
-        ) : run && current ? (
-          `Result: ${run.label}`
-        ) : (
-          'Result: none yet'
-        )}
-      </span>
+      {showResult ? (
+        <span className="status__item" data-testid="status-result">
+          {!support.supported ? (
+            'Result: none for the selection'
+          ) : run && current ? (
+            `Result: ${run.label}`
+          ) : (
+            'Result: none yet'
+          )}
+        </span>
+      ) : null}
       {compact ? null : (
         <span className="status__item" data-testid="status-solver">
           {solverText}

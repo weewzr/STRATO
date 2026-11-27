@@ -101,6 +101,8 @@ describe('the manual solver after a run of the baseline, an edit, a second run a
   it('shows the computed status of the baseline run, loses it while the stored run is of other inputs, and keeps it when Explore selects another model equation', async () => {
     const user = userEvent.setup();
     ready();
+    // The footer reports the manual solver's result only on Scientific Documentation, where the solver lives.
+    window.location.hash = '#/documentation/advanced-solver';
     render(
       <>
         <AdvancedSolver compact={false} />

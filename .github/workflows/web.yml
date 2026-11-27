@@ -186,10 +186,12 @@ jobs:
             web/playwright-report-performance/
           if-no-files-found: ignore
       - name: Upload the build
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: web-dist
           path: web/dist/
+          if-no-files-found: ignore
       # Only a build of main that passed every step above becomes the Pages artefact.
       - name: Upload the Pages artefact
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'

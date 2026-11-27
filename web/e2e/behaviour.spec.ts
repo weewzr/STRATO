@@ -101,7 +101,7 @@ test.describe('content and data', () => {
     const build = (await (await page.request.get('/STRATO/build.json')).json()) as { commit: string };
     await expect(page.getByTestId('status-build')).not.toContainText(build.commit);
     await waitForRun(page);
-    await expect(page.getByTestId('status-result')).toHaveText('Result COMPUTED v2.0');
+    await expect(page.getByTestId('status-result')).toHaveText('Result: COMPUTED v2.0');
     await expect(page.getByTestId('status-solver')).toContainText(/ms in this browser/);
     // The build of the WebAssembly solver is not on the page: it is in the build table of Scientific Documentation.
     await expect(page.getByTestId('diagnostics-panel')).not.toContainText('WebAssembly build');
