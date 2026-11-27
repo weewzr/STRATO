@@ -175,8 +175,7 @@ export function Basis() {
           <Tex latex={equationTex('baseline')} display />
         </div>
         <p className="basis__note">
-          Concentration <i>c</i> at radius <i>r</i> and time <i>t</i>, with a constant diffusivity <i>D</i>
-          <sub>i</sub> in each layer <i>i</i>.
+          Concentration <i>C</i> at radius <i>r</i> and time <i>t</i>, with a constant diffusivity <i>D</i> in each layer.
         </p>
       </section>
 
