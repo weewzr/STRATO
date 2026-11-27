@@ -475,7 +475,10 @@ fn generated_files_carry_provenance_and_no_private_paths() {
         assert!(t.contains("digitised"), "{n}");
         assert!(t.contains("reading uncertainty"), "{n}");
         assert!(t.contains("Numerical deviations of the model"), "{n}");
-        assert!(t.contains("log-space root-mean-square"), "{n}");
+        // Decision 69(a) replaced the aggregate (log-space) deviation of decision 18: the figure
+        // says that no number is substituted and names no aggregate over points.
+        assert!(t.contains("no number is substituted"), "{n}");
+        assert!(!t.contains("root-mean-square"), "{n}");
     }
     assert!(fig("figure_K_caesium_137_data_unavailable.svg").contains("DATA UNAVAILABLE"));
     assert!(report.contains("DATA UNAVAILABLE"));
