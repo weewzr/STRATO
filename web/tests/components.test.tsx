@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import caseJson from '../src/generated/synthetic_five_layer.case.json';
+import { AdvancedSolver } from '../src/advanced/AdvancedSolver';
 import { App } from '../src/App';
 import { ControlPanel } from '../src/panels/ControlPanel';
 import { useStrato } from '../src/state/store';
@@ -149,20 +150,23 @@ describe('ControlPanel layouts', () => {
   });
 });
 
-describe('Explore page (owner decision M7)', () => {
-  it('renders the blocks A to E in this order, each labelled', () => {
+describe('Explore page (final layout of 27 Nov 2026)', () => {
+  it('renders the four areas in this order: model equation, operation, governing equation, numerical interpretation, graphs', () => {
     render(<App />);
-    const blocks = Array.from(document.querySelectorAll<HTMLElement>('[data-section="explore"] [data-block]'));
-    expect(blocks.map((b) => b.dataset.block)).toEqual(['A', 'B', 'C', 'D', 'E']);
-    // Block B holds the scenario row and is labelled like the others.
-    for (const b of blocks) expect(b.getAttribute('aria-labelledby')).toBeTruthy();
-    expect(blocks[1]?.getAttribute('aria-hidden')).toBeNull();
-    expect(document.querySelector('[data-block="A"] h1')).toBeTruthy();
+    const order = ['model-equation', 'operation', 'governing-equation', 'numerical-interpretation', 'interactive-graphs'];
+    const nodes = order.map((id) => screen.getByTestId(id));
+    for (let i = 1; i < nodes.length; i++) {
+      const before = nodes[i - 1];
+      const after = nodes[i];
+      expect(Boolean((before?.compareDocumentPosition(after as Node) ?? 0) & Node.DOCUMENT_POSITION_FOLLOWING), order[i]).toBe(true);
+    }
     expect(document.querySelectorAll('h1')).toHaveLength(1);
+    // The large live simulation, the numerical controls and the particle view are not part of Explore.
+    for (const id of ['block-d', 'block-e', 'controls-block', 'particle', 'sim-strip']) expect(screen.queryByTestId(id), id).toBeNull();
   });
 
-  it('puts the particle cross-section in block D and the release readout in block E', () => {
-    render(<App />);
+  it('holds the manual baseline solver in AdvancedSolver: the particle cross-section in block D and the release readout in block E', () => {
+    render(<AdvancedSolver compact={false} />);
     const d = screen.getByTestId('block-d');
     const e = screen.getByTestId('block-e');
     expect(within(d).getByTestId('particle')).toBeTruthy();
@@ -170,28 +174,10 @@ describe('Explore page (owner decision M7)', () => {
     expect(within(e).getByTestId('release-readout').textContent).toContain('Waiting for the solver');
     expect(within(e).getByTestId('release-readout').querySelector('.badge')).toBeNull();
     expect(within(d).getByTestId('simulation-case').textContent).toContain('Synthetic five-layer verification case');
-    // Block B holds the five scenario buttons.
-    expect(within(screen.getByTestId('block-b')).getAllByRole('radio')).toHaveLength(5);
   });
 
-  it('marks every later-phase area as a placeholder with its phase and no result label', () => {
-    render(<App />);
-    const ph = Array.from(document.querySelectorAll<HTMLElement>('[data-placeholder-phase]'));
-    // Web phase 2 filled the two phase-2 placeholders (equation builder in A, terms in D); web
-    // phase 3 filled the two phase-3 placeholders (inventory balance and diagnostics in B); web
-    // phase 4 filled the phase-4 placeholder (the AGR-1 reference particle); web phase 5 filled the
-    // two phase-5 placeholders (radial profile and release curves); web phase 5.5 filled the last
-    // one, so none is left. The research catalogue summary lives under Research since 26 Nov 2026.
-    expect(ph.map((p) => p.dataset.placeholderPhase)).toEqual([]);
-    expect(screen.queryByTestId('future-research')).toBeNull();
-    for (const p of ph) {
-      expect(p.textContent).toMatch(/^Placeholder/);
-      expect(p.querySelector('.badge')).toBeNull();
-    }
-  });
-
-  it('draws one ring per layer with the layer colours and labels every layer on the cross-section', () => {
-    render(<App />);
+  it('draws one ring per layer with the layer colours and labels every layer on the cross-section (AdvancedSolver)', () => {
+    render(<AdvancedSolver compact={false} />);
     const svg = screen.getByTestId('particle').querySelector('svg');
     if (!svg) throw new Error('no svg');
     const rings = Array.from(svg.querySelectorAll<SVGCircleElement>('circle.particle__ring'));
@@ -200,7 +186,6 @@ describe('Explore page (owner decision M7)', () => {
     expect(labels.sort()).toEqual(caseJson.data.config.regions.map((r) => r.name).sort());
   });
 });
-
 describe('App', () => {
   it('routes between the seven sections by hash', async () => {
     render(<App />);
@@ -238,16 +223,13 @@ describe('App', () => {
     expect(screen.queryByTestId('provenance')).toBeNull();
   });
 
-  it('opens the parameter sheet on narrow layouts and closes it with Escape', async () => {
+  it('opens the numerical controls from the manual solver on a narrow layout (AdvancedSolver with its entry to the controls)', async () => {
     const user = userEvent.setup();
-    render(<App />);
-    const open = screen.getByTestId('open-panel');
-    const sheet = screen.getByTestId('parameter-sheet');
-    expect(sheet.hidden).toBe(true);
-    await user.click(open);
-    expect(sheet.hidden).toBe(false);
-    await user.keyboard('{Escape}');
-    expect(sheet.hidden).toBe(true);
-    expect(document.activeElement).toBe(open);
+    const opened: string[] = [];
+    render(<AdvancedSolver compact onOpenControls={() => opened.push('open')} />);
+    expect(screen.queryByTestId('controls')).toBeNull();
+    await user.click(screen.getByTestId('open-panel'));
+    expect(opened).toEqual(['open']);
   });
+
 });

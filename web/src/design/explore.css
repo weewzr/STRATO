@@ -1,0 +1,327 @@
+/* Explore in four areas (final directive of 27 Nov 2026): model equation and operation upper left, the
+   governing equation with its legend upper centre and right, numerical interpretation lower left,
+   interactive graphs lower right. Stacked in that order on a phone. Colours come from the tokens. */
+
+.explore--final {
+  gap: 0;
+}
+.xgrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  min-width: 0;
+}
+.xgrid > * {
+  min-width: 0;
+}
+@media (min-width: 1024px) {
+  .xgrid {
+    grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+    grid-template-areas:
+      'controls equation'
+      'numerical graphs';
+    column-gap: var(--space-6);
+    row-gap: var(--space-5);
+    align-items: start;
+  }
+  .xgrid__controls {
+    grid-area: controls;
+  }
+  .xgrid__equation {
+    grid-area: equation;
+  }
+  .xgrid__numerical {
+    grid-area: numerical;
+  }
+  .xgrid__graphs {
+    grid-area: graphs;
+  }
+}
+
+.xarea {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.xarea__title {
+  margin: 0;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.section .xarea__title {
+  font-size: var(--fs-small);
+}
+.xcontrols {
+  display: grid;
+  gap: var(--space-4);
+}
+
+/* Compact buttons: two columns, 44 px high targets. */
+.xbtns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.xbtn {
+  display: flex;
+  align-items: center;
+  min-height: var(--touch-min, 44px);
+  padding: var(--space-1) var(--space-3);
+  font: inherit;
+  font-size: var(--fs-small);
+  line-height: 1.25;
+  text-align: left;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard);
+}
+.xbtn:hover {
+  color: var(--text);
+  background: var(--bg-subtle);
+}
+.xbtn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.xbtn.is-current {
+  color: var(--text);
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  box-shadow: inset 0 -3px 0 var(--accent);
+}
+.xbtns--graphs {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 1024px) {
+  .xbtns--graphs {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* The governing equation: large, the legend directly beneath it. */
+.xarea--equation {
+  gap: var(--space-3);
+}
+.xarea--equation .geq__eq {
+  font-size: 1.25rem;
+}
+@media (min-width: 1200px) {
+  .xarea--equation .geq__eq {
+    font-size: 1.7rem;
+  }
+}
+.xlegend {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-small);
+}
+.xlegend th,
+.xlegend td {
+  padding: 3px var(--space-3);
+  text-align: left;
+  font-weight: 400;
+  border-bottom: 1px solid var(--border);
+  vertical-align: baseline;
+}
+.xlegend thead th {
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.xlegend tbody th {
+  width: 7.5rem;
+  font-weight: 400;
+}
+.xlegend tbody td:last-child {
+  width: 9rem;
+  white-space: nowrap;
+}
+.xfuture {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-small);
+}
+.xfuture a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min, 44px);
+  color: var(--accent);
+}
+
+/* Numerical interpretation: six collapsed sections. */
+.nsecs {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.nsec {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  min-width: 0;
+}
+.nsec__head {
+  margin: 0;
+  font-size: var(--fs-ui);
+}
+.nsec__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--touch-min, 44px);
+  padding: var(--space-1) var(--space-3);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  color: var(--text);
+  background: none;
+  border: 0;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.nsec__toggle:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+.nsec__chevron {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform var(--dur-fast) var(--ease-standard);
+}
+.nsec[data-open='true'] .nsec__chevron {
+  transform: rotate(-135deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .nsec__chevron,
+  .xbtn {
+    transition: none;
+  }
+}
+.nsec__body {
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  border-top: 1px solid var(--border);
+  overflow-x: auto;
+  font-size: var(--fs-small);
+}
+.nstep {
+  margin-bottom: var(--space-3);
+}
+.nstep__title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--fs-ui);
+}
+.nstep__text {
+  margin: var(--space-1) 0;
+  max-width: 62ch;
+}
+.nstep__text--operation {
+  padding-left: var(--space-2);
+  border-left: 3px solid var(--accent);
+}
+.nstep__eq {
+  overflow-x: auto;
+}
+.nstep__eq .tex--display {
+  margin: var(--space-1) 0;
+}
+.npseudo {
+  margin: 0 0 var(--space-3);
+}
+.npseudo__title {
+  margin-bottom: var(--space-1);
+  font-weight: 600;
+}
+.npseudo__code {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.npseudo__code:focus-visible {
+  outline: 2px solid var(--focus);
+}
+.nlist {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+/* Interactive graphs. */
+.xselects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+}
+.xselect {
+  display: grid;
+  gap: 2px;
+  font-size: var(--fs-small);
+  min-width: 0;
+}
+.xselect__label {
+  color: var(--text-muted);
+}
+.xselect select {
+  min-height: var(--touch-min, 44px);
+  padding: 0 var(--space-3);
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+}
+.xselect select:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.xselect--wide {
+  flex: 1 1 14rem;
+}
+.xselect--wide select {
+  max-width: 100%;
+}
+.gpanel {
+  min-width: 0;
+}
+/* The empty panel: the frame of the axes and nothing else (no text, no curve). */
+.gpanel__frame {
+  box-sizing: border-box;
+  height: 320px;
+  border-left: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--border-strong);
+}
+.gcite {
+  display: grid;
+  gap: var(--space-1);
+  font-size: var(--fs-small);
+}
+.gcite p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.gcite a {
+  color: var(--accent);
+}

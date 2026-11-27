@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, gotoSection, test } from './fixtures';
+import { expect, gotoAdvanced, gotoSection, test } from './fixtures';
 
 async function focusInfo(page: Page) {
   return page.evaluate(() => {
@@ -32,9 +32,9 @@ test.describe('keyboard at 1280 px', () => {
     await expect(page).toHaveURL(/#\/explore$/);
   });
 
-  test('every control of block C is reached by Tab and shows a visible focus ring', async ({ page, problems }) => {
+  test('every control of the manual solver is reached by Tab and shows a visible focus ring', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     const expected = await page.evaluate(
       (sel) =>
         Array.from(document.querySelectorAll<HTMLElement>(`${sel} :is(input, select, button, summary, a[href])`)).filter(
@@ -64,7 +64,7 @@ test.describe('keyboard at 1280 px', () => {
 
   test('the diffusivity slider and fields work from the keyboard', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     const slider = page.getByLabel('Kernel diffusivity (m²/s), logarithmic slider');
     await slider.focus();
     await page.keyboard.press('End');
@@ -83,7 +83,7 @@ test.describe('keyboard at 1280 px', () => {
     await expect(page.getByTestId('issue-count')).toHaveText('Inputs equal the baseline.');
   });
 
-  test('the physics choices are one tab stop, move with the arrow keys, announce the change and write the address', async ({ page, problems }) => {
+  test('the model-equation and operation choices are one tab stop each, move with the arrow keys, announce the change and write the address', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     const baseline = page.getByTestId('physics-baseline');
@@ -95,17 +95,16 @@ test.describe('keyboard at 1280 px', () => {
     await expect(page.getByTestId('physics-announce')).toContainText('enters the right-hand side');
     await expect(page).toHaveURL(/#\/explore\?physics=generation$/);
     await page.keyboard.press('End');
-    await expect(page.getByTestId('physics-combined')).toHaveAttribute('aria-checked', 'true');
-    await expect(page).toHaveURL(/#\/explore\?physics=combined$/);
+    await expect(page.getByTestId('physics-future')).toHaveAttribute('aria-checked', 'true');
+    await expect(page).toHaveURL(/#\/explore\?physics=future$/);
     // Tab leaves the group: only the selected choice is a tab stop.
     await page.keyboard.press('Tab');
     expect(await page.evaluate(() => document.activeElement?.closest('[data-testid="physics-picker"]') === null)).toBe(true);
-    // Enter and Space on the status legend toggle.
-    const toggle = page.getByTestId('status-legend-toggle');
-    await toggle.focus();
-    await page.keyboard.press('Enter');
-    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-    await expect(page.getByTestId('status-legend')).toBeVisible();
+    await page.getByTestId('operation-steady').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(page.getByTestId('operation-shutdown')).toBeFocused();
+    await expect(page.getByTestId('operation-shutdown')).toHaveAttribute('aria-checked', 'true');
+    await expect(page).toHaveURL(/#\/explore\?physics=future&scenario=shutdown$/);
   });
 
   test('section links work with Enter and focus the new heading', async ({ page, problems }) => {
@@ -119,7 +118,7 @@ test.describe('keyboard at 1280 px', () => {
 
   test('the layer inspector works from the keyboard', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await page.getByTestId('inspect-3').focus();
     await page.keyboard.press('Enter');
     await expect(page.getByTestId('inspect-3')).toHaveAttribute('aria-pressed', 'true');
@@ -142,19 +141,21 @@ test.describe('keyboard at 375 px', () => {
     await expect(menu).toBeFocused();
   });
 
-  for (const opener of ['open-panel', 'strip-open-controls']) {
-    test(`the controls sheet opens from ${opener} and closes with Escape`, async ({ page, problems }) => {
-      void problems;
-      await gotoSection(page, 'explore');
-      const open = page.getByTestId(opener);
-      await open.focus();
-      await page.keyboard.press('Enter');
-      const sheet = page.getByTestId('parameter-sheet');
-      await expect(sheet).toBeVisible();
-      await expect(sheet.locator(':focus')).toHaveCount(1);
-      await page.keyboard.press('Escape');
-      await expect(sheet).toBeHidden();
-      await expect(open).toBeFocused();
-    });
-  }
+  test('the controls of the manual solver are reached by the keyboard: inline, or in the sheet that opens from its entry and closes with Escape', async ({ page, problems }) => {
+    void problems;
+    await gotoAdvanced(page);
+    const open = page.getByTestId('open-panel');
+    if ((await open.count()) === 0) {
+      await expect(page.getByTestId('controls').first()).toBeVisible();
+      return;
+    }
+    await open.focus();
+    await page.keyboard.press('Enter');
+    const sheet = page.getByTestId('parameter-sheet');
+    await expect(sheet).toBeVisible();
+    await expect(sheet.locator(':focus')).toHaveCount(1);
+    await page.keyboard.press('Escape');
+    await expect(sheet).toBeHidden();
+    await expect(open).toBeFocused();
+  });
 });

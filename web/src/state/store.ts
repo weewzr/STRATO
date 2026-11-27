@@ -3,26 +3,36 @@
 import { create } from 'zustand';
 import { cloneConfig, DEFAULT_CASE, findCase, type RegionConfig, type CaseConfig } from '../data/case';
 import { DEFAULT_PHYSICS, DEFAULT_SCENARIO, PHYSICS_IDS, SCENARIO_IDS, type PhysicsId, type ScenarioId } from '../equation/capability';
-import { requiresCombined } from '../equation/scenarios';
-import { ITEM_EXPAND_IDS } from '../equation/numerics';
+import { DEFAULT_GRAPH, GRAPH_IDS, SECTION_IDS, type GraphId } from '../equation/selectionIds';
 import type { BtcsLimits, BuildInfo, CompareOk, Grid, RunResponse, ValidateReply } from '../solver/types';
 
 /**
- * The one selection state of the Explore page (owner directive of 26 Nov 2026, Section 6): the physics
- * of the governing equation, the operating scenario and which numerical regions are expanded. It lives
- * in this store, so it survives navigation between the sections, and state/address.ts writes it to and
- * reads it from the address, so a copied address reproduces the view. It is never stored in the browser.
+ * The one selection state of the Explore page (final directive of 27 Nov 2026): the model equation, the
+ * operation (two independent choices: neither changes the other and nothing is activated silently), the
+ * expanded sections of the Numerical Interpretation, and the choices of the graphs (which graph, which
+ * species, which temperature, which experimental dataset). It lives in this store, so it survives
+ * navigation between the sections, and state/address.ts writes it to and reads it from the address, so a
+ * copied address reproduces the view. It is never stored in the browser. A species, temperature or dataset
+ * that is empty (or null) stands for the first one that the wrapper lists; the page resolves it.
  */
 export interface Selection {
   physics: PhysicsId;
-  /** The selected operating scenario; null while none is selected (the default). */
+  /** The selected operation (steady-state operation by default). */
   scenario: ScenarioId | null;
-  /** Ids of the expanded numerical regions: 'numerical' (the Numerical Interpretation region) and 'n1' to 'n14' (its items, expanded independently). */
+  /** Ids of the expanded sections of the Numerical Interpretation (equation/selectionIds.ts: SECTION_IDS). */
   expanded: string[];
+  /** The graph shown in INTERACTIVE GRAPHS. */
+  graph: GraphId;
+  /** Id of the species (the wrapper's nuclide id, for example sr90); empty for the first listed. */
+  species: string;
+  /** The temperature in degC; null for the first one offered. */
+  temperature: number | null;
+  /** Id of the experimental dataset (the comparison file); empty for the first one of the species. */
+  dataset: string;
 }
-export const DEFAULT_SELECTION: Selection = { physics: DEFAULT_PHYSICS, scenario: DEFAULT_SCENARIO, expanded: [] };
-/** The ids that `expanded` may hold, in the fixed order in which they are kept: the region, then the items in the directive's order. */
-export const EXPANDABLE_IDS: readonly string[] = ['numerical', ...ITEM_EXPAND_IDS];
+export const DEFAULT_SELECTION: Selection = { physics: DEFAULT_PHYSICS, scenario: DEFAULT_SCENARIO, expanded: [], graph: DEFAULT_GRAPH, species: '', temperature: null, dataset: '' };
+/** The ids that `expanded` may hold, in the fixed order in which they are kept. */
+export const EXPANDABLE_IDS: readonly string[] = SECTION_IDS;
 export type RunStatus = 'idle' | 'running' | 'ok' | 'rejected' | 'error';
 export type RegionField = 'outer_radius_m' | 'diffusivity_m2_s' | 'cells';
 export type TimeField = 'dt_s' | 'end_time_s' | 'output_every_steps';
@@ -71,6 +81,9 @@ export interface RunInfo {
 
 /** A key of the physics and the scenario of a selection (the expanded regions are display state and are not part of it). */
 export const selectionKey = (sel: { physics: PhysicsId; scenario: ScenarioId | null }): string => `${sel.physics}|${sel.scenario ?? ''}`;
+
+/** The key under which the manual solver's reply is recorded: it always runs the baseline problem, whatever the Explore selection is. */
+export const BASELINE_RUN_KEY = selectionKey({ physics: 'baseline', scenario: null });
 
 /** The comparison of the current inputs with the baseline (compare), run while the Compare section is open (web phase 5). */
 export interface ComparisonState {
@@ -180,17 +193,34 @@ export function inputKey(cfg: CaseConfig): string {
 }
 
 /** A selection that holds only valid parts: anything else becomes the default; the expanded ids are unique and in a fixed order. */
-export function normaliseSelection(sel: { physics?: string | undefined; scenario?: string | null | undefined; expanded?: readonly string[] | undefined }): Selection {
+export function normaliseSelection(sel: {
+  physics?: string | undefined;
+  scenario?: string | null | undefined;
+  expanded?: readonly string[] | undefined;
+  graph?: string | undefined;
+  species?: string | undefined;
+  temperature?: number | null | undefined;
+  dataset?: string | undefined;
+}): Selection {
   const physics = PHYSICS_IDS.includes(sel.physics as PhysicsId) ? (sel.physics as PhysicsId) : DEFAULT_SELECTION.physics;
   const scenario = SCENARIO_IDS.includes(sel.scenario as ScenarioId) ? (sel.scenario as ScenarioId) : DEFAULT_SELECTION.scenario;
   const expanded = EXPANDABLE_IDS.filter((id) => (sel.expanded ?? []).includes(id));
-  // The one rule that couples the controls (equation/scenarios.ts, SCENARIO_RULE): every scenario
-  // requires the combined model, so the scenario wins over the physics it is held with.
-  return { physics: requiresCombined(scenario) ? 'combined' : physics, scenario, expanded };
+  const graph = GRAPH_IDS.includes(sel.graph as GraphId) ? (sel.graph as GraphId) : DEFAULT_SELECTION.graph;
+  const text = (x: string | undefined): string => (typeof x === 'string' && /^[A-Za-z0-9._-]{1,80}$/.test(x) ? x : '');
+  const temperature = typeof sel.temperature === 'number' && Number.isFinite(sel.temperature) ? sel.temperature : null;
+  // The model equation and the operation are independent: neither is changed to suit the other.
+  return { physics, scenario, expanded, graph, species: text(sel.species), temperature, dataset: text(sel.dataset) };
 }
 
 export const sameSelection = (a: Selection, b: Selection): boolean =>
-  a.physics === b.physics && a.scenario === b.scenario && a.expanded.length === b.expanded.length && a.expanded.every((id, i) => id === b.expanded[i]);
+  a.physics === b.physics &&
+  a.scenario === b.scenario &&
+  a.graph === b.graph &&
+  a.species === b.species &&
+  a.temperature === b.temperature &&
+  a.dataset === b.dataset &&
+  a.expanded.length === b.expanded.length &&
+  a.expanded.every((id, i) => id === b.expanded[i]);
 
 export function initialState() {
   return {
@@ -198,7 +228,7 @@ export function initialState() {
     config: cloneConfig(DEFAULT_CASE.config),
     baselineConfig: cloneConfig(DEFAULT_CASE.config),
     capabilities: [] as string[],
-    selection: { ...DEFAULT_SELECTION, expanded: [] as string[] },
+    selection: { ...DEFAULT_SELECTION, expanded: [] as string[] } as Selection,
     run: null,
     baselineRun: null,
     status: 'idle' as RunStatus,
@@ -288,10 +318,8 @@ export const useStrato = create<StratoState>()((set, get) => ({
 
 
   setSelection: (patch) => {
-    // Choosing a physics that is not the combined model (without naming a scenario) clears the scenario.
-    const merged = { ...get().selection, ...patch };
-    if (patch.physics !== undefined && patch.scenario === undefined && patch.physics !== 'combined') merged.scenario = DEFAULT_SCENARIO;
-    const next = normaliseSelection(merged);
+    // The two groups of buttons are independent: a patch of one never changes the other.
+    const next = normaliseSelection({ ...get().selection, ...patch });
     if (!sameSelection(next, get().selection)) set({ selection: next });
   },
 

@@ -45,7 +45,7 @@ export const isTimed = (scenario: ScenarioId | null): boolean => scenario !== nu
  * to D(r,T(t)), and only where the mechanism is part of the selection; it never adds a term.
  */
 export function equationPieces(physics: PhysicsId, scenario: ScenarioId | null = null): Piece[] {
-  const on = (m: Mechanism) => physics === m || physics === 'combined';
+  const on = (m: Mechanism) => physics === m || physics === 'combined' || physics === 'future';
   const timed = isTimed(scenario);
   const dSymbol = !on('temperature') ? D_CONSTANT : timed ? D_SCENARIO : D_TEMPERATURE;
   const dShown = !on('temperature') ? D_CONSTANT : mark(timed ? 'geq-hi geq-hi--scenario' : 'geq-hi geq-hi--temperature', dSymbol);
@@ -86,6 +86,7 @@ export const PHYSICS_LABEL: Record<PhysicsId, string> = {
   decay: 'Radioactive decay',
   temperature: 'Temperature-dependent diffusion',
   combined: 'Combined model',
+  future: 'Future species-specific physics',
 };
 
 /** What the page announces when the selection changes (the live-region sentence). */
@@ -95,6 +96,7 @@ export const PHYSICS_CHANGE: Record<PhysicsId, string> = {
   decay: 'Radioactive decay: the term minus lambda C enters the right-hand side of the baseline equation.',
   temperature: 'Temperature-dependent diffusion: the diffusivity D becomes D of r and T inside the diffusion operator; no term is added.',
   combined: 'Combined model: the diffusivity is D of r and T inside the operator, and the terms plus G and minus lambda C are added on the right.',
+  future: 'Future species-specific physics: the combined equation, unchanged.',
 };
 
 /** The same sentences under an operating scenario that changes the symbols in time: D of r and T of t, and G of r and t. */
@@ -165,6 +167,6 @@ export const TERM_MEANINGS: readonly TermMeaning[] = [
 
 /** The meanings that apply to a selection: the two baseline terms, then each selected mechanism in the order of the equation. */
 export function meaningsFor(physics: PhysicsId): TermMeaning[] {
-  const sel = new Set<Mechanism>(physics === 'baseline' ? [] : physics === 'combined' ? MECHANISMS : [physics]);
+  const sel = new Set<Mechanism>(physics === 'baseline' ? [] : physics === 'combined' || physics === 'future' ? MECHANISMS : [physics]);
   return TERM_MEANINGS.filter((t) => t.mechanism === null || sel.has(t.mechanism));
 }

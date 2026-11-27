@@ -6,24 +6,33 @@
 import { sectionFromHash } from '../route';
 import { DEFAULT_SELECTION, normaliseSelection, sameSelection, useStrato, type Selection } from './store';
 
-const KEYS = ['physics', 'scenario', 'open'] as const;
+const KEYS = ['physics', 'scenario', 'open', 'graph', 'species', 'temperature', 'dataset'] as const;
 
 /** The query (without the question mark) that stands for a selection; empty for the default selection. */
 export function formatSelection(sel: Selection): string {
   const q = new URLSearchParams();
   if (sel.physics !== DEFAULT_SELECTION.physics) q.set('physics', sel.physics);
-  if (sel.scenario !== null) q.set('scenario', sel.scenario);
+  if (sel.scenario !== DEFAULT_SELECTION.scenario) q.set('scenario', sel.scenario ?? 'none');
   if (sel.expanded.length > 0) q.set('open', sel.expanded.join(','));
+  if (sel.graph !== DEFAULT_SELECTION.graph) q.set('graph', sel.graph);
+  if (sel.species !== '') q.set('species', sel.species);
+  if (sel.temperature !== null) q.set('temperature', String(sel.temperature));
+  if (sel.dataset !== '') q.set('dataset', sel.dataset);
   return q.toString().replace(/%2C/g, ',');
 }
 
 /** The selection that a query stands for; an unknown or missing part is the default. */
 export function parseSelection(query: string): Selection {
   const q = new URLSearchParams(query);
+  const t = q.get('temperature');
   return normaliseSelection({
     physics: q.get('physics') ?? undefined,
     scenario: q.get('scenario') ?? undefined,
     expanded: (q.get('open') ?? '').split(',').filter(Boolean),
+    graph: q.get('graph') ?? undefined,
+    species: q.get('species') ?? undefined,
+    temperature: t !== null && t.trim() !== '' ? Number(t) : null,
+    dataset: q.get('dataset') ?? undefined,
   });
 }
 

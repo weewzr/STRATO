@@ -4,7 +4,7 @@ import type { Page } from '@playwright/test';
 import { compareArrays, compareReplies } from '../src/solver/compare';
 import { PARITY_RTOL } from '../src/solver/tolerances';
 import type { RunOk } from '../src/solver/types';
-import { expect, gotoSection, test, waitForRun } from './fixtures';
+import { expect, gotoAdvanced, test, waitForRun } from './fixtures';
 
 // The BTCS solver in the browser (prompt/TESTING_AND_VALIDATION.md Section 3, row 3, and Section 2;
 // test H of the directive): the WebAssembly build against the native wrapper, per value, at the rule
@@ -66,7 +66,7 @@ test.describe('browser parity', () => {
 
   test('the WebAssembly run equals the native wrapper leaf by leaf at the parity rule', async ({ page, problems }, info) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     const { body, elapsed_ms, hello } = await callWorker(page, 'run', { schema: 2, config: CASE.data.config });
     const run = body as RunOk;
     expect(run.status).toBe('ok');
@@ -94,7 +94,7 @@ test.describe('browser parity', () => {
   for (const name of Object.keys(BATTERY)) {
     test(`the battery case ${name} equals the native reply at the parity rule`, async ({ page, problems }) => {
       void problems;
-      await gotoSection(page, 'explore');
+      await gotoAdvanced(page);
       const c = BATTERY[name];
       expect(c, name).toBeDefined();
       const kind = KIND[c!.function];
@@ -108,7 +108,7 @@ test.describe('browser parity', () => {
 
   test('a data file written by the WebAssembly module carries the provenance header', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     const c = BATTERY.export_timeseries_csv!;
     const { body } = await callWorker(page, 'export_run', c.input);
     const reply = body as { status: string; text: string; media_type: string; label: string };
@@ -123,7 +123,7 @@ test.describe('browser parity', () => {
 
   test('invalid and placeholder requests are rejected with the wrapper messages, and the worker keeps answering', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     const cfg = CASE.data.config as { time: Record<string, number>; regions: Record<string, unknown>[] };
     const cases: [string, unknown, RegExp][] = [
       ['run', { schema: 2, config: { ...cfg, time: { ...cfg.time, dt_s: 0 } } }, /Time step \(s\) is 0; it must be a finite number larger than 0 s/],
@@ -150,7 +150,7 @@ test.describe('block B shows the wrapper values', () => {
 
   test('the readout, balance, layer shares and diagnostics equal the native wrapper values', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     const v = async (id: string) => Number(await page.getByTestId(id).getAttribute('data-value'));
     const same = (got: number, want: number) => expect(compareArrays('v', [got], [want], PARITY_RTOL).ok, `${got} vs ${want}`).toBe(true);
@@ -184,7 +184,7 @@ test.describe('block B shows the wrapper values', () => {
 
   test('a rejected input shows the wrapper message and no result; a valid input brings the result back', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     const field = page.getByTestId('d-field-0');
     await field.fill('0');
@@ -205,7 +205,7 @@ test.describe('block B shows the wrapper values', () => {
 
   test('a time step that needs too many steps is refused in words that name the quantities, without any identifier of the code', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     const dt = page.getByTestId('dt-field');
     await dt.fill('0.5');

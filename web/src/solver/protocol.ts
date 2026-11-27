@@ -3,7 +3,7 @@
 import type { BuildInfo } from './types';
 
 /** The requests the worker answers, one per function of the BTCS interface (method-neutral names). */
-export type RequestKind = 'run' | 'validate' | 'compare' | 'export_run' | 'build_info';
+export type RequestKind = 'run' | 'validate' | 'compare' | 'export_run' | 'build_info' | 'run_stage' | 'analytical' | 'options';
 
 export interface WorkerRequest {
   id: number;

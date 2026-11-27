@@ -32,8 +32,11 @@ export function Plot({
   height,
   exportInfo,
   minIntervalMs = 0,
+  quiet = false,
 }: {
   figure: Figure;
+  /** True where the page shows no status text of the plot (Explore): neither "loading" nor a failure message; the frame stays empty. */
+  quiet?: boolean;
   /** Smallest time between two redraws (display only); 0 redraws on every animation frame. */
   minIntervalMs?: number;
   /** Accessible name: what the plot shows, in words. */
@@ -196,12 +199,12 @@ export function Plot({
   return (
     <div className="plot" data-testid={testId} data-state={state}>
       <div ref={div} className="plot__graph" role="img" aria-label={label} style={{ height }} data-testid={`${testId}-graph`} />
-      {state === 'loading' ? (
+      {state === 'loading' && !quiet ? (
         <p className="plot__status" role="status">
           Loading the plotting library…
         </p>
       ) : null}
-      {state === 'failed' ? (
+      {state === 'failed' && !quiet ? (
         <p className="plot__status" role="alert" data-testid={`${testId}-failed`}>
           The plot could not be drawn ({error}). The values are in the downloads of the Data section.
         </p>

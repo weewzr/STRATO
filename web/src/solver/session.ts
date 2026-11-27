@@ -6,7 +6,7 @@
 // computes a value.
 import { buildCapability, runMechanisms, selectionSupport } from '../equation/capability';
 import { BTCS_CAPABILITY } from '../equation/availability';
-import { comparisonKey, inputKey, selectionKey, useStrato } from '../state/store';
+import { BASELINE_RUN_KEY, comparisonKey, inputKey, useStrato } from '../state/store';
 import { SolverClient, SolverError, type WorkerFactory } from './client';
 import { RUN_DEBOUNCE_MS } from './tolerances';
 
@@ -24,7 +24,7 @@ const COMPARE_MECHANISMS = [BTCS_CAPABILITY];
 function selectionRunnable(): boolean {
   const s = useStrato.getState();
   if (s.capabilities.length === 0) return true;
-  return selectionSupport(buildCapability(s.capabilities), s.selection.physics, s.selection.scenario).supported;
+  return selectionSupport(buildCapability(s.capabilities), 'baseline', null).supported;
 }
 
 export function solverClient(): SolverClient | null {
@@ -72,11 +72,11 @@ async function runNow(): Promise<void> {
   const s = useStrato.getState();
   const config = s.config;
   const key = inputKey(config);
-  const sentSelection = selectionKey(s.selection);
+  const sentSelection = BASELINE_RUN_KEY;
   s.setRunning();
   void validateNow();
   try {
-    const pending = client.run(config, runMechanisms(s.selection.physics), s.capabilities);
+    const pending = client.run(config, runMechanisms('baseline'), s.capabilities);
     stampRequests();
     const reply = await pending;
     const info = { elapsedMs: reply.elapsedMs, requestId: reply.requestId, inputKey: key, dropped: reply.dropped, selectionKey: sentSelection };
@@ -162,9 +162,8 @@ export function startSolver(factory: WorkerFactory = defaultFactory): SolverClie
   useStrato.setState({ requestRun: () => schedule(0), requestCompare: () => scheduleCompare(RUN_DEBOUNCE_MS) });
   useStrato.subscribe((state, prev) => {
     if (state.config !== prev.config && state.solver.state === 'ready') schedule(RUN_DEBOUNCE_MS);
-    // A new selection of the Explore page runs at once (or, when the build cannot run it, sends nothing).
-    const changedModel = state.selection.physics !== prev.selection.physics || state.selection.scenario !== prev.selection.scenario;
-    if (changedModel && state.solver.state === 'ready') schedule(0);
+    // The manual solver runs the baseline problem whatever the Explore selection is: the selection of the
+    // model equation and the operation does not start it (the graphs of Explore call run_stage themselves).
   });
   return client;
 }

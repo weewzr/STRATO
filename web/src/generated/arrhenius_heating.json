@@ -1,0 +1,204 @@
+{
+  "what": "registered Arrhenius laws of the heating-test set, from data/diffusivity/arrhenius.csv",
+  "generator": "web/scripts/arrhenius_heating.mjs",
+  "elements": {
+    "Ag": {
+      "kernel": [
+        {
+          "id": "C16-01",
+          "d0_m2_s": 6.7e-9,
+          "activation_energy_kj_per_mol": 165,
+          "gas_constant_j_mol_k": 8.3145,
+          "class": "published PARFUME correlation",
+          "source": "Collin et al. (2016)",
+          "phase_of_use": "heating test"
+        }
+      ],
+      "buffer": [
+        {
+          "id": "C16-22",
+          "d0_m2_s": 1e-8,
+          "activation_energy_kj_per_mol": 0,
+          "gas_constant_j_mol_k": 8.3145,
+          "class": "published PARFUME correlation",
+          "source": "Collin et al. (2016)",
+          "phase_of_use": "heating test"
+        }
+      ],
+      "IPyC": [
+        {
+          "id": "C16-02",
+          "d0_m2_s": 5.3e-9,
+          "activation_energy_kj_per_mol": 154,
+          "gas_constant_j_mol_k": 8.3145,
+          "class": "published PARFUME correlation",
+          "source": "Collin et al. (2016)",
+          "phase_of_use": "heating test"
+        }
+      ],
+      "SiC": [
+        {
+          "id": "C16-03",
+          "d0_m2_s": 3.6e-9,
+          "activation_energy_kj_per_mol": 215,
+          "gas_constant_j_mol_k": 8.3145,
+          "class": "published PARFUME correlation",
+          "source": "Collin et al. (2016)",
+          "phase_of_use": "heating test"
+        }
+      ],
+      "OPyC": [
+        {
+          "id": "C16-02",
+          "d0_m2_s": 5.3e-9,
+          "activation_energy_kj_per_mol": 154,
+          "gas_constant_j_mol_k": 8.3145,
+          "class": "published PARFUME correlation",
+          "source": "Collin et al. (2016)",
+          "phase_of_use": "heating test"
+        }
+      ]
+    },
+    "Cs": {
+      "kernel": [
+        {
+          "id": "C16-05",
+          "d0_m2_s": 5.6e-8,
+          "activation_energy_kj_per_mol": 209,
+          "gas_constant_j_mol_k": 8.3145,
+          "class": "published PARFUME correlation",
+          "source": "Collin et al. (2016)",
+          "phase_of_use": "heating test"
+        },
+        {
+          "id": "C16-06",
+          "d0_m2_s": 0.00052,
+          "activation_energy_kj_per_mol": 362,
+          "gas_constant_j_mol_k": 8.3145,
+          "class": "published PARFUME correlation",
+          "source": "Collin et al. (2016)",
+          "phase_of_use": "heating test"
+        }
+      ],
+      "buffer": [
+        {
+          "id": "C16-22",
+          "d0_m2_s": 1e-8,
+          "activation_energy_kj_per_mol": 0,
+          "gas_constant_j_mol_k": 8.3145,
+          "class": "published PARFUME correlation",
+          "source": "Collin et al. (2016)",
+          "phase_of_use": "heating test"
+        }
+      ],
+      "IPyC": [
+        {
+          "id": "C16-07",
+          "d0_m2_s": 6.3e-8,
+          "activation_energy_kj_per_mol": 222,
+          "gas_constant_j_mol_k": 8.3145,
+          "class": "published PARFUME correlation",
+          "source": "Collin et al. (2016)",
+          "phase_of_use": "heating test"
+        }
+      ],
+      "SiC": [
+        {
+          "id": "C16-08",
+          "d0_m2_s": 5.5e-14,
+          "activation_energy_kj_per_mol": 125,
+          "gas_constant_j_mol_k": 8.3145,
+          "class": "published PARFUME correlation",
+          "source": "Collin et al. (2016)",
+          "phase_of_use": "heating test"
+        },
+        {
+          "id": "C16-09",
+          "d0_m2_s": 0.016,
+          "activation_energy_kj_per_mol": 514,
+          "gas_constant_j_mol_k": 8.3145,
+          "class": "published PARFUME correlation",
+          "source": "Collin et al. (2016)",
+          "phase_of_use": "heating test"
+        }
+      ],
+      "OPyC": [
+        {
+          "id": "C16-07",
+          "d0_m2_s": 6.3e-8,
+          "activation_energy_kj_per_mol": 222,
+          "gas_constant_j_mol_k": 8.3145,
+          "class": "published PARFUME correlation",
+          "source": "Collin et al. (2016)",
+          "phase_of_use": "heating test"
+        }
+      ]
+    },
+    "Sr": {
+      "kernel": [
+        {
+          "id": "C16-11",
+          "d0_m2_s": 0.0022,
+          "activation_energy_kj_per_mol": 488,
+          "gas_constant_j_mol_k": 8.3145,
+          "class": "published PARFUME correlation",
+          "source": "Collin et al. (2016)",
+          "phase_of_use": "heating test"
+        }
+      ],
+      "buffer": [
+        {
+          "id": "C16-22",
+          "d0_m2_s": 1e-8,
+          "activation_energy_kj_per_mol": 0,
+          "gas_constant_j_mol_k": 8.3145,
+          "class": "published PARFUME correlation",
+          "source": "Collin et al. (2016)",
+          "phase_of_use": "heating test"
+        }
+      ],
+      "IPyC": [
+        {
+          "id": "C16-12",
+          "d0_m2_s": 0.0000023,
+          "activation_energy_kj_per_mol": 197,
+          "gas_constant_j_mol_k": 8.3145,
+          "class": "published PARFUME correlation",
+          "source": "Collin et al. (2016)",
+          "phase_of_use": "heating test"
+        }
+      ],
+      "SiC": [
+        {
+          "id": "C16-13",
+          "d0_m2_s": 1.2e-9,
+          "activation_energy_kj_per_mol": 205,
+          "gas_constant_j_mol_k": 8.3145,
+          "class": "published PARFUME correlation",
+          "source": "Collin et al. (2016)",
+          "phase_of_use": "heating test"
+        },
+        {
+          "id": "C16-14",
+          "d0_m2_s": 1800000,
+          "activation_energy_kj_per_mol": 791,
+          "gas_constant_j_mol_k": 8.3145,
+          "class": "published PARFUME correlation",
+          "source": "Collin et al. (2016)",
+          "phase_of_use": "heating test"
+        }
+      ],
+      "OPyC": [
+        {
+          "id": "C16-12",
+          "d0_m2_s": 0.0000023,
+          "activation_energy_kj_per_mol": 197,
+          "gas_constant_j_mol_k": 8.3145,
+          "class": "published PARFUME correlation",
+          "source": "Collin et al. (2016)",
+          "phase_of_use": "heating test"
+        }
+      ]
+    }
+  }
+}

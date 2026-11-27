@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { statusOf, useCatalogue, type Catalogue } from '../research/catalogue';
 import { StatusChip } from '../research/StatusChip';
 import { hrefFor } from '../route';
-import { physicsStatus, type PhysicsId } from './capability';
+import { physicsStatus, selectionSupport, type PhysicsId } from './capability';
 import { codeHref, docHref, DOCS, type DocRef } from './links';
 import { LiveValues } from './LiveValues';
 import { TermExplanations } from './TermExplanations';
@@ -20,7 +20,7 @@ import {
 } from './terms';
 import { RichText, Tex } from './Tex';
 import { StatusTag } from './StatusTag';
-import { useBuildCapability, useSelectionSupport } from './useCapability';
+import { useBuildCapability } from './useCapability';
 
 // One derivation step of the Numerical Interpretation (the items of equation/numerics.ts hold one or more
 // of them). Display only. Opening a step never changes the inputs of the simulation and never sends a solver
@@ -371,7 +371,9 @@ export function StepBody({ stage, physics, showTitle }: { stage: Stage; physics:
   const equations = mainEquations(stage);
   const numbers = equations.map(equationNumber).filter((t): t is string => Boolean(t));
   const catalogue = useCatalogue();
-  const support = useSelectionSupport();
+  // Whether the build solves the physics of this step (the prop), not the Explore selection: this step body no longer follows the selection.
+  const { cap: stepCap, loading: stepLoading } = useBuildCapability();
+  const support = stepLoading ? { supported: true } : selectionSupport(stepCap, physics, null);
   const [preview, setPreview] = useState<TermId | null>(null);
   const [pinned, setPinned] = useState<TermId | null>(null);
   const shown = preview ?? pinned;

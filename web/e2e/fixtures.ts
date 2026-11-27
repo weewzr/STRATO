@@ -11,7 +11,8 @@ export const VIEWPORTS = [
   { name: 'wide', width: 1920, height: 1080 },
 ] as const;
 
-export const BLOCKS = ['A', 'B', 'C', 'D', 'E'] as const;
+/** The four areas of Explore, in the order of the page (final layout of 27 Nov 2026). */
+export const AREAS = ['controls', 'equation', 'numerical', 'graphs'] as const;
 
 /** Every page in these tests records console errors, page errors and failed requests; each test ends by asserting none. */
 export const test = base.extend<{ problems: string[] }>({
@@ -38,19 +39,28 @@ export async function gotoSection(page: Page, id: string): Promise<void> {
 }
 
 /**
- * Opens Explore with the Numerical Interpretation region expanded, and the given items of it (1 to 14;
- * none by default: the items start collapsed). The expanded region and items are part of the shared
- * selection, so they are written to the address and the address opens them.
+ * Opens Explore with the given sections of the Numerical Interpretation expanded ('method-a', 'method-b',
+ * 'discretisation', 'pseudocode', 'assumptions', 'limitations'; none by default: they start collapsed). Which
+ * sections are open is part of the shared selection, so it is written to the address and the address opens them.
  */
-export async function gotoNumerical(page: Page, items: readonly number[] = [], extra = ''): Promise<void> {
-  const open = ['numerical', ...items.map((i) => `n${i}`)].join(',');
-  await page.goto(`./#/explore?${extra}${extra ? '&' : ''}open=${open}`);
-  await expect(page.locator('[data-section="explore"] h1')).toBeVisible();
-  await expect(page.getByTestId('num-items')).toBeVisible();
-  if (items.length > 0) await expect(page.getByTestId('equation-builder').first()).toBeVisible();
+export async function gotoNumerical(page: Page, sections: readonly string[] = [], extra = ''): Promise<void> {
+  const parts = [extra, sections.length > 0 ? `open=${sections.join(',')}` : ''].filter(Boolean);
+  await page.goto(`./#/explore${parts.length > 0 ? `?${parts.join('&')}` : ''}`);
+  await expect(page.locator('[data-section="explore"] h1')).toBeAttached();
+  await expect(page.getByTestId('numerical-interpretation')).toBeVisible();
 }
 
-/** Waits until the solver has answered for the current inputs (web phase 3); the simulation is block D of Explore. */
+/**
+ * Opens the manual baseline solver (advanced/AdvancedSolver.tsx), which Scientific Documentation mounts under
+ * "Advanced solver configuration" since the final layout of Explore (decision 77(f)): Explore no longer holds it.
+ */
+export async function gotoAdvanced(page: Page): Promise<void> {
+  await page.goto('./#/documentation');
+  const solver = page.getByTestId('advanced-solver');
+  await expect(solver).toBeAttached({ timeout: 20_000 });
+  await solver.scrollIntoViewIfNeeded();
+}
+/** Waits until the solver has answered for the current inputs (web phase 3); the simulation is block D of the manual solver (gotoAdvanced). */
 export async function waitForRun(page: Page, status: 'ok' | 'rejected' = 'ok'): Promise<void> {
   const b = page.getByTestId('block-d');
   await expect(b).toHaveAttribute('data-run-status', status, { timeout: 20_000 });
@@ -67,9 +77,12 @@ export async function horizontalOverflow(page: Page): Promise<number> {
   return page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
 }
 
-/** Letters and top edges of the Explore blocks, in document order. */
-export async function blockTops(page: Page): Promise<{ letter: string; top: number }[]> {
-  return page.locator('[data-section="explore"] [data-block]').evaluateAll((els) =>
-    els.map((el) => ({ letter: (el as HTMLElement).dataset.block ?? '', top: el.getBoundingClientRect().top + window.scrollY })),
+/** Letters and top edges of the four areas of Explore, in document order. */
+export async function areaTops(page: Page): Promise<{ area: string; top: number; left: number; bottom: number }[]> {
+  return page.locator('[data-section="explore"] [data-area]').evaluateAll((els) =>
+    els.map((el) => {
+      const r = el.getBoundingClientRect();
+      return { area: (el as HTMLElement).dataset.area ?? '', top: r.top + window.scrollY, left: r.left, bottom: r.bottom + window.scrollY };
+    }),
   );
 }

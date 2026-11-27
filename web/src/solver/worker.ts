@@ -5,7 +5,7 @@
 // of the module: there is no path from the page to the retired finite-volume exports
 // (web/tests/btcs_only.test.tsx). After a trap (a panic aborts on wasm32) the instance is unusable;
 // the worker reports it and the client replaces the worker.
-import init, { abi_version, build_info, compare, export_run, run, validate } from './pkg/strato_wasm.js';
+import init, { abi_version, analytical, build_info, compare, export_run, options, run, run_stage, validate } from './pkg/strato_wasm.js';
 import type { ErrorMessage, HelloMessage, LoadFailedMessage, ResponseMessage, WorkerRequest } from './protocol';
 import type { BuildInfo } from './types';
 
@@ -26,6 +26,12 @@ function call(req: WorkerRequest): string {
       return export_run(req.payload);
     case 'build_info':
       return build_info();
+    case 'run_stage':
+      return run_stage(req.payload);
+    case 'analytical':
+      return analytical(req.payload);
+    case 'options':
+      return options(req.payload);
   }
 }
 

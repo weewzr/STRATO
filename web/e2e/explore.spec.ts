@@ -1,143 +1,243 @@
 import type { Page } from '@playwright/test';
-import { BLOCKS, blockTops, expect, gotoSection, horizontalOverflow, solverRequests, test, VIEWPORTS, waitForRun } from './fixtures';
+import { areaTops, AREAS, expect, gotoNumerical, gotoSection, horizontalOverflow, test } from './fixtures';
 
-// Equation-first page structure (owner decision M7): blocks A to E in this order at every width,
-// and the fold requirement at 1440 x 900 (prompt/TESTING_AND_VALIDATION.md Section 3.3).
+// Explore in four areas (final layout of 27 Nov 2026): model equation and operation upper left, the governing
+// equation with its legend upper centre and right, numerical interpretation lower left, interactive graphs
+// lower right; stacked in that order at 390 px. The earlier specs of the blocks A to E, of the numerical items,
+// of the scenario row and of the learning sequence encoded the layout that this one replaces.
 
-async function expectOrder(page: Page) {
-  const tops = await blockTops(page);
-  expect(tops.map((t) => t.letter)).toEqual([...BLOCKS]);
-  for (let i = 1; i < tops.length; i++) {
-    expect(tops[i]?.top ?? 0, `top of ${tops[i]?.letter} below top of ${tops[i - 1]?.letter}`).toBeGreaterThan(tops[i - 1]?.top ?? 0);
-  }
+const WIDTHS = [
+  { width: 1440, height: 900, mobile: false },
+  { width: 768, height: 1024, mobile: false },
+  { width: 390, height: 844, mobile: true },
+] as const;
+const STATUS_WORDS = /\b(planned|pending|researched|implemented|verified|validated|computed|precomputed|not verified|unavailable|not available)\b/i;
+
+/** The text of the Explore page without the typeset formulas and the code of the pseudocode. */
+async function prose(page: Page): Promise<string> {
+  return page.locator('[data-section="explore"]').evaluate((root) => {
+    const copy = root.cloneNode(true) as HTMLElement;
+    copy.querySelectorAll('.katex, .npseudo__code, option').forEach((n) => n.remove());
+    return copy.textContent ?? '';
+  });
 }
 
-for (const vp of VIEWPORTS) {
-  test.describe(`blocks at ${vp.width}x${vp.height}`, () => {
-    test.use({ viewport: { width: vp.width, height: vp.height } });
+for (const vp of WIDTHS) {
+  test.describe(`Explore at ${vp.width}x${vp.height}`, () => {
+    test.use({ viewport: { width: vp.width, height: vp.height }, isMobile: vp.mobile, hasTouch: vp.mobile, deviceScaleFactor: vp.mobile ? 2 : 1 });
 
-    test('appear in the order A to E, without sideways page scroll', async ({ page, problems }) => {
+    test('shows the four areas in order, without sideways page scroll, with 44 px targets for every control', async ({ page, problems }) => {
       void problems;
       await gotoSection(page, 'explore');
-      await expectOrder(page);
+      await expect(page.getByTestId('graph-panel')).toBeVisible();
+      const tops = await areaTops(page);
+      expect(tops.map((t) => t.area)).toEqual([...AREAS]);
+      const [controls, equation, numerical, graphs] = tops;
+      if (!controls || !equation || !numerical || !graphs) throw new Error('missing area');
+      if (vp.width >= 1024) {
+        // Upper left, upper right, lower left, lower right.
+        expect(equation.left).toBeGreaterThan(controls.left + 100);
+        expect(Math.abs(equation.top - controls.top)).toBeLessThan(4);
+        expect(numerical.top).toBeGreaterThan(controls.bottom - 1);
+        expect(Math.abs(graphs.left - equation.left)).toBeLessThan(4);
+        expect(Math.abs(graphs.top - numerical.top)).toBeLessThan(4);
+      } else {
+        for (let i = 1; i < tops.length; i++) expect(tops[i]?.top ?? 0).toBeGreaterThan((tops[i - 1]?.top ?? 0) + 20);
+      }
+      // MODEL EQUATION above OPERATION.
+      const model = await page.getByTestId('model-equation').boundingBox();
+      const operation = await page.getByTestId('operation').boundingBox();
+      expect((operation?.y ?? 0) > (model?.y ?? 0)).toBe(true);
+      expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
+      // Every button, toggle and select is at least 44 px high.
+      const small = await page.locator('[data-section="explore"] button, [data-section="explore"] select').evaluateAll((els) =>
+        els.filter((e) => e.getBoundingClientRect().height < 43.5 && e.getBoundingClientRect().width > 0).map((e) => `${e.tagName} ${(e.textContent ?? '').slice(0, 30)} ${Math.round(e.getBoundingClientRect().height)}`),
+      );
+      expect(small).toEqual([]);
+    });
+
+    test('has six model-equation buttons and five operation buttons, a legend of the displayed variables and no status word', async ({ page, problems }) => {
+      void problems;
+      await gotoSection(page, 'explore');
+      await expect(page.getByTestId('physics-picker').getByRole('radio')).toHaveCount(6);
+      await expect(page.getByTestId('operation-picker').getByRole('radio')).toHaveCount(5);
+      await expect(page.getByTestId('legend').locator('tbody tr')).toHaveCount(4);
+      expect(await prose(page)).not.toMatch(STATUS_WORDS);
+      await page.getByTestId('physics-combined').click();
+      await expect(page.getByTestId('legend').locator('tbody tr')).toHaveCount(7);
+      await page.getByTestId('physics-future').click();
+      await expect(page.getByTestId('future-links').getByRole('link')).toHaveCount(4);
+      expect(await prose(page)).not.toMatch(STATUS_WORDS);
       expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
     });
   });
 }
-
-test.describe('blocks on a 390 px phone (device emulation)', () => {
-  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3 });
-
-  test('appear in the order A to E, controls open in a bottom sheet', async ({ page, problems }) => {
-    void problems;
-    await gotoSection(page, 'explore');
-    await expectOrder(page);
-    expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
-    // Block D holds the entry to the controls; the controls themselves open in the bottom sheet.
-    const blockD = page.getByTestId('block-d');
-    await expect(blockD.getByTestId('open-panel')).toBeVisible();
-    await expect(blockD.getByTestId('controls')).toHaveCount(0);
-    await blockD.getByTestId('open-panel').click();
-    const sheet = page.getByTestId('parameter-sheet');
-    await expect(sheet).toBeVisible();
-    await expect(sheet.getByTestId('controls')).toHaveAttribute('data-layout', 'sheet');
-    const box = await sheet.boundingBox();
-    expect(box?.width).toBe(390);
-    expect(Math.round((box?.y ?? 0) + (box?.height ?? 0))).toBe(844);
-  });
-});
 
 for (const colorScheme of ['light', 'dark'] as const) {
   for (const reducedMotion of ['no-preference', 'reduce'] as const) {
     test.describe(`fold at 1440 x 900, ${colorScheme}, reduced motion ${reducedMotion}`, () => {
       test.use({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, colorScheme, reducedMotion });
 
-      // Rewritten for the hierarchy of 26 Nov 2026: the governing equation is the first and largest element, so the
-      // equation and the physics controls fill the first screen; the simulation and the results follow below.
-      test('the governing equation and the physics controls are visible without scrolling', async ({ page, problems }) => {
+      test('the four areas are visible together, the graphs reaching past the fold only slightly', async ({ page, problems }) => {
         void problems;
         await gotoSection(page, 'explore');
-        // Measure with the solver's result in place (the readout then carries its label).
-        await waitForRun(page);
-        await page.evaluate(() => document.fonts.ready);
-        expect(await page.evaluate(() => window.scrollY)).toBe(0);
-        const footerTop = (await page.locator('footer.status').boundingBox())?.y ?? 900;
-        const headerBottom = await page.locator('header.header').evaluate((el) => el.getBoundingClientRect().bottom);
-        for (const id of ['equation-governing', 'physics-picker']) {
-          const box = await page.getByTestId(id).boundingBox();
-          expect(box, id).not.toBeNull();
-          if (!box) continue;
-          expect(box.y, `${id} top`).toBeGreaterThanOrEqual(headerBottom - 0.5);
-          expect(box.x, `${id} left`).toBeGreaterThanOrEqual(0);
-          expect(box.x + box.width, `${id} right`).toBeLessThanOrEqual(1440);
-          expect(box.y + box.height, `${id} bottom above the status line`).toBeLessThanOrEqual(footerTop + 0.5);
-        }
-        // Each of the two simulation elements carries its result label, inside the measured box.
-        // Web phase 4: with the run in place the particle is coloured by the solver's concentration.
-        await expect(page.getByTestId('particle').locator('.badge')).toHaveText('COMPUTED v2.0');
-        await expect(page.getByTestId('release-readout').locator('.badge')).toHaveText('COMPUTED v2.0');
-        await expectOrder(page);
+        await expect(page.getByTestId('graph-panel')).toBeVisible();
+        const tops = await areaTops(page);
+        for (const t of tops) expect(t.top, t.area).toBeLessThan(900 - 80);
+        const graphs = tops.find((t) => t.area === 'graphs');
+        expect(graphs?.bottom ?? 0).toBeLessThan(900 + 200);
+        expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
       });
     });
   }
 }
 
-test.describe('placeholders', () => {
+test.describe('selection, address and keyboard', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('name the web phase that fills them and contain no result label', async ({ page, problems }) => {
+  test('the model equation and the operation are independent, and both are written to the address', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
-    const phases = await page.locator('[data-placeholder-phase]').evaluateAll((els) => els.map((e) => e.getAttribute('data-placeholder-phase')));
-    // Web phase 2 replaced the two phase-2 placeholders with the equation builder and the term
-    // explanations; web phase 3 replaced the two phase-3 placeholders with the solver's inventory
-    // balance and diagnostics; web phase 4 replaced the AGR-1 reference placeholder with the
-    // registered-geometry view; web phase 5 replaced the profile and release placeholders with the
-    // plots; web phase 5.5 replaced the last one with the research catalogue summary in block E.
-    expect(phases).toEqual([]);
-    // Since 26 Nov 2026 block E holds the results; the catalogue summary is under Research.
-    await expect(page.getByTestId('future-research')).toHaveCount(0);
-    expect(phases).not.toContain('2');
-    expect(phases).not.toContain('3');
-    expect(phases).not.toContain('4');
-    expect(phases).not.toContain('5');
-    for (const p of phases) expect(p).toMatch(/^\d(\.\d)?$/);
-    await expect(page.locator('[data-placeholder-phase] .badge')).toHaveCount(0);
-    await expect(page.getByTestId('simulation-case')).toContainText('Synthetic five-layer verification case');
+    await page.getByTestId('operation-shutdown').click();
+    await expect(page.getByTestId('physics-baseline')).toHaveAttribute('aria-checked', 'true');
+    await expect(page).toHaveURL(/#\/explore\?scenario=shutdown$/);
+    await page.getByTestId('physics-decay').click();
+    await expect(page.getByTestId('operation-shutdown')).toHaveAttribute('aria-checked', 'true');
+    await expect(page).toHaveURL(/#\/explore\?physics=decay&scenario=shutdown$/);
+    await page.getByTestId('operation-steady').click();
+    await expect(page).toHaveURL(/#\/explore\?physics=decay$/);
+    // A copied address reproduces the view, and the selection survives navigation to another section and back.
+    await page.goto('./#/explore?physics=future&scenario=startup&open=pseudocode&graph=profile');
+    await expect(page.getByTestId('physics-future')).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByTestId('operation-startup')).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByTestId('graph-profile')).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByTestId('num-toggle-pseudocode')).toHaveAttribute('aria-expanded', 'true');
+    await page.getByRole('navigation', { name: 'Sections' }).getByRole('link', { name: 'Research' }).click();
+    await expect(page.locator('[data-section="research"] h1')).toBeVisible();
+    await page.getByRole('navigation', { name: 'Sections' }).getByRole('link', { name: 'Explore' }).click();
+    await expect(page.getByTestId('physics-future')).toHaveAttribute('aria-checked', 'true');
+    await expect(page).toHaveURL(/physics=future&scenario=startup/);
   });
 
-  // Run runs the solver; a selection that the build does not implement sends nothing and shows nothing.
-  test('an unsupported selection sends nothing and shows no result; Run sends the check of the inputs and one run', async ({ page, problems }) => {
+  test('each group is one tab stop, moves with the arrow keys, shows a visible focus ring and announces the change', async ({ page, problems }) => {
     void problems;
-    const requests: string[] = [];
     await gotoSection(page, 'explore');
-    await waitForRun(page);
-    const before = await solverRequests(page);
-    expect(before).toBeGreaterThanOrEqual(1);
-    // Fonts the new equation needs may load and the browser asks for the page icon again when the address
-    // changes; nothing else (no worker, data or solver request).
-    page.on('request', (r) => {
-      if (!['font', 'image'].includes(r.resourceType()) && !r.url().endsWith('/favicon.svg')) requests.push(`${r.resourceType()} ${r.url()}`);
+    const baseline = page.getByTestId('physics-baseline');
+    await baseline.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(page.getByTestId('physics-generation')).toBeFocused();
+    await expect(page.getByTestId('physics-generation')).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByTestId('physics-announce')).toContainText('enters the right-hand side');
+    const ring = await page.evaluate(() => {
+      const cs = getComputedStyle(document.activeElement as Element);
+      return { style: cs.outlineStyle, width: parseFloat(cs.outlineWidth) };
     });
-    for (const id of ['generation', 'decay', 'temperature', 'combined']) {
-      await page.getByTestId(`physics-${id}`).click();
-      await expect(page.getByTestId(`physics-${id}`)).toHaveAttribute('aria-checked', 'true');
-      await expect(page.getByTestId('block-d')).toHaveAttribute('data-supported', 'false');
+    expect(ring.style).toBe('solid');
+    expect(ring.width).toBeGreaterThanOrEqual(2);
+    await page.keyboard.press('End');
+    await expect(page.getByTestId('physics-future')).toHaveAttribute('aria-checked', 'true');
+    await page.keyboard.press('Tab');
+    expect(await page.evaluate(() => document.activeElement?.closest('[data-testid="physics-picker"]') === null)).toBe(true);
+    await page.getByTestId('operation-steady').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(page.getByTestId('operation-shutdown')).toBeFocused();
+    await expect(page.getByTestId('physics-future')).toHaveAttribute('aria-checked', 'true');
+  });
+
+  test('the six sections of the Numerical Interpretation are collapsed, open with Enter and Space, and keep the focus', async ({ page, problems }) => {
+    void problems;
+    await gotoSection(page, 'explore');
+    for (const id of ['method-a', 'method-b', 'discretisation', 'pseudocode', 'assumptions', 'limitations']) {
+      await expect(page.getByTestId(`num-toggle-${id}`)).toHaveAttribute('aria-expanded', 'false');
     }
-    await page.waitForTimeout(400);
-    expect(await solverRequests(page)).toBe(before);
-    expect(requests).toEqual([]);
-    // The baseline again: the simulation runs (the check of the inputs and one run).
-    await page.getByTestId('physics-baseline').click();
-    await expect(page.getByTestId('block-d')).toHaveAttribute('data-supported', 'true');
-    await expect.poll(() => solverRequests(page)).toBe(before + 2);
-    await waitForRun(page);
-    requests.length = 0;
-    await page.getByTestId('strip-run').click();
-    // Run asks the wrapper to validate the inputs (shown beside the controls) and then to run them.
-    await expect.poll(() => solverRequests(page)).toBe(before + 4);
-    await waitForRun(page);
-    await expect(page.getByTestId('status-result')).toHaveText('Result COMPUTED v2.0');
-    expect(requests).toEqual([]);
+    const toggle = page.getByTestId('num-toggle-discretisation');
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(toggle).toBeFocused();
+    await expect(page).toHaveURL(/open=discretisation/);
+    await expect(page.getByTestId('num-section-discretisation').locator('.katex').first()).toBeVisible();
+    await expect(page.getByTestId('num-section-discretisation').locator('.katex-error')).toHaveCount(0);
+    await page.keyboard.press('Space');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
+  });
+
+  test('every section opened for the combined model typesets without an error, and the pseudocode is the document code', async ({ page, problems }) => {
+    void problems;
+    await gotoNumerical(page, ['method-a', 'method-b', 'discretisation', 'pseudocode', 'assumptions', 'limitations'], 'physics=combined&scenario=shutdown');
+    await expect(page.locator('[data-section="explore"] .katex-error')).toHaveCount(0);
+    await expect(page.getByTestId('num-section-pseudocode').locator('[data-block]')).toHaveCount(6);
+    await expect(page.getByTestId('num-section-pseudocode').locator('[data-hook]')).toHaveCount(3);
+    await expect(page.locator('[data-operation-note]')).toHaveCount(3);
+    expect(await prose(page)).not.toMatch(STATUS_WORDS);
+    expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
+  });
+});
+
+test.describe('interactive graphs', () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test('draw the wrapper curves for steady-state operation: Method A blue and solid, the temperature list in 100 degC steps', async ({ page, problems }) => {
+    void problems;
+    await gotoSection(page, 'explore');
+    const temp = page.getByTestId('temperature-select');
+    await expect(temp.locator('option')).toHaveText(['1600 °C', '1700 °C', '1800 °C'], { timeout: 30_000 });
+    await expect(page.getByTestId('species-select').locator('option').first()).toBeAttached();
+    const plot = page.getByTestId('explore-plot-release-graph');
+    await expect(plot).toBeVisible({ timeout: 30_000 });
+    await expect.poll(() => plot.evaluate((el) => ((el as unknown as { data?: unknown[] }).data ?? []).length), { timeout: 30_000 }).toBe(1);
+    const trace = await plot.evaluate((el) => {
+      const t = (el as unknown as { data: { x: number[]; y: number[]; line: { color: string; dash: string } }[] }).data[0];
+      return { n: t?.x.length ?? 0, ny: t?.y.length ?? 0, colour: t?.line.color, dash: t?.line.dash, last: t?.y[(t?.y.length ?? 1) - 1] ?? NaN };
+    });
+    expect(trace.n).toBeGreaterThan(10);
+    expect(trace.ny).toBe(trace.n);
+    expect(trace.colour).toBe('#2563EB');
+    expect(trace.dash).toBe('solid');
+    // The release fraction of one particle lies between 0 and 1.
+    expect(trace.last).toBeGreaterThanOrEqual(0);
+    expect(trace.last).toBeLessThanOrEqual(1);
+    await expect(page.getByTestId('graph-empty')).toHaveCount(0);
+  });
+
+  test('are an empty frame, with no text, for every other operation and for future species-specific physics', async ({ page, problems }) => {
+    void problems;
+    await gotoSection(page, 'explore');
+    await expect(page.getByTestId('explore-plot-release-graph')).toBeVisible({ timeout: 30_000 });
+    for (const graph of ['release', 'profile', 'methods', 'experiment']) {
+      await page.getByTestId(`graph-${graph}`).click();
+      for (const operation of ['shutdown', 'startup', 'control-rod', 'refuelling']) {
+        await page.getByTestId(`operation-${operation}`).click();
+        const panel = page.getByTestId('graph-panel');
+        await expect(panel).toHaveAttribute('data-empty', 'true');
+        expect(((await panel.textContent()) ?? '').trim()).toBe('');
+        await expect(panel.locator('svg, canvas, .js-plotly-plot')).toHaveCount(0);
+      }
+      await page.getByTestId('operation-steady').click();
+      await page.getByTestId('physics-future').click();
+      await expect(page.getByTestId('graph-panel')).toHaveAttribute('data-empty', 'true');
+      expect(((await page.getByTestId('graph-panel').textContent()) ?? '').trim()).toBe('');
+      await page.getByTestId('physics-baseline').click();
+    }
+  });
+
+  test('draw the registered experimental data with its caption, citation and link beneath', async ({ page, problems }) => {
+    void problems;
+    await gotoSection(page, 'explore');
+    await page.getByTestId('graph-experiment').click();
+    await expect(page.getByTestId('dataset-select')).toBeVisible({ timeout: 30_000 });
+    const plot = page.getByTestId('explore-plot-experiment-graph');
+    await expect(plot).toBeVisible();
+    await expect.poll(() => plot.evaluate((el) => ((el as unknown as { data?: unknown[] }).data ?? []).length), { timeout: 30_000 }).toBeGreaterThan(1);
+    const markers = await plot.evaluate((el) =>
+      (el as unknown as { data: { mode: string; marker?: { color: string; symbol: string } }[] }).data.filter((t) => t.mode === 'markers').map((t) => `${t.marker?.color}/${t.marker?.symbol}`),
+    );
+    expect(markers.length).toBeGreaterThan(0);
+    for (const m of markers) expect(m).toMatch(/^#111111\/(circle|triangle-down)$/);
+    await expect(page.getByTestId('experiment-caption')).not.toBeEmpty();
+    await expect(page.getByTestId('experiment-apa')).toContainText(/\(\d{4}\)/);
+    await expect(page.getByTestId('experiment-link')).toHaveAttribute('href', /^https?:\/\//);
+    expect(await prose(page)).not.toMatch(STATUS_WORDS);
   });
 });

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Page } from '@playwright/test';
-import { expect, gotoNumerical, gotoSection, horizontalOverflow, solverRequests, test, waitForRun } from './fixtures';
+import { expect, gotoAdvanced, gotoSection, horizontalOverflow, solverRequests, test, waitForRun } from './fixtures';
 
 const catalogueJson = JSON.parse(readFileSync(fileURLToPath(new URL('../src/generated/research_catalogue.json', import.meta.url)), 'utf8')) as {
   data: { mechanisms: { mechanism_id: string; species: string; material_domain: string; status: string }[] };
@@ -100,7 +100,7 @@ test.describe('catalogue switches by keyboard', () => {
   test('a pending switch takes focus, stays off under Space and Enter, and sends no solver request', async ({ page, problems }) => {
     void problems;
     // The initial run request is sent once the solver is ready: wait for its answer before counting requests.
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     await gotoResearch(page, 'ag_trapping_detrapping');
     // The module of the wrapper is larger since ABI 4 and loads later: take the count once the page's own first requests are posted.
@@ -117,15 +117,14 @@ test.describe('catalogue switches by keyboard', () => {
     expect(await solverRequests(page)).toBe(before);
   });
 
-  test('the last step of the builder links to the research catalogue and holds no switch', async ({ page, problems }) => {
+  test('Future species-specific physics links to the research catalogue and holds no switch', async ({ page, problems }) => {
     void problems;
-    // The last step is the temperature step, in item 11, which the temperature-dependent physics reveals.
-    await gotoNumerical(page, [11], 'physics=temperature');
-    await expect(page.getByTestId('num-item-11').getByTestId('equation-builder')).toHaveAttribute('data-stage', '17');
-    const note = page.getByTestId('stage6');
-    await expect(note.getByRole('link', { name: 'research catalogue' })).toHaveAttribute('href', /#\/research/);
-    await expect(note.locator('[role="switch"]')).toHaveCount(0);
-    if (dir) await page.getByTestId('block-c').screenshot({ path: join(dir, 'explore-last-step-1440.png') });
+    await page.goto('./#/explore?physics=future');
+    const links = page.getByTestId('future-links');
+    await expect(links.getByRole('link')).toHaveCount(4);
+    for (const a of await links.getByRole('link').all()) await expect(a).toHaveAttribute('href', /#\/research\//);
+    await expect(page.locator('[data-section="explore"] [role="switch"]')).toHaveCount(0);
+    if (dir) await page.getByTestId('governing-equation').screenshot({ path: join(dir, 'explore-future-1440.png') });
   });
 
   test('a link to a heading of another entry opens that entry at the heading', async ({ page, problems }) => {

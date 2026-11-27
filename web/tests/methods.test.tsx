@@ -82,14 +82,15 @@ describe('the page offers exactly two methods', () => {
     expect(METHODS).toEqual(['Method A: BTCS', 'Method B: Sturm–Liouville']);
   });
 
-  it('shows both methods on Explore, beside the run, and none of the retired wording', async () => {
+  it('names both methods on Explore (the sections of the Numerical Interpretation), and none of the retired wording', async () => {
     window.location.hash = '#/explore';
     render(<App />);
-    await waitFor(() => expect(screen.getByTestId('release-value')).toBeTruthy());
+    await waitFor(() => expect(screen.getByTestId('num-section-method-b')).toBeTruthy());
     const text = pageText();
     expect(text).toContain(METHOD_1);
     expect(text).toContain(METHOD_2);
-    expect(text).toContain('COMPUTED v2.0');
+    // No result label or status word stands on Explore (decision 77(b)); the labels live in Scientific Documentation.
+    expect(document.querySelector('[data-section=explore]')?.textContent ?? '').not.toMatch(/COMPUTED|PRECOMPUTED|VERIFIED|PLANNED/);
     expect(text).not.toMatch(/finite[- ]volume/i);
     expect(text).not.toMatch(/\bCode [ABC]\b/);
     expect(text).not.toContain('COMPUTED v1.0');

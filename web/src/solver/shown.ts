@@ -1,5 +1,5 @@
 import type { RunOk } from './types';
-import { inputKey, selectionKey, useStrato } from '../state/store';
+import { BASELINE_RUN_KEY, inputKey, useStrato } from '../state/store';
 
 /**
  * The run the page may show for the current selection (owner directive of 26 Nov 2026, Sections 6 and 7:
@@ -13,8 +13,7 @@ export function useShownRun(): { run: RunOk | null; stale: boolean } {
   const info = useStrato((s) => s.runInfo);
   const config = useStrato((s) => s.config);
   const status = useStrato((s) => s.status);
-  const key = useStrato((s) => selectionKey(s.selection));
   if (run === null) return { run: null, stale: false };
-  if (info?.selectionKey !== undefined && info.selectionKey !== key) return { run: null, stale: false };
+  if (info?.selectionKey !== undefined && info.selectionKey !== BASELINE_RUN_KEY) return { run: null, stale: false };
   return { run, stale: status === 'running' || info?.inputKey !== inputKey(config) };
 }

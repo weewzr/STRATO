@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Page } from '@playwright/test';
 import { REQUEST_TIMEOUT_MS } from '../src/solver/tolerances';
-import { expect, gotoSection, test, waitForRun } from './fixtures';
+import { expect, gotoAdvanced, test, waitForRun } from './fixtures';
 
 // Measured browser run times of the BTCS solver at the wrapper limits MAX_TOTAL_INTERVALS, MAX_STEPS,
 // MAX_PROFILE_VALUES and MAX_SERIES_MODES (prompt/TECHNICAL_ARCHITECTURE.md Section 3, defence 2,
@@ -61,7 +61,7 @@ test.describe('wrapper limits in the browser', () => {
 
   test('every configuration at a limit finishes inside the worker time-out', async ({ page, problems }, info) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     // First interactive solve after load (Section 6 budget: under 1 s), measured from navigation.
     await waitForRun(page);
     const firstSolveMs = await page.evaluate(() => performance.now());

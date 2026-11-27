@@ -5,7 +5,7 @@ import { parseCsv } from '../src/downloads/serialise';
 import { compareArrays } from '../src/solver/compare';
 import { PARITY_RTOL } from '../src/solver/tolerances';
 import type { CompareOk, RunOk } from '../src/solver/types';
-import { expect, gotoSection, horizontalOverflow, solverRequests, test, waitForRun } from './fixtures';
+import { expect, gotoAdvanced, gotoSection, horizontalOverflow, solverRequests, test, waitForRun } from './fixtures';
 
 // Web phase 5: the scientific graphs (prompt/TESTING_AND_VALIDATION.md Section 3, row 5). The plotted
 // arrays equal the wrapper's values; the plotted difference curve is the series compare returned
@@ -85,7 +85,7 @@ test.describe('block B plots', () => {
 
   test('the profile and release plots draw the wrapper values and follow the playback row', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     const last = NATIVE.profiles.length - 1;
     const profile = await drawn(page, 'profile-plot');
@@ -117,7 +117,7 @@ test.describe('block B plots', () => {
 
   test('every plot shows its result label, axes named in full with units and a caption with source and commits', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     for (const id of ['profile-figure', 'release-figure']) {
       const fig = page.getByTestId(id);
@@ -137,7 +137,7 @@ test.describe('block B plots', () => {
 
   test('display options change the plot only: no input, no run', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     const key = await page.getByTestId('block-d').getAttribute('data-input-key');
     const before = await solverRequests(page);
@@ -156,7 +156,7 @@ test.describe('block B plots', () => {
 
   test('a figure saved as SVG carries the source line with the method, version and commits', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     await drawn(page, 'release-plot');
     const { name, text } = await download(page, 'release-plot-svg');
@@ -173,7 +173,7 @@ test.describe('phone layout of the plots', () => {
 
   test('one plot at a time with a switcher, and no sideways scroll', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     await expect(page.getByTestId('profile-figure')).toBeVisible();
     await expect(page.getByTestId('release-figure')).toHaveCount(0);
@@ -193,7 +193,7 @@ test.describe('comparison', () => {
 
   test('the plotted difference is the series compare returned; toggles are independent of validation', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     // A faster SiC: the same change the wrapper's compare test uses.
     const field = page.getByTestId('d-field-3');
@@ -242,7 +242,7 @@ test.describe('comparison', () => {
 
   test('a comparison of runs with different output times is rejected, never interpolated', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     await page.getByTestId('set-baseline').click();
     const every = page.getByTestId('output-every-field');
@@ -260,7 +260,7 @@ test.describe('downloads', () => {
 
   test('the run downloads are written by the wrapper, carry their provenance header and reproduce the plotted values', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     const release = await drawn(page, 'release-plot');
     const profile = await drawn(page, 'profile-plot');

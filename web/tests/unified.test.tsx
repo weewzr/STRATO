@@ -34,22 +34,26 @@ beforeEach(() => {
   useStrato.setState({ ...initialState() });
 });
 
-describe('the reply is shown only under the selection it was computed for', () => {
-  it('shows the baseline reply under the baseline selection', () => {
+describe('the manual solver shows its reply for the baseline problem, whatever the Explore selection is', () => {
+  it('shows the baseline reply', () => {
     runFor({ physics: 'baseline', scenario: null });
     render(<Probe />);
     expect(screen.getByTestId('probe').textContent).toBe('shown');
   });
 
-  it('hides it, with no substitute, once another physics or a scenario is selected', () => {
+  it('is not changed by the model equation or the operation selected on Explore (the two groups of buttons do not start or hide it)', () => {
     runFor({ physics: 'baseline', scenario: null });
     render(<Probe />);
-    for (const patch of [{ physics: 'generation' as const }, { physics: 'decay' as const }, { physics: 'temperature' as const }, { physics: 'combined' as const, scenario: 'startup' as const }]) {
+    for (const patch of [{ physics: 'generation' as const }, { physics: 'decay' as const }, { physics: 'temperature' as const }, { physics: 'future' as const, scenario: 'startup' as const }]) {
       act(() => useStrato.getState().setSelection(patch));
-      expect(screen.getByTestId('probe').textContent, JSON.stringify(patch)).toBe('none');
+      expect(screen.getByTestId('probe').textContent, JSON.stringify(patch)).toBe('shown');
     }
-    act(() => useStrato.getState().setSelection({ physics: 'baseline' }));
-    expect(screen.getByTestId('probe').textContent).toBe('shown');
+  });
+
+  it('hides, with no substitute, a reply that was computed for a problem other than the baseline', () => {
+    runFor({ physics: 'decay', scenario: null });
+    render(<Probe />);
+    expect(screen.getByTestId('probe').textContent).toBe('none');
   });
 
   it('keeps a reply without a selection key shown (older callers)', () => {
@@ -59,25 +63,23 @@ describe('the reply is shown only under the selection it was computed for', () =
     expect(screen.getByTestId('probe').textContent).toBe('shown');
   });
 
-  it('gives the result panels no number under another selection', () => {
+  it('gives the result panels the numbers of the baseline reply under any Explore selection', () => {
     runFor({ physics: 'baseline', scenario: null });
     render(<BalancePanel />);
     expect(screen.getByTestId('bal-inventory').dataset.value).toBe(String(RUN.balance.final.remaining_mol));
     act(() => useStrato.getState().setSelection({ physics: 'decay' }));
-    expect(screen.queryByTestId('bal-inventory')).toBeNull();
-    expect(screen.getByTestId('balance-panel').textContent).toContain('Label: none');
+    expect(screen.getByTestId('bal-inventory').dataset.value).toBe(String(RUN.balance.final.remaining_mol));
   });
 
-  it('gives the live values of a numerical step no number of a reply computed for another selection', () => {
+  it('gives the live values of a numerical step no number of a reply computed for another problem', () => {
     runFor({ physics: 'baseline', scenario: null });
     render(<LiveValues stage={12} />);
     expect(screen.getByTestId('live-numbers')).toBeTruthy();
-    act(() => useStrato.getState().setSelection({ physics: 'generation' }));
+    runFor({ physics: 'generation', scenario: null });
     expect(screen.queryByTestId('live-numbers')).toBeNull();
     expect(screen.getByTestId('live-numbers-none').textContent).toContain('No numbers yet');
   });
 });
-
 describe('the running computation is described from the capability of the build', () => {
   it('names the baseline and lists what the build does not compute (today)', () => {
     act(() => {

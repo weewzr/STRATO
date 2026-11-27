@@ -268,3 +268,69 @@ export interface ExportOk {
 
 export type ExportFormat = 'timeseries_csv' | 'profiles_csv' | 'run_json' | 'comparison_csv';
 export type ExportReply = ExportOk | Rejected;
+
+// ---- ABI 4 (schema 3): the functions run_stage, analytical and options of the wrapper
+// (stage-b/btcs/wasm-interface.md Part B, sections 11 and 15). Only the fields the page reads are typed.
+
+/** The reply of run_stage: the series and the profiles of a stage, verbatim from the wrapper. */
+export interface StageSeries {
+  times_s: number[];
+  times_h: number[];
+  release_fraction: number[];
+}
+export interface StageProfile {
+  t_s: number;
+  t_h: number;
+  c_mol_per_m3: number[];
+  inventory_mol: number;
+}
+export interface StageOk {
+  schema: 3;
+  status: 'ok';
+  label: ResultLabel;
+  stage: { stage: number; id: string; name: string; adds: string; mechanisms: string[] };
+  grid: { node_radii_m: number[]; interface_radii_m: number[]; layer_names: string[] };
+  series: StageSeries;
+  profiles: StageProfile[];
+  analytical: { applicable: boolean; extension: string | null; reason_code: string | null; reason: string | null };
+  units: Record<string, string>;
+}
+export interface StageRejected {
+  schema: 3;
+  status: 'rejected';
+  errors: string[];
+}
+export type StageReply = StageOk | StageRejected;
+
+/** The reply of analytical: Method B at the requested times, null where the mask withholds a value. */
+export interface AnalyticalReply {
+  schema?: number;
+  applicable: boolean;
+  extension: string | null;
+  reason_code: string | null;
+  reason: string | null;
+  times_s: number[] | null;
+  times_h: number[] | null;
+  release_fraction: (number | null)[] | null;
+  drawn_count?: number;
+}
+
+export interface OptionsNuclide {
+  id: string;
+  name: string;
+  label?: string;
+  element?: string;
+  main_comparison_temperatures_c?: number[];
+}
+export interface OptionsPhase {
+  phase: string;
+  temperatures_c: number[];
+  validity_intersection_c: { min: number; max: number } | null;
+}
+/** The reply of options: the nuclides and temperatures the wrapper lists. */
+export interface OptionsReply {
+  schema?: number;
+  nuclides: { scenario: OptionsNuclide[]; no_generation_source: OptionsNuclide[]; experiment: OptionsNuclide[] };
+  temperatures: { main_comparison_c: Record<string, number[]>; exploration: { nuclide: string; name?: string; phases: OptionsPhase[] }[] };
+  mechanisms: { id: string; term?: string; implemented: boolean; first_stage?: number }[];
+}

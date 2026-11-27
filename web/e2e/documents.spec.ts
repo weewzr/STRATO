@@ -1,4 +1,4 @@
-import { test, expect, gotoSection, horizontalOverflow, waitForRun } from './fixtures';
+import { expect, gotoSection, horizontalOverflow, test } from './fixtures';
 
 // The derivation and register documents rendered into the build by crates/strato-docsite (web
 // phase 8). Continuous integration renders them into web/dist right after `npm run build`; to run
@@ -64,8 +64,8 @@ test.describe('rendered documents', () => {
     const hrefs = await page.locator('a.doc-list__title').evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).href));
     for (const path of DOCUMENTS) expect(hrefs, path).toContain(new URL(`/STRATO/${path}`, page.url()).href);
     await page.getByRole('link', { name: 'Web demonstration' }).click();
-    await expect(page.locator('[data-section="explore"] h1')).toBeVisible();
-    await waitForRun(page);
+    await expect(page.locator('[data-section="explore"] h1')).toBeAttached();
+    await expect(page.getByTestId('graph-panel')).toBeVisible();
   });
 
   test('the document folders resolve and prompt/ is not published', async ({ page }) => {

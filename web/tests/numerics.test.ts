@@ -70,7 +70,7 @@ describe('the fourteen items and the mapping of the seventeen steps', () => {
   });
 });
 
-describe('visibility table: which items for which physics and scenario', () => {
+describe('visibility table: which items for which model equation (the operation changes none)', () => {
   const BASE: ItemId[] = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13, 14];
   const ALL: ItemId[] = [...ITEM_IDS];
   const table: [PhysicsId, ScenarioId | null, ItemId[]][] = [
@@ -79,25 +79,26 @@ describe('visibility table: which items for which physics and scenario', () => {
     ['decay', null, [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 13, 14]],
     ['temperature', null, [1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14]],
     ['combined', null, ALL],
-    // Every scenario carries the combined model (SCENARIO_RULE), so the physics held with it does not matter.
-    ...SCENARIO_IDS.flatMap((s) => PHYSICS_IDS.map((p): [PhysicsId, ScenarioId | null, ItemId[]] => [p, s, ALL])),
+    ['future', null, ALL],
+    // The operation never changes which items are shown: it adds notes inside them (the two groups are independent).
+    ...SCENARIO_IDS.flatMap((s) => PHYSICS_IDS.map((p): [PhysicsId, ScenarioId | null, ItemId[]] => [p, s, visibleItems(p)])),
   ];
   for (const [physics, scenario, expected] of table) {
     it(`${physics} / ${scenario ?? 'no scenario'} shows items ${expected.join(', ')}`, () => {
-      expect(visibleItems(physics, scenario)).toEqual(expected);
+      expect(visibleItems(physics)).toEqual(expected);
     });
   }
 
   it('shows the baseline items for every selection and a mechanism item only with its mechanism', () => {
     for (const p of PHYSICS_IDS) {
       for (const s of [null, ...SCENARIO_IDS]) {
-        const shown = visibleItems(p, s);
+        const shown = visibleItems(p);
         for (const id of BASE) expect(shown, `${p}/${s} item ${id}`).toContain(id);
-        const eff = effectivePhysics(p, s);
+        const eff = effectivePhysics(p);
         expect(shown.includes(9)).toBe(eff === 'generation' || eff === 'combined');
         expect(shown.includes(10)).toBe(eff === 'decay' || eff === 'combined');
         expect(shown.includes(11)).toBe(eff === 'temperature' || eff === 'combined');
-        for (const it of NUMERICAL_ITEMS) expect(itemVisible(it, p, s), `${p}/${s} item ${it.id}`).toBe(shown.includes(it.id));
+        for (const it of NUMERICAL_ITEMS) expect(itemVisible(it, p), `${p}/${s} item ${it.id}`).toBe(shown.includes(it.id));
       }
     }
   });
@@ -135,19 +136,23 @@ describe('what a scenario writes inside the items', () => {
   });
 });
 
-describe('the expanded state of the items in the shared selection', () => {
-  it('knows the region and the fourteen items, in a fixed order', () => {
-    expect(EXPANDABLE_IDS).toEqual(['numerical', ...ITEM_IDS.map((i) => `n${i}`)]);
+
+describe('the expanded state of the sections in the shared selection', () => {
+  // The fourteen items are regrouped into the six sections of the page (equation/NumericalSections.tsx); the
+  // ids of the items remain the ids of the documentation and of the notes of the operations.
+  it('knows the six sections, in a fixed order, and the fourteen item ids of the regrouped items stay unique', () => {
+    expect(EXPANDABLE_IDS).toEqual(['method-a', 'method-b', 'discretisation', 'pseudocode', 'assumptions', 'limitations']);
     expect(ITEM_EXPAND_IDS).toEqual(ITEM_IDS.map(itemExpandId));
+    expect(new Set(ITEM_EXPAND_IDS).size).toBe(14);
   });
   it('keeps valid ids, drops the others and orders them', () => {
-    const sel = normaliseSelection({ physics: 'generation', expanded: ['n9', 'x', 'numerical', 'n3', 'n9', 'n15'] });
-    expect(sel.expanded).toEqual(['numerical', 'n3', 'n9']);
+    const sel = normaliseSelection({ physics: 'generation', expanded: ['discretisation', 'x', 'method-a', 'n3', 'discretisation', 'limitations'] });
+    expect(sel.expanded).toEqual(['method-a', 'discretisation', 'limitations']);
   });
-  it('survives a round trip through the address, with the physics and the scenario', () => {
-    const sel = normaliseSelection({ physics: 'combined', scenario: 'shutdown', expanded: ['n11', 'numerical', 'n8'] });
+  it('survives a round trip through the address, with the model equation and the operation', () => {
+    const sel = normaliseSelection({ physics: 'combined', scenario: 'shutdown', expanded: ['pseudocode', 'method-b', 'method-a'] });
     const query = formatSelection(sel);
     expect(parseSelection(query)).toEqual(sel);
-    expect(query).toContain('open=numerical,n8,n11');
+    expect(query).toContain('open=method-a,method-b,pseudocode');
   });
 });

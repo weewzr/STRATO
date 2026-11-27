@@ -7,7 +7,7 @@
 import { filterRequestedMechanisms } from '../equation/availability';
 import type { ErrorMessage, HelloMessage, RequestKind, ResponseMessage, WorkerMessage, WorkerRequest } from './protocol';
 import { REQUEST_TIMEOUT_MS } from './tolerances';
-import type { BuildInfo, CompareReply, ExportFormat, ExportReply, RunReply, ValidateReply } from './types';
+import type { AnalyticalReply, BuildInfo, CompareReply, ExportFormat, ExportReply, OptionsReply, RunReply, StageReply, ValidateReply } from './types';
 
 /** The part of the Worker interface the client uses (a fake in the unit tests). */
 export interface WorkerLike {
@@ -57,6 +57,8 @@ export class SolverClient {
   private pending = new Map<number, Pending>();
   private latestRun = 0;
   private latestCompare = 0;
+  private latestStage = 0;
+  private latestAnalytical = 0;
   private closed = false;
   /** Requests posted to a worker, for the tests that require that no request is sent. */
   sent = 0;
@@ -196,6 +198,30 @@ export class SolverClient {
     return { ...reply, dropped };
   }
 
+  /**
+   * Runs one stage of the equation (wrapper function run_stage, schema 3). The request is the page's
+   * own JSON; the reply is the wrapper's, unchanged. Latest wins: a reply that a newer stage run has
+   * overtaken rejects with reason 'stale'.
+   */
+  async runStage(request: unknown): Promise<Reply<StageReply>> {
+    const ticket = ++this.latestStage;
+    const reply = await this.request<StageReply>('run_stage', request);
+    if (ticket !== this.latestStage) throw new SolverError('stale', 'overtaken by a newer stage run');
+    return reply;
+  }
+
+  /** Method B for a stage request (wrapper function analytical, schema 3); latest wins, like runStage. */
+  async analytical(request: unknown): Promise<Reply<AnalyticalReply>> {
+    const ticket = ++this.latestAnalytical;
+    const reply = await this.request<AnalyticalReply>('analytical', request);
+    if (ticket !== this.latestAnalytical) throw new SolverError('stale', 'overtaken by a newer analytical request');
+    return reply;
+  }
+
+  /** What the build lists: stages, mechanisms, nuclides and temperatures (wrapper function options). */
+  options(): Promise<Reply<OptionsReply>> {
+    return this.request<OptionsReply>('options', {});
+  }
   /** The wrapper's check of a configuration: the same rules as run, nothing is solved. */
   validate(config: unknown): Promise<Reply<ValidateReply>> {
     return this.request<ValidateReply>('validate', { schema: 2, config });

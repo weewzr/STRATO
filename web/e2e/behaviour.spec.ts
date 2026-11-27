@@ -1,4 +1,4 @@
-import { expect, gotoSection, SECTIONS, test, waitForRun } from './fixtures';
+import { expect, gotoAdvanced, gotoSection, SECTIONS, test, waitForRun } from './fixtures';
 
 test.describe('reduced motion', () => {
   test.use({ viewport: { width: 1280, height: 800 }, reducedMotion: 'reduce' });
@@ -31,7 +31,7 @@ test.describe('themes', () => {
   test('the manual toggle overrides the system and is remembered', async ({ page, problems }) => {
     void problems;
     await page.emulateMedia({ colorScheme: 'light' });
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     const toggle = page.getByTestId('theme-toggle');
     await expect(toggle).toHaveAttribute('aria-pressed', 'false');
     await toggle.click();
@@ -81,7 +81,7 @@ test.describe('content and data', () => {
 
   test('the parameter table shows the case-file values and marks changed inputs', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     const field = page.getByTestId('d-field-0');
     await field.fill('3e-12');
     await page.getByRole('navigation', { name: 'Sections' }).getByRole('link', { name: 'Data' }).click();
@@ -97,7 +97,7 @@ test.describe('content and data', () => {
   // is asserted where it now lives, in the build table of Scientific Documentation.
   test('the status line shows the result label and the solver time, and links to the build commit in Scientific Documentation', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     const build = (await (await page.request.get('/STRATO/build.json')).json()) as { commit: string };
     await expect(page.getByTestId('status-build')).not.toContainText(build.commit);
     await waitForRun(page);

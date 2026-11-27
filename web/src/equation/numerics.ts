@@ -27,7 +27,6 @@
 //
 // Items nine to eleven had no derivation before: they are written from Document 5.
 import { mechanismsOf, type BuildCapability, type BuildStatus, type Mechanism, type PhysicsId, type ScenarioId } from './capability';
-import { requiresCombined } from './scenarios';
 import type { Stage } from './terms';
 
 export type ItemId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14;
@@ -76,20 +75,21 @@ export const itemExpandId = (id: ItemId): string => `n${id}`;
 export const ITEM_EXPAND_IDS: readonly string[] = ITEM_IDS.map(itemExpandId);
 
 /**
- * The physics that the numerical items follow: the selected one, except that a scenario always carries the
- * combined model (equation/scenarios.ts, SCENARIO_RULE), so the two cannot disagree.
+ * The physics that the numerical items follow: the selected model equation, whatever the operation is (the
+ * two are independent; an operation never activates a mechanism). Future species-specific physics shows
+ * the combined equation unchanged, so it has the items of the combined model.
  */
-export const effectivePhysics = (physics: PhysicsId, scenario: ScenarioId | null): PhysicsId => (requiresCombined(scenario) ? 'combined' : physics);
+export const effectivePhysics = (physics: PhysicsId): PhysicsId => (physics === 'future' ? 'combined' : physics);
 
-/** Whether an item is shown for a physics selection and an operating scenario. A scenario never hides an item: it adds notes inside them. */
-export function itemVisible(item: NumericalItem, physics: PhysicsId, scenario: ScenarioId | null): boolean {
+/** Whether an item is shown for a model equation. An operation never hides or adds an item: it adds notes inside them. */
+export function itemVisible(item: NumericalItem, physics: PhysicsId): boolean {
   if (item.mechanism === null) return true;
-  return mechanismsOf(effectivePhysics(physics, scenario)).includes(item.mechanism);
+  return mechanismsOf(effectivePhysics(physics)).includes(item.mechanism);
 }
 
-/** The ids of the items shown for a selection, in order. */
-export function visibleItems(physics: PhysicsId, scenario: ScenarioId | null): ItemId[] {
-  return NUMERICAL_ITEMS.filter((it) => itemVisible(it, physics, scenario)).map((it) => it.id);
+/** The ids of the items shown for a model equation, in order. */
+export function visibleItems(physics: PhysicsId): ItemId[] {
+  return NUMERICAL_ITEMS.filter((it) => itemVisible(it, physics)).map((it) => it.id);
 }
 
 /** The status of the thing an item describes in the running build: the mechanism's status, or the baseline's. */

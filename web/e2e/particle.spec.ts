@@ -4,7 +4,7 @@ import type { Page } from '@playwright/test';
 import { within } from '../src/solver/compare';
 import { PARITY_RTOL } from '../src/solver/tolerances';
 import type { RunOk } from '../src/solver/types';
-import { expect, gotoSection, test, waitForRun } from './fixtures';
+import { expect, gotoAdvanced, test, waitForRun } from './fixtures';
 
 // Web phase 4 (prompt/TESTING_AND_VALIDATION.md Section 3, row 4; prompt/IMPLEMENTATION_ROADMAP.md
 // Phase 4): the particle colours are the colour map applied to the solver's values, the displayed
@@ -131,7 +131,7 @@ test.describe('particle colouring and layer shares', () => {
 
   test('the centre pixel and a buffer pixel carry the colour map applied to the solver values', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     const last = NATIVE.profiles.length - 1;
     expect(await row(page)).toBe(last);
@@ -163,7 +163,7 @@ test.describe('particle colouring and layer shares', () => {
 
   test('the displayed layer inventory and share equal the wrapper values at the playback time', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     for (const target of [NATIVE.profiles.length - 1, 30, 1]) {
       await page.getByTestId('pb-slider').fill(String(target));
@@ -189,7 +189,7 @@ test.describe('playback', () => {
 
   test('keyboard: Space plays and pauses, arrows step; nothing starts by itself', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     await page.waitForTimeout(500);
     await expect(page.getByTestId('playback')).toHaveAttribute('data-playing', 'false');
@@ -215,7 +215,7 @@ test.describe('playback', () => {
 
   test('frame rate of the 2D playback at 8x over 1001 output rows', { tag: '@perf' }, async ({ page, problems }, info) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     await page.getByTestId('output-every-field').fill('1');
     await page.getByTestId('output-every-field').press('Enter');
@@ -233,7 +233,7 @@ test.describe('reduced motion', () => {
 
   test('playback does not start by itself and still steps', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     await page.waitForTimeout(800);
     await expect(page.getByTestId('playback')).toHaveAttribute('data-playing', 'false');
@@ -250,7 +250,7 @@ test.describe('3D cutaway', () => {
   // measured with the particle box scrolled to the top of the page area; the readout and the profile are in block E.
   test('renders, rotates with the arrow keys, zooms and resets, and keeps the particle box with its controls and key help inside one screen', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     await page.getByTestId('view-3d').click();
     const c = page.getByTestId('p3d-canvas');
@@ -309,7 +309,7 @@ test.describe('3D cutaway', () => {
 
   test('frame rate of the 3D playback at 8x', { tag: '@perf' }, async ({ page, problems }, info) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     await page.getByTestId('view-3d').click();
     const c = page.getByTestId('p3d-canvas');
@@ -332,7 +332,7 @@ test.describe('3D cutaway', () => {
         return (orig as (...a: unknown[]) => unknown).call(this, type, ...rest);
       } as typeof orig;
     });
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     await waitForRun(page);
     await page.getByTestId('view-3d').click();
     await expect(page.getByTestId('view-note')).toContainText('WebGL 2');
@@ -347,7 +347,7 @@ test.describe('AGR-1 reference particle', () => {
 
   test('shows the registered geometry with row ids, status and source, labelled as not a simulation', async ({ page, problems }) => {
     void problems;
-    await gotoSection(page, 'explore');
+    await gotoAdvanced(page);
     const ref = page.getByTestId('reference-particle');
     await expect(ref.getByTestId('reference-tag')).toHaveText('Registered geometry');
     await expect(ref).toContainText('not a simulation');
@@ -387,7 +387,7 @@ for (const vp of [
     test.use({ viewport: { width: vp.width, height: vp.height } });
     test('block B renders the coloured particle without sideways scroll', async ({ page, problems }) => {
       void problems;
-      await gotoSection(page, 'explore');
+      await gotoAdvanced(page);
       await waitForRun(page);
       await expect(page.getByTestId('xsec')).toHaveAttribute('data-mode', 'computed');
       expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);

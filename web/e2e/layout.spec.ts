@@ -1,4 +1,4 @@
-import { expect, gotoSection, horizontalOverflow, SECTIONS, test, VIEWPORTS } from './fixtures';
+import { expect, gotoAdvanced, gotoSection, horizontalOverflow, SECTIONS, test, VIEWPORTS } from './fixtures';
 
 for (const vp of VIEWPORTS) {
   test.describe(`layout at ${vp.width}x${vp.height}`, () => {
@@ -64,32 +64,24 @@ for (const vp of VIEWPORTS) {
       expect(await height('caption a.link-target')).toBeGreaterThanOrEqual(43.5);
     });
 
-    test('controls: inline in block D from 768 px, a bottom sheet below', async ({ page, problems }, info) => {
+    test('Explore holds no control column and no numerical control; the manual solver keeps its controls inline from 768 px', async ({ page, problems }, info) => {
       void problems;
       await gotoSection(page, 'explore');
-      const blockC = page.getByTestId('block-d');
-      // No control column beside the page at any width (owner decision M7).
+      // No control column beside the page at any width, and none of the numerical controls on Explore (decision 77(f)).
       await expect(page.locator('aside')).toHaveCount(0);
+      await expect(page.getByTestId('controls')).toHaveCount(0);
+      await expect(page.getByTestId('open-panel')).toHaveCount(0);
+      expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
+      await info.attach(`explore-${vp.width}`, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
+      await gotoAdvanced(page);
+      const controls = page.getByTestId('advanced-solver').getByTestId('controls');
       if (vp.width >= 768) {
-        await expect(blockC.getByTestId('controls')).toHaveAttribute('data-layout', 'inline');
-        await expect(page.getByTestId('open-panel')).toHaveCount(0);
-        await expect(page.getByTestId('parameter-sheet')).toHaveCount(0);
+        await expect(controls).toHaveAttribute('data-layout', 'inline');
         // The five layer groups sit side by side on desktop widths.
-        const tops = await blockC.locator('[data-testid^="layer-"]').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+        const tops = await page.getByTestId('advanced-solver').locator('[data-testid^="layer-"]').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
         expect(tops).toHaveLength(5);
         if (vp.width >= 1200) expect(new Set(tops).size).toBe(1);
-      } else {
-        await expect(blockC.getByTestId('controls')).toHaveCount(0);
-        await page.getByTestId('open-panel').click();
-        const sheet = page.getByTestId('parameter-sheet');
-        await expect(sheet).toBeVisible();
-        const box = await sheet.boundingBox();
-        if (!box) throw new Error('no sheet box');
-        expect(box.width).toBe(vp.width);
-        expect(Math.round(box.y + box.height)).toBe(vp.height);
-        expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
       }
-      await info.attach(`explore-${vp.width}`, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
     });
 
     test('navigation: tabs on wide screens, a menu on phones', async ({ page, problems }) => {

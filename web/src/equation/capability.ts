@@ -11,15 +11,16 @@ export type Mechanism = 'generation' | 'decay' | 'temperature';
 export const MECHANISMS: readonly Mechanism[] = ['generation', 'decay', 'temperature'];
 
 /** The physics selection of the Explore page: the baseline, one mechanism on its own, or all of them. */
-export type PhysicsId = 'baseline' | Mechanism | 'combined';
-export const PHYSICS_IDS: readonly PhysicsId[] = ['baseline', 'generation', 'decay', 'temperature', 'combined'];
+export type PhysicsId = 'baseline' | Mechanism | 'combined' | 'future';
+/** The six buttons of MODEL EQUATION, in order. 'future' (species-specific physics) shows the combined equation and is never a simulation. */
+export const PHYSICS_IDS: readonly PhysicsId[] = ['baseline', 'generation', 'decay', 'temperature', 'combined', 'future'];
 
 /** Operating scenarios (directive Section 3). Steady-state operation is the default. */
 export type ScenarioId = 'steady' | 'shutdown' | 'startup' | 'control-rod' | 'refuelling';
 export const SCENARIO_IDS: readonly ScenarioId[] = ['steady', 'shutdown', 'startup', 'control-rod', 'refuelling'];
 export const DEFAULT_PHYSICS: PhysicsId = 'baseline';
-/** No scenario is selected by default: the page then runs the physics selected with constant inputs (the baseline run is "Baseline diffusion", never a scenario). */
-export const DEFAULT_SCENARIO: ScenarioId | null = null;
+/** Steady-state operation is the operation selected by default; the Model Equation and Operation groups are independent. */
+export const DEFAULT_SCENARIO: ScenarioId | null = 'steady';
 
 export type BuildStatus = 'implemented' | 'verified' | 'planned';
 export const BUILD_STATUSES: readonly BuildStatus[] = ['implemented', 'verified', 'planned'];
@@ -91,7 +92,7 @@ export const isSimulable = (s: BuildStatus): boolean => s === 'verified';
 /** The mechanisms that a physics selection switches on. */
 export function mechanismsOf(physics: PhysicsId): Mechanism[] {
   if (physics === 'baseline') return [];
-  if (physics === 'combined') return [...MECHANISMS];
+  if (physics === 'combined' || physics === 'future') return [...MECHANISMS];
   return [physics];
 }
 
