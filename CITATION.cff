@@ -4,8 +4,8 @@ title: "STRATO: Spherical TRISO Analysis and Transport Operations"
 type: software
 authors:
   - alias: weewzr
-version: 2.0.0
-date-released: 2026-11-26
+version: 2.1.0
+date-released: 2026-11-27
 license: AGPL-3.0-only
 repository-code: "https://github.com/weewzr/STRATO"
 abstract: >-

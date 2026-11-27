@@ -270,7 +270,7 @@ test.describe('downloads', () => {
     const parsed = parseCsv(ts.text);
     // The header is the library's provenance header: solver, version, commit, input digest, parameter source and class.
     expect(parsed.meta.label).toBe('numerical solution of the stated model; not experimental validation');
-    expect(parsed.meta.solver_package_version).toBe('2.0.0');
+    expect(parsed.meta.solver_package_version).toBe('2.1.0');
     expect(parsed.meta.commit).toMatch(/^[0-9a-f]{7}/);
     expect(parsed.meta.input_file).toBe('synthetic_five_layer.toml');
     expect(parsed.meta.input_sha256).toMatch(/^[0-9a-f]{64}$/);
@@ -369,7 +369,7 @@ test.describe('verification panel', () => {
     await page.goto('./#/documentation/verify-files');
     for (const file of ['btcs_vs_analytical.json', 'btcs_independent_check.json', 'btcs_run.json']) {
       const row = page.getByTestId(`prov-${file}`);
-      await expect(row).toContainText('2.0.0');
+      await expect(row).toContainText('2.1.0');
       await expect(row.locator('code').first()).toBeVisible();
     }
     await expect(page.getByTestId('documentation-accuracy-floor')).toContainText('accuracy floor');

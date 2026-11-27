@@ -139,12 +139,19 @@ jobs:
         working-directory: .
         run: |
           cargo fmt --manifest-path crates/Cargo.toml --all --check
+          cargo fmt --manifest-path crates/strato-wasm/Cargo.toml --all --check
           cargo clippy --locked --manifest-path crates/Cargo.toml --all-targets -- -D warnings
+          cargo clippy --locked --manifest-path crates/strato-wasm/Cargo.toml --all-targets -- -D warnings
           cargo test --locked --manifest-path crates/Cargo.toml
       # The six register files of data/ against every consistency check of the Python audit scripts, in Rust (crates/strato-data/CHECKS.md).
       - name: Register data layer checks (data/ files)
         working-directory: .
         run: cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-data -- check --repo .
+      # The tables of the register document that are generated from the CSV files equal them; the
+      # hand-written text between them is not read (crates/strato-data, `register`).
+      - name: Generated tables of the register document equal the CSV files
+        working-directory: .
+        run: cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-data -- register --check --repo .
       - name: Render the derivation and register documents into the build
         working-directory: .
         run: cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-docsite -- build --repo . --out web/dist --commit "$GITHUB_SHA"

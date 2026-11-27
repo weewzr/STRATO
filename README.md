@@ -14,7 +14,7 @@ The five layers of a TRISO particle and their outer radii $R_1$ to $R_5$. The fi
 
 ## Status
 
-**Version 2.0.0.** The solver is the BTCS scheme of `docs/mathematics/btcs/` (Documents 0 to 4). Scope: constant temperature, constant diffusivity in each layer, initial inventory in the kernel, perfect interface contact, absorbing outer surface. Fission-product generation, radioactive decay and temperature-dependent diffusivity are derived in design documents but are not in the solver. See [Development status](#development-status).
+**Version 2.1.0.** The solver is the BTCS scheme of `docs/mathematics/btcs/`. The baseline scope (Documents 0 to 4) is constant temperature, constant diffusivity in each layer, initial inventory in the kernel, perfect interface contact and an absorbing outer surface. Version 2.1.0 adds fission-product generation, radioactive decay and temperature-dependent diffusivity to the solver (Document 5), a scenario engine for the five operating scenarios, the extensions of the Sturm-Liouville series for decay and a kernel source (Document 6), the data registers with the experimental release curves, the comparison program and the shared results of `data/results/`. The live simulation of the website still runs the baseline scope; it is wired to the new solver in the following change. See [Development status](#development-status).
 
 **What is verified.** The scheme as specified is proved conservative in exact arithmetic and positivity-preserving at every time step (Documents 1 and 2, reviewed independently). In floating point the code reports the balance residual together with an a-posteriori rounding bound, and the production tridiagonal solve is coded in the form for which the positivity proof holds. On the synthetic cases the observed order of the release fraction is 2 in space and about 1 in time. The release fraction is compared with the Sturm-Liouville series, with the closed series of the homogeneous sphere, and with a value computed by a separate-language reference (see [Verification](#verification)). These are numerical checks of the stated model. No result of this repository is validated against measurements.
 
@@ -163,20 +163,20 @@ This is **verification**: it shows that the code solves its equations correctly.
 | Version | Stage | Scope | Status |
 |---|---|---|---|
 | v1.0 | Phase 1 (developed June to October 2026) | Multilayer analytical and finite-volume diffusion model | Released (v1.0.0, v1.0.1); the finite-volume solver is retired and archived |
-| v2.0 | BTCS solver | Spherical BTCS finite-difference solver (Method A) beside the Sturm-Liouville series (Method B), with the web demonstration | Version 2.0.0 |
-| later | Physics and data | Radioactive decay, fission-product generation, Arrhenius diffusivity and temperature histories in the BTCS scheme; comparison with release measurements | Not in this release |
+| v2.0 | BTCS solver | Spherical BTCS finite-difference solver (Method A) beside the Sturm-Liouville series (Method B), with the web demonstration | Released (2.0.0) |
+| v2.1 | Physics and data | Radioactive decay, fission-product generation, Arrhenius diffusivity and temperature histories in the BTCS scheme; scenarios; Method B extensions; registers with experimental curves; comparison and shared results; WebAssembly interface of ABI 4 | Version 2.1.0 (the website's live simulation is wired in the following change) |
 | v3.0 | Future | Partition coefficients, matrix transport, inverse modelling, uncertainty quantification, particle populations | Planned |
 
-## Known limitations of v2.0.0
+## Known limitations of v2.1.0
 
-- The only bundled input is synthetic, so the public example is not an experimental validation case. Literature parameters are collected in [`data/`](data/reference/README.md), but the solver does not read them and no literature input file is bundled.
-- Temperature is constant, and each layer's diffusivity does not depend on temperature.
-- There is no radioactive decay and no fission-product generation. All inventory starts in the kernel.
+- The only bundled input of the command line is synthetic, so the public example is not an experimental validation case. Literature parameters are collected in [`data/`](data/reference/README.md) and read by the scenario engine and the results program; no registered dataset supports a whole-curve R² today, so every comparison with a measurement is a plot only.
+- In the baseline problem temperature is constant and each layer's diffusivity does not depend on temperature; the stages with temperature-dependent diffusivity evaluate it at the temperature in the middle of each step.
+- Generation and decay exist in the stages and scenarios, not in the baseline problem. All inventory starts in the kernel.
 - Interfaces are in perfect contact, with no partition coefficients.
 - The outer surface is a perfect sink.
 - The model covers a single intact particle. Matrix, failed particles and populations are not modelled.
 - Backward time stepping is only first order in time, so the time step controls accuracy at early times.
-- Method B (the series) is valid only for the baseline problem above and only from the time its validity rule reports.
+- Method B (the series) is valid for the baseline problem, for decay and a kernel source at a constant temperature through its extensions (only where their drawing mask accepts the value), and never when the temperature changes in time; it applies only from the time its validity rule reports.
 
 ## Repository layout
 
@@ -211,7 +211,7 @@ This is **verification**: it shows that the code solves its equations correctly.
 
 ## Citation
 
-If you use STRATO, please cite it with the metadata in [`CITATION.cff`](CITATION.cff) (version 2.0.0).
+If you use STRATO, please cite it with the metadata in [`CITATION.cff`](CITATION.cff) (version 2.1.0).
 
 ## Licence
 

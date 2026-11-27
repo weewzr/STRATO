@@ -1,6 +1,6 @@
 [package]
 name = "strato-wasm"
-version = "2.0.0"
+version = "2.1.0"
 edition = "2021"
 description = "Thin WebAssembly wrapper around the verified STRATO v2.0 library (BTCS solver and Sturm-Liouville series): JSON in, JSON out, no physics."
 license = "AGPL-3.0-only"

@@ -189,7 +189,7 @@ fn a_flag_at_the_margin_with_agreeing_estimates_passes() {
     );
     let t = compare_case("analytical_stage_5_constant", &n, &w);
     assert!(
-        t.failures.contains_key(".cover_relative_difference[]") == false,
+        !t.failures.contains_key(".cover_relative_difference[]"),
         "{:?}",
         t.failures
     );

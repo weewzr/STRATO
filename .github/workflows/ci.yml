@@ -24,8 +24,10 @@ jobs:
         with:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
-      - name: Format
-        run: cargo fmt --all --check
+      - name: Format (the package and the wrapper crate, which is a workspace of its own)
+        run: |
+          cargo fmt --all --check
+          cargo fmt --manifest-path crates/strato-wasm/Cargo.toml --all --check
       - name: Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
       - name: Unit, integration, analytical series and BTCS regression tests
@@ -58,6 +60,21 @@ jobs:
             main_run_stdout.txt
             toolchain.txt
             results/
+
+  results:
+    name: Shared results (every file of data/results is current)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: crates
+      # Regenerates every result in memory and fails, naming the files, if a committed file
+      # differs (the lines that record the commit are ignored). A stale file fails the build.
+      - name: strato-results run --check
+        run: cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-results -- run --check
 
   python-reference:
     name: Analytical series against the independent Python reference
