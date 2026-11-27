@@ -11,6 +11,7 @@ import { NO_SCENARIO_TEXT_FULL, SCENARIO_RULE_FULL, SCENARIOS } from '../src/equ
 import { NUMERICAL_ITEMS } from '../src/equation/numerics';
 import { STEP_DEFS } from '../src/equation/terms';
 import reference from '../src/generated/agr1_reference.json';
+import { hrefDocumentation } from '../src/route';
 import { Documentation } from '../src/sections/Documentation';
 import type { RunResponse } from '../src/solver/types';
 import { initialState, useStrato } from '../src/state/store';
@@ -48,6 +49,9 @@ describe('Scientific Documentation holds what left Explore', () => {
     // The sentence on what no result of the case is stays once, in the About entry of what is implemented; this entry links to it.
     expect(entry('explore-case')).not.toContain('prediction of real fission-product release');
     expect(entry('about-implemented')).toContain('no result from this case is a prediction of real fission-product release');
+    const link = document.querySelector<HTMLAnchorElement>('#doc-explore-case a[data-testid="explore-case-implemented-link"]');
+    expect(link?.getAttribute('href')).toBe(hrefDocumentation('about-implemented'));
+    expect(document.querySelector(`#doc-explore-case a[href="${hrefDocumentation('compare-limits')}"]`)).toBeNull();
     expect(entry('explore-scope')).toContain('Method A: BTCS implements the baseline spherical diffusion in the five layers');
     expect(entry('explore-results')).toContain('model output only; no experimental data are shown there');
     expect(entry('explore-results')).toContain('none is available in this build');

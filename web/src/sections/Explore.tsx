@@ -146,9 +146,11 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
               <p className="controls-summary__text" role="status">
                 {issues > 0
                   ? `${issues === 1 ? '1 input needs' : `${issues} inputs need`} attention.`
-                  : changed === 0
-                    ? 'Inputs equal the baseline.'
-                    : `${changed === 1 ? '1 input differs' : `${changed} inputs differ`} from the baseline.`}
+                  : !support.supported
+                    ? ''
+                    : changed === 0
+                      ? 'Inputs equal the baseline.'
+                      : `${changed === 1 ? '1 input differs' : `${changed} inputs differ`} from the baseline.`}
               </p>
               <button type="button" className="btn" onClick={onOpenControls} data-testid="open-panel">
                 Open controls

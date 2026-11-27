@@ -1,5 +1,5 @@
 import { BUILD } from '../build';
-import { useSelectionSupport } from '../equation/useCapability';
+import { useRunIsCurrent, useSelectionSupport } from '../equation/useCapability';
 import { hrefDocumentation } from '../route';
 import { useStrato } from '../state/store';
 import { Badge } from './Badge';
@@ -16,11 +16,12 @@ export function StatusLine({ compact = false }: { compact?: boolean }) {
   const info = useStrato((s) => s.runInfo);
   const status = useStrato((s) => s.status);
   const support = useSelectionSupport();
+  const current = useRunIsCurrent();
   const solverText =
     solver.state === 'ready'
       ? status === 'running'
         ? 'Solver: running'
-        : info && run
+        : info && run && current
           ? `Solver: ${info.elapsedMs.toFixed(1)} ms in this browser`
           : 'Solver: ready'
       : solver.state === 'failed'
@@ -31,7 +32,7 @@ export function StatusLine({ compact = false }: { compact?: boolean }) {
       <span className="status__item" data-testid="status-result">
         {!support.supported ? (
           'Result: none for the selection on Explore'
-        ) : run ? (
+        ) : run && current ? (
           <>
             Result <Badge label={run.label} />
           </>

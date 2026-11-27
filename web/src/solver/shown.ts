@@ -1,4 +1,5 @@
 import type { RunOk } from './types';
+import { useSelectionSupport } from '../equation/useCapability';
 import { inputKey, selectionKey, useStrato } from '../state/store';
 
 /**
@@ -14,7 +15,8 @@ export function useShownRun(): { run: RunOk | null; stale: boolean } {
   const config = useStrato((s) => s.config);
   const status = useStrato((s) => s.status);
   const key = useStrato((s) => selectionKey(s.selection));
-  if (run === null) return { run: null, stale: false };
+  const { supported } = useSelectionSupport();
+  if (run === null || !supported) return { run: null, stale: false };
   if (info?.selectionKey !== undefined && info.selectionKey !== key) return { run: null, stale: false };
   return { run, stale: status === 'running' || info?.inputKey !== inputKey(config) };
 }

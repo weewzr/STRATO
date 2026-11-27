@@ -176,7 +176,8 @@ export function paramsFor(scenario: ScenarioId, active: readonly Mechanism[]): S
 
 /** What the page announces when the scenario changes (the live-region sentence). */
 export function scenarioChange(scenario: ScenarioId, physicsChanged: boolean): string {  const tail = physicsChanged ? ' The combined model is selected, because this scenario requires it.' : '';
-  return `${SCENARIO_LABEL[scenario]} selected. ${SCENARIO_KIND}${tail}`;
+  // The sentence on what every scenario is stays once, beside the scenario name (SCENARIO_KIND); it is not repeated here.
+  return `${SCENARIO_LABEL[scenario]} selected.${tail}`;
 }
 
 /** What the page announces when choosing a physics cleared the scenario. */

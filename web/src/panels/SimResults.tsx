@@ -1,4 +1,5 @@
 import { BTCS_CAPABILITY } from '../equation/availability';
+import { useRunIsCurrent } from '../equation/useCapability';
 import { layerColour } from '../design/layers';
 import { count, sciText } from '../format';
 import { METHOD_1, METHOD_2 } from '../methods';
@@ -53,6 +54,7 @@ export function SolverStatus() {
   const build = useStrato((s) => s.solver.build);
   const state = useStrato((s) => s.solver.state);
   const run = useStrato((s) => s.run);
+  const current = useRunIsCurrent();
   const catalogue = useCatalogue();
   const testId = 'solver-status-line';
   const cls = 'solver-status solver-status--compact';
@@ -74,8 +76,14 @@ export function SolverStatus() {
   const status = statusOf(catalogue, BTCS_CAPABILITY);
   const chip = status ? <StatusChip status={status} mechanism={BTCS_CAPABILITY} compact /> : 'unknown';
   return (
-    <p className={cls} data-testid={testId} data-state="ready">
-      <strong>{METHOD_1}</strong> v<span data-testid="solver-version-line">{solver.version}</span> {run ? <Badge label={solver.label} /> : null} {chip}
+    <p className={cls} data-testid={testId} data-state="ready" data-current={current ? 'true' : 'false'}>
+      <strong>{METHOD_1}</strong> v<span data-testid="solver-version-line">{solver.version}</span>
+      {current ? (
+        <>
+          {' '}
+          <Badge label={solver.label} /> {chip}
+        </>
+      ) : null}
     </p>
   );
 }
