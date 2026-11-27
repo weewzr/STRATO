@@ -304,6 +304,10 @@
 .xselect--wide select {
   max-width: 100%;
 }
+.xarea--graphs {
+  /* The sticky status line must not cover the x-axis title of the graph when the area is scrolled to the bottom of the window. */
+  padding-bottom: calc(var(--status-height) + var(--space-4));
+}
 .gpanel {
   min-width: 0;
 }

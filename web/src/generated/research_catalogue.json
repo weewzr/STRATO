@@ -16,7 +16,7 @@
     },
     {
       "path": "data/research/mechanisms.csv",
-      "sha256": "5e2d997a67ecb1ca97b0e95978982aa70613a8f4c87b85d6919e31ee3aec881f"
+      "sha256": "6d0a3888774fbcf5a39a28d43449805f00c3ddb8baaae6569e4291c7c1280a83"
     },
     {
       "path": "data/research/references.csv",
@@ -847,7 +847,7 @@
       },
       {
         "mechanism_id": "additional_species_downstream_transport",
-        "name": "Downstream transport in FLiBe coolant and cover gas (planned for a future phase)",
+        "name": "Downstream transport in FLiBe coolant and cover gas (future phase)",
         "regime": [
           "A",
           "C"

@@ -447,9 +447,9 @@ describe('roadmap and future phases', () => {
     renderPage('roadmap');
     const roadmap = screen.getByTestId('roadmap-page');
     // The narrative blocks, the status gates and the summary left the page (decision 71); the page keeps the bricks, one link
-    // to them, and brick 9 names the downstream transport as planned for a future phase.
-    expect(roadmap.textContent).toMatch(/FLiBe coolant and cover gas/);
-    expect(roadmap.textContent).toMatch(/planned for a future phase/);
+    // to them, and brick 9 names the downstream transport as a future phase (the row title reads "(future phase)").
+    expect(roadmap.textContent).toMatch(/FLiBe coolant and cover gas \(future phase\)/);
+    expect(roadmap.textContent).not.toMatch(/planned for a future phase\)/);
     expect(roadmap.textContent).not.toMatch(/Delivered by/);
     expect(roadmap.textContent).not.toMatch(/Status gates \(all bricks\)/);
     expect(within(roadmap).getByTestId('roadmap-bricks').querySelectorAll('[data-brick]')).toHaveLength(9);

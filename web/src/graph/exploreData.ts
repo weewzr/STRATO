@@ -253,17 +253,37 @@ export function datasetsOf(species: Species | null, files: readonly ComparisonRe
   return files.filter((f) => nuclideKey(f.nuclide) === nuclideKey(species.name));
 }
 
-/** The temperature in degC that a dataset's label states as one number, or null for a heating history that steps between temperatures. */
+/**
+ * The temperature in degC at which a dataset's test was held: the single number of the file's own temperature label
+ * (an isothermal hold). Null for a heating history that steps between temperatures: the files give its points with no
+ * temperature of their own, so such a dataset belongs to no single temperature of the selector and is never guessed at one.
+ */
 export const datasetTemperatureC = (f: ComparisonRecord): number | null => {
   const m = /^\s*(\d+(?:\.\d+)?)\s*\S?C\s*$/.exec(f.caption.temperature_label.replace(/[^\x20-\x7e]/g, ''));
   return m ? Number(m[1]) : null;
 };
 
-/** The datasets that belong to the selected temperature: those held at it, and those whose heating history steps through temperatures (their label says so). */
+/** The datasets held at exactly the selected temperature. A stepped history, or no selected temperature, gives none. */
 export function datasetsAt(list: readonly ComparisonRecord[], temperatureC: number | null): ComparisonRecord[] {
-  return list.filter((f) => {
-    const t = datasetTemperatureC(f);
-    return t === null || temperatureC === null || t === temperatureC;
+  if (temperatureC === null) return [];
+  return list.filter((f) => datasetTemperatureC(f) === temperatureC);
+}
+
+export interface DatasetAppearance {
+  curve_id: string;
+  nuclide: string;
+  /** The temperature of the file's own label, or null for a stepped heating history. */
+  held_at_c: number | null;
+  /** The temperatures of the selector at which the dataset is offered, for its species. */
+  appears_at_c: number[];
+}
+
+/** Every dataset with the temperatures of the selector at which it is offered (the mapping of the page, read from the files). */
+export function datasetAppearances(files: readonly ComparisonRecord[] = COMPARISONS, params: ParametersFile = PARAMETERS): DatasetAppearance[] {
+  return files.map((f) => {
+    const element = f.nuclide.split('-')[0] ?? f.nuclide;
+    const appears = offeredTemperatures(element, params).filter((t) => datasetsAt([f], t).length > 0);
+    return { curve_id: f.curve_id, nuclide: f.nuclide, held_at_c: datasetTemperatureC(f), appears_at_c: appears };
   });
 }
 

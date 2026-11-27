@@ -8,6 +8,7 @@ import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { allItemIds } from '../src/documentation';
 import { BuildContentsTable } from '../src/documentation/about';
+import { equationTex } from '../src/equation/physics';
 import { Basis } from '../src/sections/Basis';
 import { Documentation } from '../src/sections/Documentation';
 
@@ -69,7 +70,10 @@ describe('Basis page', () => {
     expect(within(page).getByTestId('basis-particle').querySelector('svg')).toBeTruthy();
     const layers = within(screen.getByTestId('basis-layers')).getAllByRole('row').slice(1);
     expect(layers.map((r) => r.querySelector('th')?.textContent?.trim())).toEqual(['kernel', 'buffer', 'IPyC', 'SiC', 'OPyC']);
-    expect(page.querySelector('[role="math"]')).toBeTruthy();
+    // The baseline equation is typeset by the site's KaTeX component, from the same TeX as the governing equation of Explore.
+    const eq = screen.getByTestId('basis-equation');
+    expect(eq.querySelector('.katex-display .katex')).toBeTruthy();
+    expect(eq.querySelector('annotation')?.textContent).toBe(equationTex('baseline'));
     expect(within(screen.getByTestId('basis-assumptions')).getAllByRole('row').length).toBeGreaterThan(3);
     expect(screen.getByTestId('basis-method-a').textContent).toContain('Method A: BTCS');
     expect(screen.getByTestId('basis-method-b').textContent).toContain('Method B: Sturm');

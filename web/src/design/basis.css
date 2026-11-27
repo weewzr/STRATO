@@ -60,3 +60,13 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* The baseline equation, typeset by KaTeX as on Explore; a narrow screen scrolls it inside its own box. */
+.basis__eq {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.basis__eq .tex--display {
+  margin: var(--space-2) 0;
+  text-align: left;
+}

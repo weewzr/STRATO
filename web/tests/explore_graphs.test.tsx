@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { PHYSICS_IDS, SCENARIO_IDS } from '../src/equation/capability';
 import { GRAPH_IDS } from '../src/equation/selectionIds';
 import { ExploreGraphs, type GraphChoices } from '../src/graph/ExploreGraphs';
-import { COMPARISONS, datasetsOf, offeredTemperatures, stageRequest, type Species } from '../src/graph/exploreData';
+import { COMPARISONS, datasetsAt, datasetsOf, offeredTemperatures, stageRequest, type Species } from '../src/graph/exploreData';
 import { experimentFigure, isBound, methodsFigure, profileFigure, releaseFigure } from '../src/graph/exploreFigures';
 import { COLOURS } from '../src/graph/plotModel';
 import { readPlotTheme } from '../src/plots/theme';
@@ -219,6 +219,74 @@ describe('the panel of the graphs', () => {
     expect(screen.getByTestId('experiment-model-note').textContent).toMatch(/temperature-dependent diffusion/);
   });
 
+  it('offers and draws an experimental dataset only for its species, at its test temperature, beside a drawn model curve; otherwise the clean empty panel', () => {
+    const AG: Species = { id: 'ag110m', name: 'Ag-110m', element: 'Ag' };
+    const text = (el: Element) => el.textContent ?? '';
+    const forAg = (temperature: number, extra: Partial<GraphChoices> = {}) => {
+      const request = stageRequest('baseline', AG, temperature);
+      return choices({
+        species: [AG],
+        current: AG,
+        temperatures: offeredTemperatures('Ag'),
+        temperature,
+        datasets: datasetsOf(AG),
+        dataset: datasetsOf(AG)[0] ?? null,
+        request,
+        result: request ? { key: request.key, reply: stage, analytical } : null,
+        ...extra,
+      });
+    };
+    const select = (physics: 'baseline' | 'generation' | 'combined' | 'decay') => useStrato.setState({ selection: { ...useStrato.getState().selection, graph: 'experiment', scenario: 'steady', physics, dataset: '' } });
+    // 1600 degC: the datasets held at 1600, never the stepped 1000 to 1600 history.
+    select('baseline');
+    const { unmount } = render(<ExploreGraphs choices={forAg(1600)} />);
+    const ids = Array.from((screen.getByTestId('dataset-select') as HTMLSelectElement).options).map((o) => o.value);
+    expect(ids).toEqual(['IAEA97-K31-AG110M', 'STEMPIEN23-433-AG110M', 'STEMPIEN23-643-AG110M']);
+    expect(text(screen.getByTestId('dataset-select'))).not.toMatch(/stepped/);
+    unmount();
+    // 1700 degC: nothing is held there, so no selector, no label, no caption, no citation, no markers.
+    for (const physics of ['baseline', 'decay'] as const) {
+      select(physics);
+      const view = render(<ExploreGraphs choices={forAg(1700)} />);
+      expect(screen.queryByTestId('dataset-select')).toBeNull();
+      expect(screen.queryByText('Dataset')).toBeNull();
+      expect(screen.queryByTestId('experiment-citation')).toBeNull();
+      expect(screen.getByTestId('graph-panel').dataset.empty).toBe('true');
+      expect(text(screen.getByTestId('graph-panel'))).toBe('');
+      view.unmount();
+    }
+    // A model equation that draws no model curve (a source) leaves the experimental view empty as well, even at 1800 degC where a dataset exists.
+    for (const physics of ['generation', 'combined'] as const) {
+      select(physics);
+      const view = render(<ExploreGraphs choices={forAg(1800)} />);
+      expect(screen.queryByTestId('dataset-select')).toBeNull();
+      expect(screen.queryByText('Dataset')).toBeNull();
+      expect(screen.queryByTestId('experiment-citation')).toBeNull();
+      expect(screen.getByTestId('graph-panel').dataset.empty).toBe('true');
+      view.unmount();
+    }
+    // Every operation other than steady-state operation: no selector either.
+    useStrato.setState({ selection: { ...useStrato.getState().selection, graph: 'experiment', scenario: 'startup', physics: 'baseline' } });
+    render(<ExploreGraphs choices={forAg(1600)} />);
+    expect(screen.queryByTestId('dataset-select')).toBeNull();
+    expect(screen.queryByText('Dataset')).toBeNull();
+  });
+
+  it('draws the radioactive decay curve for a species with a registered decay constant and leaves the panel empty for one without', () => {
+    const AG: Species = { id: 'ag110m', name: 'Ag-110m', element: 'Ag' };
+    useStrato.setState({ selection: { ...useStrato.getState().selection, graph: 'release', scenario: 'steady', physics: 'decay' } });
+    const withConstant = stageRequest('decay', SR, 1600);
+    expect(withConstant).not.toBeNull();
+    const { unmount } = render(<ExploreGraphs choices={choices({ request: withConstant, result: withConstant ? { key: withConstant.key, reply: stage, analytical } : null })} />);
+    expect(screen.getByTestId('graph-panel').dataset.empty).toBe('false');
+    unmount();
+    const without = stageRequest('decay', AG, 1600);
+    expect(without).toBeNull();
+    render(<ExploreGraphs choices={choices({ species: [AG], current: AG, temperatures: offeredTemperatures('Ag'), temperature: 1600, request: null, result: null })} />);
+    expect(screen.getByTestId('graph-panel').dataset.empty).toBe('true');
+    expect(screen.getByTestId('graph-panel').textContent).toBe('');
+  });
+
   it('has four compact toggles, one species select, one temperature select in 100 degC steps shown in degC, and a dataset select for the experiment', async () => {
     const user = userEvent.setup();
     render(<ExploreGraphs choices={choices()} />);
@@ -237,7 +305,7 @@ describe('the panel of the graphs', () => {
     expect(screen.queryByTestId('dataset-select')).toBeNull();
     await user.click(screen.getByTestId('graph-experiment'));
     expect(useStrato.getState().selection.graph).toBe('experiment');
-    expect((screen.getByTestId('dataset-select') as HTMLSelectElement).options.length).toBe(datasetsOf(SR).length);
+    expect((screen.getByTestId('dataset-select') as HTMLSelectElement).options.length).toBe(datasetsAt(datasetsOf(SR), 1600).length);
     await user.selectOptions(temp, '1700');
     expect(useStrato.getState().selection.temperature).toBe(1700);
     await user.selectOptions(species, 'cs137');

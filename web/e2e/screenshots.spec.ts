@@ -25,8 +25,8 @@ for (const vp of [
         await expect(page.getByTestId('explore-plot-release-graph')).toBeVisible({ timeout: 30_000 });
         await page.evaluate(() => document.fonts.ready);
         await page.screenshot({ path: join(dir, `explore-fold-${vp.width}-${scheme}.png`), fullPage: false });
-        // An interaction: the combined model, the numerical sections open, the experimental comparison.
-        await page.goto('./#/explore?physics=combined&open=method-a,discretisation,pseudocode&graph=experiment');
+        // An interaction: temperature-dependent diffusion (which draws the model curve of a dataset), the numerical sections open, the experimental comparison.
+        await page.goto('./#/explore?physics=temperature&open=method-a,discretisation,pseudocode&graph=experiment');
         await expect(page.getByTestId('explore-plot-experiment-graph')).toBeVisible({ timeout: 30_000 });
         await page.evaluate(() => document.fonts.ready);
         await page.screenshot({ path: join(dir, `explore-interaction-${vp.width}-${scheme}.png`), fullPage: true });

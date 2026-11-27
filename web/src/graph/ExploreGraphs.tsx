@@ -40,14 +40,15 @@ export function useGraphChoices(): GraphChoices {
   const current = species.find((s) => s.id === sel.species) ?? species[0] ?? null;
   const temperatures = useMemo(() => (current ? offeredTemperatures(current.element) : []), [current]);
   const temperature = sel.temperature !== null && temperatures.includes(sel.temperature) ? sel.temperature : (temperatures[0] ?? null);
-  // The datasets of the species that belong to the selected temperature (the model curve of a file is computed at its own temperature).
-  const datasets = useMemo(() => datasetsAt(datasetsOf(current), temperature), [current, temperature]);
-  const dataset = datasets.find((d) => d.curve_id === sel.dataset) ?? datasets[0] ?? null;
   // Only steady-state operation has curves; the other operations and future physics have none (their request is null).
   const request = useMemo(
     () => (sel.scenario === 'steady' && current !== null && temperature !== null ? stageRequest(sel.physics, current, temperature) : null),
     [sel.scenario, sel.physics, current, temperature],
   );
+  // A dataset is offered only where the selection draws a model curve to set it beside (a request exists), for its own species
+  // and at exactly the temperature its test was held at.
+  const datasets = useMemo(() => (request !== null ? datasetsAt(datasetsOf(current), temperature) : []), [request, current, temperature]);
+  const dataset = datasets.find((d) => d.curve_id === sel.dataset) ?? datasets[0] ?? null;
   const result = useStageResult(request);
   return { species, current, temperatures, temperature, datasets, dataset, request, result };
 }
@@ -99,12 +100,19 @@ export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
   const setSelection = useStrato((s) => s.setSelection);
   const theme = usePlotTheme();
   const ids = { species: useId(), temperature: useId(), dataset: useId(), title: useId() };
-  const { species, current, temperatures, temperature, datasets, dataset } = choices;
+  const { species, current, temperatures, temperature } = choices;
   // Only steady-state operation has curves, and never Future species-specific physics. A result is drawn only
   // for the request of the selection shown: a result held for another selection is never drawn.
   const drawable = scenario === 'steady' && physics !== 'future';
   const expected = useMemo(() => (drawable && current !== null && temperature !== null ? stageRequest(physics, current, temperature) : null), [drawable, physics, current, temperature]);
   const result = expected !== null && choices.result?.key === expected.key ? choices.result : null;
+  // The same rule as in the choices, applied again here so that no dataset is offered or drawn for another selection:
+  // its species, exactly its test temperature, and a selection that draws a model curve.
+  const datasets = useMemo(
+    () => (expected !== null ? datasetsAt(datasetsOf(current, choices.datasets), temperature) : []),
+    [expected, current, temperature, choices.datasets],
+  );
+  const dataset = datasets.find((d) => d.curve_id === choices.dataset?.curve_id) ?? datasets[0] ?? null;
 
   // The model curves of a comparison file are temperature-dependent diffusion over the registered heating history.
   const withModelCurve = physics === 'temperature';
@@ -153,7 +161,7 @@ export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
             ))}
           </select>
         </label>
-        {graph === 'experiment' ? (
+        {graph === 'experiment' && datasets.length > 0 ? (
           <label className="xselect xselect--wide" htmlFor={ids.dataset}>
             <span className="xselect__label">Dataset</span>
             <select id={ids.dataset} value={dataset?.curve_id ?? ''} disabled={datasets.length === 0} onChange={(e) => setSelection({ dataset: e.target.value })} data-testid="dataset-select">

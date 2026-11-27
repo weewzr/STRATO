@@ -1,6 +1,8 @@
 import '../design/basis.css';
 import { DEFAULT_CASE, findCase } from '../data/case';
 import { layerColour } from '../design/layers';
+import { equationTex } from '../equation/physics';
+import { Tex } from '../equation/Tex';
 import { sciText } from '../format';
 import reference from '../generated/agr1_reference.json';
 import { METHOD_1, METHOD_2 } from '../methods';
@@ -169,16 +171,9 @@ export function Basis() {
 
       <section className="basis__block" aria-labelledby="basis-eq-title">
         <h2 id="basis-eq-title">Fission-product diffusion</h2>
-        <p
-          className="eq-plain"
-          role="math"
-          aria-label="partial c over partial t equals one over r squared times partial over partial r of r squared D i partial c over partial r"
-        >
-          ∂<i>c</i>/∂<i>t</i> = (1/<i>r</i>
-          <sup>2</sup>) ∂/∂<i>r</i> (<i>r</i>
-          <sup>2</sup> <i>D</i>
-          <sub>i</sub> ∂<i>c</i>/∂<i>r</i>)
-        </p>
+        <div className="basis__eq" data-testid="basis-equation" role="group" aria-label="Baseline governing equation">
+          <Tex latex={equationTex('baseline')} display />
+        </div>
         <p className="basis__note">
           Concentration <i>c</i> at radius <i>r</i> and time <i>t</i>, with a constant diffusivity <i>D</i>
           <sub>i</sub> in each layer <i>i</i>.

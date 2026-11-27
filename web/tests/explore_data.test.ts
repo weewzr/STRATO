@@ -8,6 +8,7 @@ import { PHYSICS_IDS } from '../src/equation/capability';
 import { arrheniusLaws, gasConstant } from '../src/graph/arrhenius';
 import {
   COMPARISONS,
+  datasetAppearances,
   datasetLabel,
   datasetsAt,
   hasSource,
@@ -173,6 +174,21 @@ describe('the request of run_stage', () => {
     expect(stageRequest('temperature', AG, 1600)).not.toBeNull();
   });
 
+  it('draws the decay selection for a species with a registered decay constant and gives no request for one without', () => {
+    const registered = (PARAMETERS.generation[0]?.nuclides ?? []).map((n) => n.nuclide).sort();
+    expect(registered).toEqual(['Cs-137', 'Sr-90']);
+    for (const sp of [SR, CS]) {
+      for (const t of offeredTemperatures(sp.element)) {
+        const req = stageRequest('decay', sp, t);
+        expect(req, `${sp.name} ${String(t)}`).not.toBeNull();
+        expect(req?.stage).toBe(3);
+        expect((req?.body.physics as { decay: { decay_constant_per_s: number } }).decay.decay_constant_per_s).toBeGreaterThan(0);
+      }
+    }
+    const CS134: Species = { id: 'cs134', name: 'Cs-134', element: 'Cs' };
+    for (const sp of [AG, CS134]) for (const t of offeredTemperatures(sp.element)) expect(stageRequest('decay', sp, t), `${sp.name} ${String(t)}`).toBeNull();
+  });
+
   it('has a key that changes with the selection, so that a reply for another selection can be told apart', () => {
     const keys = new Set([stageRequest('baseline', SR, 1600)?.key, stageRequest('baseline', SR, 1700)?.key, stageRequest('baseline', CS, 1600)?.key, stageRequest('decay', SR, 1600)?.key]);
     expect(keys.size).toBe(4);
@@ -191,17 +207,46 @@ describe('the experimental datasets', () => {
     }
   });
 
-  it('are narrowed to the selected temperature, keeping a heating history that steps between temperatures', () => {
+  it('are narrowed to exactly the selected temperature; a stepped heating history belongs to none', () => {
     const all = COMPARISONS.filter((f) => f.nuclide === 'Cs-137');
     for (const t of [1600, 1800]) {
+      expect(datasetsAt(all, t).length).toBeGreaterThan(0);
       for (const f of datasetsAt(all, t)) expect(datasetTemperatureC(f)).toBe(t);
     }
     expect(datasetsAt(all, 1700)).toEqual([]);
     const ag = COMPARISONS.filter((f) => f.nuclide === 'Ag-110m');
     const stepped = ag.filter((f) => datasetTemperatureC(f) === null);
-    expect(stepped.length).toBeGreaterThan(0);
-    for (const t of [1600, 1800]) for (const s of stepped) expect(datasetsAt(ag, t)).toContain(s);
-    expect(datasetsAt(all, null)).toEqual(all);
+    expect(stepped.map((f) => f.curve_id)).toEqual(['HUNN14-422-AG110M']);
+    for (const t of [1000, 1600, 1700, 1800, null]) for (const s of stepped) expect(datasetsAt(ag, t)).not.toContain(s);
+    expect(datasetsAt(all, null)).toEqual([]);
+  });
+
+  it('lists every dataset with the species and the temperatures of the selector at which it appears', () => {
+    const table = datasetAppearances().map((a) => [a.curve_id, a.nuclide, a.appears_at_c]);
+    expect(table).toEqual([
+      ['DEM15-433-CS134', 'Cs-134', [1600]],
+      ['DEM15-433-SR90', 'Sr-90', [1600]],
+      ['HUNN14-422-AG110M', 'Ag-110m', []],
+      ['HUNN14-442-AG110M', 'Ag-110m', [1800]],
+      ['HUNN14-442-SR90', 'Sr-90', [1800]],
+      ['HUNN16-442-CS134', 'Cs-134', [1800]],
+      ['HUNN16-442-CS137', 'Cs-137', [1800]],
+      ['IAEA97-JAERI-A-CS137-1600', 'Cs-137', [1600]],
+      ['IAEA97-JAERI-A-CS137-1800', 'Cs-137', [1800]],
+      ['IAEA97-K31-AG110M', 'Ag-110m', [1600]],
+      ['IAEA97-K31-CS137', 'Cs-137', [1600]],
+      ['IAEA97-K31-SR90', 'Sr-90', [1600]],
+      ['STEMPIEN23-433-AG110M', 'Ag-110m', [1600]],
+      ['STEMPIEN23-643-AG110M', 'Ag-110m', [1600]],
+      ['STEMPIEN23-643-SR90', 'Sr-90', [1600]],
+    ]);
+  });
+
+  it('draws the stepped compact 4-2-2 dataset at no temperature it does not belong to, and no species at 1700 degC has any dataset', () => {
+    const stepped = COMPARISONS.find((f) => f.curve_id === 'HUNN14-422-AG110M');
+    expect(stepped?.caption.temperature_label).toMatch(/^stepped 1000 to 1600/);
+    for (const t of offeredTemperatures('Ag')) expect(datasetsAt(datasetsOf(AG), t).map((f) => f.curve_id)).not.toContain('HUNN14-422-AG110M');
+    for (const sp of [AG, SR, CS, { id: 'cs134', name: 'Cs-134', element: 'Cs' }]) expect(datasetsAt(datasetsOf(sp), 1700)).toEqual([]);
   });
 
   it('are listed for the species they belong to, and for none other', () => {
