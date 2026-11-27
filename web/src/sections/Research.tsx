@@ -311,7 +311,7 @@ function RoadmapPage({ cat }: { cat: Catalogue }) {
                 const rows = rowsOfBrick(cat, b);
                 const s = summary.get(b);
                 return (
-                  <tr key={b} className="brick" data-brick={b}>
+                  <tr key={b} data-brick={b}>
                     <th scope="row" className="num-col">
                       {b}
                     </th>
