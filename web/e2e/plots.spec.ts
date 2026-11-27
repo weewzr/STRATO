@@ -343,9 +343,9 @@ test.describe('verification panel', () => {
       await expect(page.getByTestId(id).locator('figcaption')).toContainText('Figure');
       await expect(page.getByTestId(id).getByRole('link', { name: 'Data file' })).toHaveAttribute('href', /\/data\/btcs_[a-z_]+\.json$/);
     }
-    // The provenance of the precomputed files moved to Scientific Documentation (commit, solver version, command).
+    // The verification evidence stands in Scientific Documentation, where this panel now lives, with the provenance of the precomputed files (commit, solver version, command).
     for (const file of ['btcs_vs_analytical.json', 'btcs_independent_check.json', 'btcs_run.json']) {
-      await expect(page.getByTestId(`prov-${file}`)).toHaveCount(0);
+      await expect(page.getByTestId(`prov-${file}`)).toHaveCount(1);
     }
     await drawn(page, 'verify-check-plot');
     await drawn(page, 'verify-balance-plot');

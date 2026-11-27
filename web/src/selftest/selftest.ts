@@ -160,9 +160,19 @@ export async function runSelftest(): Promise<void> {
   //     is compared with that row.
   const exploreChips = document.querySelectorAll('[data-section="explore"] [data-status-for], [data-section="explore"] [data-status]').length;
   add('explore_no_status', exploreChips === 0, `${exploreChips} status chips on Explore`);
+  // The research status records live in Scientific Documentation only (decision 77(b), brief Section 9): no
+  //  chip on Basis or the Research Catalogue, and the chips of the documentation's status table equal the catalogue.
+  window.location.hash = '#/basis';
+  await waitFor(() => document.querySelector('[data-section="basis"] h1') !== null);
+  const basisChips = document.querySelectorAll('[data-section="basis"] [data-status-for], [data-section="basis"] [data-status]').length;
+  add('basis_no_status', basisChips === 0, `${basisChips} status chips on Basis`);
   window.location.hash = hrefResearch('');
-  await waitFor(() => document.querySelector('[data-section="research"] [data-status-for]') !== null);
-  const chips = Array.from(document.querySelectorAll<HTMLElement>('[data-status-for]'));
+  await waitFor(() => document.querySelector('[data-section="research"] h1') !== null);
+  const researchChips = document.querySelectorAll('[data-section="research"] [data-status-for], [data-section="research"] [data-status]').length;
+  add('research_no_status', researchChips === 0, `${researchChips} status chips on the Research Catalogue`);
+  window.location.hash = '#/documentation/statuses-research';
+  await waitFor(() => document.querySelector('[data-section="documentation"] [data-status-for]') !== null);
+  const chips = Array.from(document.querySelectorAll<HTMLElement>('[data-section="documentation"] [data-status-for]'));
   const wrong = chips.filter((c) => {
     const row = c.dataset.statusRow ? CATALOGUE.mechanisms.find((m) => `${m.mechanism_id}|${m.species}|${m.material_domain}` === c.dataset.statusRow) : undefined;
     return c.dataset.status !== (c.dataset.statusRow ? row?.status : statusOf(CATALOGUE, c.dataset.statusFor ?? ''));
@@ -206,10 +216,9 @@ export async function runSelftest(): Promise<void> {
       pageProblems.push(`${p || 'overview'}: no heading`);
       continue;
     }
-    for (const c of Array.from(document.querySelectorAll<HTMLElement>('[data-section="research"] [data-status-row]'))) {
+    for (const c of Array.from(document.querySelectorAll<HTMLElement>('[data-section="research"] [data-status-row], [data-section="research"] [data-status-for]'))) {
       pageChips += 1;
-      const row = CATALOGUE.mechanisms.find((m) => `${m.mechanism_id}|${m.species}|${m.material_domain}` === c.dataset.statusRow);
-      if (!row || row.status !== c.dataset.status) pageProblems.push(`${p}: ${c.dataset.statusRow ?? ''}`);
+      pageProblems.push(`${p || 'overview'}: status chip ${c.dataset.statusRow ?? c.dataset.statusFor ?? ''}`);
     }
     for (const s of Array.from(document.querySelectorAll<HTMLElement>('[data-section="research"] [role="switch"]'))) {
       if (s.getAttribute('aria-disabled') !== 'true') pageProblems.push(`${p}: active switch ${s.dataset.testid ?? ''}`);
@@ -218,8 +227,8 @@ export async function runSelftest(): Promise<void> {
   }
   add(
     'research_pages',
-    pageProblems.length === 0 && pageChips > 0,
-    pageProblems.length === 0 ? `${pages.length} pages, ${pageChips} row chips equal the catalogue, no active switch` : pageProblems.join('; '),
+    pageProblems.length === 0 && pageChips === 0,
+    pageProblems.length === 0 ? `${pages.length} pages, no status chip, no active switch` : pageProblems.join('; '),
   );
   window.location.hash = startHash || '#/explore';
   await nextFrame();

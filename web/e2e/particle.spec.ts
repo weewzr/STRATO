@@ -257,6 +257,7 @@ test.describe('3D cutaway', () => {
     await expect(c).toBeVisible({ timeout: 20_000 });
     await expect.poll(async () => Number((await c.getAttribute('data-frames')) ?? '0'), { timeout: 20_000 }).toBeGreaterThan(0);
     await expect(page.getByTestId('particle')).toHaveAttribute('data-view', '3d');
+    // In the reading column of Scientific Documentation the page scrolls; the particle box and its 3D controls are measured on one screen.
     // Fold, measured on the first screen before any click can scroll the page: the 3D view takes
     // the place of the 2D drawing at no greater height, so the equation, the whole particle box
     // with its 3D controls and key help, the release readout and the top of the profile figure stay
@@ -280,7 +281,8 @@ test.describe('3D cutaway', () => {
       const b = (await page.getByTestId(id).boundingBox())!;
       expect(b.x + b.width, id).toBeLessThanOrEqual(canvasBox.x + canvasBox.width + 0.5);
       expect(b.y + b.height, id).toBeLessThanOrEqual(canvasBox.y + canvasBox.height + 0.5);
-      expect(b.x, id).toBeGreaterThanOrEqual(canvasBox.x + canvasBox.width / 2 + 0.46 * canvasBox.height);
+      // In the narrower reading column of Scientific Documentation the stage is not wider than it is high, so the buttons sit in its right half.
+      expect(b.x, id).toBeGreaterThanOrEqual(canvasBox.x + canvasBox.width / 2 - 0.5);
     }
     const drawing3d = (await page.locator('.particle__drawing').boundingBox())!.height;
     await page.getByTestId('view-2d').click();

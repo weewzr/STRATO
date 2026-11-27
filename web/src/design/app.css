@@ -2212,6 +2212,7 @@ select.field__input {
 /* ---------- Research status chips (word plus shape; distinct from the result labels) ---------- */
 
 .status-chip {
+  position: relative; /* contains its visually hidden label, so a table's scroll area clips it */
   display: inline-flex;
   align-items: center;
   gap: 5px;

@@ -80,10 +80,9 @@ for (const vp of VIEWPORTS) {
       const controls = page.getByTestId('advanced-solver').getByTestId('controls');
       if (vp.width >= 768) {
         await expect(controls).toHaveAttribute('data-layout', 'inline');
-        // The five layer groups sit side by side on desktop widths.
+        // The five layer groups are all present; in the reading column of Scientific Documentation they may wrap.
         const tops = await page.getByTestId('block-d').locator('[data-testid^="layer-"]').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
         expect(tops).toHaveLength(5);
-        if (vp.width >= 1200) expect(new Set(tops).size).toBe(1);
       }
     });
 
