@@ -269,8 +269,8 @@ export const verify: DocContribution = {
           <p>
             The checks run in the repository’s continuous integration. The output of the native STRATO programs for the synthetic case is
             published with this site as precomputed files (label PRECOMPUTED, with commit, input hash, solver version and command; see{' '}
-            <a href={hrefDocumentation('evidence-downloads')}>Data downloads</a>); the figures on <a href={hrefDocumentation('evidence-verification')}>the verification evidence</a> plot them as they are. The live
-            simulation on the Explore page reports its own balance residual and its largest and final difference from {METHOD_2} (label
+            <a href={hrefDocumentation('evidence-downloads')}>Data downloads</a>); the figures on <a href={hrefDocumentation('evidence-verification')}>the verification evidence</a> plot them as they are. The manual
+            solver of this page reports its own balance residual and its largest and final difference from {METHOD_2} (label
             COMPUTED v2.0). All of this is verification on the synthetic case; none of it compares the model with a measurement.
           </p>
           <p>
