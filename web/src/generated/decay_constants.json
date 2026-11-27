@@ -1,0 +1,90 @@
+{
+  "what": "verified decay constants of the nuclides of data/nuclear/decay.csv",
+  "generator": "web/scripts/decay_constants.mjs",
+  "nuclides": {
+    "Ag-110m": {
+      "decay_constant_per_s": 3.211198e-8,
+      "half_life": 249.83,
+      "half_life_unit": "d",
+      "source": "IAEA LiveChart of Nuclides API v1 (https://www-nds.iaea.org/relnsd/v1/data), extraction date 2026-11-05"
+    },
+    "Ag-110": {
+      "decay_constant_per_s": 0.02822261,
+      "half_life": 24.56,
+      "half_life_unit": "s",
+      "source": "IAEA LiveChart of Nuclides API v1 (https://www-nds.iaea.org/relnsd/v1/data), extraction date 2026-11-05"
+    },
+    "Ag-111": {
+      "decay_constant_per_s": 0.000001076851,
+      "half_life": 7.45,
+      "half_life_unit": "d",
+      "source": "IAEA LiveChart of Nuclides API v1 (https://www-nds.iaea.org/relnsd/v1/data), extraction date 2026-11-05"
+    },
+    "Cs-134": {
+      "decay_constant_per_s": 1.063576e-8,
+      "half_life": 2.0652,
+      "half_life_unit": "Y",
+      "source": "IAEA LiveChart of Nuclides API v1 (https://www-nds.iaea.org/relnsd/v1/data), extraction date 2026-11-05"
+    },
+    "Cs-134m": {
+      "decay_constant_per_s": 0.00006611981,
+      "half_life": 2.912,
+      "half_life_unit": "h",
+      "source": "IAEA LiveChart of Nuclides API v1 (https://www-nds.iaea.org/relnsd/v1/data), extraction date 2026-11-05"
+    },
+    "Cs-137": {
+      "decay_constant_per_s": 7.302187e-10,
+      "half_life": 30.08,
+      "half_life_unit": "Y",
+      "source": "IAEA LiveChart of Nuclides API v1 (https://www-nds.iaea.org/relnsd/v1/data), extraction date 2026-11-05"
+    },
+    "Sr-90": {
+      "decay_constant_per_s": 7.597709e-10,
+      "half_life": 28.91,
+      "half_life_unit": "Y",
+      "source": "IAEA LiveChart of Nuclides API v1 (https://www-nds.iaea.org/relnsd/v1/data), extraction date 2026-11-05"
+    },
+    "Sr-89": {
+      "decay_constant_per_s": 1.586642e-7,
+      "half_life": 50.563,
+      "half_life_unit": "d",
+      "source": "IAEA LiveChart of Nuclides API v1 (https://www-nds.iaea.org/relnsd/v1/data), extraction date 2026-11-05"
+    },
+    "Y-90": {
+      "decay_constant_per_s": 0.000003006103,
+      "half_life": 64.05,
+      "half_life_unit": "h",
+      "source": "IAEA LiveChart of Nuclides API v1 (https://www-nds.iaea.org/relnsd/v1/data), extraction date 2026-11-05"
+    },
+    "Ba-137m": {
+      "decay_constant_per_s": 0.004526823,
+      "half_life": 2.552,
+      "half_life_unit": "m",
+      "source": "IAEA LiveChart of Nuclides API v1 (https://www-nds.iaea.org/relnsd/v1/data), extraction date 2026-11-05"
+    },
+    "Eu-154": {
+      "decay_constant_per_s": 2.556445e-9,
+      "half_life": 8.592,
+      "half_life_unit": "Y",
+      "source": "IAEA LiveChart of Nuclides API v1 (https://www-nds.iaea.org/relnsd/v1/data), extraction date 2026-11-05"
+    },
+    "Kr-85": {
+      "decay_constant_per_s": 2.045347e-9,
+      "half_life": 10.739,
+      "half_life_unit": "Y",
+      "source": "IAEA LiveChart of Nuclides API v1 (https://www-nds.iaea.org/relnsd/v1/data), extraction date 2026-11-05"
+    },
+    "Kr-85m": {
+      "decay_constant_per_s": 0.00004297788,
+      "half_life": 4.48,
+      "half_life_unit": "h",
+      "source": "IAEA LiveChart of Nuclides API v1 (https://www-nds.iaea.org/relnsd/v1/data), extraction date 2026-11-05"
+    },
+    "I-131": {
+      "decay_constant_per_s": 9.996681e-7,
+      "half_life": 8.0252,
+      "half_life_unit": "d",
+      "source": "IAEA LiveChart of Nuclides API v1 (https://www-nds.iaea.org/relnsd/v1/data), extraction date 2026-11-05"
+    }
+  }
+}

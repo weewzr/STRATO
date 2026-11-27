@@ -275,14 +275,18 @@ describe('the panel of the graphs', () => {
   it('draws the radioactive decay curve for a species with a registered decay constant and leaves the panel empty for one without', () => {
     const AG: Species = { id: 'ag110m', name: 'Ag-110m', element: 'Ag' };
     useStrato.setState({ selection: { ...useStrato.getState().selection, graph: 'release', scenario: 'steady', physics: 'decay' } });
-    const withConstant = stageRequest('decay', SR, 1600);
-    expect(withConstant).not.toBeNull();
-    const { unmount } = render(<ExploreGraphs choices={choices({ request: withConstant, result: withConstant ? { key: withConstant.key, reply: stage, analytical } : null })} />);
-    expect(screen.getByTestId('graph-panel').dataset.empty).toBe('false');
-    unmount();
-    const without = stageRequest('decay', AG, 1600);
+    const EU: Species = { id: 'eu154', name: 'Eu-154', element: 'Eu' };
+    // Sr-90 (generation table) and Ag-110m (decay register only) both have a registered constant and draw.
+    for (const sp of [SR, AG]) {
+      const withConstant = stageRequest('decay', sp, 1600);
+      expect(withConstant, sp.name).not.toBeNull();
+      const { unmount } = render(<ExploreGraphs choices={choices({ species: [sp], current: sp, request: withConstant, result: withConstant ? { key: withConstant.key, reply: stage, analytical } : null })} />);
+      expect(screen.getByTestId('graph-panel').dataset.empty, sp.name).toBe('false');
+      unmount();
+    }
+    const without = stageRequest('decay', EU, 1600);
     expect(without).toBeNull();
-    render(<ExploreGraphs choices={choices({ species: [AG], current: AG, temperatures: offeredTemperatures('Ag'), temperature: 1600, request: null, result: null })} />);
+    render(<ExploreGraphs choices={choices({ species: [EU], current: EU, temperatures: [1600], temperature: 1600, request: null, result: null })} />);
     expect(screen.getByTestId('graph-panel').dataset.empty).toBe('true');
     expect(screen.getByTestId('graph-panel').textContent).toBe('');
   });

@@ -247,6 +247,19 @@ test.describe('interactive graphs', () => {
       expect(((await page.getByTestId('graph-panel').textContent()) ?? '').trim()).toBe('');
     }
   });
+  test('draw the radioactive decay curve for every species the page offers, each having a registered decay constant', async ({ page, problems }) => {
+    void problems;
+    await gotoSection(page, 'explore');
+    await expect(page.getByTestId('explore-plot-release-graph')).toBeVisible({ timeout: 30_000 });
+    await page.getByTestId('physics-decay').click();
+    const ids = await page.getByTestId('species-select').locator('option').evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value));
+    expect(ids.length).toBeGreaterThanOrEqual(4);
+    for (const id of ids) {
+      await page.getByTestId('species-select').selectOption(id);
+      await expect(page.getByTestId('explore-plot-release-graph'), id).toBeVisible({ timeout: 30_000 });
+      await expect(page.getByTestId('graph-panel')).toHaveAttribute('data-empty', 'false');
+    }
+  });
   test('draw the registered experimental data with its caption, citation and link beneath, and its model curves only under temperature-dependent diffusion', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');

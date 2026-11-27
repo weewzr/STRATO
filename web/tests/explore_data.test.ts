@@ -13,6 +13,7 @@ import {
   datasetsAt,
   hasSource,
   datasetsOf,
+  decayConstantOf,
   datasetTemperatureC,
   heatingRows,
   nuclideKey,
@@ -29,6 +30,8 @@ import {
 import lawsFile from '../src/generated/arrhenius_heating.json';
 import type { OptionsReply } from '../src/solver/types';
 import { build } from '../scripts/arrhenius_heating.mjs';
+import decayFile from '../src/generated/decay_constants.json';
+import { build as buildDecay } from '../scripts/decay_constants.mjs';
 
 const SR: Species = { id: 'sr90', name: 'Sr-90', element: 'Sr' };
 const CS: Species = { id: 'cs137', name: 'Cs-137', element: 'Cs' };
@@ -132,8 +135,8 @@ describe('the request of run_stage', () => {
     expect(Object.keys(phys('temperature')).sort()).toEqual(['arrhenius', 'temperature']);
     expect(phys('temperature')).not.toHaveProperty('gas_constant_j_mol_k');
     expect(phys('temperature').temperature).toEqual({ unit: 'degC', value: 1600, gas_constant_j_mol_k: gasConstant('Sr') });
-    const nuclide = PARAMETERS.generation[0]?.nuclides.find((n) => n.nuclide === 'Sr-90');
-    expect((phys('decay').decay as { decay_constant_per_s: number }).decay_constant_per_s).toBe(nuclide?.decay_constant_per_s);
+    expect((phys('decay').decay as { decay_constant_per_s: number }).decay_constant_per_s).toBe(decayConstantOf(SR));
+    expect(decayConstantOf(SR)).toBe(PARAMETERS.generation[0]?.nuclides.find((n) => n.nuclide === 'Sr-90')?.decay_constant_per_s);
     expect(body('temperature', SR)?.stage).toBe(4);
     expect(body('baseline', SR)?.stage).toBe(1);
     expect(body('baseline', SR)?.schema).toBe(3);
@@ -166,27 +169,40 @@ describe('the request of run_stage', () => {
   it('gives no request where the registers hold no input for the selection: no temperature outside the listed ones, no source for an activation product', () => {
     expect(stageRequest('baseline', SR, 1650)).toBeNull();
     expect(stageRequest('baseline', { id: 'eu154', name: 'Eu-154', element: 'Eu' }, 1600)).toBeNull();
-    // Ag-110m and Cs-134 have no fission-yield source and no decay constant in the results file.
+    // Ag-110m and Cs-134 have no fission-yield source, so no generation request; their decay constant is registered, so decay has one.
     expect(stageRequest('generation', AG, 1600)).toBeNull();
-    expect(stageRequest('decay', AG, 1600)).toBeNull();
+    expect(stageRequest('decay', AG, 1600)).not.toBeNull();
+    expect(stageRequest('decay', { id: 'eu154', name: 'Eu-154', element: 'Eu' }, 1600)).toBeNull();
     expect(stageRequest('combined', AG, 1600)).toBeNull();
     expect(stageRequest('baseline', AG, 1600)).not.toBeNull();
     expect(stageRequest('temperature', AG, 1600)).not.toBeNull();
   });
 
   it('draws the decay selection for a species with a registered decay constant and gives no request for one without', () => {
-    const registered = (PARAMETERS.generation[0]?.nuclides ?? []).map((n) => n.nuclide).sort();
-    expect(registered).toEqual(['Cs-137', 'Sr-90']);
-    for (const sp of [SR, CS]) {
+    const CS134: Species = { id: 'cs134', name: 'Cs-134', element: 'Cs' };
+    // The constant comes from the decay register, not from the generation table (which lists only nuclides with a fission-yield source).
+    expect((PARAMETERS.generation[0]?.nuclides ?? []).map((n) => n.nuclide).sort()).toEqual(['Cs-137', 'Sr-90']);
+    for (const sp of [SR, CS, AG, CS134]) {
+      const lambda = decayConstantOf(sp);
+      expect(lambda, sp.name).toBeGreaterThan(0);
       for (const t of offeredTemperatures(sp.element)) {
         const req = stageRequest('decay', sp, t);
         expect(req, `${sp.name} ${String(t)}`).not.toBeNull();
         expect(req?.stage).toBe(3);
-        expect((req?.body.physics as { decay: { decay_constant_per_s: number } }).decay.decay_constant_per_s).toBeGreaterThan(0);
+        expect((req?.body.physics as { decay: { decay_constant_per_s: number } }).decay.decay_constant_per_s).toBe(lambda);
       }
     }
-    const CS134: Species = { id: 'cs134', name: 'Cs-134', element: 'Cs' };
-    for (const sp of [AG, CS134]) for (const t of offeredTemperatures(sp.element)) expect(stageRequest('decay', sp, t), `${sp.name} ${String(t)}`).toBeNull();
+    expect(decayConstantOf(AG)).toBe(3.211198e-8);
+    expect(decayConstantOf(CS134)).toBe(1.063576e-8);
+    // A species the register does not hold, or holds as stable, has none and no request.
+    const EU: Species = { id: 'eu154', name: 'Eu-154', element: 'Eu' };
+    const STABLE: Species = { id: 'cs133', name: 'Cs-133', element: 'Cs' };
+    expect(decayConstantOf(STABLE)).toBeNull();
+    for (const sp of [EU, STABLE]) for (const t of offeredTemperatures(sp.element)) expect(stageRequest('decay', sp, t), `${sp.name} ${String(t)}`).toBeNull();
+  });
+
+  it('read the decay constants from the register: the committed file is what scripts/decay_constants.mjs writes from data/nuclear/decay.csv', () => {
+    expect(decayFile).toEqual(buildDecay());
   });
 
   it('has a key that changes with the selection, so that a reply for another selection can be told apart', () => {

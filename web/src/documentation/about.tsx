@@ -131,7 +131,7 @@ export const about: DocContribution = {
             </li>
             <li>
               Solved through the run_stage function of the wrapper (stages 1 to 5) and computed for Steady-state operation. Drawn on Explore are baseline
-              diffusion, radioactive decay (Sr-90, Cs-137) and temperature-dependent diffusion; generation and the combined model are computed by
+              diffusion, radioactive decay (every species with a registered decay constant) and temperature-dependent diffusion; generation and the combined model are computed by
               run_stage but not drawn (fresh particle). Experimental
               comparisons are drawn on Explore with captions and citations; an R² is shown only where a record holds a value.
             </li>

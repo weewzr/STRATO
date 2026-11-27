@@ -5,6 +5,7 @@
 // temperature, the decay constant, the yield, the radii) are the register values of parameters.json,
 // verbatim.
 import parametersFile from '../../../data/results/parameters.json';
+import decayFile from '../generated/decay_constants.json';
 import type { PhysicsId } from '../equation/capability';
 import type { OptionsNuclide, OptionsReply } from '../solver/types';
 import { arrheniusLaws, gasConstant, LAYER_REGIONS } from './arrhenius';
@@ -145,6 +146,20 @@ export function offeredTemperatures(element: string, params: ParametersFile = PA
   return temperatureSteps(registeredRange(element, params)).filter((t) => rows.every((r) => r.diffusivity_m2_s_at_c.some((d) => d.temperature_c === t)));
 }
 
+// ---- the decay constants
+
+const DECAY_CONSTANTS = (decayFile as { nuclides: Record<string, { decay_constant_per_s: number }> }).nuclides;
+
+/**
+ * The registered, verified decay constant of a species in s^-1, verbatim from data/nuclear/decay.csv (through
+ * src/generated/decay_constants.json), or null when the register holds none. It is independent of the generation
+ * table of parameters.json, which follows the fission-yield source and so lists only Sr-90 and Cs-137.
+ */
+export function decayConstantOf(species: Species, table: Record<string, { decay_constant_per_s: number }> = DECAY_CONSTANTS): number | null {
+  const hit = Object.entries(table).find(([name]) => nuclideKey(name) === nuclideKey(species.name));
+  return hit ? hit[1].decay_constant_per_s : null;
+}
+
 // ---- the request of run_stage
 
 /** The numerical settings of the graphs: one grid and one time span for every request (fixed, not controls). */
@@ -212,13 +227,12 @@ export function stageRequest(physics: PhysicsId, species: Species, temperatureC:
     if (!d || radius === undefined) return null;
     regions.push({ name: LAYER_REGIONS[k], outer_radius_m: radius, diffusivity_m2_s: d.diffusivity_m2_s, intervals: GRID_INTERVALS[k] });
   }
-  const generation = params.generation[0];
-  const nuclide = generation?.nuclides.find((n) => nuclideKey(n.nuclide) === nuclideKey(species.name));
   const physicsBody: Record<string, unknown> = {};
   // Decay and temperature-dependent diffusion only: a model equation with a source has no request (above).
   if (physics === 'decay') {
-    if (!nuclide) return null;
-    physicsBody.decay = { decay_constant_per_s: nuclide.decay_constant_per_s };
+    const lambda = decayConstantOf(species);
+    if (lambda === null) return null;
+    physicsBody.decay = { decay_constant_per_s: lambda };
   }
   if (physics === 'temperature') {
     const laws = arrheniusLaws(species.element);
