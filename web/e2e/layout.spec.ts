@@ -78,7 +78,7 @@ for (const vp of VIEWPORTS) {
       if (vp.width >= 768) {
         await expect(controls).toHaveAttribute('data-layout', 'inline');
         // The five layer groups sit side by side on desktop widths.
-        const tops = await page.getByTestId('advanced-solver').locator('[data-testid^="layer-"]').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+        const tops = await page.getByTestId('block-d').locator('[data-testid^="layer-"]').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
         expect(tops).toHaveLength(5);
         if (vp.width >= 1200) expect(new Set(tops).size).toBe(1);
       }
