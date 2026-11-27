@@ -57,6 +57,13 @@
   max-width: 48rem;
 }
 
+/* The file-name links in the row headers of the tables (the precomputed files) are a 44 px target. */
+.doc__body th a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
 .doc__section {
   padding-top: 0.5rem;
   scroll-margin-top: calc(var(--header-height) + 0.5rem);

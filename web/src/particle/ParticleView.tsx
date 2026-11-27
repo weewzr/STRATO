@@ -67,7 +67,7 @@ function Legend({ run }: { run: RunOk }) {
         ))}
       </div>
       <p className="visually-hidden">
-        Colour map {COLORMAP_LABEL[map]}, {scale === 'log' ? `logarithmic over ${LOG_DECADES} decades below the largest concentration of the run` : 'linear from 0 to the largest concentration of the run'}.
+        Colour map {COLORMAP_LABEL[map]}.
       </p>
     </div>
   );

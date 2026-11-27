@@ -31,9 +31,9 @@ function CaseEntry() {
       ) : (
         'the case file of the build'
       )}
-      . What the synthetic values are, and what no result from them is, are stated under{' '}
-      <a href={hrefDocumentation('compare-limits')}>What a comparison shows</a> and{' '}
-      <a href={hrefDocumentation('data-case-file')}>Parameters in use and their case file</a>.
+      . The synthetic values are listed under{' '}
+      <a href={hrefDocumentation('data-case-file')}>Parameters in use and their case file</a>; what no result from them is, is stated under{' '}
+      <a href={hrefDocumentation('about-implemented')} data-testid="explore-case-implemented-link">What is implemented</a>.
     </p>
   );
 }
