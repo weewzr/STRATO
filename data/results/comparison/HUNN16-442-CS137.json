@@ -4,14 +4,14 @@
   "provenance": {
     "label": "numerical solution of the stated model; not experimental validation",
     "solver": "STRATO BTCS five-layer spherical finite difference",
-    "solver_version": "1.0.1",
+    "solver_version": "2.1.0",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "461aa1d",
-    "solver_source_sha256": "02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275",
+    "commit": "55b1046",
+    "solver_source_sha256": "8786a3048e6415adc2aabbed2e0b79dfc823d3a54ef2b06d42b833d72bc16383",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
-      "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
+      "arrhenius.csv": "7af310fba1d4a994e9914523455ecafff927582295d8fa4a1b217cc6f12bd06e",
       "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
       "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
       "temperature_histories.csv": "b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d",
@@ -411,8 +411,8 @@
       "f_model_t_minus": [1.379898194834878e-248,1.0388285414988867e-23,1.705220656224143e-4,1.4782158004009073e-2,4.7400583471140935e-2,8.384164837638639e-2,1.2021286512973901e-1,1.56419091531397e-1,1.90416021712034e-1,2.2320770122859293e-1,3.136193562799531e-1,4.002682077732276e-1,4.863510848336456e-1,5.504201335421812e-1,6.185178488439919e-1,null],
       "f_model_t_plus": [1.742198804375991e-245,5.884528982715506e-18,2.281468137536483e-4,1.5449476693546986e-2,4.828876133290418e-2,8.476169913794748e-2,1.2111466023320822e-1,1.5728894677683528e-1,1.9125220786146796e-1,2.2401040728977675e-1,3.1432877173377155e-1,4.0088806944073097e-1,4.8688197431731994e-1,5.508848035083442e-1,6.189121354022473e-1,null],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-LP-4-4-2.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "d27998cc3f81729f016f4ce24abc906e4de7c846f4e9af33cad9b07aac647a43",
         "refined_output_sha256": "76644c5c82b269cf285dd6736f6e77e624d965e8ae01c5979f6f88eb91fc0bad",
@@ -456,6 +456,10 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "Kr-85 release shows five particles with failed TRISO inside the specimen (three during heat-up, two at 1800 C); significant Cs release occurred concurrent with four of the failures (Hunn et al. 2016, printed p. 4)",
       "decay_correction": "not_stated",
@@ -662,6 +666,10 @@
         "B1",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "Kr-85 release shows five particles with failed TRISO inside the specimen (three during heat-up, two at 1800 C); significant Cs release occurred concurrent with four of the failures (Hunn et al. 2016, printed p. 4)",
       "decay_correction": "not_stated",

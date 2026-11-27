@@ -4,14 +4,14 @@
   "provenance": {
     "label": "numerical solution of the stated model; not experimental validation",
     "solver": "STRATO BTCS five-layer spherical finite difference",
-    "solver_version": "1.0.1",
+    "solver_version": "2.1.0",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "461aa1d",
-    "solver_source_sha256": "02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275",
+    "commit": "55b1046",
+    "solver_source_sha256": "8786a3048e6415adc2aabbed2e0b79dfc823d3a54ef2b06d42b833d72bc16383",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
-      "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
+      "arrhenius.csv": "7af310fba1d4a994e9914523455ecafff927582295d8fa4a1b217cc6f12bd06e",
       "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
       "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
       "temperature_histories.csv": "b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d",
@@ -299,8 +299,8 @@
       "f_model_t_minus": [3.2704141590861876e-8,9.360627474260731e-3,3.0473955064808878e-2,7.238026948252868e-2,1.435365170464096e-1,2.1033256342738363e-1,2.727539079379385e-1,3.2956453459723406e-1,3.823584238656235e-1,6.184113825691702e-1],
       "f_model_t_plus": [1.7467843109388796e-7,1.0052218289963614e-2,3.152438298671577e-2,7.358105364417833e-2,1.4469649760976877e-1,2.1140638906473855e-1,2.737432107659703e-1,3.304765846829849e-1,3.8319865638772144e-1,6.187856310131613e-1],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ST-C16-1600.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "6ab735b6eaee35e407f024e3c5e0639bac73a32d5d4b4057d2cbe3a20f5df136",
         "refined_output_sha256": "e198a11a0f7140ab26786388bfc29a04263b8a29c403cc80351fe001c901fd77",
@@ -339,6 +339,10 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
@@ -520,6 +524,10 @@
         "B1",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",

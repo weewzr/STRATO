@@ -4,14 +4,14 @@
   "provenance": {
     "label": "numerical solution of the stated model; not experimental validation",
     "solver": "STRATO BTCS five-layer spherical finite difference",
-    "solver_version": "1.0.1",
+    "solver_version": "2.1.0",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "461aa1d",
-    "solver_source_sha256": "02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275",
+    "commit": "55b1046",
+    "solver_source_sha256": "8786a3048e6415adc2aabbed2e0b79dfc823d3a54ef2b06d42b833d72bc16383",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
-      "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
+      "arrhenius.csv": "7af310fba1d4a994e9914523455ecafff927582295d8fa4a1b217cc6f12bd06e",
       "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
       "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
       "temperature_histories.csv": "b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d",
@@ -526,8 +526,8 @@
       "f_model_t_minus": [4.1588586064117294e-129,1.0120352172360707e-29,5.09080357160172e-15,1.1526141639502448e-9,1.8635229647328537e-8,4.507819422988668e-8,2.7891119281230745e-6,1.2355653020591694e-5,3.2023078336588635e-5,8.103994976756117e-5,1.5650920000576468e-4,2.705007119235023e-4,4.541945921345096e-4,6.709788247988208e-4,9.68856040661379e-4,1.2712558320054576e-3,1.7130044339618074e-3,2.22944572811291e-3,2.771677452868306e-3,3.3490285603943524e-3,4.038719551259685e-3,4.728340912903588e-3],
       "f_model_t_plus": [2.005020840780748e-67,1.7351677538876009e-25,5.294235777330919e-14,2.666234742474577e-9,3.3979135258777224e-8,7.683662323544484e-8,3.6589562755593106e-6,1.507359936685043e-5,3.752509968168464e-5,9.173517887420786e-5,1.73358363071106e-4,2.9478044794895307e-4,4.8810010062951215e-4,7.141938002906057e-4,1.0227396052034205e-3,1.334350104845507e-3,1.7876062881684851e-3,2.3154824198683877e-3,2.8680716867747467e-3,3.4550857404004915e-3,4.1549217529327715e-3,4.822071638208764e-3],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.CRP6-P4K3.T978-FRG.CRP6-8a.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "1e17e7140baf6530ce4e01e91c01d1e6c5685110d193c9e1085badbb39ba816a",
         "refined_output_sha256": "e215187f74e9415352e46df80f0b25669f7fd519aea46c5dddb0e83580cd7997",
@@ -579,6 +579,9 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
@@ -821,6 +824,9 @@
         "B1",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",

@@ -4,14 +4,14 @@
   "provenance": {
     "label": "numerical solution of the stated model; not experimental validation",
     "solver": "STRATO BTCS five-layer spherical finite difference",
-    "solver_version": "1.0.1",
+    "solver_version": "2.1.0",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "461aa1d",
-    "solver_source_sha256": "02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275",
+    "commit": "55b1046",
+    "solver_source_sha256": "8786a3048e6415adc2aabbed2e0b79dfc823d3a54ef2b06d42b833d72bc16383",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
-      "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
+      "arrhenius.csv": "7af310fba1d4a994e9914523455ecafff927582295d8fa4a1b217cc6f12bd06e",
       "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
       "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
       "temperature_histories.csv": "b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d",
@@ -144,8 +144,8 @@
       "f_model_t_minus": [1.1094423951306528e-30,1.0611293559520023e-3,1.0528591395687195e-1,3.354397301003795e-1,5.135943197843886e-1,6.412581138679032e-1,7.357516226496064e-1,8.051072074352355e-1,8.562594745385285e-1,8.947932913461897e-1,9.578458264294163e-1,9.844716235038956e-1,9.950466486427478e-1,9.981519368974067e-1,9.994510779021489e-1,null],
       "f_model_t_plus": [1.4049728994775858e-29,2.4975655028915906e-3,1.1197802062822769e-1,3.404994812263173e-1,5.172976712829049e-1,6.439894703360737e-1,7.377635330016019e-1,8.065910645182087e-1,8.573538731235779e-1,8.955943046472287e-1,9.581667760501481e-1,9.84589852042924e-1,9.950843620137763e-1,9.981660075060135e-1,9.994552572286314e-1,null],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-LP-4-4-2.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "fbd0fef09d64bb3955376d769ec7c44fef7e5ff24fab33ffe8c820e956eab3c0",
         "refined_output_sha256": "b251d8a7df5bbd373de20a9e486b9984caf519f1690db25ace48c92bddb0eade",
@@ -189,6 +189,10 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "five particles with failed TRISO inside the specimen (three during heat-up, two at 1800 C; register particle_applicability of E-509; Hunn et al. 2016 printed p. 4); the source concludes that most Ag and Eu came through intact SiC (Hunn et al. 2014 printed p. 5) but no source separates the failed particles",
       "decay_correction": "not_stated",
@@ -396,6 +400,10 @@
         "C0",
         "V1"
       ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
+      ],
       "coating_failure_basis": "five particles with failed TRISO inside the specimen (three during heat-up, two at 1800 C; register particle_applicability of E-509; Hunn et al. 2016 printed p. 4); the source concludes that most Ag and Eu came through intact SiC (Hunn et al. 2014 printed p. 5) but no source separates the failed particles",
       "decay_correction": "not_stated",
       "decay_reference": null,
@@ -564,8 +572,8 @@
       "f_model_t_minus": [4.60753800382999e-33,4.445920063995714e-5,2.4934356118446546e-2,1.0560648952721516e-1,1.8268197089540059e-1,2.4434243923175672e-1,2.950792642429899e-1,3.3730816165798083e-1,3.7346486031038756e-1,4.0584612326313485e-1,4.8266010578591606e-1,5.47456057630962e-1,6.068466356961237e-1,6.494714149833742e-1,6.939774535426271e-1,null],
       "f_model_t_plus": [6.026755687156219e-32,2.0659866568707242e-4,2.6837671947505023e-2,1.0765317072369104e-1,1.8438919134134107e-1,2.457347611606215e-1,2.962299608123029e-1,3.382824614373994e-1,3.743090690136829e-1,4.0659005294557216e-1,4.832180925969908e-1,5.478983127784448e-1,6.072040822911808e-1,6.497768203818503e-1,6.942344332201377e-1,null],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-LP-4-4-2.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "787a4b2bf2243c1435e7ab01758c8077e2282d935fa613d8c8c70f2d0a559cc9",
         "refined_output_sha256": "ab212c9d592498af830b8d960ab428b6230b43be1739bdea09fc4c329469a8be",
@@ -609,6 +617,10 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "five particles with failed TRISO inside the specimen (three during heat-up, two at 1800 C; register particle_applicability of E-493; Hunn et al. 2016 printed p. 4)",
       "decay_correction": "not_stated",
@@ -816,6 +828,10 @@
         "C0",
         "V1"
       ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
+      ],
       "coating_failure_basis": "five particles with failed TRISO inside the specimen (three during heat-up, two at 1800 C; register particle_applicability of E-493; Hunn et al. 2016 printed p. 4)",
       "decay_correction": "not_stated",
       "decay_reference": null,
@@ -960,8 +976,8 @@
       "f_model_t_minus": [3.2704141590861876e-8,9.360627474260731e-3,3.0473955064808878e-2,7.238026948252868e-2,1.435365170464096e-1,2.1033256342738363e-1,2.727539079379385e-1,3.2956453459723406e-1,3.823584238656235e-1,6.184113825691702e-1],
       "f_model_t_plus": [1.7467843109388796e-7,1.0052218289963614e-2,3.152438298671577e-2,7.358105364417833e-2,1.4469649760976877e-1,2.1140638906473855e-1,2.737432107659703e-1,3.304765846829849e-1,3.8319865638772144e-1,6.187856310131613e-1],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ST-C16-1600.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "6ab735b6eaee35e407f024e3c5e0639bac73a32d5d4b4057d2cbe3a20f5df136",
         "refined_output_sha256": "e198a11a0f7140ab26786388bfc29a04263b8a29c403cc80351fe001c901fd77",
@@ -1000,6 +1016,10 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
@@ -1182,6 +1202,10 @@
         "C0",
         "V1"
       ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
+      ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
       "decay_reference": null,
@@ -1330,8 +1354,8 @@
       "f_model_t_minus": [3.051252576422897e-15,2.3998048155815212e-2,9.409215877563086e-2,2.2894617690487135e-1,3.4537216817788075e-1,4.440328992415667e-1,5.496407439855477e-1,6.1764577447355e-1,6.751608982530475e-1,7.241182929290978e-1],
       "f_model_t_plus": [6.679212153600803e-13,2.4977655082156193e-2,9.529521737677236e-2,2.2999490078673626e-1,3.462627152218917e-1,4.44789230718647e-1,5.502534077294687e-1,6.181659249275583e-1,6.756028057705062e-1,7.24493599350069e-1],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ASRUN-6-4-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "e2a35170f34065d39cc9475b45a0a2d0d1ad545fa950270a7edf0ead1c23bb1f",
         "refined_output_sha256": "d4a612751a2a435daf8324c0c727645578441ff678565886c35767e9fe440eca",
@@ -1370,6 +1394,10 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
@@ -1556,6 +1584,10 @@
         "C0",
         "V1"
       ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
+      ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
       "decay_reference": null,
@@ -1712,8 +1744,8 @@
       "f_model_t_minus": [1.323354520324037e-16,4.0138846499065717e-4,2.431871314528863e-3,5.550712862654349e-3,9.428526842126583e-3,1.8537044619752256e-2,2.8656446618999853e-2,4.2505928235953186e-2,5.35147878720227e-2,6.449781353071285e-2,7.54079423748046e-2],
       "f_model_t_plus": [2.4253697922933222e-14,4.214713455348247e-4,2.476737041615314e-3,5.610246452928788e-3,9.497797058070984e-3,1.861811074525472e-2,2.8743788035072822e-2,4.25969722236951e-2,5.360661486955672e-2,6.458925836747538e-2,7.549821583842772e-2],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ASRUN-6-4-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "9a120492ce2d8743cf0fb83c3109df753914580217c671127dc84617ee8284c6",
         "refined_output_sha256": "aece4aa088311e2563b1d794fc2a99e028d59a7b24083e4cb9855848c8f7ee19",
@@ -1753,6 +1785,10 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
@@ -1943,6 +1979,10 @@
         "B1",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
@@ -2172,8 +2212,8 @@
       "f_model_t_minus": [1.7167383581517055e-12,4.708069823636517e-3,2.62139301735503e-2,8.664843616980415e-2,1.5462082028423482e-1,1.8501432242019872e-1,2.0496621630149547e-1,2.3234907826020834e-1,2.540272643175527e-1,2.812121754326872e-1,2.8558666415813777e-1,2.898616583548598e-1,3.104429364577616e-1,3.333844176238891e-1,3.3438120039375374e-1,3.3514200473241523e-1,3.4861056697654697e-1,3.73726340712673e-1,3.7399628630364495e-1,3.742346634245739e-1,3.9860037278233096e-1,null,null,null,null,null,null,null,null],
       "f_model_t_plus": [1.6925338674520242e-4,1.4705823973995197e-2,4.22917143350756e-2,1.0468713728825296e-1,1.7166933154117006e-1,1.9006136294198095e-1,2.0986894677230641e-1,2.3730171934198063e-1,2.6908909757868954e-1,2.8232978350063115e-1,2.8666037536801203e-1,2.909232586719329e-1,3.2436368595334925e-1,3.336740422505423e-1,3.345883711930529e-1,3.353306030248065e-1,3.61750598490387e-1,3.7380750118688616e-1,3.740607736667289e-1,3.743277614326906e-1,4.1075420050132067e-1,null,null,null,null,null,null,null,null],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ASRUN-4-2-2-MULTI.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "0fc1652c5fad2587f394b78cc323ff5c606d9d94f27115bcafd63c69c9ccf71b",
         "refined_output_sha256": "cf2b8476601e5637c7c971b45b70534c01c08e0dc23ef9f986055c96c6063329",
@@ -2231,6 +2271,10 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
@@ -2512,6 +2556,10 @@
         "C0",
         "V1"
       ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
+      ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
       "decay_reference": null,
@@ -2636,8 +2684,8 @@
       "f_model_t_minus": [null,null,null],
       "f_model_t_plus": [null,null,null],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "ca1e52e0626da6c289cc7e2b489fc33c88b419ff3bf214b0b3c84cb0abc56273",
         "refined_output_sha256": "0f01e366f61527f6beb808b2b7be22d654d50a48a0a16cb149a17ee72936fa55",
@@ -2669,6 +2717,9 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
@@ -2783,8 +2834,8 @@
       "f_model_t_minus": [null,null,null],
       "f_model_t_plus": [null,null,null],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "alpha_max_per_s": 2.5e-1,
         "modes": 590,
@@ -2816,6 +2867,9 @@
         "B2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
@@ -2934,8 +2988,8 @@
       "f_model_t_minus": [null,null,null,null],
       "f_model_t_plus": [null,null,null,null],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "860912ea24c31f762f08a5355b5babd5a9992bac7f7a049bb188ab01ee78052f",
         "refined_output_sha256": "bb152a3e30a38b7aa7305f4c543377f2ab6d40e128565cca7bdd707aa0a1aa1f",
@@ -2968,6 +3022,9 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
@@ -3086,8 +3143,8 @@
       "f_model_t_minus": [null,null,null,null],
       "f_model_t_plus": [null,null,null,null],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.JAERI-80FPC1.C16.JAERI-HEAT.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "alpha_max_per_s": 2.5e-1,
         "modes": 175,
@@ -3119,6 +3176,9 @@
         "C7",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
@@ -3285,8 +3345,8 @@
       "f_model_t_minus": [4.076551180294442e-249,7.783820330898383e-25,1.620393384976576e-4,1.46719469336041e-2,4.725276607252345e-2,8.353494570638621e-2,1.200624986068029e-1,1.5612895422416773e-1,1.9027657481078558e-1,2.2293994892081956e-1,3.135010485763482e-1,4.0016483423066374e-1,4.8617399813175116e-1,5.503426396102437e-1,6.184520917418238e-1,null],
       "f_model_t_plus": [5.4079900521184e-246,8.70120630107278e-19,2.1771359499603914e-4,1.5337544138214886e-2,4.8140582293384e-2,8.445502588059021e-2,1.2096440895880246e-1,1.5699908749723573e-1,1.9111290203636278e-1,2.237429300162633e-1,3.142105862867403e-1,4.0078480273669836e-1,4.867050706395793e-1,5.508073896635465e-1,6.188464462567366e-1,null],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-LP-4-4-2.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "b8b4b53066e3c5f73becedc4cab9057a43b14fdcf06b2dd75d3aa96d0a5d5fd1",
         "refined_output_sha256": "2615ba4efbcee87a0dde794c9de1f3ec703e88a28fa3f325f14a43b24dac0fe8",
@@ -3330,6 +3390,10 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "Kr-85 release shows five particles with failed TRISO inside the specimen (three during heat-up, two at 1800 C); significant Cs release occurred concurrent with four of the failures (Hunn et al. 2016, printed p. 4); the Cs retained in the failed particles was nearly zero (printed p. 7)",
       "decay_correction": "not_stated",
@@ -3537,6 +3601,10 @@
         "C0",
         "V1"
       ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
+      ],
       "coating_failure_basis": "Kr-85 release shows five particles with failed TRISO inside the specimen (three during heat-up, two at 1800 C); significant Cs release occurred concurrent with four of the failures (Hunn et al. 2016, printed p. 4); the Cs retained in the failed particles was nearly zero (printed p. 7)",
       "decay_correction": "not_stated",
       "decay_reference": null,
@@ -3705,8 +3773,8 @@
       "f_model_t_minus": [1.379898194834878e-248,1.0388285414988867e-23,1.705220656224143e-4,1.4782158004009073e-2,4.7400583471140935e-2,8.384164837638639e-2,1.2021286512973901e-1,1.56419091531397e-1,1.90416021712034e-1,2.2320770122859293e-1,3.136193562799531e-1,4.002682077732276e-1,4.863510848336456e-1,5.504201335421812e-1,6.185178488439919e-1,null],
       "f_model_t_plus": [1.742198804375991e-245,5.884528982715506e-18,2.281468137536483e-4,1.5449476693546986e-2,4.828876133290418e-2,8.476169913794748e-2,1.2111466023320822e-1,1.5728894677683528e-1,1.9125220786146796e-1,2.2401040728977675e-1,3.1432877173377155e-1,4.0088806944073097e-1,4.8688197431731994e-1,5.508848035083442e-1,6.189121354022473e-1,null],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-LP-4-4-2.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "d27998cc3f81729f016f4ce24abc906e4de7c846f4e9af33cad9b07aac647a43",
         "refined_output_sha256": "76644c5c82b269cf285dd6736f6e77e624d965e8ae01c5979f6f88eb91fc0bad",
@@ -3750,6 +3818,10 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "Kr-85 release shows five particles with failed TRISO inside the specimen (three during heat-up, two at 1800 C); significant Cs release occurred concurrent with four of the failures (Hunn et al. 2016, printed p. 4)",
       "decay_correction": "not_stated",
@@ -3957,6 +4029,10 @@
         "C0",
         "V1"
       ],
+      "missing_conditions": [
+        "not stated in the source: axis scale of the digitised figure",
+        "inventory reference of the decay not set"
+      ],
       "coating_failure_basis": "Kr-85 release shows five particles with failed TRISO inside the specimen (three during heat-up, two at 1800 C); significant Cs release occurred concurrent with four of the failures (Hunn et al. 2016, printed p. 4)",
       "decay_correction": "not_stated",
       "decay_reference": null,
@@ -4105,8 +4181,8 @@
       "f_model_t_minus": [3.260417846010994e-240,2.582366204380325e-98,1.4208066203413652e-30,1.52970757936076e-21,4.114262192963671e-15,1.655782132124855e-10,2.8983387348593617e-8,6.158354560124469e-7,4.494913534109406e-6,1.8679332891529086e-5,9.436655259799771e-4],
       "f_model_t_plus": [2.856627801868765e-239,5.119521971217784e-94,2.66572734943684e-30,2.0629022191802553e-21,4.713407956759034e-15,1.754593775104536e-10,2.991980731111274e-8,6.282704733426614e-7,4.557389308203745e-6,1.8869013110942414e-5,9.451245265773835e-4],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-FACS-4-3-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "dc5bd79eec29b17b204aba13a724297f44b700e18295c620536775fecf950d6f",
         "refined_output_sha256": "6a2a98720dd7c7abb203529f93b1294b5e0be6ff7576726d12144d3911a87b05",
@@ -4145,6 +4221,9 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "decay reference of the correction not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "corrected",
@@ -4331,6 +4410,9 @@
         "C0",
         "V1"
       ],
+      "missing_conditions": [
+        "decay reference of the correction not set"
+      ],
       "coating_failure_basis": "none",
       "decay_correction": "corrected",
       "decay_reference": null,
@@ -4483,8 +4565,8 @@
       "f_model_t_minus": [5.879804126137869e-30,5.281956016183886e-10,1.0092145229404855e-4,4.4988785037862895e-4,1.5065283091757191e-3,4.2556560625724715e-3,7.883740316470019e-3,1.211538904929286e-2,1.669158616264571e-2,2.1596191058414375e-2,5.3151066599720416e-2],
       "f_model_t_plus": [1.1982069778934852e-29,1.1707102454652946e-9,1.053986816774096e-4,4.6025533455367666e-4,1.52486932509141e-3,4.282873623958578e-3,7.916649793432408e-3,1.2152228235408421e-2,1.6731213467448037e-2,2.163787913799442e-2,5.3174016010627614e-2],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-FACS-4-3-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "5e84334e08893635057c732c885df3379077cf2e244c8919d8292d00a792ae4f",
         "refined_output_sha256": "419deb073524e9ff5915cd790375b2e5da66ee31215104ecd5f943bfadff146b",
@@ -4523,6 +4605,9 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "decay reference of the correction not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "corrected",
@@ -4708,6 +4793,9 @@
         "B1",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "decay reference of the correction not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "corrected",
@@ -4905,8 +4993,8 @@
       "f_model_t_minus": [3.901152713675849e-9,1.0228634883292878e-2,6.289178767634934e-2,1.4509676864914003e-1,1.728685991047195e-1,1.909022152618288e-1,2.793802463198538e-1,3.2553062599357163e-1,3.617235018777234e-1,4.075226236596014e-1,4.439352488454573e-1,4.795472703844956e-1,5.142200954000731e-1,5.465829992737762e-1,5.744492169537898e-1,5.994998732034817e-1,6.282375062693856e-1,6.530045125448806e-1,6.743302499027434e-1,6.95187098553121e-1,7.139203678540524e-1,7.322417490086522e-1],
       "f_model_t_plus": [1.2274924706215821e-5,1.6727483027005132e-2,7.261610274862915e-2,1.544490424274749e-1,1.8193378385044942e-1,1.9977412483774099e-1,2.8728559917874413e-1,3.3292976806154395e-1,3.687256035906397e-1,4.140222951853193e-1,4.5003546200185174e-1,4.852568079742863e-1,5.19549260708025e-1,5.515571328927575e-1,5.791176490087375e-1,6.038934913283956e-1,6.323158631171487e-1,6.568111671960254e-1,6.779029542080054e-1,6.985309963756855e-1,7.170587555571343e-1,7.344478310212065e-1],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.CRP6-P4K3.T978-FRG.CRP6-8a.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "d9eefc2f99d697a149450d851900aa5cefadded9a7a2791eef76744a3d840ca7",
         "refined_output_sha256": "ac9777ef4d595c8dad6af99a7216459f4b839534a06e5d10bf5718542314d811",
@@ -4958,6 +5046,9 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
@@ -5201,6 +5292,9 @@
         "C0",
         "V1"
       ],
+      "missing_conditions": [
+        "inventory reference of the decay not set"
+      ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
       "decay_reference": null,
@@ -5397,8 +5491,8 @@
       "f_model_t_minus": [4.1588586064117294e-129,1.0120352172360707e-29,5.09080357160172e-15,1.1526141639502448e-9,1.8635229647328537e-8,4.507819422988668e-8,2.7891119281230745e-6,1.2355653020591694e-5,3.2023078336588635e-5,8.103994976756117e-5,1.5650920000576468e-4,2.705007119235023e-4,4.541945921345096e-4,6.709788247988208e-4,9.68856040661379e-4,1.2712558320054576e-3,1.7130044339618074e-3,2.22944572811291e-3,2.771677452868306e-3,3.3490285603943524e-3,4.038719551259685e-3,4.728340912903588e-3],
       "f_model_t_plus": [2.005020840780748e-67,1.7351677538876009e-25,5.294235777330919e-14,2.666234742474577e-9,3.3979135258777224e-8,7.683662323544484e-8,3.6589562755593106e-6,1.507359936685043e-5,3.752509968168464e-5,9.173517887420786e-5,1.73358363071106e-4,2.9478044794895307e-4,4.8810010062951215e-4,7.141938002906057e-4,1.0227396052034205e-3,1.334350104845507e-3,1.7876062881684851e-3,2.3154824198683877e-3,2.8680716867747467e-3,3.4550857404004915e-3,4.1549217529327715e-3,4.822071638208764e-3],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.CRP6-P4K3.T978-FRG.CRP6-8a.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "1e17e7140baf6530ce4e01e91c01d1e6c5685110d193c9e1085badbb39ba816a",
         "refined_output_sha256": "e215187f74e9415352e46df80f0b25669f7fd519aea46c5dddb0e83580cd7997",
@@ -5450,6 +5544,9 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
@@ -5693,6 +5790,9 @@
         "C0",
         "V1"
       ],
+      "missing_conditions": [
+        "inventory reference of the decay not set"
+      ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
       "decay_reference": null,
@@ -5881,8 +5981,8 @@
       "f_model_t_minus": [9.712025731322835e-5,1.0072494156103816e-3,3.745359239857635e-3,5.954060478022592e-3,1.0964584747750495e-2,1.419472785534767e-2,1.7434830109212655e-2,2.1373784379470396e-2,2.4814922046310858e-2,2.8160129291429362e-2,3.216099123066392e-2,3.572795882802411e-2,3.9464882057322494e-2,4.289460837094317e-2,4.725423434498897e-2,5.0822945563170865e-2,5.468232809896284e-2,5.8362710998866474e-2,6.186298187592807e-2,6.533378643043354e-2],
       "f_model_t_plus": [2.3910669797074863e-4,1.39073484121945e-3,4.3446961794981e-3,6.6366721392752326e-3,1.1755267228209784e-2,1.5027884425534327e-2,1.8298946871434595e-2,2.2264901673852838e-2,2.572273775539794e-2,2.90795327286984e-2,3.3089545431799e-2,3.6661206290370514e-2,4.0400202435632186e-2,4.382969631473509e-2,4.818656667919815e-2,5.175129065275408e-2,5.5604876659472405e-2,5.927849620229786e-2,6.277136752520372e-2,6.608413817825955e-2],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.CRP6-P4K3.T978-FRG.CRP6-8a.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "0db5520f399051895733659316f5f962d51ecc270deb746ae54c1e2c39d10f90",
         "refined_output_sha256": "9adde25eb5184203f18ac0285fa5415dba11ffa3fa8479108d2cf7e79b091f1f",
@@ -5932,6 +6032,9 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",
@@ -6164,6 +6267,9 @@
         "B1",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "inventory reference of the decay not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "not_stated",

@@ -4,14 +4,14 @@
   "provenance": {
     "label": "numerical solution of the stated model; not experimental validation",
     "solver": "STRATO BTCS five-layer spherical finite difference",
-    "solver_version": "1.0.1",
+    "solver_version": "2.1.0",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "461aa1d",
-    "solver_source_sha256": "02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275",
+    "commit": "55b1046",
+    "solver_source_sha256": "8786a3048e6415adc2aabbed2e0b79dfc823d3a54ef2b06d42b833d72bc16383",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
-      "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
+      "arrhenius.csv": "7af310fba1d4a994e9914523455ecafff927582295d8fa4a1b217cc6f12bd06e",
       "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
       "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
       "temperature_histories.csv": "b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d",
@@ -318,8 +318,8 @@
       "f_model_t_minus": [3.260417846010994e-240,2.582366204380325e-98,1.4208066203413652e-30,1.52970757936076e-21,4.114262192963671e-15,1.655782132124855e-10,2.8983387348593617e-8,6.158354560124469e-7,4.494913534109406e-6,1.8679332891529086e-5,9.436655259799771e-4],
       "f_model_t_plus": [2.856627801868765e-239,5.119521971217784e-94,2.66572734943684e-30,2.0629022191802553e-21,4.713407956759034e-15,1.754593775104536e-10,2.991980731111274e-8,6.282704733426614e-7,4.557389308203745e-6,1.8869013110942414e-5,9.451245265773835e-4],
       "model_run_ref": {
-        "solver_package_version": "1.0.1",
-        "commit": "461aa1d",
+        "solver_package_version": "2.1.0",
+        "commit": "55b1046",
         "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-FACS-4-3-3.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
         "base_output_sha256": "dc5bd79eec29b17b204aba13a724297f44b700e18295c620536775fecf950d6f",
         "refined_output_sha256": "6a2a98720dd7c7abb203529f93b1294b5e0be6ff7576726d12144d3911a87b05",
@@ -358,6 +358,9 @@
         "M2",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "decay reference of the correction not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "corrected",
@@ -543,6 +546,9 @@
         "B1",
         "C0",
         "V1"
+      ],
+      "missing_conditions": [
+        "decay reference of the correction not set"
       ],
       "coating_failure_basis": "none",
       "decay_correction": "corrected",

@@ -1,11 +1,11 @@
 # STRATO shared results: scenario runs (decimated rows of Method A)
 # label: numerical solution of the stated model; not experimental validation
-# solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1
+# solver: STRATO BTCS five-layer spherical finite difference, package version 2.1.0
 # pipeline: strato-results 0.1.0, schema 1
-# commit: 461aa1d
-# solver_source_sha256: 02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275
+# commit: 55b1046
+# solver_source_sha256: 8786a3048e6415adc2aabbed2e0b79dfc823d3a54ef2b06d42b833d72bc16383
 # input_sha256 geometry.csv: 8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f
-# input_sha256 arrhenius.csv: 2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4
+# input_sha256 arrhenius.csv: 7af310fba1d4a994e9914523455ecafff927582295d8fa4a1b217cc6f12bd06e
 # input_sha256 decay.csv: 9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf
 # input_sha256 fission_yields.csv: 4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0
 # input_sha256 temperature_histories.csv: b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d
