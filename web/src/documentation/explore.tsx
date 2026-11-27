@@ -172,7 +172,7 @@ function BalanceEntry() {
       <p>
         The inventory balance is taken at the end of the simulation; the residual is zero in exact arithmetic, and the solver reports the
         derived rounding bound beside it. The identity of the balance is: remaining + released + decayed − start − generated = residual
-        (equation F30); the directive writes the same identity with the opposite sign of the residual.
+        (equation F30); the same identity written the other way round gives the residual the opposite sign.
         {noSourceNoDecay ? ' The solved model has no source and no decay, so both terms are exactly zero by construction; they are not measured.' : ''}
       </p>
       <p>

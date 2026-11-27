@@ -73,7 +73,7 @@ describe('Explore under the minimal-text rules', () => {
   it('names the active solver and the physics it computes in one line each, and keeps the explanation of each term', () => {
     prepare(true);
     const { container } = render(<Explore compact={false} onOpenControls={() => undefined} />);
-    expect(container.querySelector('[data-testid="solver-status-line"]')?.textContent).toMatch(/^Method A: BTCS v2\.0\.0/);
+    expect(container.querySelector('[data-testid="solver-status-line"]')?.textContent).toMatch(/^Method A: BTCS v2\.1\.0/);
     expect(container.querySelector('[data-testid="active-model"]')?.textContent).toBe(
       'Computes: Baseline diffusion. Not computed: fission-product generation, radioactive decay and temperature-dependent diffusion.',
     );
