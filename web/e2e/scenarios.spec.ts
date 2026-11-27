@@ -26,7 +26,8 @@ test.describe('scenario row at 1440 x 900', () => {
     // Baseline only today: no scenario is selected, and all five (steady-state operation too) are planned, because the baseline run is not a scenario.
     for (const s of SCENARIOS) await expect(page.getByTestId(`scenario-status-${s}`)).toHaveText('Planned');
     await expect(group.locator('[aria-checked="true"]')).toHaveCount(0);
-    await expect(page.getByTestId('scenario-rule')).toContainText('A scenario selects the combined model');
+    await expect(page.getByTestId('scenario-rule')).toHaveCount(0);
+    await expect(page.getByTestId('scenario-picker')).toHaveAttribute('aria-description', /A scenario selects the combined model/);
   });
 
   test('each scenario changes only G and D in the equation, selects the combined model and says it is not simulated here', async ({ page, problems }) => {
@@ -63,7 +64,8 @@ test.describe('scenario row at 1440 x 900', () => {
       await expect(page.locator('.katex-error')).toHaveCount(0);
       await expect(page.getByTestId('scenario-explanation')).toContainText(`${LABELS[SCENARIOS.indexOf(s)]}`);
       await expect(page.getByTestId('unsupported-simulation')).toContainText('does not implement');
-      await expect(page.getByTestId('unsupported-results')).toContainText('no result is shown for this selection');
+      await expect(page.getByTestId('unsupported-simulation')).toContainText('no result is shown for this selection');
+      await expect(page.getByTestId('block-e')).toHaveCount(0);
       await expect(page.getByTestId('particle')).toHaveCount(0);
     }
     await page.waitForTimeout(300);

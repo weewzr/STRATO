@@ -26,6 +26,8 @@ const SCENARIOS = [
 async function expectFits(page: Page, width: number, label: string) {
   expect(await horizontalOverflow(page), label).toBeLessThanOrEqual(0);
   for (const id of ['equation-governing', 'scenario-picker', 'block-d', 'block-e']) {
+    // The results block is absent for a selection that the build does not simulate.
+    if (id === 'block-e' && (await page.getByTestId('block-e').count()) === 0) continue;
     const box = await page.getByTestId(id).boundingBox();
     expect((box?.x ?? 0) + (box?.width ?? 0), `${label}: ${id}`).toBeLessThanOrEqual(width + 0.5);
   }
@@ -37,15 +39,14 @@ async function expectNothingSubstituted(page: Page, name: string) {
   await expect(page.getByTestId('block-d')).toHaveAttribute('data-run-status', 'none');
   await expect(page.getByTestId('unsupported-simulation')).toContainText('does not implement');
   await expect(page.getByTestId('unsupported-simulation')).toContainText(name);
-  await expect(page.getByTestId('unsupported-results')).toContainText('no result is shown for this selection');
+  await expect(page.getByTestId('unsupported-simulation')).toContainText('no result is shown for this selection');
+  await expect(page.getByTestId('block-e')).toHaveCount(0);
   // The solver stays identified in D by its status line, and the physics of the build by one line.
   await expect(page.getByTestId('solver-status-line').first()).toContainText('Method A: BTCS');
-  await expect(page.getByTestId('active-model')).toContainText('Not computed:');
-  // Nothing is running, so nothing says that a computation runs (finding of the science verifier); the sentences on reruns left the page.
-  await expect(page.getByTestId('active-model')).toContainText('This build computes');
+  // The condition is stated once (the bold sentence in D): no second line on what the build computes, no note under Run, no result block.
+  await expect(page.getByTestId('active-model')).toHaveCount(0);
+  await expect(page.getByTestId('run-unsupported')).toHaveCount(0);
   await expect(page.getByTestId('block-d')).not.toContainText('reruns');
-  // Every sentence starts with a capital letter.
-  expect(await page.getByTestId('active-model').innerText()).not.toMatch(/[.!?]\s+[a-z]/);
   for (const id of ['particle', 'release-readout', 'profile-figure', 'release-figure', 'balance-panel', 'diagnostics-panel']) {
     await expect(page.getByTestId(id), id).toHaveCount(0);
   }

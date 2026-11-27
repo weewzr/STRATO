@@ -79,6 +79,16 @@ describe('Scientific Documentation holds what left Explore', () => {
     expect(text).toContain('in the live simulation on Explore');
   });
 
+  it('points only to what Explore shows: no commit on Explore, and no comparison under Validate yet', () => {
+    render(<Documentation />);
+    const text = entry('explore-numerical');
+    expect(text).not.toContain('version, commit and verification status');
+    expect(text).toContain('its version and verification status are shown in the status line of the live simulation on Explore');
+    expect(text).toContain('the build is under Technical implementation and build');
+    expect(text).toContain('the comparison with measured release will appear under Validate; none is available in this build.');
+    expect(text).not.toContain('measured release is under Validate');
+  });
+
   it('holds the details of the three figures and of the controls', () => {
     render(<Documentation />);
     const figures = entry('explore-figures');

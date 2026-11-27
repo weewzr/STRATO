@@ -152,14 +152,12 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
           unit="mol/m³"
           value={config.initial.kernel_concentration_mol_m3}
           onCommit={setKernelConcentration}
-          hint="Uniform in the kernel, zero in the coating layers."
         />
         <NumberField
           label="Temperature"
           unit="K"
           value={config.temperature_k}
           onCommit={setTemperature}
-          hint="Recorded with the result; not used by this solver."
         />
       </fieldset>
       <fieldset className="group">
@@ -206,7 +204,6 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
           type="button"
           className="btn btn--primary"
           aria-disabled={solverState !== 'ready' || !support.supported}
-          aria-describedby={support.supported ? undefined : `${ids.run}-unsupported`}
           data-testid="run"
           onClick={() => {
             if (!support.supported) {
@@ -247,11 +244,6 @@ export function ControlPanel({ layout = 'inline', onClose }: { layout?: ControlL
           Set current as baseline
         </button>
       </div>
-      {support.supported ? null : (
-        <p id={`${ids.run}-unsupported`} className="field__hint" data-testid="run-unsupported">
-          Run is off for this selection; Live simulation gives the reason.
-        </p>
-      )}
       <p className="visually-hidden" role="status" aria-live="polite" data-testid="announce">
         {announce}
       </p>

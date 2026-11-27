@@ -85,11 +85,13 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
             Live simulation
           </h2>
           <p className="block__context" data-testid="simulation-case">
-            Case: {entry?.title ?? caseId} <a href={hrefDocumentation('explore-case')}>Case and scope</a>
+            Case: {entry?.title ?? caseId} <a href={hrefDocumentation('explore-case')} className="link-target">
+              Case and scope
+            </a>
           </p>
           <SolverStatus />
         </div>
-        <ActiveModel supported={support.supported} />
+        {support.supported ? <ActiveModel /> : null}
         {support.supported ? (
           <>
             <div className="strip" role="group" aria-label="Simulation strip" data-testid="sim-strip">
@@ -159,32 +161,28 @@ export function Explore({ compact, onOpenControls }: { compact: boolean; onOpenC
       </section>
 
       {/* E: results of the simulation above (model output only) */}
-      <section className="block block--e" data-block="E" aria-labelledby={ids.e} data-testid="block-e" data-supported={support.supported ? 'true' : 'false'}>
-        <div className="block__head block__head--row">
-          <h2 id={ids.e} className="block__title">
-            Results
-          </h2>
-          <p className="block__context">
-            <a href={hrefDocumentation('explore-figures')}>Figure details</a>
-          </p>
-        </div>
-        {support.supported ? (
-          <>
-            <ReleaseReadout />
-            <div className="results-plots">
-              <SimPlots compact={compact} />
-            </div>
-            <div className="results" role="group" aria-label="Inventory balance and numerical diagnostics of the run">
-              <BalancePanel />
-              <DiagnosticsPanel />
-            </div>
-          </>
-        ) : (
-          <p className="sim-alert" role="status" data-testid="unsupported-results">
-            <strong className="sim-alert__title">No simulation was run:</strong> no result is shown for this selection (see Live simulation).
-          </p>
-        )}
-      </section>
+      {support.supported ? (
+        <section className="block block--e" data-block="E" aria-labelledby={ids.e} data-testid="block-e" data-supported="true">
+          <div className="block__head block__head--row">
+            <h2 id={ids.e} className="block__title">
+              Results
+            </h2>
+            <p className="block__context">
+              <a href={hrefDocumentation('explore-figures')} className="link-target">
+                Figure details
+              </a>
+            </p>
+          </div>
+          <ReleaseReadout />
+          <div className="results-plots">
+            <SimPlots compact={compact} />
+          </div>
+          <div className="results" role="group" aria-label="Inventory balance and numerical diagnostics of the run">
+            <BalancePanel />
+            <DiagnosticsPanel />
+          </div>
+        </section>
+      ) : null}
     </article>
   );
 }

@@ -24,7 +24,7 @@ import { ITEM_IDS, scenarioNote } from '../src/equation/numerics';
 import { equationPieces, equationTex, D_SCENARIO, G_SCENARIO } from '../src/equation/physics';
 import { renderTex } from '../src/equation/Tex';
 import { ScenarioPicker } from '../src/equation/ScenarioPicker';
-import { NO_SCENARIO_TEXT, paramsFor, SCENARIO_KIND, SCENARIO_LABEL, SCENARIO_RULE, SCENARIOS } from '../src/equation/scenarios';
+import { paramsFor, SCENARIO_KIND, SCENARIO_LABEL, SCENARIO_RULE, SCENARIOS } from '../src/equation/scenarios';
 import { CatalogueContext, type Catalogue } from '../src/research/catalogue';
 import { Explore } from '../src/sections/Explore';
 import { exploreHash, startAddressSync } from '../src/state/address';
@@ -212,7 +212,9 @@ describe('the explanation of the selected scenario', () => {
   it('is shown with the selected scenario, with the prescribed-input label, and follows the selection', async () => {
     const user = userEvent.setup();
     render(<ScenarioPicker />);
-    expect(screen.getByTestId('scenario-explanation').textContent).toBe(NO_SCENARIO_TEXT);
+    // With no scenario nothing is explained on the page (the sentence is in Scientific Documentation).
+    expect(screen.getByTestId('scenario-explanation').textContent).toBe('');
+    expect(screen.getByTestId('scenario-explanation').hidden).toBe(true);
     for (const s of SCENARIO_IDS) {
       await user.click(screen.getByTestId(`scenario-${s}`));
       const box = screen.getByTestId('scenario-explanation');
@@ -244,9 +246,12 @@ describe('the explanation of the selected scenario', () => {
 });
 
 describe('the rule that couples a scenario to the physics', () => {
-  it('is stated once on the page in one sentence', () => {
+  it('is one sentence, held as the description of the scenario row and in full in Scientific Documentation, not as a line of the page', () => {
     render(<ScenarioPicker />);
-    expect(screen.getByTestId('scenario-rule').textContent).toBe(SCENARIO_RULE);
+    expect(screen.queryByTestId('scenario-rule')).toBeNull();
+    const row = screen.getByTestId('scenario-picker');
+    expect(row.getAttribute('aria-description')).toBe(SCENARIO_RULE);
+    expect(row.getAttribute('title')).toBe(SCENARIO_RULE);
     expect(SCENARIO_RULE.match(/\./g)).toHaveLength(1);
   });
 
@@ -343,7 +348,8 @@ describe('status and enabled state come from the capability object', () => {
       const sim = screen.getByTestId('unsupported-simulation').textContent ?? '';
       expect(sim, s).toContain(`the ${SCENARIO_NAME[s]} scenario`);
       expect(sim, s).toMatch(/does not implement/);
-      expect(screen.getByTestId('unsupported-results').textContent, s).toMatch(/no result is shown for this selection/);
+      expect(sim, s).toMatch(/no result is shown for this selection/);
+      expect(screen.queryByTestId('block-e'), s).toBeNull();
       expect(screen.queryByTestId('particle'), s).toBeNull();
       expect(screen.queryByTestId('release-readout'), s).toBeNull();
       expect(screen.getByTestId('block-d').dataset.runStatus, s).toBe('none');

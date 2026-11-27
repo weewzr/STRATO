@@ -95,7 +95,9 @@ function ComparisonFigure() {
       ) : null}
       <figcaption className="figure__caption">
         <strong>Figure 1.</strong> Fraction of the initial inventory released: baseline (grey) and current inputs (blue), with their difference
-        (green, right axis) when switched on. <a href={hrefDocumentation('compare-limits')}>Method and limits</a>
+        (green, right axis) when switched on. <a href={hrefDocumentation('compare-limits')} className="link-target">
+          Method and limits
+        </a>
       </figcaption>
     </figure>
   );

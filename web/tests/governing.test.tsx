@@ -37,6 +37,11 @@ const ALL_VERIFIED = fixtureCatalogue({ generation: 'VERIFIED', decay: 'VERIFIED
 const ALL_REPORTED = ['diffusion_btcs_layered', 'generation', 'decay', 'diffusivity_temperature'];
 
 describe('the TeX of the governing equation', () => {
+  it('typesets the directive power r^2 without parentheses', () => {
+    expect(equationTex('combined')).not.toContain(String.raw`\left(r\right)`);
+    expect(equationTex('combined')).toContain('r^2');
+  });
+
   it('shows the directive equations: the baseline first and the combined model last', () => {
     expect(normal(BASE)).toBe(normal(DIRECTIVE_BASE));
     expect(normal(equationTex('combined'))).toBe(normal(DIRECTIVE_FINAL));
@@ -276,7 +281,7 @@ describe('the simulation and results follow the selection and the capability of 
     expect(screen.getByTestId('block-d').dataset.supported).toBe('true');
     expect(screen.getByTestId('particle')).toBeTruthy();
     expect(screen.queryByTestId('unsupported-simulation')).toBeNull();
-    expect(screen.queryByTestId('unsupported-results')).toBeNull();
+    expect(screen.getByTestId('block-e')).toBeTruthy();
   });
 
   it('for a mechanism that this build does not implement, D and E say so and show no substituted result', () => {
@@ -287,7 +292,11 @@ describe('the simulation and results follow the selection and the capability of 
     renderExplore();
     expect(screen.getByTestId('block-d').dataset.supported).toBe('false');
     expect(screen.getByTestId('unsupported-simulation').textContent).toMatch(/does not implement fission-product generation/);
-    expect(screen.getByTestId('unsupported-results').textContent).toMatch(/no result is shown for this selection/);
+    // The condition is stated once, in D; E (the results) is not shown at all.
+    expect(screen.getByTestId('unsupported-simulation').textContent).toMatch(/no result is shown for this selection/);
+    expect(screen.queryByTestId('block-e')).toBeNull();
+    expect(screen.queryByTestId('active-model')).toBeNull();
+    expect(screen.queryByTestId('run-unsupported')).toBeNull();
     expect(screen.queryByTestId('particle')).toBeNull();
     expect(screen.queryByTestId('release-readout')).toBeNull();
     expect(screen.queryByTestId('profile-figure')).toBeNull();
@@ -318,7 +327,7 @@ describe('the simulation and results follow the selection and the capability of 
     renderExplore();
     const text = screen.getByTestId('unsupported-simulation').textContent ?? '';
     for (const part of ['fission-product generation', 'radioactive decay', 'temperature-dependent diffusion', 'startup scenario']) expect(text).toContain(part);
-    expect(screen.getByTestId('block-e').dataset.supported).toBe('false');
+    expect(screen.queryByTestId('block-e')).toBeNull();
   });
 
   it('while the wrapper has not reported, the selection is not called unsupported', () => {

@@ -1,7 +1,7 @@
 import { useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useStrato } from '../state/store';
 import { SCENARIO_IDS, mechanismsOf, scenarioStatus, type ScenarioId } from './capability';
-import { NO_SCENARIO_TEXT, paramsFor, SCENARIO_KIND, SCENARIO_LABEL, SCENARIO_RESET, SCENARIO_HEADING, SCENARIO_RULE, SCENARIOS, scenarioChange } from './scenarios';
+import { paramsFor, SCENARIO_KIND, SCENARIO_LABEL, SCENARIO_RESET, SCENARIO_HEADING, SCENARIO_RULE, SCENARIOS, scenarioChange } from './scenarios';
 import { StatusTag } from './StatusTag';
 import { Tex } from './Tex';
 import { useBuildCapability } from './useCapability';
@@ -72,7 +72,7 @@ export function ScenarioPicker() {
           Operating scenarios
         </h2>
       </div>
-      <div className="physics scenarios" role="radiogroup" aria-label="Operating scenario" data-testid="scenario-picker">
+      <div className="physics scenarios" role="radiogroup" aria-label="Operating scenario" aria-description={SCENARIO_RULE} title={SCENARIO_RULE} data-testid="scenario-picker">
         {SCENARIO_IDS.map((id, i) => {
           const checked = id === scenario;
           const status = scenarioStatus(cap, id);
@@ -98,18 +98,11 @@ export function ScenarioPicker() {
           );
         })}
       </div>
-      <p className="scenario__rule" data-testid="scenario-rule">
-        {SCENARIO_RULE}
-      </p>
       <p className="visually-hidden" role="status" aria-live="polite" data-testid="scenario-announce">
         {message}
       </p>
-      <div className="scenario" data-testid="scenario-explanation" data-scenario={scenario ?? 'none'}>
-        {scenario === null || info === null ? (
-          <p className="scenario__text" data-testid="no-scenario">
-            {NO_SCENARIO_TEXT}
-          </p>
-        ) : (
+      <div className="scenario" data-testid="scenario-explanation" data-scenario={scenario ?? 'none'} hidden={scenario === null}>
+        {scenario === null || info === null ? null : (
           <>
             <h3 className="scenario__title">
               {SCENARIO_HEADING[scenario]} <span className="scenario__kind">{SCENARIO_KIND}</span>

@@ -1,7 +1,7 @@
 // The governing equation of the Explore page and its progression (owner directive of 26 Nov 2026,
 // Section 2). Display only: nothing here is evaluated. The equations are those of the directive; the
-// notation follows the repository documents (a power encloses the whole variable in parentheses), so
-// the directive's r^2 is written (r)^2 and nothing else differs. The combined equation is also
+// typesetting is the directive's own (r^2); the repository documents write the same power as (r)^2 and
+// nothing else differs. The combined equation is also
 // equation (1) of Document 5 (docs/mathematics/btcs/05_generation_decay_temperature.md).
 import { MECHANISMS, type Mechanism, type PhysicsId, type ScenarioId } from './capability';
 
@@ -16,7 +16,7 @@ const LHS = String.raw`\frac{\partial C}{\partial t} =`;
 /** The diffusion operator with the coefficient `d` inside it (the temperature law enters here, never as a term). */
 export function operatorTex(d: string): string {
   // The thin space before the gradient is spacing only (Document 5 writes it too); it changes no mathematics.
-  return String.raw`\frac{1}{\left(r\right)^2}\frac{\partial}{\partial r}\left(\left(r\right)^2 ${d}\,\frac{\partial C}{\partial r}\right)`;
+  return String.raw`\frac{1}{r^2}\frac{\partial}{\partial r}\left(r^2 ${d}\,\frac{\partial C}{\partial r}\right)`;
 }
 
 export type PieceId = 'lhs' | 'operator' | 'generation' | 'decay';
@@ -95,6 +95,13 @@ export const PHYSICS_CHANGE: Record<PhysicsId, string> = {
   decay: 'Radioactive decay: the term minus lambda C enters the right-hand side of the baseline equation.',
   temperature: 'Temperature-dependent diffusion: the diffusivity D becomes D of r and T inside the diffusion operator; no term is added.',
   combined: 'Combined model: the diffusivity is D of r and T inside the operator, and the terms plus G and minus lambda C are added on the right.',
+};
+
+/** The same sentences under an operating scenario that changes the symbols in time: D of r and T of t, and G of r and t. */
+export const PHYSICS_CHANGE_SCENARIO: Partial<Record<PhysicsId, string>> = {
+  temperature: 'Temperature-dependent diffusion: under the scenario the diffusivity is D of r and T of t inside the diffusion operator; no term is added.',
+  combined:
+    'Combined model: under the scenario the diffusivity is D of r and T of t inside the operator, the source is G of r and t, and the term minus lambda C is added on the right.',
 };
 
 export interface TermMeaning {

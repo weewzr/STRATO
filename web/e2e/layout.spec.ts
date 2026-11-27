@@ -15,6 +15,25 @@ for (const vp of VIEWPORTS) {
       });
     }
 
+    test('the sticky header is compact: at most 100 px high from 768 px, and as high as --header-height', async ({ page, problems }) => {
+      void problems;
+      await gotoSection(page, 'explore');
+      const h = await page.locator('header.header').evaluate((e) => e.getBoundingClientRect().height);
+      if (vp.width >= 768) expect(h).toBeLessThanOrEqual(100);
+      const declared = await page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height')));
+      if (vp.width >= 768) expect(Math.abs(h - declared)).toBeLessThanOrEqual(2);
+    });
+
+    test('phone targets: the footer link, the figure links and the switches are 44 px', async ({ page, problems }) => {
+      void problems;
+      test.skip(vp.width >= 768, 'phone width only');
+      await gotoSection(page, 'compare');
+      const height = (sel: string) => page.locator(sel).first().evaluate((e) => e.getBoundingClientRect().height);
+      expect(await height('.status__link')).toBeGreaterThanOrEqual(43.5);
+      expect(await height('a.link-target')).toBeGreaterThanOrEqual(43.5);
+      expect(await height('.switch-row .plot-option')).toBeGreaterThanOrEqual(43.5);
+    });
+
     test('controls: inline in block D from 768 px, a bottom sheet below', async ({ page, problems }, info) => {
       void problems;
       await gotoSection(page, 'explore');

@@ -3,7 +3,7 @@ import { useStrato } from '../state/store';
 import { BUILD_STATUSES, PHYSICS_IDS, STATUS_DEFINITION, STATUS_LABEL, mechanismsOf, physicsStatus, type PhysicsId } from './capability';
 import { StatusTag } from './StatusTag';
 import { useSideScroll } from './EquationBuilder';
-import { equationPieces, isTimed, meaningsFor, PHYSICS_CHANGE, PHYSICS_LABEL, type Piece } from './physics';
+import { equationPieces, isTimed, meaningsFor, PHYSICS_CHANGE, PHYSICS_CHANGE_SCENARIO, PHYSICS_LABEL, type Piece } from './physics';
 import { Tex } from './Tex';
 import { useBuildCapability } from './useCapability';
 
@@ -53,7 +53,7 @@ export function GoverningEquation() {
   const [message, setMessage] = useState('');
   if (seen !== physics) {
     setSeen(physics);
-    if (seen !== null) setMessage(PHYSICS_CHANGE[physics]);
+    if (seen !== null) setMessage((isTimed(scenario) ? PHYSICS_CHANGE_SCENARIO[physics] : undefined) ?? PHYSICS_CHANGE[physics]);
   }
 
   const onKey = (e: KeyboardEvent<HTMLButtonElement>, id: PhysicsId) => {

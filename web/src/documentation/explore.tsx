@@ -85,7 +85,14 @@ const onExplore = (s: string): string =>
   s
     .replace('in the live simulation below', 'in the live simulation on Explore')
     .replace('are listed below,', 'are listed in the live simulation on Explore,')
-    .replace('in the numbers below and in the diagnostics under the live simulation', 'in the numbers and in the diagnostics of the live simulation on Explore');
+    .replace(
+      'its version, commit and verification status are listed in the numbers below and in the diagnostics under the live simulation',
+      'its version and verification status are shown in the status line of the live simulation on Explore; the build is under Technical implementation and build',
+    )
+    .replace(
+      'the comparison with measured release is under Validate.',
+      'the comparison with measured release will appear under Validate; none is available in this build.',
+    );
 
 const LIVE_NOTES: { step: string; text: string }[] = Object.values(STEP_DEFS)
   .filter((d) => !d.live.startsWith('This step states mathematics') && !d.live.startsWith('The simulation below uses the synthetic'))
