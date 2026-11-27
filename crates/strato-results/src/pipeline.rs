@@ -22,7 +22,7 @@ use crate::output::{json_file, masked, Files, Prov, SCHEMA_VERSION};
 use crate::params::{generation_nuclides, laws_json, rate_density, reference_generation, Laws};
 use crate::r2run::run_all;
 use crate::scen;
-use crate::verification::{agreement, conservation, convergence, Conservation};
+use crate::verification::{agreement, conservation, convergence, AgreementCurve, Conservation};
 
 /// What to run.
 #[derive(Debug, Clone)]
@@ -96,6 +96,7 @@ pub fn generate(opts: &Options) -> Result<Files, String> {
         ],
     );
     let mut stage1_curves: Vec<Stage1> = Vec::new();
+    let mut stage3_agreement: Vec<AgreementCurve> = Vec::new();
     let mut conservation_entries: Vec<Conservation> = Vec::new();
 
     // Bound comparisons (statuses for the technical section) and their model values.
@@ -172,6 +173,10 @@ pub fn generate(opts: &Options) -> Result<Files, String> {
                 files.insert(format!("curves/{}.json", ec.key), json);
                 for r in &ec.csv_rows {
                     curves_csv.row(r.clone());
+                }
+                // Method B through the decay extension, where it is drawn: compared with Method A.
+                if stage == 3 && ec.b_available {
+                    stage3_agreement.push(AgreementCurve::from_stage3(&ec));
                 }
                 conservation_entries.push(Conservation {
                     key: ec.key.clone(),
@@ -575,7 +580,12 @@ pub fn generate(opts: &Options) -> Result<Files, String> {
     // ---- Verification.
     let (conv_json, conv_csv) = convergence(&prov, &geometry, opts.quick)?;
     files.insert("verification/convergence.json".into(), conv_json);
-    let (agr_json, agr_csv_rows) = agreement(&prov, &stage1_curves);
+    let agreement_curves: Vec<AgreementCurve> = stage1_curves
+        .iter()
+        .map(AgreementCurve::from_stage1)
+        .chain(stage3_agreement)
+        .collect();
+    let (agr_json, agr_csv_rows) = agreement(&prov, &agreement_curves);
     files.insert("verification/agreement.json".into(), agr_json);
     let (cons_json, cons_csv_rows) = conservation(&prov, &conservation_entries);
     files.insert("verification/conservation.json".into(), cons_json);
@@ -602,6 +612,7 @@ pub fn generate(opts: &Options) -> Result<Files, String> {
             "Final relative difference",
             "Method B accuracy floor",
             "Method B first valid time (h)",
+            "Stage",
         ],
     );
     for r in agr_csv_rows {

@@ -41,21 +41,15 @@ A release-versus-time curve is a set of rows of `release_measurements.csv` (one 
 
 ## Checking
 
-Since 2026-11-25 the Rust crate `strato-data` is the checker of record: `cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-data -- check --repo .` reads all nine files and reproduces every check of the Python script (list in `crates/strato-data/CHECKS.md`) and the family DI of the data integration. The Python script below still runs and passes; it is kept until the Rust checks are independently verified (decision 46). The register is no longer regenerated from the template: the template and `render_register.py` do not contain the merged tables, so running them would drop them.
+The Rust crate `strato-data` is the checker of record: `cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-data -- check --repo .` reads all nine files and reproduces every check of the former Python script `D5_parameter_register.py` (91 checks, replaced by it; the Rust test of each is named in `crates/strato-data/CHECKS.md`) and the families DI and EX of the data integration. It prints one PASS or FAIL line per check, writes nothing and exits with status 1 if a check fails.
 
-Run
-
-```bash
-.venv/Scripts/python.exe -I -X utf8 scripts/derivation_checks/D5_parameter_register.py
-```
-
-after any edit. It reads the CSVs, writes nothing and prints PASS/FAIL lines (91 checks including the B6 family V, all PASS on 2026-11-06). If a value is changed, change the CSV first, re-run the script (save its output to a text file), then regenerate the register with
+After any edit: change the CSV first, run the check, then bring the generated tables of the register up to date with
 
 ```bash
-python -I -X utf8 scripts/data_register/render_register.py <STRATO root> scripts/data_register/register_template.md <out.md> <check_output.txt>
+cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-data -- register --write --repo .
 ```
 
-so that the CSV and the register keep the same row identifiers and values. Narrative text lives in `register_template.md`; table lines of the form `@@kind args@@` are filled from the CSVs.
+so that the CSV and the register keep the same row identifiers and values. The register is partly generated and partly written by hand: a table between the marker lines `<!-- strato-data:table KIND ARGS -->` and `<!-- strato-data:end -->` is generated from the CSV files (kinds `geom`, `radii`, `arr`, `decay`, `fy`, `temp`, `rel`); everything outside the markers is hand-written and `--write` never changes one byte of it. `register --check` (the same command with `--check`) regenerates every marked table in memory and fails if the document differs from the CSV files; CI runs it. The Python generator and its template were removed (their output is the output of this command, table for table, as the tests of the crate show).
 
 ## Provenance of the audit
 

@@ -54,7 +54,7 @@ Evidence classes (CSV column `evidence_class`, added by the B6 audit on 2026-11-
 | `data/irradiation/agr1_burnup_by_cycle.csv` | burnup and fast fluence of 72 compacts and 6 capsule averages after each of the 13 ATR cycles | 2028 |
 | `data/irradiation/agr1_power_history_digitised.csv` | capsule-average heat generation history (digitised, 124 windows per capsule) | 744 |
 | `crates/strato-data` | typed Rust readers of the nine files, the selection of the published coefficient and the Rust checks (Section 10.1) | 150 checks |
-| `scripts/derivation_checks/D5_parameter_register.py` | consistency and derivation checks (Section 10), including the B6 family V | 91 checks |
+| `crates/strato-data` (`strato-data register --check`) | the generated tables of this document: a table between the marker lines `<!-- strato-data:table KIND ARGS -->` and `<!-- strato-data:end -->` is regenerated from the CSV files and compared with the document (`--write` rewrites it); the text outside the markers is written by hand and is never changed | 26 tables |
 | `scripts/data_register/b6_audit_patch.py` | idempotent B6 patch: adds `evidence_class` and `particle_applicability`, applies the location and note corrections | 33 cells changed, 0 numerical values |
 | `scripts/data_register/b6_nuclear_crosscheck.py` | B6 fresh LiveChart comparison of `decay.csv` and `fission_yields.csv` (needs network) | 204 checks |
 | `data/reference/B6_audit_log.md` | B6 audit log (Item, Check, Result, Correction); section 8 holds the decision 45 re-reads | |
@@ -77,6 +77,7 @@ No equation block was assigned to this deliverable, so the defining relations be
 | `arrhenius.csv` | `reference_radius_um` | kernel radius to which the original publication refers the coefficient | 250 for A1, T71 and the kernel rows of C15, C16, H21; empty elsewhere |
 | `arrhenius.csv` | `fluence_definition` | definition of Gamma for the exp(Gamma/5) factor, or the statement that the factor is not applied | filled on A3-01, E109-01, C15-07, C16-08, H21-06 |
 | `arrhenius.csv` | `range_kind` | what `T_min_C` and `T_max_C` are: `printed` (the source prints the range with the correlation) or `fitted` (the source prints no range; the columns hold the temperatures it fitted the correlation to; used on S20-01 to S20-03 only). Empty when the row has no range | filled on the 45 rows that have a range |
+| `arrhenius.csv` | `fitted_to` | the dataset the row was fitted to, where the comparability assessment establishes it: `<source> \| <location prefix>`, several separated by `;`; the independence rule of the R² records reads it | `IAEA (1997) \| Table 4-9` on A3-14 and E410-01; empty elsewhere (audit log section 13) |
 | `release_measurements.csv` | `reading_uncertainty` | what reading a value off a figure adds; not an experimental uncertainty | empty for values not read from a figure; `rel_value_pct=x`, `rel_value_pct=lo..hi`, `abs_value=x`, `factor=x` and `time_h=x` joined by semicolons; `not recorded` where the record states none (no row after the vector re-read of the Morris 2016 figures; the Collin 2016 rows state the one-pixel resolution of the embedded bitmap, rounded up to the rounding half-width of the recorded two-figure value where that is larger) |
 | `release_measurements.csv` | `denominator` | what the fraction is a fraction of | calculated compact inventory; calculated capsule inventory; average particle inventory (particle equivalents); not established (61 rows, comparison status DATA INCOMPLETE); not applicable |
 | `release_measurements.csv` | `value_class` | new class M-ND: non-detect, below the minimum detectable activity; the bound is a typical detection limit, not a limit measured for the test | applied to E-217, E-220, E-221, E-225, E-228, E-231 |
@@ -184,6 +185,7 @@ never $y^C_d\dot F/N_A + \lambda_p c_p$, which counts the parent twice. Class: m
 
 ### Table 1. AGR-1 Baseline particle and compact (Morris et al., 2016; Collin et al., 2016)
 
+<!-- strato-data:table geom AGR1-B-M16 AGR1-NOM-C16 AGR1-NOM-M16 -->
 | No. | Variable | Symbol | Value | Unit | Material / Nuclide | Temperature range | Uncertainty / class / note | Source / APA citation | Location | Link | Evidence class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | G-01 | kernel diameter (AGR-1 Baseline (Morris 2016 Table 2)) | $d_k = 2R_1$ | 350 | $\mathrm{\mu m}$ | UCO | n/a | none printed; measured (characterisation mean) | Morris et al. (2016) | 5.pdf Table 2; printed p. 27; idx 3 | [doi](https://doi.org/10.1016/j.nucengdes.2016.04.031) | measured | verified |
@@ -205,11 +207,13 @@ never $y^C_d\dot F/N_A + \lambda_p c_p$, which counts the parent twice. Class: m
 | G-17 | particles per compact (AGR-1 compact (Collin 2016 Sec. 2)) | $N_p$ | 4150 | 1 | compact | n/a | approximate (printed with ~); nominal | Collin et al. (2016) | 6.pdf; printed p. 379 and p. 385; idx 1 and 7 | [doi](https://doi.org/10.1016/j.nucengdes.2016.03.023) | specification | verified |
 | G-18 | compact-to-holder diametral gap (AGR-1 compact (Collin 2016 Sec. 2)) | $g_c$ | 0.1 | $\mathrm{mm}$ | compact | n/a | approximate (printed 'about'); nominal | Collin et al. (2016) | 6.pdf Sec. 2; printed p. 379; idx 1 | [doi](https://doi.org/10.1016/j.nucengdes.2016.03.023) | specification | verified |
 | G-19 | matrix composition natural/synthetic graphite/resin (AGR-1 compact matrix (Morris 2016)) | $w_{\mathrm{mat}}$ | 64/16/20 | $\mathrm{wt\%}$ | matrix | n/a | none printed; specification; similar to German A3-3 per source | Morris et al. (2016) | 5.pdf Sec. 2; printed p. 25; idx 1 | [doi](https://doi.org/10.1016/j.nucengdes.2016.04.031) | specification | verified |
+<!-- strato-data:end -->
 
 The Baseline set G-01 to G-05 (Morris et al., 2016, Table 2) is the recommended STRATO AGR-1 reference geometry. Collin et al. (2016) give only rounded nominal values (G-10 to G-14).
 
 ### Table 2. AGR-1 characterisation data by fuel variant (IAEA, 2012, Table 7.14)
 
+<!-- strato-data:table geom AGR1-T714 AGR1-T714-B AGR1-T714-V1 AGR1-T714-V2 AGR1-T714-V3 AGR1-SPEC AGR1-NOM-T1674 -->
 | No. | Variable | Symbol | Value | Unit | Material / Nuclide | Temperature range | Uncertainty / class / note | Source / APA citation | Location | Link | Evidence class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | G-20 | kernel diameter (AGR-1 (IAEA 2012 Table 7.14)) | $d_k = 2R_1$ | 349.7 | $\mathrm{\mu m}$ | UCO | n/a | SD 9.0; measured (actual mean +/- SD); single kernel value printed for all variants | IAEA (2012) | 3.pdf Table 7.14; printed p. 397; idx 410 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | measured | verified |
@@ -252,11 +256,13 @@ The Baseline set G-01 to G-05 (Morris et al., 2016, Table 2) is the recommended 
 | G-57 | SiC thickness (specified) (AGR-1 specification (IAEA 2012 Table 7.14)) | $t_4$ | 35 | $\mathrm{\mu m}$ | SiC | n/a | +/- 3 (specified range); design specification | IAEA (2012) | 3.pdf Table 7.14; printed p. 397; idx 410 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | specification | verified |
 | G-58 | OPyC thickness (specified) (AGR-1 specification (IAEA 2012 Table 7.14)) | $t_5$ | 40 | $\mathrm{\mu m}$ | PyC | n/a | +/- 4 (specified range); design specification | IAEA (2012) | 3.pdf Table 7.14; printed p. 397; idx 410 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | specification | verified |
 | G-59 | nominal particle diameter (AGR-1 nominal (IAEA 2012 Sec. 7.6.2)) | $2R$ | 780 | $\mathrm{\mu m}$ | UCO TRISO | n/a | nominal; nominal | IAEA (2012) | 3.pdf Sec. 7.6.2.2; printed p. 395; idx 408 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | specification | verified |
+<!-- strato-data:end -->
 
 Table 7.14 closes the AGR-1 kernel-density gap left open by 5.pdf and 6.pdf. The per-layer standard deviations of the coating thicknesses were not transcribed in the audit notes (Section 11).
 
 ### Table 3. TECDOC-978 reference TRISO designs (IAEA, 1997, Table 2-1)
 
+<!-- strato-data:table geom T978-FRG T978-USFIS T978-USFER T978-JP T978-USSR T978-CN -->
 | No. | Variable | Symbol | Value | Unit | Material / Nuclide | Temperature range | Uncertainty / class / note | Source / APA citation | Location | Link | Evidence class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | G-60 | kernel diameter (TECDOC-978 Table 2-1 FRG) | $d_k = 2R_1$ | 500 | $\mathrm{\mu m}$ | UO2 | n/a | none printed; design specification | IAEA (1997) | 2.pdf Table 2-1; printed p. 8; idx 15 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | specification | verified |
@@ -298,6 +304,7 @@ Table 7.14 closes the AGR-1 kernel-density gap left open by 5.pdf and 6.pdf. The
 | G-96 | SiC thickness (TECDOC-978 Table 2-1 China) | $t_4$ | 35 | $\mathrm{\mu m}$ | SiC | n/a | none printed; design specification | IAEA (1997) | 2.pdf Table 2-1; printed p. 8; idx 15 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | specification | verified |
 | G-97 | OPyC thickness (TECDOC-978 Table 2-1 China) | $t_5$ | 40 | $\mathrm{\mu m}$ | PyC | n/a | none printed; design specification | IAEA (1997) | 2.pdf Table 2-1; printed p. 8; idx 15 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | specification | verified |
 | G-98 | U-235 enrichment (TECDOC-978 Table 2-1 China) | $\varepsilon_5$ | 17.0 | $\%$ | UO2 | n/a | none printed; design specification; 8300 particles per sphere; heavy metal 5 g | IAEA (1997) | 2.pdf Table 2-1; printed p. 8; idx 15 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | specification | verified |
+<!-- strato-data:end -->
 
 ### Table 4. TECDOC-978 Table 2-1 operating and element data (design specification; p. 8 to 9, idx 15 to 16; status verified)
 
@@ -315,6 +322,7 @@ Footnote (2): specification value for the VGM reactor. Footnote (1) on the Japan
 
 ### Table 5. HTR-10 particle (IAEA, 1997, Table 2-3) and JAERI heating-test particle 80FPC1 (IAEA, 1997, Table 4-7)
 
+<!-- strato-data:table geom HTR10-DES HTR10-MEAS JAERI-80FPC1 -->
 | No. | Variable | Symbol | Value | Unit | Material / Nuclide | Temperature range | Uncertainty / class / note | Source / APA citation | Location | Link | Evidence class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | G-99 | kernel diameter (HTR-10 design (TECDOC-978 Table 2-3)) | $d_k = 2R_1$ | 500 | $\mathrm{\mu m}$ | UO2 | n/a | SD 25; design specification; kernel density design > 10.4 g cm^-3 | IAEA (1997) | 2.pdf Table 2-3; printed p. 13; idx 20 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | specification | verified |
@@ -332,11 +340,13 @@ Footnote (2): specification value for the VGM reactor. Footnote (1) on the Japan
 | G-111 | IPyC thickness (JAERI 80FPC1 heating-test particle (TECDOC-978 Table 4-7)) | $t_3$ | 29 | $\mathrm{\mu m}$ | PyC | n/a | SD 4; measured (mean +/- SD); density 1.86 Mg m^-3 | IAEA (1997) | 2.pdf Table 4-7; printed p. 161; idx 167 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | measured | verified |
 | G-112 | SiC thickness (JAERI 80FPC1 heating-test particle (TECDOC-978 Table 4-7)) | $t_4$ | 24 | $\mathrm{\mu m}$ | SiC | n/a | SD 1; measured (mean +/- SD); density 3.21 Mg m^-3 | IAEA (1997) | 2.pdf Table 4-7; printed p. 161; idx 167 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | measured | verified |
 | G-113 | OPyC thickness (JAERI 80FPC1 heating-test particle (TECDOC-978 Table 4-7)) | $t_5$ | 44 | $\mathrm{\mu m}$ | PyC | n/a | SD 6; measured (mean +/- SD); density 1.83 Mg m^-3 | IAEA (1997) | 2.pdf Table 4-7; printed p. 161; idx 167 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | measured | verified |
+<!-- strato-data:end -->
 
 The JAERI 80FPC1 particle (G-109 to G-113) is the particle of the measured release data in Table 39, which makes it the only fully specified measured-geometry plus measured-release pair in the paper set.
 
 ### Table 6. CRP-6 benchmark particles (IAEA, 2012, Tables 10.1 to 10.3)
 
+<!-- strato-data:table geom CRP6-SENS CRP6-UOUT CRP6-P4K3 CRP6-HRB22 CRP6-K6 CRP6-EU1BIS CRP6-HTRPM -->
 | No. | Variable | Symbol | Value | Unit | Material / Nuclide | Temperature range | Uncertainty / class / note | Source / APA citation | Location | Link | Evidence class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | G-114 | kernel diameter (CRP-6 sensitivity-study particle (IAEA 2012 Table 10.2)) | $d_k = 2R_1$ | 500 | $\mathrm{\mu m}$ | UO2 | n/a | none (benchmark definition); benchmark specification; density 10.81 Mg m^-3; 8.0 wt% U-235 | IAEA (2012) | 3.pdf Table 10.2; printed p. 541; idx 554 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | synthetic benchmark | verified |
@@ -375,9 +385,11 @@ The JAERI 80FPC1 particle (G-109 to G-113) is the particle of the measured relea
 | G-147 | IPyC thickness (HTR-PM particle (IAEA 2012 Table 10.2)) | $t_3$ | 40 | $\mathrm{\mu m}$ | PyC | n/a | none printed; design specification | IAEA (2012) | 3.pdf Table 10.2; printed p. 541; idx 554 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | specification | verified |
 | G-148 | SiC thickness (HTR-PM particle (IAEA 2012 Table 10.2)) | $t_4$ | 35 | $\mathrm{\mu m}$ | SiC | n/a | none printed; design specification; defective SiC <= 6e-5 | IAEA (2012) | 3.pdf Table 10.2; printed p. 541; idx 554 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | specification | verified |
 | G-149 | OPyC thickness (HTR-PM particle (IAEA 2012 Table 10.2)) | $t_5$ | 40 | $\mathrm{\mu m}$ | PyC | n/a | none printed; design specification; 11240 particles per element; free U 6e-5 (Table 10.1) | IAEA (2012) | 3.pdf Table 10.2; printed p. 541; idx 554 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | specification | verified |
+<!-- strato-data:end -->
 
 ### Table 7. Outer radii $R_1..R_5$ in $\mathrm{\mu m}$ (calculated with Eq. R.4 from the rows listed; checked by script, Section 10)
 
+<!-- strato-data:table radii AGR1-B-M16 AGR1-NOM-C16 T978-FRG T978-USFIS T978-USFER T978-JP T978-CN HTR10-DES HTR10-MEAS JAERI-80FPC1 CRP6-SENS CRP6-P4K3 CRP6-HRB22 CRP6-K6 CRP6-EU1BIS CRP6-HTRPM -->
 | Design id | Design | $R_1$ ($\mathrm{\mu m}$) | $R_2$ | $R_3$ | $R_4$ | $R_5 = R$ | Input rows |
 |---|---|---|---|---|---|---|---|
 | AGR1-B-M16 | AGR-1 Baseline (Morris 2016 Table 2) | 175 | 278.5 | 317.9 | 353.2 | 394.2 | G-01, G-02, G-03, G-04, G-05 |
@@ -396,6 +408,7 @@ The JAERI 80FPC1 particle (G-109 to G-113) is the particle of the measured relea
 | CRP6-K6 | HFR-K6 particle (IAEA 2012 Table 10.2) | 254 | 356 | 395 | 431 | 469 | G-135, G-136, G-137, G-138, G-139 |
 | CRP6-EU1BIS | HFR-EU1bis particle (IAEA 2012 Table 10.2) | 250.5 | 342.5 | 380.5 | 413.5 | 454.5 | G-140, G-141, G-142, G-143, G-144 |
 | CRP6-HTRPM | HTR-PM particle (IAEA 2012 Table 10.2) | 250 | 345 | 385 | 420 | 460 | G-145, G-146, G-147, G-148, G-149 |
+<!-- strato-data:end -->
 
 The AGR-1 Baseline gives $2R = 788.4\ \mathrm{\mu m}$ against the nominal 780 $\mathrm{\mu m}$ of IAEA (2012, p. 395, idx 408). The USSR design is omitted because its buffer and IPyC are printed as ranges.
 
@@ -418,6 +431,7 @@ Using 8.3142 instead of 8.3143 changes $D$ at 1600 °C by $-1.2\times10^{-4}$ to
 
 ### Table 8. Diffusion coefficients in UO2 kernel (IAEA, 1997, Table A-1)
 
+<!-- strato-data:table arr T978-A1 -->
 | No. | Nuclide (origin) | Layer/material [STRATO layer] | Term | D0 | Q | Units | Temperature range | Form / note | APA citation | Location | Link | Evidence class; gas constant | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | A1-01 | Cs (FRG) | UO2 [kernel] | 1 | $5.6\times10^{-8}$ | 209 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | none printed | 2T; effective D with respect to kernel radius 250 um | IAEA (1997); ref. [4] | 2.pdf Table A-1; printed p. 439; idx 443 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
@@ -432,9 +446,11 @@ Using 8.3142 instead of 8.3143 changes $D$ at 1600 °C by $-1.2\times10^{-4}$ to
 | A1-10 | Sr (USA) | UO2 [kernel] | 1 | $2.2\times10^{-3}$ | 488 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | none printed | 1T | IAEA (1997); ref. [4] | 2.pdf Table A-1; printed p. 439; idx 443 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
 | A1-11 | Ag (USA) | UO2 [kernel] | 1 | $6.7\times10^{-9}$ | 165 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | none printed | 1T | IAEA (1997); ref. [4] | 2.pdf Table A-1; printed p. 439; idx 443 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
 | A1-12 | Cs (Japan) | UO2 [kernel] | 1 | $4.7\times10^{-10}$ | 177 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | 1400 to 1720 °C | 1T; OCR reads 111; image reads 177 | IAEA (1997); ref. [13; 14] | 2.pdf Table A-1; printed p. 439; idx 443 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
+<!-- strato-data:end -->
 
 ### Table 9. Diffusion coefficients in LTI pyrocarbon (IAEA, 1997, Table A-2)
 
+<!-- strato-data:table arr T978-A2 -->
 | No. | Nuclide (origin) | Layer/material [STRATO layer] | Term | D0 | Q | Units | Temperature range | Form / note | APA citation | Location | Link | Evidence class; gas constant | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | A2-01 | Cs (FRG) | LTI PyC [IPyC/OPyC] | 1 | $6.3\times10^{-8}$ | 222 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | none printed | 1T; no IPyC/OPyC distinction in source | IAEA (1997); ref. [4] | 2.pdf Table A-2; printed p. 442; idx 446 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
@@ -451,9 +467,11 @@ Using 8.3142 instead of 8.3143 changes $D$ at 1600 °C by $-1.2\times10^{-4}$ to
 | A2-12 | Cs (Japan) | LTI PyC [IPyC/OPyC] | 1 | $1.2\times10^{-3}$ | 412 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | 1600 to 2300 °C | 1T (high-T branch); separate 1T fit | IAEA (1997); ref. [14; 22] | 2.pdf Table A-2; printed p. 442; idx 446 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
 | A2-13 | Ag (Russian Fed.) | LTI PyC [IPyC/OPyC] | 1 | $5.3\times10^{-4}$ | 193 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | 1400 to 1700 °C | 1T | IAEA (1997); ref. [20] | 2.pdf Table A-2; printed p. 442; idx 446 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
 | A2-14 | Kr (Russian Fed.) | LTI PyC [IPyC/OPyC] | 1 | $1.1\times10^{-5}$ | 285 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | 1000 to 1630 °C | 1T | IAEA (1997); ref. [20] | 2.pdf Table A-2; printed p. 442; idx 446 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
+<!-- strato-data:end -->
 
 ### Table 10. Diffusion coefficients in SiC (IAEA, 1997, Table A-3 and Eq. 4-10)
 
+<!-- strato-data:table arr T978-A3 T978-EQ410 -->
 | No. | Nuclide (origin) | Layer/material [STRATO layer] | Term | D0 | Q | Units | Temperature range | Form / note | APA citation | Location | Link | Evidence class; gas constant | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | A3-01 | Cs (FRG) | SiC [SiC] | 1 | $5.5\times10^{-14}\,e^{\Gamma/5}$ | 125 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | none printed | 2T (term 1 fluence dependent); D0_m2_s is the Gamma = 0 value; footnote: Gamma is reactor-specific | IAEA (1997); ref. [25; 28] | 2.pdf Table A-3 and footnote (1); printed p. 446; idx 450 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
@@ -478,9 +496,11 @@ Using 8.3142 instead of 8.3143 changes $D$ at 1600 °C by $-1.2\times10^{-4}$ to
 | A3-20 | Cs (Russian Fed.) | SiC [SiC] | 1 | $2.3\times10^{-17}$ | none | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | 1000 °C only | constant; D0_m2_s column holds D itself constant D at one temperature (no Q printed). | IAEA (1997); ref. [7] | 2.pdf Table A-3; printed p. 446; idx 450 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature value (single temperature); $R_g$ = 8.3143 | verified |
 | A3-21 | Ag (Russian Fed.) | SiC [SiC] | 1 | $3.5\times10^{-10}$ | 213 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | 1200 to 2300 °C | 1T | IAEA (1997); ref. [20] | 2.pdf Table A-3; printed p. 446; idx 450 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
 | E410-01 | Cs-137 (Japan (JAERI)) | SiC [SiC] | 1 | $2.5\times10^{-2}$ | 503 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | 1600 to 1900 °C | 1T; source fit of A3-14; fitted to Table 4-9 data | IAEA (1997); ref. [34] | 2.pdf Eq. (4-10); printed p. 165; idx 171 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
+<!-- strato-data:end -->
 
 ### Table 11. Buffer and failed-layer conventions
 
+<!-- strato-data:table arr T978-BUF C16-BUF C16-FAIL H21-FAIL -->
 | No. | Nuclide (origin) | Layer/material [STRATO layer] | Term | D0 | Q | Units | Temperature range | Form / note | APA citation | Location | Link | Evidence class; gas constant | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | BUF-01 | all metallic FP (FRG) | porous carbon buffer [buffer] | 1 | $10^{-8}$ | 0 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | none printed | constant (Q = 0); buffer assumed to have no significant retention | IAEA (1997); ref. text | 2.pdf Sec. A.1 text; printed p. 440; idx 444 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | modelling convention; $R_g$ = 8.3143 | verified |
@@ -488,9 +508,11 @@ Using 8.3142 instead of 8.3143 changes $D$ at 1600 °C by $-1.2\times10^{-4}$ to
 | C16-22 | all species (Collin et al. (2016)) | buffer [buffer] | 1 | $10^{-8}$ | 0 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | none printed | constant | Collin et al. (2016); ref. Table 2 note | 6.pdf Table 2 note; printed p. 381; idx 3 | [doi](https://doi.org/10.1016/j.nucengdes.2016.03.023) | modelling convention; $R_g$ = 8.3145 | verified |
 | C16-23 | all species (Collin et al. (2016)) | failed IPyC/SiC/OPyC [failed layer] | 1 | $10^{-6}$ | 0 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | none printed | constant | Collin et al. (2016); ref. text | 6.pdf; printed p. 379 and p. 381; idx 1 and 3 | [doi](https://doi.org/10.1016/j.nucengdes.2016.03.023) | modelling convention; $R_g$ = 8.3145 | verified |
 | H21-10 | all species (Hales et al. (2021)) | failed SiC or cracked layer [failed layer] | 1 | $10^{-6}$ | 0 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | none printed | constant | Hales et al. (2021); ref. text | 8.pdf; printed p. 7 and p. 13; idx 6 and 12 | [doi](https://doi.org/10.1016/j.jnucmat.2021.152840) | modelling convention; $R_g$ = not printed | verified |
+<!-- strato-data:end -->
 
 ### Table 12. Diffusion coefficients in matrix graphite (IAEA, 1997, Table A-4)
 
+<!-- strato-data:table arr T978-A4 -->
 | No. | Nuclide (origin) | Layer/material [STRATO layer] | Term | D0 | Q | Units | Temperature range | Form / note | APA citation | Location | Link | Evidence class; gas constant | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | A4-01 | Cs (FRG) | matrix graphite (irradiated A3-3) [matrix] | 1 | $3.6\times10^{-4}$ | 189 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | none printed | 1T; uncertainty at least one order of magnitude (p. 447) | IAEA (1997); ref. [38] | 2.pdf Table A-4; printed p. 451; idx 455 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
@@ -507,9 +529,11 @@ Using 8.3142 instead of 8.3143 changes $D$ at 1600 °C by $-1.2\times10^{-4}$ to
 | A4-12 | Sr (UK) | natural graphite matrix [matrix] | 1 | $5.6\times10^{-2}$ | 312 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | 1200 to 1600 °C | 1T | IAEA (1997); ref. [44] | 2.pdf Table A-4; printed p. 451; idx 455 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
 | A4-13 | Ag (UK) | natural graphite matrix [matrix] | 1 | $8.7\times10^{7}$ | 414 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | 800 to 1000 °C | 1T | IAEA (1997); ref. [44] | 2.pdf Table A-4; printed p. 451; idx 455 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
 | A4-14 | Kr (Russian Fed.) | matrix graphite [matrix] | 1 | $3.1\times10^{-8}$ | 151 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | 900 to 1400 °C | 1T | IAEA (1997); ref. [20] | 2.pdf Table A-4; printed p. 451; idx 455 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
+<!-- strato-data:end -->
 
 ### Table 13. Diffusion coefficients in structural graphite (IAEA, 1997, Table A-5; outside the particle, recorded for completeness)
 
+<!-- strato-data:table arr T978-A5 -->
 | No. | Nuclide (origin) | Layer/material [STRATO layer] | Term | D0 | Q | Units | Temperature range | Form / note | APA citation | Location | Link | Evidence class; gas constant | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | A5-01 | Cs (FRG) | structural graphite [structural graphite] | 1 | $1.7\times10^{-6}$ | 149 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | 550 to 1450 °C | 1T; reflector/block graphite; outside the particle | IAEA (1997); ref. [11] | 2.pdf Table A-5; printed p. 453; idx 457 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
@@ -526,6 +550,7 @@ Using 8.3142 instead of 8.3143 changes $D$ at 1600 °C by $-1.2\times10^{-4}$ to
 | A5-12 | Sr (UK) | fuel tube graphite AGL-9 [structural graphite] | 1 | $8.3\times10^{-1}$ | 324 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | 850 to 1400 °C | 1T | IAEA (1997); ref. [44] | 2.pdf Table A-5; printed p. 453; idx 457 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
 | A5-13 | Ag (UK) | fuel tube graphite AGL-9 [structural graphite] | 1 | $1.6\times10^{2}$ | 364 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | 850 to 1100 °C | 1T | IAEA (1997); ref. [44] | 2.pdf Table A-5; printed p. 453; idx 457 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
 | A5-14 | Xe (Others) | structural graphite (Canada) [structural graphite] | 1 | $1.1\times10^{-10}$ | 205 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | 900 to 1600 °C | 1T; only D/r^2 is transferable footnote (1): referred to grain radius 6 um; 2.8e-3 for sphere radius 3 cm. | IAEA (1997); ref. [47] | 2.pdf Table A-5 and footnote (1); printed p. 453; idx 457 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3143 | verified |
+<!-- strato-data:end -->
 
 ### Table 14. Collin et al. (2016) Table 2 set (PARFUME AGR-1 safety-test analysis)
 
@@ -557,6 +582,7 @@ Table 2 note (Collin et al., 2016, p. 381, idx 3): UO2 values are used for the U
 
 ### Table 15. Hales et al. (2021) Table 1 set (BISON)
 
+<!-- strato-data:table arr H21-T1 -->
 | No. | Nuclide (origin) | Layer/material [STRATO layer] | Term | D0 | Q | Units | Temperature range | Form / note | APA citation | Location | Link | Evidence class; gas constant | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | H21-01 | Ag (German model via Collin et al. (2015)) | UO2 [kernel] | 1 | $6.7\times10^{-9}$ | 165 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | none printed | 1T; equals A1-04 | Hales et al. (2021); ref. [3] | 8.pdf Table 1; printed p. 3; idx 2 | [doi](https://doi.org/10.1016/j.jnucmat.2021.152840) | literature correlation; $R_g$ = not printed | verified |
@@ -568,6 +594,7 @@ Table 2 note (Collin et al., 2016, p. 381, idx 3): UO2 values are used for the U
 | H21-07 | Sr (German model via Collin et al. (2015)) | UO2 [kernel] | 1 | $2.2\times10^{-3}$ | 488 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | none printed | 1T; equals A1-03 | Hales et al. (2021); ref. [3] | 8.pdf Table 1; printed p. 3; idx 2 | [doi](https://doi.org/10.1016/j.jnucmat.2021.152840) | literature correlation; $R_g$ = not printed | verified |
 | H21-08 | Sr (German model via Collin et al. (2015)) | PyC [IPyC/OPyC] | 1 | $2.3\times10^{-6}$ | 197 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | none printed | 1T; equals A2-02 | Hales et al. (2021); ref. [3] | 8.pdf Table 1; printed p. 3; idx 2 | [doi](https://doi.org/10.1016/j.jnucmat.2021.152840) | literature correlation; $R_g$ = not printed | verified |
 | H21-09 | Sr (German model via Collin et al. (2015)) | SiC [SiC] | 1 | $1.2\times10^{-9}$ | 205 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | none printed | 1T (single term); first branch of A3-03/A3-04 only; Hales p. 3 (idx 2) prints only D0,1 and Q1 and says additional high-temperature terms are often used | Hales et al. (2021); ref. [3] | 8.pdf Table 1; printed p. 3; idx 2 | [doi](https://doi.org/10.1016/j.jnucmat.2021.152840) | literature correlation; $R_g$ = not printed | verified |
+<!-- strato-data:end -->
 
 Hales et al. (2021) cite Table 1 to Collin et al. (2015) (ref. [3], p. 3, idx 2) and state on p. 6 (idx 5) that "Table 1 is based on" the German models of IAEA (1997). Table 1 prints only $D_{0,1}$ and $Q_1$ and adds that "additional terms targeting high-temperature behavior are often used" (p. 3, idx 2). Check X confirms each row equals the FRG first term; the second Cs kernel term (A1-02), the second Cs SiC term (A3-02) and the second Sr SiC term (A3-04) are absent from the printed table. This resolves the audit-06 open item "cross-check of H21 Table 1 against TECDOC-978" (calculated comparison of two verified transcriptions).
 
@@ -610,6 +637,7 @@ Schappel et al. (2020) is Nucl. Eng. Des. 357, 110428, doi 10.1016/j.nucengdes.2
 
 ### Table 16. IAEA (2012) Table 7.1 reduced kernel coefficients and Eq. (10.9)
 
+<!-- strato-data:table arr T1674-T71 T1674-EQ109 -->
 | No. | Nuclide (origin) | Layer/material [STRATO layer] | Term | D0 | Q | Units | Temperature range | Form / note | APA citation | Location | Link | Evidence class; gas constant | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | T71-01 | Cs (FRG row of TECDOC-978) | UO2 [kernel] | 1 | $5.625\times10^{-8}$ | 209 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | none printed | 1T (reduced D'); omits the second Cs branch A1-02 D'0 = 0.90 s^-1 printed; D0 = D'0 r_k^2 with r_k = 250 um (calculated). | IAEA (2012); ref. [1] | 3.pdf Table 7.1; printed p. 318; idx 331 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3145 | verified |
@@ -619,6 +647,7 @@ Schappel et al. (2020) is Nucl. Eng. Des. 357, 110428, doi 10.1016/j.nucengdes.2
 | T71-05 | Xe/Kr (stable and long-lived) (cited [228]) | UO2 [kernel] | 1 | $3.125\times10^{-10}$ | 155.4 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | none printed | 1T (reduced D'); value confirmed as printed; cited source [228] looks mis-cited and row is absent from TECDOC-978 D'0 = 5e-3 s^-1 printed; D0 = D'0 r_k^2 (calculated). | IAEA (2012); ref. [228] | 3.pdf Table 7.1; printed p. 318; idx 331 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3145 | NOT VERIFIED |
 | E109-01 | Cs (TECDOC-978 FRG (sum of HRB and FZJ branches)) | SiC [SiC] | 1 | $5.5\times10^{-14}\,e^{\Gamma/5}$ | 125 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | none printed | 2T (sum); printed check value 1.011e-16 m^2 s^-1 at 1600 C and Gamma = 2 | IAEA (2012); ref. [1] | 3.pdf Eq. (10.9); printed p. 548; idx 561 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3145 | verified |
 | E109-02 | Cs (TECDOC-978 FRG (sum of HRB and FZJ branches)) | SiC [SiC] | 2 | $1.6\times10^{-2}$ | 514 | $\mathrm{m^2\ s^{-1}}$; $\mathrm{kJ\ mol^{-1}}$ | none printed | 2T (sum); source states the two branches are to be summed (printed p. 571; idx 584) | IAEA (2012); ref. [1] | 3.pdf Eq. (10.9); printed p. 548; idx 561 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | literature correlation; $R_g$ = 8.3145 | verified |
+<!-- strato-data:end -->
 
 ### Table 17. Cs-in-SiC fluence factor $e^{\Gamma/5}$ of Eq. (R.2) (calculated; check F)
 
@@ -886,6 +915,7 @@ Class is exactly one of: AGR-1 experimental measurement; AGR-1-specific fitted c
 
 ### Table 20. ENSDF adopted decay data (evaluated; via IAEA LiveChart API, extraction 2026-11-05)
 
+<!-- strato-data:table decay -->
 | No. | Variable | Symbol | Value | Unit | Material / Nuclide | Temperature range | Uncertainty $u(\lambda_k)$ | $t_{1/2}$ | Decay mode | Daughter(s) | Direct fission product or activation product | Source / APA citation | Location | Link | Evidence class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | N-01 | decay constant | $\lambda_k$ | $3.211198\times10^{-8}$ | $\mathrm{s^{-1}}$ | Ag-110m | n/a | $5.141\times10^{-12}$ | 249.83 d (ENSDF last digit 4) | B- 98.67 %; IT 1.33 % | B- 98.67(8)% to Cd-110 (stable); IT 1.33(8)% to Ag-110 g.s. (24.56 s, then B- 99.7% to Cd-110, EC 0.3% to Pd-110) | activation product (fission-shielded); NO fission-yield source in STRATO | Gurdal & Kondev, Nucl. Data Sheets 113, 1315 (2012); via IAEA LiveChart | IAEA LiveChart API v1 fields=ground_states and fields=levels (ENSDF adopted) | [link](https://www-nds.iaea.org/relnsd/v1/data) | evaluated nuclear data | verified |
@@ -904,6 +934,7 @@ Class is exactly one of: AGR-1 experimental measurement; AGR-1-specific fitted c
 | N-14 | decay constant | $\lambda_k$ | $2.045347\times10^{-9}$ | $\mathrm{s^{-1}}$ | Kr-85 | n/a | $2.666\times10^{-12}$ | 10.739 Y (ENSDF last digit 14) | B- 100 % | B- 100% to Rb-85 (99.563% to g.s.) | fission product (cumulative-yield source); use ground-state CFY | Singh & Chen, Nucl. Data Sheets 116, 1 (2014); via IAEA LiveChart | IAEA LiveChart API v1 fields=ground_states and fields=levels (ENSDF adopted) | [link](https://www-nds.iaea.org/relnsd/v1/data) | evaluated nuclear data | verified |
 | N-15 | decay constant | $\lambda_k$ | $4.297788\times10^{-5}$ | $\mathrm{s^{-1}}$ | Kr-85m | n/a | $7.675\times10^{-8}$ | 4.480 h (ENSDF last digit 8) | B- 78.8 %; IT 21.2 % | B- 78.8(5)% to Rb-85; IT 21.2(5)% to Kr-85 g.s. | fission product (cumulative-yield source) | Singh & Chen, Nucl. Data Sheets 116, 1 (2014); via IAEA LiveChart | IAEA LiveChart API v1 fields=ground_states and fields=levels (ENSDF adopted) | [link](https://www-nds.iaea.org/relnsd/v1/data) | evaluated nuclear data | verified |
 | N-16 | decay constant | $\lambda_k$ | $9.996681\times10^{-7}$ | $\mathrm{s^{-1}}$ | I-131 | n/a | $7.474\times10^{-11}$ | 8.0252 d (ENSDF last digit 6) | B- 100 % | B- 100% to Xe-131 (0.39(9)% to Xe-131m 11.86 d isomer) | fission product (cumulative-yield source); Te-131m precursor delay about 9 d | Khazov, Mitropolsky & Rodionov, Nucl. Data Sheets 107, 2715 (2006); via IAEA LiveChart | IAEA LiveChart API v1 fields=ground_states and fields=levels (ENSDF adopted) | [link](https://www-nds.iaea.org/relnsd/v1/data) | evaluated nuclear data | verified |
+<!-- strato-data:end -->
 
 Year conversion used by LiveChart: 1 y = 31 556 925.97 s (365.2422 d). The NuDat 3 chart carries slightly different half-lives for several nuclides (for example Cs-137 30.007(23) y); the CSV column `crosscheck_NuDat3_chart_half_life` keeps them as a sensitivity case only.
 
@@ -925,6 +956,7 @@ Year conversion used by LiveChart: 1 y = 31 556 925.97 s (365.2422 d). The NuDat
 
 ### Table 22. Thermal fission yields for STRATO nuclides (JEFF-3.1.1 primary, ENDF/B via NuDat 3 as cross-check)
 
+<!-- strato-data:table fy Ag-110m Ag-111 Ag-109 Cs-134 Cs-133 Cs-137 Sr-89 Sr-90 Y-90 Ba-137m Eu-153 Eu-154 Kr-85 Kr-85m I-131 -->
 | No. | Variable | Symbol | Value (CFY $\pm 1\sigma$) | Unit | Material / Nuclide | Neutron energy | Independent yield $y^I_k \pm 1\sigma$ | ENDF/B CFY via NuDat 3 (status) | Library | Direct fission product or activation product; STRATO use | Source / APA citation | Location | Link | Evidence class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Y-01 | cumulative yield, U-235 thermal fission | $y^C_k$ | blank in API | per fission | Ag-110m | thermal | blank in API | not given | JEFF-3.1.1 | activation product (fission-shielded); do NOT use as a fission-yield source (activation product); source via Ag-109(n,gamma), cross section NOT VERIFIED; was: activation product; FY not appropriate as source | Kellett et al. (2009) via IAEA LiveChart | LiveChart API fields=independent_fy and cumulative_fy, parents=235u | [link](https://www-nds.iaea.org/relnsd/v1/data) | evaluated nuclear data | NOT VERIFIED |
@@ -957,6 +989,7 @@ Year conversion used by LiveChart: 1 y = 31 556 925.97 s (365.2422 d). The NuDat
 | Y-28 | cumulative yield, Pu-239 thermal fission | $y^C_k$ | $1.358\times10^{-3}$ $\pm$ $1.4155\times10^{-4}$ | per fission | Kr-85 | thermal | $1.1666\times10^{-4}$ $\pm$ $4.2243\times10^{-5}$ | $5.63992\times10^{-3}$ $\pm$ $3.94794\times10^{-5}$ (NOT VERIFIED (isomer state assignment unclear)) | JEFF-3.1.1 | fission product (cumulative-yield source); use ground-state CFY; CFY of g.s. includes 21.2% of Kr-85m (4.48 h) | Kellett et al. (2009) via IAEA LiveChart | LiveChart API fields=independent_fy and cumulative_fy, parents=239pu | [link](https://www-nds.iaea.org/relnsd/v1/data) | evaluated nuclear data | verified |
 | Y-29 | cumulative yield, Pu-239 thermal fission | $y^C_k$ | $5.7569\times10^{-3}$ $\pm$ $2.5994\times10^{-4}$ | per fission | Kr-85m | thermal | $2.6976\times10^{-5}$ $\pm$ $9.7675\times10^{-6}$ | not given | JEFF-3.1.1 | fission product (cumulative-yield source); isomer 4.48 h | Kellett et al. (2009) via IAEA LiveChart | LiveChart API fields=independent_fy and cumulative_fy, parents=239pu | [link](https://www-nds.iaea.org/relnsd/v1/data) | evaluated nuclear data | verified |
 | Y-30 | cumulative yield, Pu-239 thermal fission | $y^C_k$ | $3.7241\times10^{-2}$ $\pm$ $7.8204\times10^{-4}$ | per fission | I-131 | thermal | $2.3392\times10^{-4}$ $\pm$ $8.1366\times10^{-5}$ | $3.85635\times10^{-2}$ $\pm$ $3.85635\times10^{-4}$ (verified (cross-check only)) | JEFF-3.1.1 | fission product (cumulative-yield source); Te-131m precursor delay about 9 d; CFY includes Te-131m (33.25 h): not instantaneous | Kellett et al. (2009) via IAEA LiveChart | LiveChart API fields=independent_fy and cumulative_fy, parents=239pu | [link](https://www-nds.iaea.org/relnsd/v1/data) | evaluated nuclear data | verified |
+<!-- strato-data:end -->
 
 Precursor rows (Kr-90, Rb-90, Rb-90m, Kr-89, Rb-89, I-137, Xe-137, Ag-111m, Cs-134m, Y-90m, Ba-137, Eu-154m) are in `fission_yields.csv`. Rules for use (audit 07): use the ground-state CFY for Kr-85 (2.8575e-3 for U-235), not the Kr-85m CFY; do not combine the Y-90 or Ba-137m CFY with a parent-decay source (Eq. R.6b); Ag-110m, Cs-134 and Eu-154 need activation sources, whose capture cross sections and isomeric ratios are NOT VERIFIED (Section 11).
 
@@ -975,6 +1008,7 @@ $Bu$ in % FIMA. AGR-1 (19.74 % enrichment) falls in the right-hand column. Neith
 
 ### Table 24. AGR-1 safety-test procedure (Morris et al., 2016) and schedule as modelled by PARFUME (Collin et al., 2016)
 
+<!-- strato-data:table temp AGR1-ST -->
 | No. | History | Step | Segment | T start (°C) | T end (°C) | Rate ($\mathrm{°C\ h^{-1}}$) | Ramp (h) | Hold (h) | Cumulative end (h, calc.) | Class (measured / reconstructed / specified) | Note | Source / APA citation | Location | Link | Evidence class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | TH-001 | AGR-1 safety test procedure (Morris 2016) | 1 | ramp to bake-out | n/s | 400 |  |  |  |  | specified | flowing He; ramp rate not stated in 5.pdf (NOT VERIFIED there; 6.pdf gives 120 C/h) | Morris et al. (2016) | 5.pdf Sec. 2; printed p. 25; idx 1 | [doi](https://doi.org/10.1016/j.nucengdes.2016.04.031) | specification | verified |
@@ -1004,6 +1038,7 @@ $Bu$ in % FIMA. AGR-1 (19.74 % enrichment) falls in the right-hand column. Neith
 | TH-025 | AGR-1 safety test as modelled (Collin 2016) Tmax 1800 C | 5 | ramp | 1250 | 1800 | 50 | 11.0 |  | 35.1667 | specified (as modelled) | plateau starts at 35.2 h (calculated); 6.pdf event times appear to include this offset (inference) | Collin et al. (2016) | 6.pdf Sec. 2; printed p. 379; idx 1 | [doi](https://doi.org/10.1016/j.nucengdes.2016.03.023) | modelling convention | verified |
 | TH-026 | AGR-1 safety test as modelled (Collin 2016) Tmax 1800 C | 6 | hold | 1800 | 1800 |  |  | 300 | 335.1667 | specified (as modelled) |  | Collin et al. (2016) | 6.pdf; printed p. 379-380; idx 1-2 | [doi](https://doi.org/10.1016/j.nucengdes.2016.03.023) | modelling convention | verified |
 | TH-027 | AGR-1 safety test as modelled (Collin 2016) Tmax 1800 C | 7 | cool-down | 1800 | 30 | -600 | 2.9500 |  | 338.1167 | specified (as modelled) | printed total 338 h (p. 380) | Collin et al. (2016) | 6.pdf; printed p. 379-380; idx 1-2 | [doi](https://doi.org/10.1016/j.nucengdes.2016.03.023) | modelling convention | verified |
+<!-- strato-data:end -->
 
 Ramp durations and cumulative times are calculated from the printed rates; they reproduce the printed totals of 334, 336 and 338 h (check T). The 30 °C start temperature is an assumption, hence NOT VERIFIED on the first ramp. Time origin warning: 5.pdf figures use "elapsed time at temperature", while 6.pdf event times appear to include the ramps (about 31 to 35 h); this offset is an audit inference.
 
@@ -1079,6 +1114,7 @@ The trace of the thermocouple in Fig. 3 follows the printed procedure of the FAC
 
 ### Table 26. AGR-1 irradiation temperatures (compact TAVA from as-run thermal analysis; capsule values preliminary)
 
+<!-- strato-data:table temp AGR1-IRR AGR1-TAVA AGR1-CAP -->
 | No. | History | Step | Segment | T start (°C) | T end (°C) | Rate ($\mathrm{°C\ h^{-1}}$) | Ramp (h) | Hold (h) | Cumulative end (h, calc.) | Class (measured / reconstructed / specified) | Note | Source / APA citation | Location | Link | Evidence class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | TH-037 | AGR-1 irradiation (ATR) experiment level | 1 | irradiation | n/s | n/s |  |  |  |  | specified/calculated (as-run) | Dec 2006 to Nov 2009; 620 EFPD; peak burnup 19.6 % FIMA; peak fast fluence 4.30e25 n m^-2 (E > 0.18 MeV); daily compact temperatures (Hawkes et al. 2012) NOT in the paper set | Collin et al. (2016) | 6.pdf Sec. 2; printed p. 379; idx 1 | [doi](https://doi.org/10.1016/j.nucengdes.2016.03.023) | calculated | verified |
@@ -1103,6 +1139,7 @@ The trace of the thermocouple in Fig. 3 follows the printed procedure of the FAC
 | TH-056 | AGR-1 capsule 3 irradiation (preliminary) | 1 | time-average volume-average irradiation temperature | 1080 | 1080 |  |  |  |  | as printed (preliminary; basis not stated in notes) | time-average peak 1210 C; peak burnup 19.6 %; peak fluence 4.4e25 | IAEA (2012) | 3.pdf Table 7.15; printed p. 401; idx 414 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | basis not stated | verified |
 | TH-057 | AGR-1 capsule 2 irradiation (preliminary) | 1 | time-average volume-average irradiation temperature | 1100 | 1100 |  |  |  |  | as printed (preliminary; basis not stated in notes) | time-average peak 1240 C; peak burnup 19.1 %; peak fluence 4.1e25 | IAEA (2012) | 3.pdf Table 7.15; printed p. 401; idx 414 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | basis not stated | verified |
 | TH-058 | AGR-1 capsule 1 irradiation (preliminary) | 1 | time-average volume-average irradiation temperature | 1040 | 1040 |  |  |  |  | as printed (preliminary; basis not stated in notes) | time-average peak 1160 C; peak burnup 17.2 %; peak fluence 3.4e25 | IAEA (2012) | 3.pdf Table 7.15; printed p. 401; idx 414 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | basis not stated | verified |
+<!-- strato-data:end -->
 
 Daily compact temperatures (Hawkes et al., 2012, used by PARFUME at the OPyC surface) are not in the paper set. Within a compact the temperature spreads "several hundred degrees" (Collin et al., 2016, p. 380, idx 2).
 
@@ -1418,6 +1455,7 @@ Offered by the generation input: user-supplied (no AGR-1 wording, no source row,
 
 ### Table 27. CRP-6 post-calculation and prediction heating schedules (IAEA, 2012, Tables 10.11 and 10.12)
 
+<!-- strato-data:table temp CRP6-6a CRP6-7 CRP6-8 CRP6-9 CRP6-10 CRP6-11 -->
 | No. | History | Step | Segment | T start (°C) | T end (°C) | Rate ($\mathrm{°C\ h^{-1}}$) | Ramp (h) | Hold (h) | Cumulative end (h, calc.) | Class (measured / reconstructed / specified) | Note | Source / APA citation | Location | Link | Evidence class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | TH-059 | CRP-6 case 6a HFR-P4-1-12 heating | 1 | initial hold | 300 | 300 |  |  | 0.5 | 0.5 | specified (benchmark) | irradiation 351 efpd (8424 h); 940 C; 11.1 % FIMA; 5.5e25 n m^-2 (E > 0.1 MeV) | IAEA (2012) | 3.pdf Table 10.11; printed p. 554; idx 567 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | specification | verified |
@@ -1465,11 +1503,13 @@ Offered by the generation input: user-supplied (no AGR-1 wording, no source row,
 | TH-101 | CRP-6 case 11 HTR-PM (synthetic) heating | 4 | ramp and hold | 1600 | 1650 |  | 1 | 200 | 421 | specified (synthetic benchmark) |  | IAEA (2012) | 3.pdf Table 10.12; printed p. 568; idx 581 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | synthetic benchmark | verified |
 | TH-102 | CRP-6 case 11 HTR-PM (synthetic) heating | 5 | ramp and hold | 1650 | 1700 |  | 1 | 200 | 622 | specified (synthetic benchmark) |  | IAEA (2012) | 3.pdf Table 10.12; printed p. 568; idx 581 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | synthetic benchmark | verified |
 | TH-103 | CRP-6 case 11 HTR-PM (synthetic) heating | 6 | ramp and hold | 1700 | 1800 |  | 2 | 200 | 824 | specified (synthetic benchmark) | printed total 824 h | IAEA (2012) | 3.pdf Table 10.12; printed p. 568; idx 581 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | synthetic benchmark | verified |
+<!-- strato-data:end -->
 
 Each printed triple (T, time to reach T, time at T) is one row: "Ramp" is the time to reach T and "Hold" the time at T. Cumulative times reproduce all printed totals (check T).
 
 ### Table 28. CRP-6 sensitivity cases 1 to 5 (IAEA, 2012, Table 10.5; synthetic benchmarks)
 
+<!-- strato-data:table temp CRP6-1a CRP6-1b CRP6-2 CRP6-3 CRP6-4 CRP6-5 CRP6-CH9 -->
 | No. | History | Step | Segment | T start (°C) | T end (°C) | Rate ($\mathrm{°C\ h^{-1}}$) | Ramp (h) | Hold (h) | Cumulative end (h, calc.) | Class (measured / reconstructed / specified) | Note | Source / APA citation | Location | Link | Evidence class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | TH-104 | CRP-6 case 1a bare kernel | 1 | isothermal heating | 1200 | 1200 |  |  | 200 | 200 | specified (synthetic benchmark) | no irradiation; Cs-137; heat-up ramp not stated in notes (treat as step: NOT VERIFIED) | IAEA (2012) | 3.pdf Table 10.5; printed p. 543; idx 556 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | synthetic benchmark | verified |
@@ -1488,14 +1528,17 @@ Each printed triple (T, time to reach T, time at T) is one row: "Ramp" is the ti
 | TH-117 | CRP-6 case 5 cyclic irradiation | 1 | 10 cycles of 100 efpd | 600 | 1000 |  |  | 24000 | 24000 | specified (synthetic benchmark) | range and cycle count verified; cycle shape not drawn in Ch. 10 (sawtooth of TH-118 is the closest definition); 1000 days total | IAEA (2012) | 3.pdf Table 10.5 and text; printed p. 543 and p. 551; idx 556 and 564 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | synthetic benchmark | NOT VERIFIED |
 | TH-118 | CRP-6 Ch. 9 fuel case 8 temperature sawtooth | 1 | linear rise then immediate drop (per cycle) | 599.85 | 999.85 |  | 2400 | 0 |  | specified (synthetic benchmark) | printed as 873 K to 1273 K; period 100 d; 10 cycles; text only (Fig. 9.1 is a pressure plot) | IAEA (2012) | 3.pdf Ch. 9 case 8 text; printed p. 496; idx 509 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | synthetic benchmark | verified |
 | TH-119 | CRP-6 case 5b heating | 1 | isothermal heating | 1600 | 1600 |  |  | 200 | 200 | specified (synthetic benchmark) | after case 5 irradiation | IAEA (2012) | 3.pdf Table 10.5; printed p. 543; idx 556 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | synthetic benchmark | verified |
+<!-- strato-data:end -->
 
 ### Table 29. JAERI irradiation and heating conditions (IAEA, 1997, Tables 4-8 and 4-9)
 
+<!-- strato-data:table temp JAERI -->
 | No. | History | Step | Segment | T start (°C) | T end (°C) | Rate ($\mathrm{°C\ h^{-1}}$) | Ramp (h) | Hold (h) | Cumulative end (h, calc.) | Class (measured / reconstructed / specified) | Note | Source / APA citation | Location | Link | Evidence class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | TH-120 | JAERI sample A irradiation (TECDOC-978 Table 4-8) | 1 | irradiation | 1250 | 1250 |  |  | 1918 | 1918 | measured/specified (as printed) | 1918 efph at 1250 C; 3.6 % FIMA; 2.6e25 m^-2 (E > 29 fJ); capsule 80F-4A; compact 80FP1A-1 | IAEA (1997) | 2.pdf Table 4-8; printed p. 161; idx 167 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | basis not stated | verified |
 | TH-121 | JAERI sample B irradiation (TECDOC-978 Table 4-8) | 1 | irradiation | 1510 | 1510 |  |  | 2818 | 2818 | measured/specified (as printed) | 2818 efph at 1510 C (max 1685 C; above 1500 C for 1512 h); 3.6 % FIMA; 1.5e25 m^-2 (E > 29 fJ); capsule 80F-6A; compact 80FP3A-7 | IAEA (1997) | 2.pdf Table 4-8; printed p. 161; idx 167 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | basis not stated | verified |
 | TH-122 | JAERI isothermal post-irradiation heating tests (TECDOC-978 Table 4-9) | 1 | isothermal heating (one test per row of release_measurements.csv) | 1600 | 1900 |  |  |  |  | specified (test conditions) | tests at 1600/1700/1800/1900 C for 5 to 144 h; about 100 particles per test (p. 162); ramp not stated | IAEA (1997) | 2.pdf Table 4-9; printed p. 164; idx 170 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | specification | verified |
+<!-- strato-data:end -->
 
 ## 9. Experimental release data
 
@@ -1562,10 +1605,12 @@ JAERI Table 4-9 values come from batches of about 100 loose particles without ma
 
 ### Table 32. AGR-1 Cs upper bounds (all Cs isotopes)
 
+<!-- strato-data:table rel AGR-1 Cs -->
 | No. | Variable | Symbol | Value | Unit | Material / Nuclide | Temperature range | Uncertainty / data class / time | PARFUME, same source (calculated) | Note | Applicability to one intact particle | Source / APA citation | Location | Link | Evidence class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | E-028 | cumulative compact release fraction (upper bound) (intact) | $f_{\mathrm{rel}}$ | < $5\times10^{-6}$ | 1 | Cs; all compacts without failed SiC (mixed) | 1600 °C | M-UB; t = 300 h (time at temperature) |  | also stated for 100 h at 1800 C; often difficult to measure above background contamination | compact-level bound on the mean intact-particle release; includes background and matrix contamination, so it bounds but does not measure single intact-particle release | Morris et al. (2016) | 5.pdf abstract; printed p. 24; idx 0; and p. 34; idx 10 | [doi](https://doi.org/10.1016/j.nucengdes.2016.04.031) | measured bound | verified |
 | E-029 | cumulative compact release fraction (upper bound) (intact) | $f_{\mathrm{rel}}$ | < $5\times10^{-6}$ | 1 | Cs; all compacts without failed SiC (mixed) | 1800 °C | M-UB; t = 100 h (time at temperature) |  |  | compact-level bound on the mean intact-particle release; includes background and matrix contamination, so it bounds but does not measure single intact-particle release | Morris et al. (2016) | 5.pdf abstract; printed p. 24; idx 0 | [doi](https://doi.org/10.1016/j.nucengdes.2016.04.031) | measured bound | verified |
+<!-- strato-data:end -->
 
 ### Table 33. AGR-1 Ag-110m compact release
 
@@ -1654,12 +1699,15 @@ JAERI Table 4-9 values come from batches of about 100 loose particles without ma
 
 ### Table 37. AGR-1 Ce-144
 
+<!-- strato-data:table rel AGR-1 Ce-144 -->
 | No. | Variable | Symbol | Value | Unit | Material / Nuclide | Temperature range | Uncertainty / data class / time | PARFUME, same source (calculated) | Note | Applicability to one intact particle | Source / APA citation | Location | Link | Evidence class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | E-098 | fraction found in matrix (upper bound) (all) | $f_{\mathrm{rel}}$ | < $10^{-3}$ | 1 | Ce-144; post-test matrix (DLBL) (mixed) | 1600-1800 °C | M-UB; t = n/s h (after test (in-pile plus heating)) |  | no significant Ce release from compacts | post-test matrix inventory bound at compact level; not a release from a single particle | Morris et al. (2016) | 5.pdf; printed p. 35; idx 11 | [doi](https://doi.org/10.1016/j.nucengdes.2016.04.031) | measured bound | verified |
+<!-- strato-data:end -->
 
 ### Table 38. AGR-1 particles with failed SiC after heating
 
+<!-- strato-data:table rel AGR-1 counts -->
 | No. | Variable | Symbol | Value | Unit | Material / Nuclide | Temperature range | Uncertainty / data class / time | PARFUME, same source (calculated) | Note | Applicability to one intact particle | Source / APA citation | Location | Link | Evidence class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | E-099 | particles with failed IPyC and SiC (failure count) |  | 0 | particles | n/a; 3-2-2 (Baseline) | 1600 °C | M (PIE estimate); t = n/s h (after test (PIE)) |  | cites Demkowicz et al. (2015a); basis Hunn et al. (2014) | count per compact (or per test series); number of failed-particle sources, not a release value | Collin et al. (2016) | 6.pdf Table 3; printed p. 382; idx 4 | [doi](https://doi.org/10.1016/j.nucengdes.2016.03.023) | estimate | verified |
@@ -1680,9 +1728,11 @@ JAERI Table 4-9 values come from batches of about 100 loose particles without ma
 | E-114 | particles with failed SiC / particles tested (failure count) |  | 3 of 33100 | particles | n/a; 1600 C series (8 compacts) (mixed) | 1600 °C | M text; t = n/s h (after test) |  | value = failed; value_max = tested; fraction 9.1e-5 (calculated) | count per compact (or per test series); number of failed-particle sources, not a release value | Morris et al. (2016) | 5.pdf; printed p. 34; idx 10 | [doi](https://doi.org/10.1016/j.nucengdes.2016.04.031) | measured | verified |
 | E-115 | particles with failed SiC / particles tested (failure count) |  | 4 of 8300 | particles | n/a; 1700 C series (2 compacts) (mixed) | 1700 °C | M text; t = n/s h (after test) |  | 5-1-1 not included; fraction 4.8e-4 (calculated) | count per compact (or per test series); number of failed-particle sources, not a release value | Morris et al. (2016) | 5.pdf; printed p. 34; idx 10 | [doi](https://doi.org/10.1016/j.nucengdes.2016.04.031) | measured | verified |
 | E-116 | particles with failed SiC / particles tested (failure count) |  | 23 of 16500 | particles | n/a; 1800 C series (4 compacts) (mixed) | 1800 °C | M text; t = n/s h (after test) |  | fraction 1.4e-3 (calculated); equals sum of 6.pdf Table 3 at 1800 C | count per compact (or per test series); number of failed-particle sources, not a release value | Morris et al. (2016) | 5.pdf; printed p. 34; idx 10 | [doi](https://doi.org/10.1016/j.nucengdes.2016.04.031) | measured | verified |
+<!-- strato-data:end -->
 
 ### Table 39. JAERI accident-simulation tests on irradiated UO2 TRISO particles (IAEA, 1997, Table 4-9; measured)
 
+<!-- strato-data:table rel JAERI all -->
 | No. | Variable | Symbol | Value | Unit | Material / Nuclide | Temperature range | Uncertainty / data class / time | PARFUME, same source (calculated) | Note | Applicability to one intact particle | Source / APA citation | Location | Link | Evidence class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | E-117 | fractional release (intact (no failure detected by Kr-85)) | $f_{\mathrm{rel}}$ | $1.7\times10^{-4}$ | 1 | Cs-137; sample A (UO2 TRISO) | 1600 °C | M printed table; t = 5 h (isothermal test duration) |  | 3.6 % FIMA; 2.6e25 m^-2 (E > 29 fJ); about 100 particles per test | loose-particle batch (about 100 particles, no matrix); mean particle release; nearest analogue of a single intact particle, but the end-of-irradiation profile is not given (GAP-24) | IAEA (1997) | 2.pdf Table 4-9; printed p. 164; idx 170 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | measured | verified |
@@ -1718,11 +1768,13 @@ JAERI Table 4-9 values come from batches of about 100 loose particles without ma
 | E-147 | fractional release (intact (no failure detected by Kr-85)) | $f_{\mathrm{rel}}$ | $3.6\times10^{-1}$ | 1 | Cs-137; sample B (UO2 TRISO) | 1800 °C | M printed table; t = 42 h (isothermal test duration) |  |  | loose-particle batch (about 100 particles, no matrix); mean particle release; nearest analogue of a single intact particle, but the end-of-irradiation profile is not given (GAP-24) | IAEA (1997) | 2.pdf Table 4-9; printed p. 164; idx 170 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | measured | verified |
 | E-148 | fractional release (intact (no failure detected by Kr-85)) | $f_{\mathrm{rel}}$ | $3.8\times10^{-1}$ | 1 | Cs-134; sample B (UO2 TRISO) | 1800 °C | M printed table; t = 42 h (isothermal test duration) |  |  | loose-particle batch (about 100 particles, no matrix); mean particle release; nearest analogue of a single intact particle, but the end-of-irradiation profile is not given (GAP-24) | IAEA (1997) | 2.pdf Table 4-9; printed p. 164; idx 170 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | measured | verified |
 | E-149 | fractional release (intact (no failure detected by Kr-85)) | $f_{\mathrm{rel}}$ | $3.2\times10^{-2}$ | 1 | Eu-154; sample B (UO2 TRISO) | 1800 °C | M printed table; t = 42 h (isothermal test duration) |  |  | loose-particle batch (about 100 particles, no matrix); mean particle release; nearest analogue of a single intact particle, but the end-of-irradiation profile is not given (GAP-24) | IAEA (1997) | 2.pdf Table 4-9; printed p. 164; idx 170 | local Paper/2.pdf (IAEA URL NOT VERIFIED) | measured | verified |
+<!-- strato-data:end -->
 
 Blank cells of the printed table are omitted (33 values transcribed, check E). The end-of-irradiation concentration profile needed to simulate these tests is not given in IAEA (1997).
 
 ### Table 40. CRP-6 measured outcomes quoted in text (IAEA, 2012; measured curves are graphical only)
 
+<!-- strato-data:table rel CRP-6 all -->
 | No. | Variable | Symbol | Value | Unit | Material / Nuclide | Temperature range | Uncertainty / data class / time | PARFUME, same source (calculated) | Note | Applicability to one intact particle | Source / APA citation | Location | Link | Evidence class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | E-150 | sphere release fraction (approximate text value) (all) | $f_{\mathrm{rel}}$ | ~ $10^{-4}$ | 1 | Cs; HFR-K3/1 (case 8a) (UO2 TRISO sphere) | 1600 °C | M text; t = 500 h (end of 1600 C phase) |  | measured curves graphical only (Figs. 10.8-10.25) | fuel-sphere level (particles plus matrix); not a single-particle value | IAEA (2012) | 3.pdf; printed p. 563; idx 576 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | measured | verified |
@@ -1732,6 +1784,7 @@ Blank cells of the printed table are omitted (33 values transcribed, check E). T
 | E-154 | sphere release fraction (approximate text value) (all) | $f_{\mathrm{rel}}$ | ~ $4\times10^{-2}$ | 1 | Cs; HFR-K6/3 (case 9) (UO2 TRISO sphere) | 1800 °C | M text; t = 699 h (end of test) |  | printed as about 4 % at end | fuel-sphere level (particles plus matrix); not a single-particle value | IAEA (2012) | 3.pdf; printed p. 565; idx 578 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | measured | verified |
 | E-155 | release fraction equivalent to one particle (one-particle level) | $f_{\mathrm{rel}}$ | $6\times10^{-4}$ | 1 | n/a; HFR-P4 compact (cases 6a and 6b) (UO2 TRISO compact) | n/a | M text; t = n/s h (n/a) |  |  | fuel-sphere level (particles plus matrix); not a single-particle value | IAEA (2012) | 3.pdf; printed p. 556; idx 569 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | measured | verified |
 | E-156 | release fraction equivalent to one particle (one-particle level) | $f_{\mathrm{rel}}$ | $6\times10^{-5}$ | 1 | n/a; HFR-K3 sphere (cases 8a and 8b) (UO2 TRISO sphere) | n/a | M text; t = n/s h (n/a) |  |  | fuel-sphere level (particles plus matrix); not a single-particle value | IAEA (2012) | 3.pdf; printed p. 563; idx 576 | local Paper/3.pdf (IAEA URL NOT VERIFIED) | measured | verified |
+<!-- strato-data:end -->
 
 ### 9.1 Additional release measurements (Tables 31a to 31h)
 
@@ -2282,7 +2335,7 @@ One record per curve: the specimen level, the bound class, the decay correction,
 
 ## 10. Verification
 
-Script: `scripts/derivation_checks/D5_parameter_register.py`, run with `.venv/Scripts/python.exe -I -X utf8 D5_parameter_register.py`. It reads the six CSV files and writes nothing. Output (2026-11-06), abridged to one line per check family plus every non-schema line:
+The Python script `scripts/derivation_checks/D5_parameter_register.py` (91 checks, SymPy for the symbolic ones) is replaced by the Rust checks of `crates/strato-data` (`strato-data check`; `crates/strato-data/CHECKS.md` names the Rust test of every one of its checks); the output below is the record of its last run on 2026-11-06, abridged to one line per check family plus every non-schema line:
 
 ```text
 PASS [S] 23 schema checks on the six CSV files (header, source and status columns, status vocabulary, unique ids, rectangular)

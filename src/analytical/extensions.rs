@@ -464,8 +464,8 @@ pub enum Withheld {
     /// The quantity is not defined here (for example `F` with `M^0 = 0`).
     Undefined(&'static str),
     /// The run has decay or a source, and the accuracy floor has not been re-estimated for
-    /// (B2) to (B5) ([`EXTENSION_FLOOR_REESTIMATED`] is `false`; the gate is kept and tested
-    /// through `drawn_gated`).
+    /// (B2) to (B5). [`EXTENSION_FLOOR_REESTIMATED`] is `true`, so [`KernelRun::drawn`] never
+    /// returns this; the gate is kept and tested through `drawn_gated` with the flag closed.
     FloorNotReestimated,
 }
 

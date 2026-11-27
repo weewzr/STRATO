@@ -560,6 +560,12 @@ pub struct EngineCurve {
     pub b_available: bool,
     /// The temperature history of the run, as Method B's applicability reads it.
     pub temperature: TemperatureHistory,
+    /// Method B at the sample times where the drawing mask accepts it.
+    pub f_b: Vec<Option<f64>>,
+    /// Method B accuracy floor, when it is available.
+    pub b_floor: Option<f64>,
+    /// First valid time of Method B, hours.
+    pub b_valid_from_h: Option<f64>,
 }
 
 /// Stage 3 (decay at constant temperature) or stage 4 (the registered ramp history) of an EXP
@@ -694,7 +700,7 @@ pub fn engine_cell(
         &d_at_t,
         &sample_s,
     );
-    let (f_b, _, _, b_json) = b_series_json(
+    let (f_b, b_floor, b_valid_from_h, b_json) = b_series_json(
         &b,
         &sample,
         "fraction of the initial inventory released (dimensionless)",
@@ -847,6 +853,9 @@ pub fn engine_cell(
             method_b: b_json,
             b_available,
             temperature: needs.temperature.clone(),
+            f_b,
+            b_floor,
+            b_valid_from_h,
         },
     ))
 }

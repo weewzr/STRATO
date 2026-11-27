@@ -3,6 +3,8 @@
 //! ```text
 //! strato-data check [--repo <folder>]    run every consistency check on the six register files
 //! strato-data summary [--repo <folder>]  count the rows of the six files as the typed readers see them
+//! strato-data register (--check | --write) [--repo <folder>]
+//!                                         the generated tables of STRATO_Parameter_Register.md
 //! ```
 //!
 //! `check` prints one `PASS` or `FAIL` line per check and a summary line, and exits with status 1
@@ -17,8 +19,11 @@ fn main() -> ExitCode {
     let mut args = std::env::args().skip(1);
     let cmd = args.next().unwrap_or_default();
     let mut repo = PathBuf::from(".");
+    let mut mode: Option<&str> = None;
     while let Some(a) = args.next() {
         match a.as_str() {
+            "--check" => mode = Some("check"),
+            "--write" => mode = Some("write"),
             "--repo" => match args.next() {
                 Some(p) => repo = PathBuf::from(p),
                 None => return usage("--repo needs a folder"),
@@ -30,13 +35,18 @@ fn main() -> ExitCode {
     match cmd.as_str() {
         "check" => run_check(&data),
         "summary" => run_summary(&data),
-        _ => usage("expected a command: check or summary"),
+        "register" => match mode {
+            Some(m) => run_register(&data, m == "write"),
+            None => usage("register needs --check or --write"),
+        },
+        _ => usage("expected a command: check, summary or register"),
     }
 }
 
 fn usage(why: &str) -> ExitCode {
     eprintln!("strato-data: {why}");
     eprintln!("usage: strato-data (check | summary) [--repo <folder>]");
+    eprintln!("       strato-data register (--check | --write) [--repo <folder>]");
     ExitCode::from(2)
 }
 
@@ -96,5 +106,83 @@ fn run_summary(data: &std::path::Path) -> ExitCode {
             println!("FAIL [load] {e}");
             ExitCode::from(1)
         }
+    }
+}
+
+/// The generated tables of the register document: the same tables as the CSV files say, or (with
+/// `--write`) the document rewritten so that they are; the hand-written text is never touched.
+fn run_register(data: &std::path::Path, write: bool) -> ExitCode {
+    let path = data
+        .join("reference")
+        .join(strato_data::register::REGISTER_MARKDOWN);
+    let texts = match strato_data::register::RegisterTexts::read(data) {
+        Ok(t) => t,
+        Err(e) => {
+            println!("FAIL [load] {e}");
+            return ExitCode::from(1);
+        }
+    };
+    let document = match std::fs::read_to_string(&path) {
+        Ok(d) => d,
+        Err(e) => {
+            println!("FAIL [load] {}: {e}", path.display());
+            return ExitCode::from(1);
+        }
+    };
+    let tables = match strato_data::register_render::Tables::read(&texts) {
+        Ok(t) => t,
+        Err(e) => {
+            println!("FAIL [load] {e}");
+            return ExitCode::from(1);
+        }
+    };
+    let (text, reports) = match strato_data::register_render::process(&document, &tables, write) {
+        Ok(r) => r,
+        Err(e) => {
+            println!("FAIL [markers] {e}");
+            return ExitCode::from(1);
+        }
+    };
+    let stale = reports.iter().filter(|r| !r.current).count();
+    for r in &reports {
+        println!(
+            "{} line {}: {} ({} lines){}",
+            if r.current {
+                "PASS"
+            } else if write {
+                "WROTE"
+            } else {
+                "FAIL"
+            },
+            r.line,
+            r.spec,
+            r.lines,
+            r.first_difference
+                .as_ref()
+                .map(|d| format!(": {d}"))
+                .unwrap_or_default()
+        );
+    }
+    if write {
+        if text != document {
+            if let Err(e) = std::fs::write(&path, text.as_bytes()) {
+                println!("FAIL [write] {}: {e}", path.display());
+                return ExitCode::from(1);
+            }
+        }
+        println!(
+            "SUMMARY: {} generated tables, {stale} rewritten",
+            reports.len()
+        );
+        return ExitCode::SUCCESS;
+    }
+    println!(
+        "SUMMARY: {} generated tables, {stale} differ from the CSV files",
+        reports.len()
+    );
+    if stale == 0 {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::from(1)
     }
 }

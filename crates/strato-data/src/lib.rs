@@ -31,6 +31,7 @@ pub mod geometry;
 pub mod integration_checks;
 pub mod irradiation;
 pub mod register;
+pub mod register_render;
 pub mod release;
 pub mod scenarios;
 pub mod select;

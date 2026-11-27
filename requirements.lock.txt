@@ -1,6 +1,4 @@
 # Versions of the Python packages of the remaining scripts (scripts/ and the figure scripts under docs/archive/).
-# sympy is needed only by scripts/derivation_checks/D5_parameter_register.py, which the Rust data checks (crates/strato-data)
-# replace; both are removed in the second integration pull request.
 contourpy==1.3.2
 cycler==0.12.1
 fonttools==4.65.0
@@ -18,7 +16,6 @@ python-dateutil==3.0.0
 python-pptx==1.0.2
 scipy==1.15.3
 six==1.17.0
-sympy==1.14.0
 typing_extensions==4.16.0
 tzdata==2026.6
 xlsxwriter==3.3.1

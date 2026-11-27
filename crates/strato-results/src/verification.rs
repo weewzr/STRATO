@@ -151,8 +151,59 @@ pub fn conservation(prov: &Prov, entries: &[Conservation]) -> (String, Vec<Vec<S
     )
 }
 
-/// Solver-to-solver agreement of Method A and Method B at the points where both are drawn.
-pub fn agreement(prov: &Prov, curves: &[Stage1]) -> (String, Vec<Vec<String>>) {
+/// A curve for which Method A and Method B are compared: the arrays at the sample times.
+pub struct AgreementCurve {
+    /// Cell key.
+    pub key: String,
+    /// Stage of the curve (1 baseline, 3 decay).
+    pub stage: u8,
+    /// Sample times, hours.
+    pub t_h: Vec<f64>,
+    /// Method A at the sample times.
+    pub f_a: Vec<f64>,
+    /// Resolved flags of Method A.
+    pub resolved: Vec<bool>,
+    /// Method B where the drawing mask accepts it.
+    pub f_b: Vec<Option<f64>>,
+    /// Method B accuracy floor.
+    pub b_floor: Option<f64>,
+    /// First valid time of Method B, hours.
+    pub b_valid_from_h: Option<f64>,
+}
+
+impl AgreementCurve {
+    /// The stage-1 curve.
+    pub fn from_stage1(c: &Stage1) -> Self {
+        AgreementCurve {
+            key: c.key.clone(),
+            stage: 1,
+            t_h: c.t_h.clone(),
+            f_a: c.f_a.clone(),
+            resolved: c.resolved.clone(),
+            f_b: c.f_b.clone(),
+            b_floor: c.b_floor,
+            b_valid_from_h: c.b_valid_from_h,
+        }
+    }
+
+    /// The stage-3 curve (decay at a constant temperature, through extension B2).
+    pub fn from_stage3(c: &crate::curves::EngineCurve) -> Self {
+        AgreementCurve {
+            key: c.key.clone(),
+            stage: 3,
+            t_h: c.t_h.clone(),
+            f_a: c.f_a.clone(),
+            resolved: c.resolved.clone(),
+            f_b: c.f_b.clone(),
+            b_floor: c.b_floor,
+            b_valid_from_h: c.b_valid_from_h,
+        }
+    }
+}
+
+/// Solver-to-solver agreement of Method A and Method B at the points where both are drawn: the
+/// stage-1 curves and the stage-3 curves where Method B is drawn.
+pub fn agreement(prov: &Prov, curves: &[AgreementCurve]) -> (String, Vec<Vec<String>>) {
     let mut entries = Vec::new();
     let mut csv = Vec::new();
     for c in curves {
@@ -174,6 +225,7 @@ pub fn agreement(prov: &Prov, curves: &[Stage1]) -> (String, Vec<Vec<String>>) {
         }
         entries.push(J::obj(vec![
             ("key", J::s(c.key.clone())),
+            ("stage", J::Int(i64::from(c.stage))),
             ("points_compared", J::Int(n as i64)),
             ("largest_relative_difference", J::opt(largest.map(|l| l.0))),
             ("time_of_largest_h", J::opt(largest.map(|l| l.1))),
@@ -190,6 +242,7 @@ pub fn agreement(prov: &Prov, curves: &[Stage1]) -> (String, Vec<Vec<String>>) {
             final_diff.map_or(String::new(), |l| format!("{:e}", l.0)),
             c.b_floor.map_or(String::new(), |v| format!("{v:e}")),
             c.b_valid_from_h.map_or(String::new(), |v| format!("{v:e}")),
+            c.stage.to_string(),
         ]);
     }
     (
@@ -199,7 +252,7 @@ pub fn agreement(prov: &Prov, curves: &[Stage1]) -> (String, Vec<Vec<String>>) {
             vec![
                 (
                     "statement",
-                    J::s("The two methods solve the same stage-1 problem independently; the relative difference is taken where both are drawn (resolved Method A, masked Method B). This is solver-to-solver verification, not agreement with an experiment."),
+                    J::s("The two methods solve the same problem independently, the baseline problem at stage 1 and the decay problem at stage 3 (Method B through the decay extension, drawn only where its mask accepts the value); the relative difference is taken where both are drawn (resolved Method A, drawn Method B). This is solver-to-solver verification, not agreement with an experiment."),
                 ),
                 ("entries", J::Arr(entries)),
             ],
