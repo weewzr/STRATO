@@ -1,0 +1,864 @@
+{
+  "schema_version": "1",
+  "what": "one experimental curve with its model curves and its R² records",
+  "provenance": {
+    "label": "numerical solution of the stated model; not experimental validation",
+    "solver": "STRATO BTCS five-layer spherical finite difference",
+    "solver_version": "1.0.1",
+    "pipeline": "strato-results 0.1.0",
+    "schema_version": "1",
+    "commit": "f5f3155",
+    "solver_source_sha256": "02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275",
+    "input_sha256": {
+      "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
+      "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
+      "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
+      "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
+      "temperature_histories.csv": "b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d",
+      "release_measurements.csv": "29f0d7bec6f40fb97c52c0bf7972782d7849a58f5f910527fe8efa8afa9ddda9",
+      "agr1_irradiation_conditions.csv": "31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d",
+      "agr1_burnup_by_cycle.csv": "e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f",
+      "agr1_power_history_digitised.csv": "25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a",
+      "scenarios/s1_normal_operation.csv": "c420e1e04e043ed0418099c27156cabda8188f40ce2fb239d1ce3916cccc7970",
+      "scenarios/s2_shutdown_cooldown.csv": "f575e9a42670e52293083907b3658fd7e3a99c279912861999f0cb847cbf6044",
+      "scenarios/s3_startup.csv": "bf2b6bd01168d0aa72f9db61f5fa4eae60ff39a81928eaed515ae8279916bfa7",
+      "scenarios/s4_control_rod_insertion.csv": "93856f2003ca65b7a7258d60819a47b8a651d695dffeff0fd7dc664b90309759",
+      "scenarios/s5_fuel_removal.csv": "4cad00101259e2fdbeec585f27d8910502a1858ab38bce59899c132b0caad9bb"
+    }
+  },
+  "curve_id": "IAEA97-K31-SR90",
+  "definition_id": "R2_LINEAR_PER_CURVE_V1",
+  "nuclide": "Sr-90",
+  "register": "data/experimental/release_measurements.csv; data/experimental/curve_assessment.csv",
+  "experiment": {
+    "marker_colour": "#111111",
+    "connect": false,
+    "points": [
+      {
+        "id": "E-638",
+        "time_h": 1.9e1,
+        "value": 1.2e-8,
+        "registered_value": 1.2e-8,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 9.6e-10,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-639",
+        "time_h": 4.2e1,
+        "value": 2e-8,
+        "registered_value": 2e-8,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.6e-9,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-640",
+        "time_h": 7.6e1,
+        "value": 4e-8,
+        "registered_value": 4e-8,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 3.2e-9,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-641",
+        "time_h": 9.7e1,
+        "value": 6e-8,
+        "registered_value": 6e-8,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 4.8e-9,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-642",
+        "time_h": 1.38e2,
+        "value": 1e-7,
+        "registered_value": 1e-7,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 8e-9,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-643",
+        "time_h": 1.62e2,
+        "value": 1.1e-7,
+        "registered_value": 1.1e-7,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 8.800000000000001e-9,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-644",
+        "time_h": 1.85e2,
+        "value": 1.2e-7,
+        "registered_value": 1.2e-7,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 9.6e-9,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-645",
+        "time_h": 2.12e2,
+        "value": 1.3e-7,
+        "registered_value": 1.3e-7,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.04e-8,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-646",
+        "time_h": 2.35e2,
+        "value": 1.4e-7,
+        "registered_value": 1.4e-7,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.1200000000000001e-8,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-647",
+        "time_h": 2.57e2,
+        "value": 1.4e-7,
+        "registered_value": 1.4e-7,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.1200000000000001e-8,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-648",
+        "time_h": 2.83e2,
+        "value": 1.5e-7,
+        "registered_value": 1.5e-7,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.2e-8,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-649",
+        "time_h": 3.06e2,
+        "value": 1.6e-7,
+        "registered_value": 1.6e-7,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.28e-8,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-650",
+        "time_h": 3.3e2,
+        "value": 1.5e-7,
+        "registered_value": 1.5e-7,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.2e-8,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-651",
+        "time_h": 3.52e2,
+        "value": 1.6e-7,
+        "registered_value": 1.6e-7,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.28e-8,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-652",
+        "time_h": 3.8e2,
+        "value": 1.7e-7,
+        "registered_value": 1.7e-7,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.36e-8,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-653",
+        "time_h": 4.03e2,
+        "value": 1.7e-7,
+        "registered_value": 1.7e-7,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.36e-8,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-654",
+        "time_h": 4.28e2,
+        "value": 1.7e-7,
+        "registered_value": 1.7e-7,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.36e-8,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-655",
+        "time_h": 4.52e2,
+        "value": 1.7e-7,
+        "registered_value": 1.7e-7,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.36e-8,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-656",
+        "time_h": 4.75e2,
+        "value": 1.8e-7,
+        "registered_value": 1.8e-7,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.44e-8,
+          "time_h": 3e0
+        }
+      },
+      {
+        "id": "E-657",
+        "time_h": 4.98e2,
+        "value": 1.8e-7,
+        "registered_value": 1.8e-7,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.44e-8,
+          "time_h": 3e0
+        }
+      }
+    ]
+  },
+  "model": {
+    "method_a": {
+      "label": "Method A: BTCS",
+      "status": "computed",
+      "time_h": [0e0,5e-2,5.4000000000000006e-2,5.832000000000001e-2,6.298560000000002e-2,6.802444800000003e-2,7.346640384000004e-2,7.934371614720005e-2,8.569121343897607e-2,9.254651051409415e-2,9.99502313552217e-2,1.0794624986363945e-1,1.1658194985273061e-1,1.2590850584094906e-1,1.35981186308225e-1,1.46859681212883e-1,1.5860845570991366e-1,1.7129713216670678e-1,1.8500090274004333e-1,1.998009749592468e-1,2.1578505295598657e-1,2.330478571924655e-1,2.5169168576786277e-1,2.718270206292918e-1,2.935731822796352e-1,3.1705903686200604e-1,3.4242375981096657e-1,3.698176605958439e-1,3.9940307344351145e-1,4.313553193189924e-1,4.658637448645118e-1,5.031328444536728e-1,5.433834720099666e-1,5.86854149770764e-1,6.338024817524252e-1,6.845066802926192e-1,7.392672147160287e-1,7.984085918933111e-1,8.62281279244776e-1,9.312637815843582e-1,1.0057648841111069e0,1.0862260748399954e0,1.1731241608271952e0,1.2669740936933709e0,1.3683320211888406e0,1.477798582883948e0,1.5960224695146639e0,1.7237042670758371e0,1.8616006084419041e0,2.0105286571172565e0,2.1713709496866374e0,2.3450806256615686e0,2.5326870757144944e0,2.735302041771654e0,2.9541262051133867e0,3.190456301522458e0,3.4456928056442546e0,3.721348230095795e0,4.019056088503459e0,4.3405805755837354e0,4.687827021630435e0,5.06285318336087e0,5.46788143802974e0,5.905311953072119e0,6.377736909317889e0,6.887955862063321e0,7.438992331028387e0,8.034111717510658e0,8.676840654911512e0,9.370987907304434e0,1.0120666939888789e1,1.0930320295079893e1,1.1804745918686285e1,1.2749125592181189e1,1.3769055639555685e1,1.4870580090720141e1,1.6060226497977755e1,1.7345044617815976e1,1.8732648187241256e1,1.9e1,2.023126004222056e1,2.1849760845598205e1,2.3597741713246062e1,2.5485561050305748e1,2.7524405934330208e1,2.9726358409076628e1,3.210446708180276e1,3.467282444834698e1,3.744665040421474e1,4.0442382436551924e1,4.2e1,4.367777303147608e1,4.7171994873994166e1,5.09457544639137e1,5.50214148210268e1,5.942312800670895e1,6.417697824724567e1,6.931113650702532e1,7.485602742758735e1,7.6e1,8.084450962179434e1,8.73120703915379e1,9.429703602286094e1,9.7e1,1.0184079890468982e2,1.0998806281706501e2,1.1878710784243022e2,1.2829007646982464e2,1.38e2,1.3855328258741062e2,1.496375451944035e2,1.6160854880995578e2,1.62e2,1.7453723271475226e2,1.85e2,1.8850021133193246e2,2.0358022823848708e2,2.12e2,2.1986664649756605e2,2.35e2,2.3745597821737135e2,2.5645245647476105e2,2.57e2,2.7696865299274197e2,2.83e2,2.991261452321613e2,3.06e2,3.2305623685073425e2,3.3e2,3.48900735798793e2,3.52e2,3.7681279466269643e2,3.8e2,4.03e2,4.069578182357122e2,4.28e2,4.395144436945692e2,4.52e2,4.746755991901348e2,4.75e2,4.98e2,5e2],
+      "release_fraction": [8.478325082683629e-10,1.023640050921887e-9,1.0400966887631157e-9,1.0578698576316787e-9,1.07706488000966e-9,1.0977955041779504e-9,1.1201845782796563e-9,1.1443647783095224e-9,1.1704793943417594e-9,1.1986831796566005e-9,1.2291432677965756e-9,1.267354642003575e-9,1.3086588744216808e-9,1.3532674454332382e-9,1.4014447021257451e-9,1.4534761393535813e-9,1.5161192768585883e-9,1.5863147040826476e-9,1.6621257654846798e-9,1.7440017117988818e-9,1.8456451603345187e-9,1.9556000681060458e-9,2.0759294469494213e-9,2.2229639721137724e-9,2.381761259291286e-9,2.570930123974475e-9,2.7824211516563667e-9,3.033542594287115e-9,3.3141307519690177e-9,3.656798421614266e-9,4.049741570884422e-9,4.506878427237995e-9,5.056756759382549e-9,5.712007927903704e-9,6.4929597799575075e-9,7.4303003205292695e-9,8.561265387475122e-9,9.93072870342369e-9,1.1625535971760977e-8,1.3700975378733172e-8,1.6252968457505368e-8,1.9447856592925614e-8,2.3439003210643436e-8,2.8449010218495046e-8,3.47864735295377e-8,4.283964000360197e-8,5.3090783450090295e-8,6.630528697785367e-8,8.327366922965919e-8,1.0522834118443117e-7,1.3373852881851879e-7,1.7076810373429343e-7,2.1918172400249926e-7,2.824069888122399e-7,3.651298755234411e-7,4.7363556119336247e-7,6.157906191222935e-7,8.022755035170921e-7,1.0464282967158025e-6,1.3658397270603243e-6,1.78324729896984e-6,2.327507783592441e-6,3.035632835598982e-6,3.95436929771217e-6,5.143673174235213e-6,6.677842339647214e-6,8.651142360682566e-6,1.118091354677036e-5,1.4412887555410576e-5,1.852740167003312e-5,2.374649462863906e-5,3.0341808791401497e-5,3.864356489988941e-5,4.9051935035856266e-5,6.204767262916101e-5,7.820291289134975e-5,9.819746316569728e-5,1.2283150556623845e-4,1.5304067045328343e-4,1.5929386305437232e-4,1.899095719203489e-4,2.3468911481080266e-4,2.8881291014322787e-4,3.5390952973441716e-4,4.31819063820312e-4,5.246090112643387e-4,6.345877491595904e-4,7.643208672298643e-4,9.166419787933128e-4,1.0946730678417218e-3,1.1925340807250897e-3,1.301836211428035e-3,1.5418729177371954e-3,1.818863858351586e-3,2.1372516931789e-3,2.5018642415524754e-3,2.9179459648905367e-3,3.391189168301434e-3,3.927770203756254e-3,4.041554128699906e-3,4.534387368745097e-3,5.218300314186892e-3,5.987368841119666e-3,6.292821217475018e-3,6.850090523802954e-3,7.815632027380363e-3,8.893855849905496e-3,1.0095337292677016e-2,1.1358404176703767e-2,1.143137096059573e-2,1.2913964455885019e-2,1.455581660177543e-2,1.4610155364998765e-2,1.6370279505760952e-2,1.7866009222202935e-2,1.8371300333805712e-2,2.0573342337402902e-2,2.1818711766884772e-2,2.2991280951188613e-2,2.5268366589222928e-2,2.564027482183236e-2,2.8535608115675803e-2,2.8619500299297173e-2,3.1692503810451245e-2,3.26250667469525e-2,3.51259073539406e-2,3.619447534256471e-2,3.8850241690343366e-2,3.993251747838828e-2,4.287913581241314e-2,4.336219126735945e-2,4.7225131345023146e-2,4.7720506925198136e-2,5.1287270458226925e-2,5.1899373699875406e-2,5.514379654244813e-2,5.691129668393609e-2,5.8820831148985495e-2,6.226831233603707e-2,6.2317428946496826e-2,6.578418160755846e-2,6.608413817825955e-2],
+      "model_config_id": "btcs.CRP6-P4K3.T978-FRG.CRP6-8a.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
+      "steps": 10820,
+      "history_row_ids": [
+        "TH-069",
+        "TH-070",
+        "TH-071",
+        "TH-072",
+        "TH-073",
+        "TH-074"
+      ],
+      "note": "the line is a drawing between output times; the values that enter R² are the exact step values in r2.json"
+    },
+    "method_b": {
+      "label": "Method B: Sturm–Liouville",
+      "status": "not available",
+      "reason": "Method B: not available (TIME_VARYING_TEMPERATURE: the temperature changes in time, so the eigenfunctions change in time; the analytical solution is not defined for this case (science design Section 4.2))"
+    }
+  },
+  "r2_records": [
+    {
+      "record_id": "r2.IAEA97-K31-SR90.A",
+      "definition_id": "R2_LINEAR_PER_CURVE_V1",
+      "curve_id": "IAEA97-K31-SR90",
+      "method": "A",
+      "method_name": "Method A: BTCS",
+      "nuclide": "Sr-90",
+      "program": "FRG",
+      "specimen_id": "HFR-K3/1 sphere",
+      "specimen_level": "sphere",
+      "source_aggregated": false,
+      "temperature_C": 1.6e3,
+      "temperature_label": "1600 °C",
+      "temperature_history_id": "CRP6-8a (TH-069..TH-074; time axis is time at 1600 C)",
+      "release_definition": "cumulative sphere release fraction",
+      "denominator": "not established",
+      "time_basis": "time at temperature (heating time at 1600 C)",
+      "model_config_id": "btcs.CRP6-P4K3.T978-FRG.CRP6-8a.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
+      "independence": "not_established",
+      "source_citation_apa": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
+      "source_citation_note": null,
+      "source_link": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
+      "link_status": "verified",
+      "source_location": "Fig. 4-7 left; printed p. 137 (PDF p. 144)",
+      "row_ids": [
+        "E-638",
+        "E-639",
+        "E-640",
+        "E-641",
+        "E-642",
+        "E-643",
+        "E-644",
+        "E-645",
+        "E-646",
+        "E-647",
+        "E-648",
+        "E-649",
+        "E-650",
+        "E-651",
+        "E-652",
+        "E-653",
+        "E-654",
+        "E-655",
+        "E-656",
+        "E-657"
+      ],
+      "rows_excluded": [],
+      "early_bound_points": [],
+      "qualifiers": [
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~"
+      ],
+      "bound_classes": [
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total"
+      ],
+      "register_status": [
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised"
+      ],
+      "digitisation_verification_ref": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "data_kind": "digitised",
+      "n": 20,
+      "matched_times_h": [1.9e1,4.2e1,7.6e1,9.7e1,1.38e2,1.62e2,1.85e2,2.12e2,2.35e2,2.57e2,2.83e2,3.06e2,3.3e2,3.52e2,3.8e2,4.03e2,4.28e2,4.52e2,4.75e2,4.98e2],
+      "model_times_h": [6e1,8.3e1,1.17e2,1.38e2,1.79e2,2.03e2,2.26e2,2.53e2,2.76e2,2.98e2,3.24e2,3.47e2,3.71e2,3.93e2,4.21e2,4.44e2,4.69e2,4.93e2,5.16e2,5.39e2],
+      "f_exp": [1.2e-8,2e-8,4e-8,6e-8,1e-7,1.1e-7,1.2e-7,1.3e-7,1.4e-7,1.4e-7,1.5e-7,1.6e-7,1.5e-7,1.6e-7,1.7e-7,1.7e-7,1.7e-7,1.7e-7,1.8e-7,1.8e-7],
+      "f_exp_registered": [1.2e-8,2e-8,4e-8,6e-8,1e-7,1.1e-7,1.2e-7,1.3e-7,1.4e-7,1.4e-7,1.5e-7,1.6e-7,1.5e-7,1.6e-7,1.7e-7,1.7e-7,1.7e-7,1.7e-7,1.8e-7,1.8e-7],
+      "f_exp_registered_unit": "1",
+      "f_exp_conversion": null,
+      "f_model": [1.5929386305437232e-4,1.1925340807250897e-3,4.041554128699906e-3,6.292821217475018e-3,1.1358404176703767e-2,1.4610155364998765e-2,1.7866009222202935e-2,2.1818711766884772e-2,2.5268366589222928e-2,2.8619500299297173e-2,3.26250667469525e-2,3.619447534256471e-2,3.993251747838828e-2,4.336219126735945e-2,4.7720506925198136e-2,5.1287270458226925e-2,5.514379654244813e-2,5.8820831148985495e-2,6.2317428946496826e-2,6.578418160755846e-2],
+      "f_model_t_minus": [9.712025731322835e-5,1.0072494156103816e-3,3.745359239857635e-3,5.954060478022592e-3,1.0964584747750495e-2,1.419472785534767e-2,1.7434830109212655e-2,2.1373784379470396e-2,2.4814922046310858e-2,2.8160129291429362e-2,3.216099123066392e-2,3.572795882802411e-2,3.9464882057322494e-2,4.289460837094317e-2,4.725423434498897e-2,5.0822945563170865e-2,5.468232809896284e-2,5.8362710998866474e-2,6.186298187592807e-2,6.533378643043354e-2],
+      "f_model_t_plus": [2.3910669797074863e-4,1.39073484121945e-3,4.3446961794981e-3,6.6366721392752326e-3,1.1755267228209784e-2,1.5027884425534327e-2,1.8298946871434595e-2,2.2264901673852838e-2,2.572273775539794e-2,2.90795327286984e-2,3.3089545431799e-2,3.6661206290370514e-2,4.0400202435632186e-2,4.382969631473509e-2,4.818656667919815e-2,5.175129065275408e-2,5.5604876659472405e-2,5.927849620229786e-2,6.277136752520372e-2,6.608413817825955e-2],
+      "model_run_ref": {
+        "solver_package_version": "1.0.1",
+        "commit": "f5f3155",
+        "model_config_id": "btcs.CRP6-P4K3.T978-FRG.CRP6-8a.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
+        "base_output_sha256": "0db5520f399051895733659316f5f962d51ecc270deb746ae54c1e2c39d10f90",
+        "refined_output_sha256": "9adde25eb5184203f18ac0285fa5415dba11ffa3fa8479108d2cf7e79b091f1f",
+        "steps": 10820,
+        "matrix_assemblies": 374
+      },
+      "curve_assessment_ref": null,
+      "evaluation": [
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step"
+      ],
+      "e_num": [3.4369154679315874e-5,9.222386068633037e-5,1.3544277034529878e-4,1.5051143067812238e-4,1.688507826612673e-4,1.7556941647579524e-4,1.80182789016773e-4,1.8388019989579868e-4,1.8589060232211685e-4,1.870341786842436e-4,1.8759136948519328e-4,1.8749992488948514e-4,1.8692851004987326e-4,1.8605221952971984e-4,1.8453948511813756e-4,1.8302524075715365e-4,1.8115558853160768e-4,1.7918323157986582e-4,1.7716227478111607e-4,1.7503938800644825e-4],
+      "numerical_budget": null,
+      "mean_f_exp": null,
+      "ss_tot": null,
+      "ss_res": null,
+      "r2": null,
+      "display": null,
+      "status": "unavailable",
+      "reason_code": "upper_bound",
+      "reason_caption": "R² unavailable because the published values are upper bounds, not exact measurements.",
+      "failed_checks": [
+        "C1",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "D1",
+        "M2",
+        "C0",
+        "V1"
+      ],
+      "coating_failure_basis": "none",
+      "decay_correction": "not_stated",
+      "decay_reference": null,
+      "inventory_reference": null,
+      "inventory_reference_offset_h": null,
+      "counting_delay_h": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "t_d_h": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "lambda_t_N": null,
+      "decay_gate_delta": null,
+      "verification_ref": null,
+      "label_latex": null,
+      "label_plain": null,
+      "premises": [
+        {
+          "code": "A2",
+          "text": "kernel-only start (A2, decision 20): the run starts with the inventory uniform in the kernel"
+        },
+        {
+          "code": "BP1",
+          "text": "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13)."
+        },
+        {
+          "code": "BP2",
+          "text": "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134."
+        },
+        {
+          "code": "A1",
+          "text": "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
+        },
+        {
+          "code": "frg_reference_correlations",
+          "text": "diffusivities: the FRG reference correlations of IAEA-TECDOC-978 Tables A-1 to A-3 (German fuel; rows A1-01..A1-04, BUF-01, A2-01..A2-03, A3-01..A3-05), not the AGR-1 heating-test set C16 (decision 72(b)); no validity range printed"
+        },
+        {
+          "code": "decay_not_modelled",
+          "text": "decay not modelled: release assumed decay-corrected"
+        },
+        {
+          "code": "independence_not_established",
+          "text": "independence of the parameters from these data not established"
+        }
+      ],
+      "digitisation": {
+        "u_value": {
+          "kind": "rel_pct",
+          "value": 8e0
+        },
+        "u_time_h": 3e0,
+        "status": "not available",
+        "r2_low": null,
+        "r2_high": null,
+        "first_order_half_width": null,
+        "corner_method": null,
+        "scope": "reading uncertainty only",
+        "interval_display": null
+      },
+      "systematic_r2_interval": null,
+      "systematic_interval_display": null,
+      "method_b_applicable": null,
+      "method_b_mask_passed": null
+    },
+    {
+      "record_id": "r2.IAEA97-K31-SR90.B",
+      "definition_id": "R2_LINEAR_PER_CURVE_V1",
+      "curve_id": "IAEA97-K31-SR90",
+      "method": "B",
+      "method_name": "Method B: Sturm–Liouville",
+      "nuclide": "Sr-90",
+      "program": "FRG",
+      "specimen_id": "HFR-K3/1 sphere",
+      "specimen_level": "sphere",
+      "source_aggregated": false,
+      "temperature_C": 1.6e3,
+      "temperature_label": "1600 °C",
+      "temperature_history_id": "CRP6-8a (TH-069..TH-074; time axis is time at 1600 C)",
+      "release_definition": "cumulative sphere release fraction",
+      "denominator": "not established",
+      "time_basis": "time at temperature (heating time at 1600 C)",
+      "model_config_id": "btcs.CRP6-P4K3.T978-FRG.CRP6-8a.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
+      "independence": "not_established",
+      "source_citation_apa": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
+      "source_citation_note": null,
+      "source_link": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
+      "link_status": "verified",
+      "source_location": "Fig. 4-7 left; printed p. 137 (PDF p. 144)",
+      "row_ids": [
+        "E-638",
+        "E-639",
+        "E-640",
+        "E-641",
+        "E-642",
+        "E-643",
+        "E-644",
+        "E-645",
+        "E-646",
+        "E-647",
+        "E-648",
+        "E-649",
+        "E-650",
+        "E-651",
+        "E-652",
+        "E-653",
+        "E-654",
+        "E-655",
+        "E-656",
+        "E-657"
+      ],
+      "rows_excluded": [],
+      "early_bound_points": [],
+      "qualifiers": [
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~"
+      ],
+      "bound_classes": [
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total"
+      ],
+      "register_status": [
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised"
+      ],
+      "digitisation_verification_ref": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "data_kind": "digitised",
+      "n": 20,
+      "matched_times_h": [1.9e1,4.2e1,7.6e1,9.7e1,1.38e2,1.62e2,1.85e2,2.12e2,2.35e2,2.57e2,2.83e2,3.06e2,3.3e2,3.52e2,3.8e2,4.03e2,4.28e2,4.52e2,4.75e2,4.98e2],
+      "model_times_h": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "f_exp": [1.2e-8,2e-8,4e-8,6e-8,1e-7,1.1e-7,1.2e-7,1.3e-7,1.4e-7,1.4e-7,1.5e-7,1.6e-7,1.5e-7,1.6e-7,1.7e-7,1.7e-7,1.7e-7,1.7e-7,1.8e-7,1.8e-7],
+      "f_exp_registered": [1.2e-8,2e-8,4e-8,6e-8,1e-7,1.1e-7,1.2e-7,1.3e-7,1.4e-7,1.4e-7,1.5e-7,1.6e-7,1.5e-7,1.6e-7,1.7e-7,1.7e-7,1.7e-7,1.7e-7,1.8e-7,1.8e-7],
+      "f_exp_registered_unit": "1",
+      "f_exp_conversion": null,
+      "f_model": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "f_model_t_minus": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "f_model_t_plus": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "model_run_ref": null,
+      "curve_assessment_ref": null,
+      "evaluation": [
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step"
+      ],
+      "e_num": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "numerical_budget": null,
+      "mean_f_exp": null,
+      "ss_tot": null,
+      "ss_res": null,
+      "r2": null,
+      "display": null,
+      "status": "unavailable",
+      "reason_code": "upper_bound",
+      "reason_caption": "R² unavailable because the published values are upper bounds, not exact measurements.",
+      "failed_checks": [
+        "C1",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "D1",
+        "B1",
+        "C0",
+        "V1"
+      ],
+      "coating_failure_basis": "none",
+      "decay_correction": "not_stated",
+      "decay_reference": null,
+      "inventory_reference": null,
+      "inventory_reference_offset_h": null,
+      "counting_delay_h": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "t_d_h": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "lambda_t_N": null,
+      "decay_gate_delta": null,
+      "verification_ref": null,
+      "label_latex": null,
+      "label_plain": null,
+      "premises": [
+        {
+          "code": "A2",
+          "text": "kernel-only start (A2, decision 20): the run starts with the inventory uniform in the kernel"
+        },
+        {
+          "code": "BP1",
+          "text": "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13)."
+        },
+        {
+          "code": "BP2",
+          "text": "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134."
+        },
+        {
+          "code": "A1",
+          "text": "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
+        },
+        {
+          "code": "frg_reference_correlations",
+          "text": "diffusivities: the FRG reference correlations of IAEA-TECDOC-978 Tables A-1 to A-3 (German fuel; rows A1-01..A1-04, BUF-01, A2-01..A2-03, A3-01..A3-05), not the AGR-1 heating-test set C16 (decision 72(b)); no validity range printed"
+        },
+        {
+          "code": "decay_not_modelled",
+          "text": "decay not modelled: release assumed decay-corrected"
+        },
+        {
+          "code": "independence_not_established",
+          "text": "independence of the parameters from these data not established"
+        }
+      ],
+      "digitisation": {
+        "u_value": {
+          "kind": "rel_pct",
+          "value": 8e0
+        },
+        "u_time_h": 3e0,
+        "status": "not available",
+        "r2_low": null,
+        "r2_high": null,
+        "first_order_half_width": null,
+        "corner_method": null,
+        "scope": "reading uncertainty only",
+        "interval_display": null
+      },
+      "systematic_r2_interval": null,
+      "systematic_interval_display": null,
+      "method_b_applicable": false,
+      "method_b_mask_passed": null
+    }
+  ],
+  "caption": {
+    "curve_id": "IAEA97-K31-SR90",
+    "caption_text": "Cumulative release fraction of Sr-90 versus time at temperature (h), fuel sphere HFR-K3/1, 1600 °C.",
+    "reason_lines": [
+      "R² unavailable because the published values are upper bounds, not exact measurements."
+    ],
+    "source_citation_apa": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
+    "source_citation_note": null,
+    "source_link": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
+    "source_link_note": null,
+    "source_figure_table": "Fig. 4-7 left, p. 137",
+    "source_kind": "digitised",
+    "time_axis_label": "time at temperature (h)",
+    "specimen_label": "fuel sphere HFR-K3/1",
+    "temperature_label": "1600 °C",
+    "y_axis_label": "Cumulative release fraction",
+    "y_axis_scale": "log",
+    "legend_exp_label": "Experiment, upper bound (digitised)",
+    "marker_colour_exp": "#111111",
+    "legend_methods": [
+      {
+        "label": "Method A: BTCS",
+        "colour": "#2563EB",
+        "style": "solid"
+      }
+    ]
+  }
+}

@@ -7,15 +7,15 @@
     "solver_version": "1.0.1",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "83a93fa04c7191d5543828e1eb0fca2b46523702",
+    "commit": "f5f3155",
     "solver_source_sha256": "02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
       "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
       "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
       "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
-      "temperature_histories.csv": "6ab3201672afd15f92ec9e529318377c829afaa5804288a3a694032145ab4af0",
-      "release_measurements.csv": "b25e390f831a491f68398644efff1cfbc8c8b901cf95a167baaa314bc5bcbc4d",
+      "temperature_histories.csv": "b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d",
+      "release_measurements.csv": "29f0d7bec6f40fb97c52c0bf7972782d7849a58f5f910527fe8efa8afa9ddda9",
       "agr1_irradiation_conditions.csv": "31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d",
       "agr1_burnup_by_cycle.csv": "e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f",
       "agr1_power_history_digitised.csv": "25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a",
@@ -33,12 +33,12 @@
     "normal_operation_grey": "#6B7280",
     "rule": "Method A blue solid, Method B red solid, same thickness; experimental observations black markers; no dashed or dotted lines; plots use a fixed light surface in both themes"
   },
-  "nrmse_display_rule": "NRMSE_A = x% in blue and NRMSE_B = y% in red, two significant figures from the stored display string; nothing else on the graph: no N, no uncertainty, no status word, no placeholder where no value exists (metric-nrmse.md Section 6)",
-  "nrmse_label_templates": {
-    "latex_a": "\\mathrm{NRMSE}_{\\mathrm{A}} = <display>\\,\\%",
-    "latex_b": "\\mathrm{NRMSE}_{\\mathrm{B}} = <display>\\,\\%",
-    "plain_a": "NRMSE_A = <display>%",
-    "plain_b": "NRMSE_B = <display>%"
+  "r2_display_rule": "R²_A = x in blue and R²_B = y in red, from the stored display string, which is rounded toward minus infinity; nothing else inside the plot area: no N, no interval, no status word, no placeholder where no value exists; the reason, the citation and the link stand below the graph (metric-r2.md Sections 7.2 to 7.4)",
+  "r2_label_templates": {
+    "latex_a": "R^{2}_{\\mathrm{A}} = <display_latex>",
+    "latex_b": "R^{2}_{\\mathrm{B}} = <display_latex>",
+    "plain_a": "R²_A = <display>",
+    "plain_b": "R²_B = <display>"
   },
   "texts": [
     {
@@ -177,202 +177,703 @@
       "latex": "\\text{C15 evaluated outside its documented application (955 to 1197 }^{\\circ}\\mathrm{C})"
     }
   ],
-  "nrmse_labels": [
+  "r2_labels": [
     {
-      "set_id": "nrmse.s1.exp.ag110m.1600c.A",
+      "record_id": "r2.HUNN14-442-AG110M.A",
+      "status": "unavailable",
+      "reason_code": "coating_failure",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s1.exp.ag110m.1600c.B",
+      "record_id": "r2.HUNN14-442-AG110M.B",
+      "status": "unavailable",
+      "reason_code": "coating_failure",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s4.exp.ag110m.1600c.A",
+      "record_id": "r2.HUNN14-442-SR90.A",
+      "status": "unavailable",
+      "reason_code": "coating_failure",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s4.exp.ag110m.1600c.B",
+      "record_id": "r2.HUNN14-442-SR90.B",
+      "status": "unavailable",
+      "reason_code": "coating_failure",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s1.exp.ag110m.1700c.A",
+      "record_id": "r2.STEMPIEN23-433-AG110M.A",
+      "status": "unavailable",
+      "reason_code": "upper_bound",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s1.exp.ag110m.1700c.B",
+      "record_id": "r2.STEMPIEN23-433-AG110M.B",
+      "status": "unavailable",
+      "reason_code": "upper_bound",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s4.exp.ag110m.1700c.A",
+      "record_id": "r2.STEMPIEN23-643-AG110M.A",
+      "status": "unavailable",
+      "reason_code": "upper_bound",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s4.exp.ag110m.1700c.B",
+      "record_id": "r2.STEMPIEN23-643-AG110M.B",
+      "status": "unavailable",
+      "reason_code": "upper_bound",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s1.exp.cs134.1600c.A",
+      "record_id": "r2.STEMPIEN23-643-SR90.A",
+      "status": "unavailable",
+      "reason_code": "upper_bound",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s1.exp.cs134.1600c.B",
+      "record_id": "r2.STEMPIEN23-643-SR90.B",
+      "status": "unavailable",
+      "reason_code": "upper_bound",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s4.exp.cs134.1600c.A",
+      "record_id": "r2.HUNN14-422-AG110M.A",
+      "status": "unavailable",
+      "reason_code": "upper_bound",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s4.exp.cs134.1600c.B",
+      "record_id": "r2.HUNN14-422-AG110M.B",
+      "status": "unavailable",
+      "reason_code": "upper_bound",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s1.exp.cs134.1700c.A",
+      "record_id": "r2.IAEA97-JAERI-A-CS137-1600.A",
+      "status": "unavailable",
+      "reason_code": "incompatible_definition",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s1.exp.cs134.1700c.B",
+      "record_id": "r2.IAEA97-JAERI-A-CS137-1600.B",
+      "status": "unavailable",
+      "reason_code": "incompatible_definition",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s4.exp.cs134.1700c.A",
+      "record_id": "r2.IAEA97-JAERI-A-CS137-1800.A",
+      "status": "unavailable",
+      "reason_code": "incompatible_definition",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s4.exp.cs134.1700c.B",
+      "record_id": "r2.IAEA97-JAERI-A-CS137-1800.B",
+      "status": "unavailable",
+      "reason_code": "incompatible_definition",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s1.exp.cs134.1800c.A",
+      "record_id": "r2.HUNN16-442-CS134.A",
+      "status": "unavailable",
+      "reason_code": "coating_failure",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s1.exp.cs134.1800c.B",
+      "record_id": "r2.HUNN16-442-CS134.B",
+      "status": "unavailable",
+      "reason_code": "coating_failure",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s4.exp.cs134.1800c.A",
+      "record_id": "r2.HUNN16-442-CS137.A",
+      "status": "unavailable",
+      "reason_code": "coating_failure",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s4.exp.cs134.1800c.B",
+      "record_id": "r2.HUNN16-442-CS137.B",
+      "status": "unavailable",
+      "reason_code": "coating_failure",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s1.exp.sr90.1600c.A",
+      "record_id": "r2.DEM15-433-CS134.A",
+      "status": "unavailable",
+      "reason_code": "upper_bound",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s1.exp.sr90.1600c.B",
+      "record_id": "r2.DEM15-433-CS134.B",
+      "status": "unavailable",
+      "reason_code": "upper_bound",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s4.exp.sr90.1600c.A",
+      "record_id": "r2.DEM15-433-SR90.A",
+      "status": "unavailable",
+      "reason_code": "upper_bound",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s4.exp.sr90.1600c.B",
+      "record_id": "r2.DEM15-433-SR90.B",
+      "status": "unavailable",
+      "reason_code": "upper_bound",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s1.exp.sr90.1700c.A",
+      "record_id": "r2.IAEA97-K31-AG110M.A",
+      "status": "unavailable",
+      "reason_code": "upper_bound",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s1.exp.sr90.1700c.B",
+      "record_id": "r2.IAEA97-K31-AG110M.B",
+      "status": "unavailable",
+      "reason_code": "upper_bound",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s4.exp.sr90.1700c.A",
+      "record_id": "r2.IAEA97-K31-CS137.A",
+      "status": "unavailable",
+      "reason_code": "upper_bound",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
     },
     {
-      "set_id": "nrmse.s4.exp.sr90.1700c.B",
+      "record_id": "r2.IAEA97-K31-CS137.B",
+      "status": "unavailable",
+      "reason_code": "upper_bound",
       "display": null,
       "label_latex": null,
       "label_plain": null,
       "shown_on_graph": false
+    },
+    {
+      "record_id": "r2.IAEA97-K31-SR90.A",
+      "status": "unavailable",
+      "reason_code": "upper_bound",
+      "display": null,
+      "label_latex": null,
+      "label_plain": null,
+      "shown_on_graph": false
+    },
+    {
+      "record_id": "r2.IAEA97-K31-SR90.B",
+      "status": "unavailable",
+      "reason_code": "upper_bound",
+      "display": null,
+      "label_latex": null,
+      "label_plain": null,
+      "shown_on_graph": false
+    }
+  ],
+  "r2_captions": [
+    {
+      "curve_id": "HUNN14-442-AG110M",
+      "caption_text": "Cumulative release fraction of Ag-110m versus elapsed time from start of heating (h), loose particles from compact 4-4-2, 1800 °C.",
+      "reason_lines": [
+        "R² unavailable because coating failure is known or suspected, and it is outside the approved STRATO physics."
+      ],
+      "source_citation_apa": "Hunn et al. (2014). Loose-particle heating test of AGR-1 compact 4-4-2 (ORNL/LTR-2014/486). Oak Ridge National Laboratory.",
+      "source_citation_note": "Title and full author list were not recorded by the research task.",
+      "source_link": "https://info.ornl.gov/sites/publications/Files/Pub139759.pdf",
+      "source_link_note": "no check of the link https://info.ornl.gov/sites/publications/Files/Pub139759.pdf is recorded in the register",
+      "source_figure_table": "Fig. 4, p. 3",
+      "source_kind": "calculated from registered values",
+      "time_axis_label": "elapsed time from start of heating (h)",
+      "specimen_label": "loose particles from compact 4-4-2",
+      "temperature_label": "1800 °C",
+      "y_axis_label": "Cumulative release fraction",
+      "y_axis_scale": "linear",
+      "legend_exp_label": "Experiment (calculated from registered values)",
+      "marker_colour_exp": "#111111",
+      "legend_methods": [
+        {
+          "label": "Method A: BTCS",
+          "colour": "#2563EB",
+          "style": "solid"
+        }
+      ]
+    },
+    {
+      "curve_id": "HUNN14-442-SR90",
+      "caption_text": "Cumulative release fraction of Sr-90 versus elapsed time from start of heating (h), loose particles from compact 4-4-2, 1800 °C.",
+      "reason_lines": [
+        "R² unavailable because coating failure is known or suspected, and it is outside the approved STRATO physics."
+      ],
+      "source_citation_apa": "Hunn et al. (2014). Loose-particle heating test of AGR-1 compact 4-4-2 (ORNL/LTR-2014/486). Oak Ridge National Laboratory.",
+      "source_citation_note": "Title and full author list were not recorded by the research task.",
+      "source_link": "https://info.ornl.gov/sites/publications/Files/Pub139759.pdf",
+      "source_link_note": "no check of the link https://info.ornl.gov/sites/publications/Files/Pub139759.pdf is recorded in the register",
+      "source_figure_table": "Fig. 4, p. 3",
+      "source_kind": "calculated from registered values",
+      "time_axis_label": "elapsed time from start of heating (h)",
+      "specimen_label": "loose particles from compact 4-4-2",
+      "temperature_label": "1800 °C",
+      "y_axis_label": "Cumulative release fraction",
+      "y_axis_scale": "linear",
+      "legend_exp_label": "Experiment (calculated from registered values)",
+      "marker_colour_exp": "#111111",
+      "legend_methods": [
+        {
+          "label": "Method A: BTCS",
+          "colour": "#2563EB",
+          "style": "solid"
+        }
+      ]
+    },
+    {
+      "curve_id": "STEMPIEN23-433-AG110M",
+      "caption_text": "Cumulative release fraction of Ag-110m versus time at temperature (h), compact 4-3-3, 1600 °C.",
+      "reason_lines": [
+        "R² unavailable because the published values are upper bounds, not exact measurements."
+      ],
+      "source_citation_apa": "Stempien, J. D., Cai, Z., & Demkowicz, P. A. (2023). AGR TRISO fuel fission product release data summary (INL/RPT-23-74651, Rev. 0). Idaho National Laboratory.",
+      "source_citation_note": null,
+      "source_link": "https://inldigitallibrary.inl.gov/sites/sti/sti/Sort_67581.pdf",
+      "source_link_note": "no check of the link https://inldigitallibrary.inl.gov/sites/sti/sti/Sort_67581.pdf is recorded in the register",
+      "source_figure_table": "Fig. 9, p. 28",
+      "source_kind": "digitised",
+      "time_axis_label": "time at temperature (h)",
+      "specimen_label": "compact 4-3-3",
+      "temperature_label": "1600 °C",
+      "y_axis_label": "Cumulative release fraction",
+      "y_axis_scale": "linear",
+      "legend_exp_label": "Experiment, upper bound (digitised)",
+      "marker_colour_exp": "#111111",
+      "legend_methods": [
+        {
+          "label": "Method A: BTCS",
+          "colour": "#2563EB",
+          "style": "solid"
+        }
+      ]
+    },
+    {
+      "curve_id": "STEMPIEN23-643-AG110M",
+      "caption_text": "Cumulative release fraction of Ag-110m versus time at temperature (h), compact 6-4-3, 1600 °C.",
+      "reason_lines": [
+        "R² unavailable because the published values are upper bounds, not exact measurements."
+      ],
+      "source_citation_apa": "Stempien, J. D., Cai, Z., & Demkowicz, P. A. (2023). AGR TRISO fuel fission product release data summary (INL/RPT-23-74651, Rev. 0). Idaho National Laboratory.",
+      "source_citation_note": null,
+      "source_link": "https://inldigitallibrary.inl.gov/sites/sti/sti/Sort_67581.pdf",
+      "source_link_note": "no check of the link https://inldigitallibrary.inl.gov/sites/sti/sti/Sort_67581.pdf is recorded in the register",
+      "source_figure_table": "Fig. 9, p. 28",
+      "source_kind": "digitised",
+      "time_axis_label": "time at temperature (h)",
+      "specimen_label": "compact 6-4-3",
+      "temperature_label": "1600 °C",
+      "y_axis_label": "Cumulative release fraction",
+      "y_axis_scale": "linear",
+      "legend_exp_label": "Experiment, upper bound (digitised)",
+      "marker_colour_exp": "#111111",
+      "legend_methods": [
+        {
+          "label": "Method A: BTCS",
+          "colour": "#2563EB",
+          "style": "solid"
+        },
+        {
+          "label": "Method B: Sturm–Liouville",
+          "colour": "#DC2626",
+          "style": "solid"
+        }
+      ]
+    },
+    {
+      "curve_id": "STEMPIEN23-643-SR90",
+      "caption_text": "Cumulative release fraction of Sr-90 versus time at temperature (h), compact 6-4-3, 1600 °C.",
+      "reason_lines": [
+        "R² unavailable because the published values are upper bounds, not exact measurements."
+      ],
+      "source_citation_apa": "Stempien, J. D., Cai, Z., & Demkowicz, P. A. (2023). AGR TRISO fuel fission product release data summary (INL/RPT-23-74651, Rev. 0). Idaho National Laboratory.",
+      "source_citation_note": null,
+      "source_link": "https://inldigitallibrary.inl.gov/sites/sti/sti/Sort_67581.pdf",
+      "source_link_note": "no check of the link https://inldigitallibrary.inl.gov/sites/sti/sti/Sort_67581.pdf is recorded in the register",
+      "source_figure_table": "Fig. 12, p. 34",
+      "source_kind": "digitised",
+      "time_axis_label": "time at temperature (h)",
+      "specimen_label": "compact 6-4-3",
+      "temperature_label": "1600 °C",
+      "y_axis_label": "Cumulative release fraction",
+      "y_axis_scale": "linear",
+      "legend_exp_label": "Experiment, upper bound (digitised)",
+      "marker_colour_exp": "#111111",
+      "legend_methods": [
+        {
+          "label": "Method A: BTCS",
+          "colour": "#2563EB",
+          "style": "solid"
+        },
+        {
+          "label": "Method B: Sturm–Liouville",
+          "colour": "#DC2626",
+          "style": "solid"
+        }
+      ]
+    },
+    {
+      "curve_id": "HUNN14-422-AG110M",
+      "caption_text": "Cumulative release fraction of Ag-110m versus elapsed time from start of heating (h), compact 4-2-2, stepped 1000 to 1600 °C.",
+      "reason_lines": [
+        "R² unavailable because the published values are upper bounds, not exact measurements."
+      ],
+      "source_citation_apa": "Hunn, J. D., Morris, R. N., Baldwin, C. A., & Montgomery, F. C. (2014). Safety test on irradiated AGR-1 compact 4-2-2 (ORNL/LTR-2014/485). Oak Ridge National Laboratory.",
+      "source_citation_note": null,
+      "source_link": "https://info.ornl.gov/sites/publications/Files/Pub139757.pdf",
+      "source_link_note": "no check of the link https://info.ornl.gov/sites/publications/Files/Pub139757.pdf is recorded in the register",
+      "source_figure_table": "Fig. 1, p. 2",
+      "source_kind": "digitised",
+      "time_axis_label": "elapsed time from start of heating (h)",
+      "specimen_label": "compact 4-2-2",
+      "temperature_label": "stepped 1000 to 1600 °C",
+      "y_axis_label": "Cumulative release fraction",
+      "y_axis_scale": "linear",
+      "legend_exp_label": "Experiment, upper bound (digitised)",
+      "marker_colour_exp": "#111111",
+      "legend_methods": [
+        {
+          "label": "Method A: BTCS",
+          "colour": "#2563EB",
+          "style": "solid"
+        }
+      ]
+    },
+    {
+      "curve_id": "IAEA97-JAERI-A-CS137-1600",
+      "caption_text": "Cumulative release fraction of Cs-137 versus isothermal test duration (h), particle batch, sample A, 1600 °C.",
+      "reason_lines": [
+        "R² unavailable because the published release definition or normalisation differs from the model's."
+      ],
+      "source_citation_apa": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
+      "source_citation_note": null,
+      "source_link": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
+      "source_link_note": null,
+      "source_figure_table": "Table 4-9, p. 164",
+      "source_kind": "tabulated",
+      "time_axis_label": "isothermal test duration (h)",
+      "specimen_label": "particle batch, sample A",
+      "temperature_label": "1600 °C",
+      "y_axis_label": "Cumulative release fraction",
+      "y_axis_scale": "linear",
+      "legend_exp_label": "Experiment (tabulated)",
+      "marker_colour_exp": "#111111",
+      "legend_methods": [
+        {
+          "label": "Method A: BTCS",
+          "colour": "#2563EB",
+          "style": "solid"
+        },
+        {
+          "label": "Method B: Sturm–Liouville",
+          "colour": "#DC2626",
+          "style": "solid"
+        }
+      ]
+    },
+    {
+      "curve_id": "IAEA97-JAERI-A-CS137-1800",
+      "caption_text": "Cumulative release fraction of Cs-137 versus isothermal test duration (h), particle batch, sample A, 1800 °C.",
+      "reason_lines": [
+        "R² unavailable because the published release definition or normalisation differs from the model's."
+      ],
+      "source_citation_apa": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
+      "source_citation_note": null,
+      "source_link": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
+      "source_link_note": null,
+      "source_figure_table": "Table 4-9, p. 164",
+      "source_kind": "tabulated",
+      "time_axis_label": "isothermal test duration (h)",
+      "specimen_label": "particle batch, sample A",
+      "temperature_label": "1800 °C",
+      "y_axis_label": "Cumulative release fraction",
+      "y_axis_scale": "linear",
+      "legend_exp_label": "Experiment (tabulated)",
+      "marker_colour_exp": "#111111",
+      "legend_methods": [
+        {
+          "label": "Method A: BTCS",
+          "colour": "#2563EB",
+          "style": "solid"
+        },
+        {
+          "label": "Method B: Sturm–Liouville",
+          "colour": "#DC2626",
+          "style": "solid"
+        }
+      ]
+    },
+    {
+      "curve_id": "HUNN16-442-CS134",
+      "caption_text": "Cumulative release fraction of Cs-134 versus elapsed time from start of heating (h), loose particles from compact 4-4-2, 1800 °C.",
+      "reason_lines": [
+        "R² unavailable because coating failure is known or suspected, and it is outside the approved STRATO physics."
+      ],
+      "source_citation_apa": "Hunn, J. D., Gerczak, T. J., Morris, R. N., Baldwin, C. A., & Montgomery, F. C. (2016). PIE on safety-tested loose particles from AGR-1 compact 4-4-2 (ORNL/TM-2015/161). Oak Ridge National Laboratory.",
+      "source_citation_note": null,
+      "source_link": "https://doi.org/10.2172/1252138",
+      "source_link_note": null,
+      "source_figure_table": "Fig. 2, p. 4",
+      "source_kind": "calculated from registered values",
+      "time_axis_label": "elapsed time from start of heating (h)",
+      "specimen_label": "loose particles from compact 4-4-2",
+      "temperature_label": "1800 °C",
+      "y_axis_label": "Cumulative release fraction",
+      "y_axis_scale": "linear",
+      "legend_exp_label": "Experiment (calculated from registered values)",
+      "marker_colour_exp": "#111111",
+      "legend_methods": [
+        {
+          "label": "Method A: BTCS",
+          "colour": "#2563EB",
+          "style": "solid"
+        }
+      ]
+    },
+    {
+      "curve_id": "HUNN16-442-CS137",
+      "caption_text": "Cumulative release fraction of Cs-137 versus elapsed time from start of heating (h), loose particles from compact 4-4-2, 1800 °C.",
+      "reason_lines": [
+        "R² unavailable because coating failure is known or suspected, and it is outside the approved STRATO physics."
+      ],
+      "source_citation_apa": "Hunn, J. D., Gerczak, T. J., Morris, R. N., Baldwin, C. A., & Montgomery, F. C. (2016). PIE on safety-tested loose particles from AGR-1 compact 4-4-2 (ORNL/TM-2015/161). Oak Ridge National Laboratory.",
+      "source_citation_note": null,
+      "source_link": "https://doi.org/10.2172/1252138",
+      "source_link_note": null,
+      "source_figure_table": "Fig. 2, p. 4",
+      "source_kind": "calculated from registered values",
+      "time_axis_label": "elapsed time from start of heating (h)",
+      "specimen_label": "loose particles from compact 4-4-2",
+      "temperature_label": "1800 °C",
+      "y_axis_label": "Cumulative release fraction",
+      "y_axis_scale": "linear",
+      "legend_exp_label": "Experiment (calculated from registered values)",
+      "marker_colour_exp": "#111111",
+      "legend_methods": [
+        {
+          "label": "Method A: BTCS",
+          "colour": "#2563EB",
+          "style": "solid"
+        }
+      ]
+    },
+    {
+      "curve_id": "DEM15-433-CS134",
+      "caption_text": "Cumulative release fraction of Cs-134 versus elapsed time from start of heating (h), compact 4-3-3, 1600 °C.",
+      "reason_lines": [
+        "R² unavailable because the published values are upper bounds, not exact measurements."
+      ],
+      "source_citation_apa": "Demkowicz, P. A., Reber, E. L., Scates, D. M., Scott, L., & Collin, B. P. (2015). First high temperature safety tests of AGR-1 TRISO fuel with the Fuel Accident Condition Simulator (FACS) furnace. Journal of Nuclear Materials, 464, 320–330.",
+      "source_citation_note": null,
+      "source_link": "https://doi.org/10.1016/j.jnucmat.2015.05.006",
+      "source_link_note": null,
+      "source_figure_table": "Fig. 3, p. 323",
+      "source_kind": "digitised",
+      "time_axis_label": "elapsed time from start of heating (h)",
+      "specimen_label": "compact 4-3-3",
+      "temperature_label": "1600 °C",
+      "y_axis_label": "Cumulative release fraction",
+      "y_axis_scale": "log",
+      "legend_exp_label": "Experiment, upper bound (digitised)",
+      "marker_colour_exp": "#111111",
+      "legend_methods": [
+        {
+          "label": "Method A: BTCS",
+          "colour": "#2563EB",
+          "style": "solid"
+        }
+      ]
+    },
+    {
+      "curve_id": "DEM15-433-SR90",
+      "caption_text": "Cumulative release fraction of Sr-90 versus elapsed time from start of heating (h), compact 4-3-3, 1600 °C.",
+      "reason_lines": [
+        "R² unavailable because the published values are upper bounds, not exact measurements."
+      ],
+      "source_citation_apa": "Demkowicz, P. A., Reber, E. L., Scates, D. M., Scott, L., & Collin, B. P. (2015). First high temperature safety tests of AGR-1 TRISO fuel with the Fuel Accident Condition Simulator (FACS) furnace. Journal of Nuclear Materials, 464, 320–330.",
+      "source_citation_note": null,
+      "source_link": "https://doi.org/10.1016/j.jnucmat.2015.05.006",
+      "source_link_note": null,
+      "source_figure_table": "Fig. 3, p. 323",
+      "source_kind": "digitised",
+      "time_axis_label": "elapsed time from start of heating (h)",
+      "specimen_label": "compact 4-3-3",
+      "temperature_label": "1600 °C",
+      "y_axis_label": "Cumulative release fraction",
+      "y_axis_scale": "log",
+      "legend_exp_label": "Experiment, upper bound (digitised)",
+      "marker_colour_exp": "#111111",
+      "legend_methods": [
+        {
+          "label": "Method A: BTCS",
+          "colour": "#2563EB",
+          "style": "solid"
+        }
+      ]
+    },
+    {
+      "curve_id": "IAEA97-K31-AG110M",
+      "caption_text": "Cumulative release fraction of Ag-110m versus time at temperature (h), fuel sphere HFR-K3/1, 1600 °C.",
+      "reason_lines": [
+        "R² unavailable because the published values are upper bounds, not exact measurements."
+      ],
+      "source_citation_apa": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
+      "source_citation_note": null,
+      "source_link": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
+      "source_link_note": null,
+      "source_figure_table": "Fig. 4-7 left, p. 137",
+      "source_kind": "digitised",
+      "time_axis_label": "time at temperature (h)",
+      "specimen_label": "fuel sphere HFR-K3/1",
+      "temperature_label": "1600 °C",
+      "y_axis_label": "Cumulative release fraction",
+      "y_axis_scale": "log",
+      "legend_exp_label": "Experiment, upper bound (digitised)",
+      "marker_colour_exp": "#111111",
+      "legend_methods": [
+        {
+          "label": "Method A: BTCS",
+          "colour": "#2563EB",
+          "style": "solid"
+        }
+      ]
+    },
+    {
+      "curve_id": "IAEA97-K31-CS137",
+      "caption_text": "Cumulative release fraction of Cs-137 versus time at temperature (h), fuel sphere HFR-K3/1, 1600 °C.",
+      "reason_lines": [
+        "R² unavailable because the published values are upper bounds, not exact measurements."
+      ],
+      "source_citation_apa": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
+      "source_citation_note": null,
+      "source_link": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
+      "source_link_note": null,
+      "source_figure_table": "Fig. 4-7 left, p. 137",
+      "source_kind": "digitised",
+      "time_axis_label": "time at temperature (h)",
+      "specimen_label": "fuel sphere HFR-K3/1",
+      "temperature_label": "1600 °C",
+      "y_axis_label": "Cumulative release fraction",
+      "y_axis_scale": "log",
+      "legend_exp_label": "Experiment, upper bound (digitised)",
+      "marker_colour_exp": "#111111",
+      "legend_methods": [
+        {
+          "label": "Method A: BTCS",
+          "colour": "#2563EB",
+          "style": "solid"
+        }
+      ]
+    },
+    {
+      "curve_id": "IAEA97-K31-SR90",
+      "caption_text": "Cumulative release fraction of Sr-90 versus time at temperature (h), fuel sphere HFR-K3/1, 1600 °C.",
+      "reason_lines": [
+        "R² unavailable because the published values are upper bounds, not exact measurements."
+      ],
+      "source_citation_apa": "International Atomic Energy Agency. (1997). Fuel performance and fission product behaviour in gas cooled reactors (IAEA-TECDOC-978; K. Verfondern, Ed.). IAEA.",
+      "source_citation_note": null,
+      "source_link": "https://www-pub.iaea.org/MTCD/Publications/PDF/te_978_prn.pdf",
+      "source_link_note": null,
+      "source_figure_table": "Fig. 4-7 left, p. 137",
+      "source_kind": "digitised",
+      "time_axis_label": "time at temperature (h)",
+      "specimen_label": "fuel sphere HFR-K3/1",
+      "temperature_label": "1600 °C",
+      "y_axis_label": "Cumulative release fraction",
+      "y_axis_scale": "log",
+      "legend_exp_label": "Experiment, upper bound (digitised)",
+      "marker_colour_exp": "#111111",
+      "legend_methods": [
+        {
+          "label": "Method A: BTCS",
+          "colour": "#2563EB",
+          "style": "solid"
+        }
+      ]
     }
   ]
 }

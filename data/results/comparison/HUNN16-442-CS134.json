@@ -1,0 +1,751 @@
+{
+  "schema_version": "1",
+  "what": "one experimental curve with its model curves and its R² records",
+  "provenance": {
+    "label": "numerical solution of the stated model; not experimental validation",
+    "solver": "STRATO BTCS five-layer spherical finite difference",
+    "solver_version": "1.0.1",
+    "pipeline": "strato-results 0.1.0",
+    "schema_version": "1",
+    "commit": "f5f3155",
+    "solver_source_sha256": "02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275",
+    "input_sha256": {
+      "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
+      "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
+      "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
+      "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
+      "temperature_histories.csv": "b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d",
+      "release_measurements.csv": "29f0d7bec6f40fb97c52c0bf7972782d7849a58f5f910527fe8efa8afa9ddda9",
+      "agr1_irradiation_conditions.csv": "31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d",
+      "agr1_burnup_by_cycle.csv": "e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f",
+      "agr1_power_history_digitised.csv": "25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a",
+      "scenarios/s1_normal_operation.csv": "c420e1e04e043ed0418099c27156cabda8188f40ce2fb239d1ce3916cccc7970",
+      "scenarios/s2_shutdown_cooldown.csv": "f575e9a42670e52293083907b3658fd7e3a99c279912861999f0cb847cbf6044",
+      "scenarios/s3_startup.csv": "bf2b6bd01168d0aa72f9db61f5fa4eae60ff39a81928eaed515ae8279916bfa7",
+      "scenarios/s4_control_rod_insertion.csv": "93856f2003ca65b7a7258d60819a47b8a651d695dffeff0fd7dc664b90309759",
+      "scenarios/s5_fuel_removal.csv": "4cad00101259e2fdbeec585f27d8910502a1858ab38bce59899c132b0caad9bb"
+    }
+  },
+  "curve_id": "HUNN16-442-CS134",
+  "definition_id": "R2_LINEAR_PER_CURVE_V1",
+  "nuclide": "Cs-134",
+  "register": "data/experimental/release_measurements.csv; data/experimental/curve_assessment.csv",
+  "experiment": {
+    "marker_colour": "#111111",
+    "connect": false,
+    "points": [
+      {
+        "id": "E-541",
+        "time_h": 2.33e1,
+        "value": 5.0933333333333336e-5,
+        "registered_value": 3.82e-3,
+        "registered_unit": "particles",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "measured",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.3333333333333334e-4,
+          "time_h": 3e-1
+        }
+      },
+      {
+        "id": "E-542",
+        "time_h": 3.57e1,
+        "value": 1.8266666666666667e-2,
+        "registered_value": 1.37e0,
+        "registered_unit": "particles",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "measured",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.3333333333333334e-4,
+          "time_h": 3e-1
+        }
+      },
+      {
+        "id": "E-543",
+        "time_h": 4.72e1,
+        "value": 2.1333333333333336e-2,
+        "registered_value": 1.6e0,
+        "registered_unit": "particles",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "measured",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.3333333333333334e-4,
+          "time_h": 3e-1
+        }
+      },
+      {
+        "id": "E-544",
+        "time_h": 7.07e1,
+        "value": 2.16e-2,
+        "registered_value": 1.62e0,
+        "registered_unit": "particles",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "measured",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.3333333333333334e-4,
+          "time_h": 3e-1
+        }
+      },
+      {
+        "id": "E-545",
+        "time_h": 9.51e1,
+        "value": 2.16e-2,
+        "registered_value": 1.62e0,
+        "registered_unit": "particles",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "measured",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.3333333333333334e-4,
+          "time_h": 3e-1
+        }
+      },
+      {
+        "id": "E-546",
+        "time_h": 1.19e2,
+        "value": 2.16e-2,
+        "registered_value": 1.62e0,
+        "registered_unit": "particles",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "measured",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.3333333333333334e-4,
+          "time_h": 3e-1
+        }
+      },
+      {
+        "id": "E-547",
+        "time_h": 1.43e2,
+        "value": 2.173333333333333e-2,
+        "registered_value": 1.63e0,
+        "registered_unit": "particles",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "measured",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.3333333333333334e-4,
+          "time_h": 3e-1
+        }
+      },
+      {
+        "id": "E-548",
+        "time_h": 1.674e2,
+        "value": 2.6799999999999997e-2,
+        "registered_value": 2.01e0,
+        "registered_unit": "particles",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "measured",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.3333333333333334e-4,
+          "time_h": 3e-1
+        }
+      },
+      {
+        "id": "E-549",
+        "time_h": 1.914e2,
+        "value": 2.8133333333333333e-2,
+        "registered_value": 2.11e0,
+        "registered_unit": "particles",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "measured",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.3333333333333334e-4,
+          "time_h": 3e-1
+        }
+      },
+      {
+        "id": "E-550",
+        "time_h": 2.153e2,
+        "value": 2.8399999999999998e-2,
+        "registered_value": 2.13e0,
+        "registered_unit": "particles",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "measured",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.3333333333333334e-4,
+          "time_h": 3e-1
+        }
+      },
+      {
+        "id": "E-551",
+        "time_h": 2.872e2,
+        "value": 2.8399999999999998e-2,
+        "registered_value": 2.13e0,
+        "registered_unit": "particles",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "measured",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.3333333333333334e-4,
+          "time_h": 3e-1
+        }
+      },
+      {
+        "id": "E-552",
+        "time_h": 3.655e2,
+        "value": 2.8399999999999998e-2,
+        "registered_value": 2.13e0,
+        "registered_unit": "particles",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "measured",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.3333333333333334e-4,
+          "time_h": 3e-1
+        }
+      },
+      {
+        "id": "E-553",
+        "time_h": 4.553e2,
+        "value": 2.8533333333333334e-2,
+        "registered_value": 2.14e0,
+        "registered_unit": "particles",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "measured",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.3333333333333334e-4,
+          "time_h": 3e-1
+        }
+      },
+      {
+        "id": "E-554",
+        "time_h": 5.327e2,
+        "value": 3.1066666666666666e-2,
+        "registered_value": 2.33e0,
+        "registered_unit": "particles",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "measured",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.3333333333333334e-4,
+          "time_h": 3e-1
+        }
+      },
+      {
+        "id": "E-555",
+        "time_h": 6.28e2,
+        "value": 3.2933333333333335e-2,
+        "registered_value": 2.47e0,
+        "registered_unit": "particles",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "measured",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.3333333333333334e-4,
+          "time_h": 3e-1
+        }
+      },
+      {
+        "id": "E-556",
+        "time_h": 6.913e2,
+        "value": 3.2933333333333335e-2,
+        "registered_value": 2.47e0,
+        "registered_unit": "particles",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "measured",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.3333333333333334e-4,
+          "time_h": 3e-1
+        }
+      }
+    ]
+  },
+  "model": {
+    "method_a": {
+      "label": "Method A: BTCS",
+      "status": "computed",
+      "time_h": [1.2e1,1.2749125592181189e1,1.3769055639555685e1,1.4870580090720141e1,1.6060226497977755e1,1.7345044617815976e1,1.8732648187241256e1,2.023126004222056e1,2.1849760845598205e1,2.33e1,2.3597741713246062e1,2.5485561050305748e1,2.7524405934330208e1,2.9726358409076628e1,3.210446708180276e1,3.467282444834698e1,3.57e1,3.744665040421474e1,4.0442382436551924e1,4.367777303147608e1,4.7171994873994166e1,4.72e1,5.09457544639137e1,5.50214148210268e1,5.942312800670895e1,6.417697824724567e1,6.931113650702532e1,7.07e1,7.485602742758735e1,8.084450962179434e1,8.73120703915379e1,9.429703602286094e1,9.51e1,1.0184079890468982e2,1.0998806281706501e2,1.1878710784243022e2,1.19e2,1.2829007646982464e2,1.3855328258741062e2,1.43e2,1.496375451944035e2,1.6160854880995578e2,1.674e2,1.7453723271475226e2,1.8850021133193246e2,1.914e2,2.0358022823848708e2,2.153e2,2.1986664649756605e2,2.3745597821737135e2,2.5645245647476105e2,2.7696865299274197e2,2.872e2,2.991261452321613e2,3.2305623685073425e2,3.48900735798793e2,3.655e2,3.7681279466269643e2,4.069578182357122e2,4.395144436945692e2,4.553e2,4.746755991901348e2,5.126496471253456e2,5.327e2,5.536616188953733e2,5.979545484070032e2,6.28e2,6.457909122795636e2,6.86e2],
+      "release_fraction": [0e0,0e0,0e0,0e0,8.388676748773407e-300,1.8034718178734357e-287,4.546123188561132e-276,1.8415604751976035e-265,1.719167004883853e-255,1.54131000271861e-247,5.299415082246204e-246,1.847878639284294e-236,1.8441363939222144e-216,5.715179922646145e-174,5.77604480538628e-97,1.7401151050315302e-34,1.3233203295857993e-21,7.89088514325803e-12,2.667739626889248e-7,1.8380719000999157e-5,1.8585232827060706e-4,1.884260591305417e-4,8.053041865754454e-4,2.227464415237383e-3,4.723908338520862e-3,8.454947891908919e-3,1.349116754167237e-2,1.5003450950905573e-2,1.9844536045393726e-2,2.7493002170565328e-2,3.6397031742239114e-2,4.6510247221736724e-2,4.7696401912363566e-2,5.778636592792474e-2,7.018378042181939e-2,8.366852764417995e-2,8.399499625252324e-2,9.821589766204154e-2,1.1381083800792643e-1,1.205135401477293e-1,1.3044728248237744e-1,1.4812660044319198e-1,1.5656412509569032e-1,1.66855404795759e-1,1.8664299966862605e-1,1.906948442336682e-1,2.07498701282579e-1,2.233415426209222e-1,2.2942924249264696e-1,2.524363547408957e-1,2.765145965102843e-1,3.01649411110476e-1,3.1385590913413597e-1,3.2781538440999547e-1,3.5497465987911386e-1,3.830754971313475e-1,4.004748986220947e-1,4.120509724516735e-1,4.418178511905231e-1,4.7227567731672837e-1,4.86439603033381e-1,5.033061617403718e-1,5.347729416692024e-1,5.505750747116122e-1,5.665218053885641e-1,5.983814826184741e-1,6.186493199744992e-1,6.301650763488214e-1,6.5492684675406e-1],
+      "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-LP-4-4-2.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
+      "steps": 13480,
+      "history_row_ids": [
+        "TH-150",
+        "TH-151",
+        "TH-152",
+        "TH-153",
+        "TH-154"
+      ],
+      "note": "the line is a drawing between output times; the values that enter R² are the exact step values in r2.json"
+    },
+    "method_b": {
+      "label": "Method B: Sturm–Liouville",
+      "status": "not available",
+      "reason": "Method B: not available (TIME_VARYING_TEMPERATURE: the temperature changes in time, so the eigenfunctions change in time; the analytical solution is not defined for this case (science design Section 4.2))"
+    }
+  },
+  "r2_records": [
+    {
+      "record_id": "r2.HUNN16-442-CS134.A",
+      "definition_id": "R2_LINEAR_PER_CURVE_V1",
+      "curve_id": "HUNN16-442-CS134",
+      "method": "A",
+      "method_name": "Method A: BTCS",
+      "nuclide": "Cs-134",
+      "program": "AGR-1",
+      "specimen_id": "4-4-2 loose particles (75 particles)",
+      "specimen_level": "particle_batch",
+      "source_aggregated": false,
+      "temperature_C": 1.8e3,
+      "temperature_label": "1800 °C",
+      "temperature_history_id": "AGR1-LP-4-4-2",
+      "release_definition": "cumulative release in particle equivalents (75 loose particles)",
+      "denominator": "average particle inventory (particle equivalents)",
+      "time_basis": "elapsed time from start of heating",
+      "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-LP-4-4-2.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
+      "independence": "not_established",
+      "source_citation_apa": "Hunn, J. D., Gerczak, T. J., Morris, R. N., Baldwin, C. A., & Montgomery, F. C. (2016). PIE on safety-tested loose particles from AGR-1 compact 4-4-2 (ORNL/TM-2015/161). Oak Ridge National Laboratory.",
+      "source_citation_note": null,
+      "source_link": "https://doi.org/10.2172/1252138",
+      "link_status": "verified",
+      "source_location": "Fig. 2; printed p. 4 (PDF p. 16)",
+      "row_ids": [
+        "E-541",
+        "E-542",
+        "E-543",
+        "E-544",
+        "E-545",
+        "E-546",
+        "E-547",
+        "E-548",
+        "E-549",
+        "E-550",
+        "E-551",
+        "E-552",
+        "E-553",
+        "E-554",
+        "E-555",
+        "E-556"
+      ],
+      "rows_excluded": [],
+      "early_bound_points": [],
+      "qualifiers": [
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~"
+      ],
+      "bound_classes": [
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "register_status": [
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised"
+      ],
+      "digitisation_verification_ref": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "data_kind": "calculated",
+      "n": 16,
+      "matched_times_h": [2.33e1,3.57e1,4.72e1,7.07e1,9.51e1,1.19e2,1.43e2,1.674e2,1.914e2,2.153e2,2.872e2,3.655e2,4.553e2,5.327e2,6.28e2,6.913e2],
+      "model_times_h": [1.13e1,2.3700000000000003e1,3.52e1,5.87e1,8.31e1,1.07e2,1.31e2,1.554e2,1.794e2,2.033e2,2.752e2,3.535e2,4.433e2,5.207e2,6.16e2,null],
+      "f_exp": [5.0933333333333336e-5,1.8266666666666667e-2,2.1333333333333336e-2,2.16e-2,2.16e-2,2.16e-2,2.173333333333333e-2,2.6799999999999997e-2,2.8133333333333333e-2,2.8399999999999998e-2,2.8399999999999998e-2,2.8399999999999998e-2,2.8533333333333334e-2,3.1066666666666666e-2,3.2933333333333335e-2,3.2933333333333335e-2],
+      "f_exp_registered": [3.82e-3,1.37e0,1.6e0,1.62e0,1.62e0,1.62e0,1.63e0,2.01e0,2.11e0,2.13e0,2.13e0,2.13e0,2.14e0,2.33e0,2.47e0,2.47e0],
+      "f_exp_registered_unit": "particles",
+      "f_exp_conversion": "registered particle equivalents divided by the registered particle count 75 (calculated from registered values, decision 65(b))",
+      "f_model": [1.54131000271861e-247,1.3233203295857993e-21,1.884260591305417e-4,1.5003450950905573e-2,4.7696401912363566e-2,8.399499625252324e-2,1.205135401477293e-1,1.5656412509569032e-1,1.906948442336682e-1,2.233415426209222e-1,3.1385590913413597e-1,4.004748986220947e-1,4.86439603033381e-1,5.505750747116122e-1,6.186493199744992e-1,null],
+      "f_model_t_minus": [4.076551180294442e-249,7.783820330898383e-25,1.620393384976576e-4,1.46719469336041e-2,4.725276607252345e-2,8.353494570638621e-2,1.200624986068029e-1,1.5612895422416773e-1,1.9027657481078558e-1,2.2293994892081956e-1,3.135010485763482e-1,4.0016483423066374e-1,4.8617399813175116e-1,5.503426396102437e-1,6.184520917418238e-1,null],
+      "f_model_t_plus": [5.4079900521184e-246,8.70120630107278e-19,2.1771359499603914e-4,1.5337544138214886e-2,4.8140582293384e-2,8.445502588059021e-2,1.2096440895880246e-1,1.5699908749723573e-1,1.9111290203636278e-1,2.237429300162633e-1,3.142105862867403e-1,4.0078480273669836e-1,4.867050706395793e-1,5.508073896635465e-1,6.188464462567366e-1,null],
+      "model_run_ref": {
+        "solver_package_version": "1.0.1",
+        "commit": "f5f3155",
+        "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-LP-4-4-2.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
+        "base_output_sha256": "b8b4b53066e3c5f73becedc4cab9057a43b14fdcf06b2dd75d3aa96d0a5d5fd1",
+        "refined_output_sha256": "2615ba4efbcee87a0dde794c9de1f3ec703e88a28fa3f325f14a43b24dac0fe8",
+        "steps": 13480,
+        "matrix_assemblies": 250
+      },
+      "curve_assessment_ref": null,
+      "evaluation": [
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step"
+      ],
+      "e_num": [1.54131000271861e-247,1.3186991328194134e-21,4.991097007280579e-6,1.2151857445760403e-5,2.308360765673756e-6,3.801301282871372e-6,7.289810032382049e-6,9.557442107760439e-6,1.1225665321745737e-5,1.260933346908244e-5,1.586962972116579e-5,1.8339669836886507e-5,2.010402794949684e-5,2.090776493024471e-5,2.1203671547564973e-5,null],
+      "numerical_budget": null,
+      "mean_f_exp": null,
+      "ss_tot": null,
+      "ss_res": null,
+      "r2": null,
+      "display": null,
+      "status": "unavailable",
+      "reason_code": "coating_failure",
+      "reason_caption": "R² unavailable because coating failure is known or suspected, and it is outside the approved STRATO physics.",
+      "failed_checks": [
+        "C2",
+        "C5",
+        "C6",
+        "D1",
+        "M2",
+        "C0",
+        "V1"
+      ],
+      "coating_failure_basis": "Kr-85 release shows five particles with failed TRISO inside the specimen (three during heat-up, two at 1800 C); significant Cs release occurred concurrent with four of the failures (Hunn et al. 2016, printed p. 4); the Cs retained in the failed particles was nearly zero (printed p. 7)",
+      "decay_correction": "not_stated",
+      "decay_reference": null,
+      "inventory_reference": null,
+      "inventory_reference_offset_h": null,
+      "counting_delay_h": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "t_d_h": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "lambda_t_N": null,
+      "decay_gate_delta": null,
+      "verification_ref": null,
+      "label_latex": null,
+      "label_plain": null,
+      "premises": [
+        {
+          "code": "A2",
+          "text": "kernel-only start (A2, decision 20): the run starts with the inventory uniform in the kernel"
+        },
+        {
+          "code": "particle_equivalents",
+          "text": "registered particle equivalents divided by the registered particle count 75 (calculated from registered values, decision 65(b))"
+        },
+        {
+          "code": "c16_heating_test_set",
+          "text": "diffusivities: the published heating-test rows C16 as printed (decision 39); no validity range printed, applied by Collin (2016) over 400 to 1800 degC"
+        },
+        {
+          "code": "first_ramp_not_modelled",
+          "text": "the first ramp of the history (12 h to 1250 degC) starts at a temperature the register does not state: the run starts at 1250 degC at its end, and the release during that ramp is neglected"
+        },
+        {
+          "code": "decay_not_modelled",
+          "text": "decay not modelled: release assumed decay-corrected"
+        },
+        {
+          "code": "independence_not_established",
+          "text": "independence of the parameters from these data not established"
+        }
+      ],
+      "digitisation": {
+        "u_value": {
+          "kind": "abs",
+          "value": 1.3333333333333334e-4
+        },
+        "u_time_h": 3e-1,
+        "status": "not available",
+        "r2_low": null,
+        "r2_high": null,
+        "first_order_half_width": null,
+        "corner_method": null,
+        "scope": "reading uncertainty only",
+        "interval_display": null
+      },
+      "systematic_r2_interval": null,
+      "systematic_interval_display": null,
+      "method_b_applicable": null,
+      "method_b_mask_passed": null
+    },
+    {
+      "record_id": "r2.HUNN16-442-CS134.B",
+      "definition_id": "R2_LINEAR_PER_CURVE_V1",
+      "curve_id": "HUNN16-442-CS134",
+      "method": "B",
+      "method_name": "Method B: Sturm–Liouville",
+      "nuclide": "Cs-134",
+      "program": "AGR-1",
+      "specimen_id": "4-4-2 loose particles (75 particles)",
+      "specimen_level": "particle_batch",
+      "source_aggregated": false,
+      "temperature_C": 1.8e3,
+      "temperature_label": "1800 °C",
+      "temperature_history_id": "AGR1-LP-4-4-2",
+      "release_definition": "cumulative release in particle equivalents (75 loose particles)",
+      "denominator": "average particle inventory (particle equivalents)",
+      "time_basis": "elapsed time from start of heating",
+      "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-LP-4-4-2.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
+      "independence": "not_established",
+      "source_citation_apa": "Hunn, J. D., Gerczak, T. J., Morris, R. N., Baldwin, C. A., & Montgomery, F. C. (2016). PIE on safety-tested loose particles from AGR-1 compact 4-4-2 (ORNL/TM-2015/161). Oak Ridge National Laboratory.",
+      "source_citation_note": null,
+      "source_link": "https://doi.org/10.2172/1252138",
+      "link_status": "verified",
+      "source_location": "Fig. 2; printed p. 4 (PDF p. 16)",
+      "row_ids": [
+        "E-541",
+        "E-542",
+        "E-543",
+        "E-544",
+        "E-545",
+        "E-546",
+        "E-547",
+        "E-548",
+        "E-549",
+        "E-550",
+        "E-551",
+        "E-552",
+        "E-553",
+        "E-554",
+        "E-555",
+        "E-556"
+      ],
+      "rows_excluded": [],
+      "early_bound_points": [],
+      "qualifiers": [
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~"
+      ],
+      "bound_classes": [
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "register_status": [
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised"
+      ],
+      "digitisation_verification_ref": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "data_kind": "calculated",
+      "n": 16,
+      "matched_times_h": [2.33e1,3.57e1,4.72e1,7.07e1,9.51e1,1.19e2,1.43e2,1.674e2,1.914e2,2.153e2,2.872e2,3.655e2,4.553e2,5.327e2,6.28e2,6.913e2],
+      "model_times_h": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "f_exp": [5.0933333333333336e-5,1.8266666666666667e-2,2.1333333333333336e-2,2.16e-2,2.16e-2,2.16e-2,2.173333333333333e-2,2.6799999999999997e-2,2.8133333333333333e-2,2.8399999999999998e-2,2.8399999999999998e-2,2.8399999999999998e-2,2.8533333333333334e-2,3.1066666666666666e-2,3.2933333333333335e-2,3.2933333333333335e-2],
+      "f_exp_registered": [3.82e-3,1.37e0,1.6e0,1.62e0,1.62e0,1.62e0,1.63e0,2.01e0,2.11e0,2.13e0,2.13e0,2.13e0,2.14e0,2.33e0,2.47e0,2.47e0],
+      "f_exp_registered_unit": "particles",
+      "f_exp_conversion": "registered particle equivalents divided by the registered particle count 75 (calculated from registered values, decision 65(b))",
+      "f_model": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "f_model_t_minus": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "f_model_t_plus": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "model_run_ref": null,
+      "curve_assessment_ref": null,
+      "evaluation": [
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step"
+      ],
+      "e_num": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "numerical_budget": null,
+      "mean_f_exp": null,
+      "ss_tot": null,
+      "ss_res": null,
+      "r2": null,
+      "display": null,
+      "status": "unavailable",
+      "reason_code": "coating_failure",
+      "reason_caption": "R² unavailable because coating failure is known or suspected, and it is outside the approved STRATO physics.",
+      "failed_checks": [
+        "C2",
+        "C5",
+        "C6",
+        "D1",
+        "B1",
+        "C0",
+        "V1"
+      ],
+      "coating_failure_basis": "Kr-85 release shows five particles with failed TRISO inside the specimen (three during heat-up, two at 1800 C); significant Cs release occurred concurrent with four of the failures (Hunn et al. 2016, printed p. 4); the Cs retained in the failed particles was nearly zero (printed p. 7)",
+      "decay_correction": "not_stated",
+      "decay_reference": null,
+      "inventory_reference": null,
+      "inventory_reference_offset_h": null,
+      "counting_delay_h": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "t_d_h": [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+      "lambda_t_N": null,
+      "decay_gate_delta": null,
+      "verification_ref": null,
+      "label_latex": null,
+      "label_plain": null,
+      "premises": [
+        {
+          "code": "A2",
+          "text": "kernel-only start (A2, decision 20): the run starts with the inventory uniform in the kernel"
+        },
+        {
+          "code": "particle_equivalents",
+          "text": "registered particle equivalents divided by the registered particle count 75 (calculated from registered values, decision 65(b))"
+        },
+        {
+          "code": "c16_heating_test_set",
+          "text": "diffusivities: the published heating-test rows C16 as printed (decision 39); no validity range printed, applied by Collin (2016) over 400 to 1800 degC"
+        },
+        {
+          "code": "first_ramp_not_modelled",
+          "text": "the first ramp of the history (12 h to 1250 degC) starts at a temperature the register does not state: the run starts at 1250 degC at its end, and the release during that ramp is neglected"
+        },
+        {
+          "code": "decay_not_modelled",
+          "text": "decay not modelled: release assumed decay-corrected"
+        },
+        {
+          "code": "independence_not_established",
+          "text": "independence of the parameters from these data not established"
+        }
+      ],
+      "digitisation": {
+        "u_value": {
+          "kind": "abs",
+          "value": 1.3333333333333334e-4
+        },
+        "u_time_h": 3e-1,
+        "status": "not available",
+        "r2_low": null,
+        "r2_high": null,
+        "first_order_half_width": null,
+        "corner_method": null,
+        "scope": "reading uncertainty only",
+        "interval_display": null
+      },
+      "systematic_r2_interval": null,
+      "systematic_interval_display": null,
+      "method_b_applicable": false,
+      "method_b_mask_passed": null
+    }
+  ],
+  "caption": {
+    "curve_id": "HUNN16-442-CS134",
+    "caption_text": "Cumulative release fraction of Cs-134 versus elapsed time from start of heating (h), loose particles from compact 4-4-2, 1800 °C.",
+    "reason_lines": [
+      "R² unavailable because coating failure is known or suspected, and it is outside the approved STRATO physics."
+    ],
+    "source_citation_apa": "Hunn, J. D., Gerczak, T. J., Morris, R. N., Baldwin, C. A., & Montgomery, F. C. (2016). PIE on safety-tested loose particles from AGR-1 compact 4-4-2 (ORNL/TM-2015/161). Oak Ridge National Laboratory.",
+    "source_citation_note": null,
+    "source_link": "https://doi.org/10.2172/1252138",
+    "source_link_note": null,
+    "source_figure_table": "Fig. 2, p. 4",
+    "source_kind": "calculated from registered values",
+    "time_axis_label": "elapsed time from start of heating (h)",
+    "specimen_label": "loose particles from compact 4-4-2",
+    "temperature_label": "1800 °C",
+    "y_axis_label": "Cumulative release fraction",
+    "y_axis_scale": "linear",
+    "legend_exp_label": "Experiment (calculated from registered values)",
+    "marker_colour_exp": "#111111",
+    "legend_methods": [
+      {
+        "label": "Method A: BTCS",
+        "colour": "#2563EB",
+        "style": "solid"
+      }
+    ]
+  }
+}

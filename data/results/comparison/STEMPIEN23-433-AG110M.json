@@ -1,0 +1,613 @@
+{
+  "schema_version": "1",
+  "what": "one experimental curve with its model curves and its R² records",
+  "provenance": {
+    "label": "numerical solution of the stated model; not experimental validation",
+    "solver": "STRATO BTCS five-layer spherical finite difference",
+    "solver_version": "1.0.1",
+    "pipeline": "strato-results 0.1.0",
+    "schema_version": "1",
+    "commit": "f5f3155",
+    "solver_source_sha256": "02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275",
+    "input_sha256": {
+      "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
+      "arrhenius.csv": "2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4",
+      "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
+      "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
+      "temperature_histories.csv": "b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d",
+      "release_measurements.csv": "29f0d7bec6f40fb97c52c0bf7972782d7849a58f5f910527fe8efa8afa9ddda9",
+      "agr1_irradiation_conditions.csv": "31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d",
+      "agr1_burnup_by_cycle.csv": "e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f",
+      "agr1_power_history_digitised.csv": "25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a",
+      "scenarios/s1_normal_operation.csv": "c420e1e04e043ed0418099c27156cabda8188f40ce2fb239d1ce3916cccc7970",
+      "scenarios/s2_shutdown_cooldown.csv": "f575e9a42670e52293083907b3658fd7e3a99c279912861999f0cb847cbf6044",
+      "scenarios/s3_startup.csv": "bf2b6bd01168d0aa72f9db61f5fa4eae60ff39a81928eaed515ae8279916bfa7",
+      "scenarios/s4_control_rod_insertion.csv": "93856f2003ca65b7a7258d60819a47b8a651d695dffeff0fd7dc664b90309759",
+      "scenarios/s5_fuel_removal.csv": "4cad00101259e2fdbeec585f27d8910502a1858ab38bce59899c132b0caad9bb"
+    }
+  },
+  "curve_id": "STEMPIEN23-433-AG110M",
+  "definition_id": "R2_LINEAR_PER_CURVE_V1",
+  "nuclide": "Ag-110m",
+  "register": "data/experimental/release_measurements.csv; data/experimental/curve_assessment.csv",
+  "experiment": {
+    "marker_colour": "#111111",
+    "connect": false,
+    "points": [
+      {
+        "id": "E-425",
+        "time_h": 1e-1,
+        "value": 3.35e-1,
+        "registered_value": 3.35e-1,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.675e-3,
+          "time_h": 2e-1
+        }
+      },
+      {
+        "id": "E-426",
+        "time_h": 1.45e1,
+        "value": 3.38e-1,
+        "registered_value": 3.38e-1,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.69e-3,
+          "time_h": 2e-1
+        }
+      },
+      {
+        "id": "E-427",
+        "time_h": 2.4e1,
+        "value": 3.38e-1,
+        "registered_value": 3.38e-1,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.69e-3,
+          "time_h": 2e-1
+        }
+      },
+      {
+        "id": "E-428",
+        "time_h": 3.86e1,
+        "value": 3.38e-1,
+        "registered_value": 3.38e-1,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.69e-3,
+          "time_h": 2e-1
+        }
+      },
+      {
+        "id": "E-429",
+        "time_h": 6.25e1,
+        "value": 3.39e-1,
+        "registered_value": 3.39e-1,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.6950000000000001e-3,
+          "time_h": 2e-1
+        }
+      },
+      {
+        "id": "E-430",
+        "time_h": 8.64e1,
+        "value": 3.39e-1,
+        "registered_value": 3.39e-1,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.6950000000000001e-3,
+          "time_h": 2e-1
+        }
+      },
+      {
+        "id": "E-431",
+        "time_h": 1.106e2,
+        "value": 3.39e-1,
+        "registered_value": 3.39e-1,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.6950000000000001e-3,
+          "time_h": 2e-1
+        }
+      },
+      {
+        "id": "E-432",
+        "time_h": 1.345e2,
+        "value": 3.4e-1,
+        "registered_value": 3.4e-1,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.7000000000000001e-3,
+          "time_h": 2e-1
+        }
+      },
+      {
+        "id": "E-433",
+        "time_h": 1.586e2,
+        "value": 3.4e-1,
+        "registered_value": 3.4e-1,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.7000000000000001e-3,
+          "time_h": 2e-1
+        }
+      },
+      {
+        "id": "E-434",
+        "time_h": 3.001e2,
+        "value": 3.4e-1,
+        "registered_value": 3.4e-1,
+        "registered_unit": "1",
+        "qualifier": "~",
+        "value_class": "R-dig",
+        "point_class": "compact-total bound",
+        "status": "digitised",
+        "reading_uncertainty": {
+          "value_abs": 1.7000000000000001e-3,
+          "time_h": 2e-1
+        }
+      }
+    ]
+  },
+  "model": {
+    "method_a": {
+      "label": "Method A: BTCS",
+      "status": "computed",
+      "time_h": [0e0,5e-2,5.4000000000000006e-2,5.832000000000001e-2,6.298560000000002e-2,6.802444800000003e-2,7.346640384000004e-2,7.934371614720005e-2,8.569121343897607e-2,9.254651051409415e-2,9.99502313552217e-2,1.0000000000000142e-1,1.0794624986363945e-1,1.1658194985273061e-1,1.2590850584094906e-1,1.35981186308225e-1,1.46859681212883e-1,1.5860845570991366e-1,1.7129713216670678e-1,1.8500090274004333e-1,1.998009749592468e-1,2.1578505295598657e-1,2.330478571924655e-1,2.5169168576786277e-1,2.718270206292918e-1,2.935731822796352e-1,3.1705903686200604e-1,3.4242375981096657e-1,3.698176605958439e-1,3.9940307344351145e-1,4.313553193189924e-1,4.658637448645118e-1,5.031328444536728e-1,5.433834720099666e-1,5.86854149770764e-1,6.338024817524252e-1,6.845066802926192e-1,7.392672147160287e-1,7.984085918933111e-1,8.62281279244776e-1,9.312637815843582e-1,1.0057648841111069e0,1.0862260748399954e0,1.1731241608271952e0,1.2669740936933709e0,1.3683320211888406e0,1.477798582883948e0,1.5960224695146639e0,1.7237042670758371e0,1.8616006084419041e0,2.0105286571172565e0,2.1713709496866374e0,2.3450806256615686e0,2.5326870757144944e0,2.735302041771654e0,2.9541262051133867e0,3.190456301522458e0,3.4456928056442546e0,3.721348230095795e0,4.019056088503459e0,4.3405805755837354e0,4.687827021630435e0,5.06285318336087e0,5.46788143802974e0,5.905311953072119e0,6.377736909317889e0,6.887955862063321e0,7.438992331028387e0,8.034111717510658e0,8.676840654911512e0,9.370987907304434e0,1.0120666939888789e1,1.0930320295079893e1,1.1804745918686285e1,1.2749125592181189e1,1.3769055639555685e1,1.4500000000000004e1,1.4870580090720141e1,1.6060226497977755e1,1.7345044617815976e1,1.8732648187241256e1,2.023126004222056e1,2.1849760845598205e1,2.3597741713246062e1,2.4000000000000004e1,2.5485561050305748e1,2.7524405934330208e1,2.9726358409076628e1,3.210446708180276e1,3.467282444834698e1,3.744665040421474e1,3.8599999999999994e1,4.0442382436551924e1,4.367777303147608e1,4.7171994873994166e1,5.09457544639137e1,5.50214148210268e1,5.942312800670895e1,6.25e1,6.417697824724567e1,6.931113650702532e1,7.485602742758735e1,8.084450962179434e1,8.64e1,8.73120703915379e1,9.429703602286094e1,1.0184079890468982e2,1.0998806281706501e2,1.1059999999999998e2,1.1878710784243022e2,1.2829007646982464e2,1.345e2,1.3855328258741062e2,1.496375451944035e2,1.586e2,1.6160854880995578e2,1.7453723271475226e2,1.8850021133193246e2,2.0358022823848708e2,2.1986664649756605e2,2.3745597821737135e2,2.5645245647476105e2,2.7696865299274197e2,2.991261452321613e2,3.001e2,3.003e2],
+      "release_fraction": [5.12940022869631e-8,6.384400504544994e-8,6.50551664021571e-8,6.636322066740103e-8,6.777591927386589e-8,6.930163376884672e-8,7.094940542342635e-8,7.272899881037158e-8,7.46509596682736e-8,7.672667739480709e-8,7.896845253946312e-8,7.898352200429556e-8,8.186879319378303e-8,8.500440267084876e-8,8.839086090608156e-8,9.204823580013192e-8,9.59982006857085e-8,1.0086475230624738e-7,1.0635724727219793e-7,1.1228914183542277e-7,1.1869558796370631e-7,1.2688092749856074e-7,1.3573833862024615e-7,1.4545955367305834e-7,1.576382415551544e-7,1.7079122446781953e-7,1.8677742304743165e-7,2.0476715959268877e-7,2.265393746503432e-7,2.5102087124886836e-7,2.8164164732560573e-7,3.171733583166778e-7,3.5908736455261683e-7,4.10529268377289e-7,4.729653053645233e-7,5.487359753118712e-7,6.414257301708615e-7,7.554781925560768e-7,8.963567616901599e-7,1.0748237472282431e-6,1.2980389768645551e-6,1.57843808610984e-6,1.937904054056562e-6,2.3973816375134234e-6,2.987588367294857e-6,3.751944178910833e-6,4.746296533422252e-6,6.041393081536615e-6,7.7511212904354e-6,9.996229474130104e-6,1.2966678906218979e-5,1.690869888219468e-5,2.2134973005367028e-5,2.910610719707169e-5,3.8380397056090584e-5,5.072612119477422e-5,6.717962549679408e-5,8.904262700522834e-5,1.1808134496285076e-4,1.5649353400971186e-4,2.0715561954187434e-4,2.737411440357341e-4,3.6083252625792814e-4,4.741778261640353e-4,6.208330928834777e-4,8.095464057824781e-4,1.0507079639829023e-3,1.3568959812743362e-3,1.7429187136655828e-3,2.2260531848579553e-3,2.826243039597296e-3,3.5662277902940185e-3,4.471578457784054e-3,5.570660199096884e-3,6.894626078333048e-3,8.477112032613521e-3,9.703681578946497e-3,1.0353801661221091e-2,1.256225102773962e-2,1.5141235877277216e-2,1.8130173779120434e-2,2.1568401245980428e-2,2.549463359553124e-2,2.9946356176884865e-2,3.0998022897708248e-2,3.495916697047052e-2,4.056644369979711e-2,4.6799123366931206e-2,5.368562285844344e-2,6.125201571874434e-2,6.952233049395706e-2,7.2980551071411e-2,7.851909238077484e-2,8.826387306841274e-2,9.877792074181792e-2,1.1008271888554459e-1,1.2220041721900246e-1,1.351540927098471e-1,1.4411667799029632e-1,1.4896775174508906e-1,1.6366609310182823e-1,1.7927400354500042e-1,1.9581582385777832e-1,2.1086965674116465e-1,2.1331441471267443e-1,2.3179007305855448e-1,2.512593242655064e-1,2.7173367239921603e-1,2.732487275156182e-1,2.9321828083264373e-1,3.157106462872746e-1,3.300207148234959e-1,3.391992585618916e-1,3.6366226058867207e-1,3.8277868310308727e-1,3.8906613956509145e-1,4.153644394060571e-1,4.4249657619079463e-1,4.703867559862534e-1,4.989431116522213e-1,5.280570613164952e-1,5.576030290424187e-1,5.87438582314868e-1,6.174050856224833e-1,6.186519908782516e-1,6.187856310131613e-1],
+      "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ST-C16-1600.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
+      "steps": 6630,
+      "history_row_ids": [
+        "TH-007",
+        "TH-008",
+        "TH-009",
+        "TH-010",
+        "TH-011",
+        "TH-012",
+        "TH-013"
+      ],
+      "note": "the line is a drawing between output times; the values that enter R² are the exact step values in r2.json"
+    },
+    "method_b": {
+      "label": "Method B: Sturm–Liouville",
+      "status": "not available",
+      "reason": "Method B: not available (TIME_VARYING_TEMPERATURE: the temperature changes in time, so the eigenfunctions change in time; the analytical solution is not defined for this case (science design Section 4.2))"
+    }
+  },
+  "r2_records": [
+    {
+      "record_id": "r2.STEMPIEN23-433-AG110M.A",
+      "definition_id": "R2_LINEAR_PER_CURVE_V1",
+      "curve_id": "STEMPIEN23-433-AG110M",
+      "method": "A",
+      "method_name": "Method A: BTCS",
+      "nuclide": "Ag-110m",
+      "program": "AGR-1",
+      "specimen_id": "4-3-3",
+      "specimen_level": "compact",
+      "source_aggregated": false,
+      "temperature_C": 1.6e3,
+      "temperature_label": "1600 °C",
+      "temperature_history_id": "AGR1-ST-C16-1600 (nominal, assessment); AGR1-FACS-4-3-3 (as-run trace of the same test, Demkowicz et al. 2015 Fig. 3)",
+      "release_definition": "cumulative compact release fraction",
+      "denominator": "calculated compact inventory",
+      "time_basis": "time at temperature",
+      "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ST-C16-1600.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
+      "independence": "not_established",
+      "source_citation_apa": "Stempien, J. D., Cai, Z., & Demkowicz, P. A. (2023). AGR TRISO fuel fission product release data summary (INL/RPT-23-74651, Rev. 0). Idaho National Laboratory.",
+      "source_citation_note": null,
+      "source_link": "https://inldigitallibrary.inl.gov/sites/sti/sti/Sort_67581.pdf",
+      "link_status": "no link check is recorded in the register",
+      "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
+      "row_ids": [
+        "E-425",
+        "E-426",
+        "E-427",
+        "E-428",
+        "E-429",
+        "E-430",
+        "E-431",
+        "E-432",
+        "E-433",
+        "E-434"
+      ],
+      "rows_excluded": [],
+      "early_bound_points": [],
+      "qualifiers": [
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~"
+      ],
+      "bound_classes": [
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total"
+      ],
+      "register_status": [
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised"
+      ],
+      "digitisation_verification_ref": [null,null,null,null,null,null,null,null,null,null],
+      "data_kind": "digitised",
+      "n": 10,
+      "matched_times_h": [1e-1,1.45e1,2.4e1,3.86e1,6.25e1,8.64e1,1.106e2,1.345e2,1.586e2,3.001e2],
+      "model_times_h": [3.12666e1,4.56666e1,5.51666e1,6.97666e1,9.36666e1,1.1756660000000001e2,1.4176659999999998e2,1.656666e2,1.8976659999999998e2,3.3126660000000004e2],
+      "f_exp": [3.35e-1,3.38e-1,3.38e-1,3.38e-1,3.39e-1,3.39e-1,3.39e-1,3.4e-1,3.4e-1,3.4e-1],
+      "f_exp_registered": [3.35e-1,3.38e-1,3.38e-1,3.38e-1,3.39e-1,3.39e-1,3.39e-1,3.4e-1,3.4e-1,3.4e-1],
+      "f_exp_registered_unit": "1",
+      "f_exp_conversion": null,
+      "f_model": [7.898352200429556e-8,9.703681578946497e-3,3.0998022897708248e-2,7.2980551071411e-2,1.4411667799029632e-1,2.1086965674116465e-1,2.732487275156182e-1,3.300207148234959e-1,3.8277868310308727e-1,6.186519908782516e-1],
+      "f_model_t_minus": [3.2704141590861876e-8,9.360627474260731e-3,3.0473955064808878e-2,7.238026948252868e-2,1.435365170464096e-1,2.1033256342738363e-1,2.727539079379385e-1,3.2956453459723406e-1,3.823584238656235e-1,6.184113825691702e-1],
+      "f_model_t_plus": [1.7467843109388796e-7,1.0052218289963614e-2,3.152438298671577e-2,7.358105364417833e-2,1.4469649760976877e-1,2.1140638906473855e-1,2.737432107659703e-1,3.304765846829849e-1,3.8319865638772144e-1,6.187856310131613e-1],
+      "model_run_ref": {
+        "solver_package_version": "1.0.1",
+        "commit": "f5f3155",
+        "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ST-C16-1600.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
+        "base_output_sha256": "6ab735b6eaee35e407f024e3c5e0639bac73a32d5d4b4057d2cbe3a20f5df136",
+        "refined_output_sha256": "e198a11a0f7140ab26786388bfc29a04263b8a29c403cc80351fe001c901fd77",
+        "steps": 6630,
+        "matrix_assemblies": 371
+      },
+      "curve_assessment_ref": null,
+      "evaluation": [
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step"
+      ],
+      "e_num": [2.0016800194892867e-8,2.7621887678739784e-5,1.766167689513931e-5,5.972109175106377e-7,1.1224931843578645e-5,1.6132018384379387e-5,1.9513822894667854e-5,2.2145018057584398e-5,2.42526477596261e-5,2.9052368720861033e-5],
+      "numerical_budget": null,
+      "mean_f_exp": null,
+      "ss_tot": null,
+      "ss_res": null,
+      "r2": null,
+      "display": null,
+      "status": "unavailable",
+      "reason_code": "upper_bound",
+      "reason_caption": "R² unavailable because the published values are upper bounds, not exact measurements.",
+      "failed_checks": [
+        "C1",
+        "C3",
+        "C6",
+        "D1",
+        "C8",
+        "M2",
+        "C0",
+        "V1"
+      ],
+      "coating_failure_basis": "none",
+      "decay_correction": "not_stated",
+      "decay_reference": null,
+      "inventory_reference": null,
+      "inventory_reference_offset_h": null,
+      "counting_delay_h": [null,null,null,null,null,null,null,null,null,null],
+      "t_d_h": [null,null,null,null,null,null,null,null,null,null],
+      "lambda_t_N": null,
+      "decay_gate_delta": null,
+      "verification_ref": null,
+      "label_latex": null,
+      "label_plain": null,
+      "premises": [
+        {
+          "code": "A2",
+          "text": "kernel-only start (A2, decision 20): the run starts with the inventory uniform in the kernel"
+        },
+        {
+          "code": "BP1",
+          "text": "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13)."
+        },
+        {
+          "code": "BP2",
+          "text": "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134."
+        },
+        {
+          "code": "A1",
+          "text": "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
+        },
+        {
+          "code": "c16_heating_test_set",
+          "text": "diffusivities: the published heating-test rows C16 as printed (decision 39); no validity range printed, applied by Collin (2016) over 400 to 1800 degC"
+        },
+        {
+          "code": "decay_not_modelled",
+          "text": "decay not modelled: release assumed decay-corrected"
+        },
+        {
+          "code": "independence_not_established",
+          "text": "independence of the parameters from these data not established"
+        }
+      ],
+      "digitisation": {
+        "u_value": {
+          "kind": "rel_pct",
+          "value": 5e-1
+        },
+        "u_time_h": 2e-1,
+        "status": "not available",
+        "r2_low": null,
+        "r2_high": null,
+        "first_order_half_width": null,
+        "corner_method": null,
+        "scope": "reading uncertainty only",
+        "interval_display": null
+      },
+      "systematic_r2_interval": null,
+      "systematic_interval_display": null,
+      "method_b_applicable": null,
+      "method_b_mask_passed": null
+    },
+    {
+      "record_id": "r2.STEMPIEN23-433-AG110M.B",
+      "definition_id": "R2_LINEAR_PER_CURVE_V1",
+      "curve_id": "STEMPIEN23-433-AG110M",
+      "method": "B",
+      "method_name": "Method B: Sturm–Liouville",
+      "nuclide": "Ag-110m",
+      "program": "AGR-1",
+      "specimen_id": "4-3-3",
+      "specimen_level": "compact",
+      "source_aggregated": false,
+      "temperature_C": 1.6e3,
+      "temperature_label": "1600 °C",
+      "temperature_history_id": "AGR1-ST-C16-1600 (nominal, assessment); AGR1-FACS-4-3-3 (as-run trace of the same test, Demkowicz et al. 2015 Fig. 3)",
+      "release_definition": "cumulative compact release fraction",
+      "denominator": "calculated compact inventory",
+      "time_basis": "time at temperature",
+      "model_config_id": "btcs.AGR1-B-M16.C16.AGR1-ST-C16-1600.kernel_uniform.decay_free.intervals160-20-20-160-20.dt0.05h",
+      "independence": "not_established",
+      "source_citation_apa": "Stempien, J. D., Cai, Z., & Demkowicz, P. A. (2023). AGR TRISO fuel fission product release data summary (INL/RPT-23-74651, Rev. 0). Idaho National Laboratory.",
+      "source_citation_note": null,
+      "source_link": "https://inldigitallibrary.inl.gov/sites/sti/sti/Sort_67581.pdf",
+      "link_status": "no link check is recorded in the register",
+      "source_location": "Fig. 9; printed p. 28 (PDF p. 42)",
+      "row_ids": [
+        "E-425",
+        "E-426",
+        "E-427",
+        "E-428",
+        "E-429",
+        "E-430",
+        "E-431",
+        "E-432",
+        "E-433",
+        "E-434"
+      ],
+      "rows_excluded": [],
+      "early_bound_points": [],
+      "qualifiers": [
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~",
+        "~"
+      ],
+      "bound_classes": [
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total",
+        "compact_total"
+      ],
+      "register_status": [
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised",
+        "digitised"
+      ],
+      "digitisation_verification_ref": [null,null,null,null,null,null,null,null,null,null],
+      "data_kind": "digitised",
+      "n": 10,
+      "matched_times_h": [1e-1,1.45e1,2.4e1,3.86e1,6.25e1,8.64e1,1.106e2,1.345e2,1.586e2,3.001e2],
+      "model_times_h": [null,null,null,null,null,null,null,null,null,null],
+      "f_exp": [3.35e-1,3.38e-1,3.38e-1,3.38e-1,3.39e-1,3.39e-1,3.39e-1,3.4e-1,3.4e-1,3.4e-1],
+      "f_exp_registered": [3.35e-1,3.38e-1,3.38e-1,3.38e-1,3.39e-1,3.39e-1,3.39e-1,3.4e-1,3.4e-1,3.4e-1],
+      "f_exp_registered_unit": "1",
+      "f_exp_conversion": null,
+      "f_model": [null,null,null,null,null,null,null,null,null,null],
+      "f_model_t_minus": [null,null,null,null,null,null,null,null,null,null],
+      "f_model_t_plus": [null,null,null,null,null,null,null,null,null,null],
+      "model_run_ref": null,
+      "curve_assessment_ref": null,
+      "evaluation": [
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step",
+        "exact_step"
+      ],
+      "e_num": [null,null,null,null,null,null,null,null,null,null],
+      "numerical_budget": null,
+      "mean_f_exp": null,
+      "ss_tot": null,
+      "ss_res": null,
+      "r2": null,
+      "display": null,
+      "status": "unavailable",
+      "reason_code": "upper_bound",
+      "reason_caption": "R² unavailable because the published values are upper bounds, not exact measurements.",
+      "failed_checks": [
+        "C1",
+        "C3",
+        "C6",
+        "D1",
+        "C8",
+        "B1",
+        "C0",
+        "V1"
+      ],
+      "coating_failure_basis": "none",
+      "decay_correction": "not_stated",
+      "decay_reference": null,
+      "inventory_reference": null,
+      "inventory_reference_offset_h": null,
+      "counting_delay_h": [null,null,null,null,null,null,null,null,null,null],
+      "t_d_h": [null,null,null,null,null,null,null,null,null,null],
+      "lambda_t_N": null,
+      "decay_gate_delta": null,
+      "verification_ref": null,
+      "label_latex": null,
+      "label_plain": null,
+      "premises": [
+        {
+          "code": "A2",
+          "text": "kernel-only start (A2, decision 20): the run starts with the inventory uniform in the kernel"
+        },
+        {
+          "code": "BP1",
+          "text": "The reported total contains all material released by the compact during the test (no loss to uncounted surfaces; open point O13)."
+        },
+        {
+          "code": "BP2",
+          "text": "The kernel-only start (decision 20) differs from the real initial state in two ways with opposite effects: it ignores the inventory already outside the SiC (raises F_p) and the inventory already in the coatings (lowers F_p). The size of the difference is not stated here: the results pipeline computes it for Sr-90 and Cs-137 from the Scenario 5 heating runs against the kernel-only runs of the same histories and writes it into the files curves/s5.refuelling.heating*.json, field kernel_only_comparison. The net direction is not established for Ag-110m and Cs-134."
+        },
+        {
+          "code": "A1",
+          "text": "A1: the model fraction is a fraction of one intact particle's inventory; a compact total that is not matrix-corrected includes inventory that was already outside the SiC, so it is at most an upper bound."
+        },
+        {
+          "code": "c16_heating_test_set",
+          "text": "diffusivities: the published heating-test rows C16 as printed (decision 39); no validity range printed, applied by Collin (2016) over 400 to 1800 degC"
+        },
+        {
+          "code": "decay_not_modelled",
+          "text": "decay not modelled: release assumed decay-corrected"
+        },
+        {
+          "code": "independence_not_established",
+          "text": "independence of the parameters from these data not established"
+        }
+      ],
+      "digitisation": {
+        "u_value": {
+          "kind": "rel_pct",
+          "value": 5e-1
+        },
+        "u_time_h": 2e-1,
+        "status": "not available",
+        "r2_low": null,
+        "r2_high": null,
+        "first_order_half_width": null,
+        "corner_method": null,
+        "scope": "reading uncertainty only",
+        "interval_display": null
+      },
+      "systematic_r2_interval": null,
+      "systematic_interval_display": null,
+      "method_b_applicable": false,
+      "method_b_mask_passed": null
+    }
+  ],
+  "caption": {
+    "curve_id": "STEMPIEN23-433-AG110M",
+    "caption_text": "Cumulative release fraction of Ag-110m versus time at temperature (h), compact 4-3-3, 1600 °C.",
+    "reason_lines": [
+      "R² unavailable because the published values are upper bounds, not exact measurements."
+    ],
+    "source_citation_apa": "Stempien, J. D., Cai, Z., & Demkowicz, P. A. (2023). AGR TRISO fuel fission product release data summary (INL/RPT-23-74651, Rev. 0). Idaho National Laboratory.",
+    "source_citation_note": null,
+    "source_link": "https://inldigitallibrary.inl.gov/sites/sti/sti/Sort_67581.pdf",
+    "source_link_note": "no check of the link https://inldigitallibrary.inl.gov/sites/sti/sti/Sort_67581.pdf is recorded in the register",
+    "source_figure_table": "Fig. 9, p. 28",
+    "source_kind": "digitised",
+    "time_axis_label": "time at temperature (h)",
+    "specimen_label": "compact 4-3-3",
+    "temperature_label": "1600 °C",
+    "y_axis_label": "Cumulative release fraction",
+    "y_axis_scale": "linear",
+    "legend_exp_label": "Experiment, upper bound (digitised)",
+    "marker_colour_exp": "#111111",
+    "legend_methods": [
+      {
+        "label": "Method A: BTCS",
+        "colour": "#2563EB",
+        "style": "solid"
+      }
+    ]
+  }
+}

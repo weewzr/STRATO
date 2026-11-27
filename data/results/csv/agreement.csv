@@ -2,14 +2,14 @@
 # label: numerical solution of the stated model; not experimental validation
 # solver: STRATO BTCS five-layer spherical finite difference, package version 1.0.1
 # pipeline: strato-results 0.1.0, schema 1
-# commit: 83a93fa04c7191d5543828e1eb0fca2b46523702
+# commit: f5f3155
 # solver_source_sha256: 02c9cff445aa7ebb9bc371f5b7afd44597989f4b87a2c083709912ca7a57d275
 # input_sha256 geometry.csv: 8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f
 # input_sha256 arrhenius.csv: 2786ea2fc61cf3c55c7a4d52d1da3249a66cafbf1057698f7d89340de8c2c0f4
 # input_sha256 decay.csv: 9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf
 # input_sha256 fission_yields.csv: 4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0
-# input_sha256 temperature_histories.csv: 6ab3201672afd15f92ec9e529318377c829afaa5804288a3a694032145ab4af0
-# input_sha256 release_measurements.csv: b25e390f831a491f68398644efff1cfbc8c8b901cf95a167baaa314bc5bcbc4d
+# input_sha256 temperature_histories.csv: b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d
+# input_sha256 release_measurements.csv: 29f0d7bec6f40fb97c52c0bf7972782d7849a58f5f910527fe8efa8afa9ddda9
 # input_sha256 agr1_irradiation_conditions.csv: 31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d
 # input_sha256 agr1_burnup_by_cycle.csv: e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f
 # input_sha256 agr1_power_history_digitised.csv: 25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a
