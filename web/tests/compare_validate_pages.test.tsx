@@ -1,24 +1,18 @@
-// Compare and Validate after the minimal-text clean-up: the pages hold controls, graphs and one status
-// line; the scientific statements that left them are in Scientific Documentation and the links reach them.
-import { render, screen } from '@testing-library/react';
+// Compare and Validate left the application: what they held is in Scientific Documentation, and each old address
+// leads to it. The experimental graphs keep their mount point there (graph_mount.test.tsx).
+import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { allItemIds } from '../src/documentation';
-import { documentationAnchorFromHash } from '../src/route';
+import { ExperimentalEvidence } from '../src/documentation/evidence';
+import { redirectFromHash } from '../src/route';
 import { Documentation } from '../src/sections/Documentation';
-import { Validate } from '../src/sections/Validate';
 
-describe('Validate page', () => {
-  it('shows the disabled switch, one status line and the mount point of the experimental graph', () => {
-    const { container } = render(<Validate />);
-    const sw = screen.getByTestId('toggle-validation');
-    expect(sw.getAttribute('aria-disabled')).toBe('true');
-    expect(sw.getAttribute('aria-checked')).toBe('false');
-    expect(document.getElementById(sw.getAttribute('aria-describedby') ?? '')?.textContent).toContain(
-      'model predictions need generation, decay and temperature-dependent diffusion',
-    );
+describe('the experimental comparison in Scientific Documentation', () => {
+  it('keeps the mount point of the experimental graph, and the old Validate address leads to its statement', () => {
+    const { container } = render(<ExperimentalEvidence />);
     expect(container.querySelector('[data-mount="experimental-comparison-graph"]')).not.toBeNull();
-    const link = screen.getByRole('link', { name: 'Why' });
-    expect(allItemIds()).toContain(documentationAnchorFromHash(link.getAttribute('href') ?? ''));
+    const target = redirectFromHash('#/validate') ?? '';
+    expect(allItemIds()).toContain(target.replace('#/documentation/', ''));
   });
 });
 
@@ -30,12 +24,16 @@ describe('what left Compare and Validate is in Scientific Documentation', () => 
     expect(text('compare-difference-curve')).toContain('Runs with different output times are not compared');
     expect(text('compare-and-validate')).toContain('independent');
     expect(text('validate-limits')).toContain('A constant-temperature result of Method A: BTCS is never compared with heating-test data');
+    expect(text('validate-limits')).toContain('No comparison is shown yet.');
     expect(text('validate-status')).toContain('It is a different question from verification');
-    expect(text('validate-status')).toContain('What the Validate page will show');
-    // The R² rule (decisions 69 and 74) replaced the sentence on error metrics: R² is the only displayed agreement metric.
-    expect(text('validate-status')).toContain('R² is the only displayed agreement metric');
-    expect(text('validate-status')).toContain('computed in Rust per release-versus-time curve');
-    expect(text('validate-status')).toContain('a caption below the graph says why');
+    expect(text('validate-status')).toContain('What the experimental comparison will show');
+    // R² is the only displayed agreement metric (decisions 69 and 74).
+    expect(text('r2-requirements')).toContain('R² is the only displayed agreement metric');
+    expect(text('r2-requirements')).toContain('computed in Rust, per release-versus-time curve');
+    expect(text('r2-requirements')).toContain('a one-sentence caption below the graph says why');
+    expect(text('r2-requirements')).toContain('No registered dataset supports one today');
+    expect(text('validate-status')).not.toContain('only displayed agreement metric');
     expect(text('validate-status')).not.toContain('never typed in');
+    expect(text('r2-requirements')).toContain('Seventeen ordered checks');
   });
 });

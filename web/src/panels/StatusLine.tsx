@@ -2,7 +2,6 @@ import { BUILD } from '../build';
 import { useRunIsCurrent, useSelectionSupport } from '../equation/useCapability';
 import { hrefDocumentation } from '../route';
 import { useStrato } from '../state/store';
-import { Badge } from './Badge';
 
 /**
  * Footer status line: label of the current main result, solver state and time, the solver version, and a
@@ -33,9 +32,7 @@ export function StatusLine({ compact = false }: { compact?: boolean }) {
         {!support.supported ? (
           'Result: none for the selection on Explore'
         ) : run && current ? (
-          <>
-            Result <Badge label={run.label} />
-          </>
+          `Result: ${run.label}`
         ) : (
           'Result: none yet'
         )}

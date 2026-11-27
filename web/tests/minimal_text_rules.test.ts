@@ -15,6 +15,7 @@ import {
   HASH_PATTERN,
   PATH_PATTERN,
   PROSE_MAX_WORDS,
+  STATUS_WORDS,
   TEMPORARY_EXCEPTIONS,
   type PageSnapshot,
 } from '../scripts/minimal_text_rules.mjs';
@@ -164,5 +165,46 @@ describe('check_content.mjs with page snapshots', () => {
     expect(bad.status).toBe(1);
     expect(bad.stdout).toContain('FAIL a figure or table caption longer than');
     expect(bad.stdout).toContain('[documentation]');
+  });
+});
+
+describe('status badge guard', () => {
+  const WORDS = ['planned', 'pending', 'researched', 'implemented', 'verified', 'validated', 'computed', 'precomputed', 'not verified'];
+
+  it('fails a status word rendered as a badge or chip on every page except Scientific Documentation', () => {
+    for (const p of ['explore', 'basis', 'research']) {
+      for (const w of WORDS) {
+        expect(STATUS_WORDS.test(w), w).toBe(true);
+        expect(failuresOf([page({ id: p, page: p, badges: [w.toUpperCase()] })], 'status-badge'), `${p}: ${w}`).toHaveLength(1);
+      }
+    }
+    expect(failuresOf([page({ id: 'research', page: 'research', badges: ['COMPUTED v2.0'] })], 'status-badge')).toHaveLength(1);
+  });
+
+  it('fails a status badge in the header or the footer', () => {
+    expect(failuresOf([page({ shellBadges: ['VERIFIED'] })], 'status-badge')).toHaveLength(1);
+  });
+
+  it('passes a page without badges, a badge that is not a status word, and Scientific Documentation', () => {
+    expect(failuresOf([page({ id: 'basis', page: 'basis' })], 'status-badge')).toEqual([]);
+    expect(failuresOf([page({ id: 'basis', page: 'basis', badges: ['Method A', 'Figure 1'] })], 'status-badge')).toEqual([]);
+    expect(failuresOf([page({ id: 'documentation', page: DOCUMENTATION_PAGE, badges: ['VERIFIED', 'PENDING', 'COMPUTED v2.0'] })], 'status-badge')).toEqual([]);
+  });
+
+  it('makes check_content.mjs exit 1 for a status badge outside Scientific Documentation, and 0 inside it', () => {
+    const run = (snaps: PageSnapshot[]) => {
+      const dir = mkdtempSync(join(tmpdir(), 'strato-badge-'));
+      writeFileSync(join(dir, 'index.html'), '<!doctype html><title>x</title>');
+      writeFileSync(join(dir, 'build.json'), '{}');
+      const file = join(dir, '..', `${dir.split(/[\\/]/).pop()}-snapshots.json`);
+      writeFileSync(file, JSON.stringify(snaps));
+      const script = fileURLToPath(new URL('../scripts/check_content.mjs', import.meta.url));
+      return spawnSync(process.execPath, [script, dir, '--snapshots', file], { encoding: 'utf8' });
+    };
+    const bad = run([page({ id: 'basis', page: 'basis', badges: ['PENDING'] })]);
+    expect(bad.status).toBe(1);
+    expect(bad.stdout).toContain('FAIL a status word');
+    expect(bad.stdout).toContain('[basis]');
+    expect(run([page({ id: 'documentation', page: DOCUMENTATION_PAGE, badges: ['PENDING'] })]).status).toBe(0);
   });
 });

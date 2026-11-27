@@ -2,7 +2,7 @@
 // contract, the pure mapping from a file to a plot model, the figure, and the component with its
 // caption, citation and link below the graph. The fixtures are invented values marked FIXTURE and are
 // mounted only here and in the browser harness; with no comparison file in the build the pages of
-// Compare and Validate show nothing of this.
+// The comparison evidence and the experimental graphs in Scientific Documentation show nothing of this.
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -15,8 +15,8 @@ import { comparisonFigure } from '../src/graph/figure';
 import { COLOURS, toPlotModel } from '../src/graph/plotModel';
 import type { GraphDiv } from '../src/plots/plotly';
 import { readPlotTheme } from '../src/plots/theme';
-import { Compare } from '../src/sections/Compare';
-import { Validate } from '../src/sections/Validate';
+import { ComparisonEvidence } from '../src/documentation/ComparisonEvidence';
+import { ExperimentalEvidence } from '../src/documentation/evidence';
 import both from './fixtures/fixture_r2_both_methods.json';
 import absent from './fixtures/fixture_r2_method_b_absent.json';
 import negative from './fixtures/fixture_r2_negative.json';
@@ -214,10 +214,10 @@ describe('component', () => {
   });
 });
 
-describe('mounting on Compare and Validate', () => {
+describe('mounting in Scientific Documentation (the comparison and the experimental graphs)', () => {
   it('shows nothing of the graph while the build holds no comparison file', () => {
     expect(COMPARISON_FILES).toHaveLength(0);
-    for (const page of [<Compare key="c" />, <Validate key="v" />]) {
+    for (const page of [<ComparisonEvidence key="c" />, <ExperimentalEvidence key="v" />]) {
       const { unmount } = render(page);
       expect(screen.queryByTestId('exp-comparisons')).toBeNull();
       unmount();

@@ -15,16 +15,13 @@ export const VIEWS = [
   { id: 'explore', page: 'explore', hash: '#/explore', settle: '[data-block]' },
   // The combined model with every item of the Numerical Interpretation open: no block grows beyond the block rule there.
   { id: 'explore-expanded', page: 'explore', hash: '#/explore?physics=combined&open=numerical,' + Array.from({ length: 14 }, (_, i) => `n${i + 1}`).join(','), settle: '[data-testid="num-items"]' },
-  { id: 'compare', page: 'compare', hash: '#/compare', settle: '[data-testid="compare-figure"][data-state="ok"]' },
-  { id: 'validate', page: 'validate', hash: '#/validate' },
-  { id: 'verify', page: 'verify', hash: '#/verify', settle: '[data-testid="verify-balance-plot"]' },
+  { id: 'basis', page: 'basis', hash: '#/basis', settle: '[data-testid="basis-benchmark"]' },
   { id: 'research', page: 'research', hash: '#/research' },
   { id: 'research-roadmap', page: 'research', hash: '#/research/roadmap' },
   { id: 'research-gallery', page: 'research', hash: '#/research/gallery' },
   { id: 'research-references', page: 'research', hash: '#/research/references' },
-  { id: 'data', page: 'data', hash: '#/data' },
-  { id: 'about', page: 'about', hash: '#/about' },
-  { id: 'documentation', page: 'documentation', hash: '#/documentation' },
+  // Every entry of Scientific Documentation open: the comparison, the verification evidence and the experimental graphs run then.
+  { id: 'documentation', page: 'documentation', hash: '#/documentation', settle: '[data-testid="documentation-page"]', openAll: true },
 ];
 
 const TYPES = {
@@ -69,6 +66,10 @@ function snapshotInPage() {
   const main = document.querySelector('main');
   const text = main ? main.innerText : '';
   const shellText = [document.querySelector('header'), document.querySelector('footer')].map((e) => (e ? e.innerText : '')).join('\n');
+  const BADGE = '.badge, .chip, .status-chip, [data-status], [data-label]';
+  const badgesIn = (root) => (root ? Array.from(root.querySelectorAll(BADGE)).map((e) => e.innerText.trim()).filter((t) => t !== '') : []);
+  const badges = badgesIn(main);
+  const shellBadges = [document.querySelector('header'), document.querySelector('footer')].flatMap((e) => badgesIn(e));
   const captions = Array.from(document.querySelectorAll('main figcaption, main caption.table__caption')).map((c) => c.innerText);
 
   const PRIMARY = 'input, select, textarea, button, [role="switch"], table, svg, canvas, .katex, [role="math"], .eq-plain, .js-plotly-plot, figure, .ref-list, .refs';
@@ -104,7 +105,7 @@ function snapshotInPage() {
       }
     }
   }
-  return { text, shellText, captions, proseWords: words, longestBlockWords, longestBlockText };
+  return { text, shellText, badges, shellBadges, captions, proseWords: words, longestBlockWords, longestBlockText };
 }
 
 export async function collectSnapshots(dist) {
@@ -125,6 +126,12 @@ export async function collectSnapshots(dist) {
       await page.waitForFunction(() => !/Solver: loading/.test(document.body.innerText), undefined, { timeout: 30_000 }).catch(() => undefined);
       if (v.settle) await page.waitForSelector(v.settle, { timeout: 30_000 }).catch(() => undefined);
       await page.waitForTimeout(1_500);
+      if (v.openAll) {
+        await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true)));
+        await page.waitForSelector('[data-testid="compare-figure"][data-state="ok"]', { timeout: 30_000 }).catch(() => undefined);
+        await page.waitForSelector('[data-testid="verify-balance-plot"]', { timeout: 30_000 }).catch(() => undefined);
+        await page.waitForTimeout(1_500);
+      }
       snapshots.push({ id: v.id, page: v.page, ...(await page.evaluate(snapshotInPage)) });
     }
   } finally {

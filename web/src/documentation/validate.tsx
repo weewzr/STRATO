@@ -1,5 +1,5 @@
 import { repoFile } from '../build';
-import { hrefFor } from '../route';
+import { hrefDocumentation } from '../route';
 import type { DocContribution } from './types';
 
 // Scientific material that left the Validate page, moved with its meaning unchanged.
@@ -19,8 +19,7 @@ export const validate: DocContribution = {
           </p>
           <p>
             No model prediction exists until generation, decay and temperature-dependent diffusion are implemented and verified, and the
-            measurements are plotted when the comparison step is built. The switch on the Validate page is a labelled placeholder: no
-            comparison is shown.
+            measurements are plotted when the comparison step is built. No comparison is shown yet.
           </p>
         </>
       ),
@@ -35,9 +34,9 @@ export const validate: DocContribution = {
           <p>
             Validation asks whether the model matches measured release from real particles. It is a different question from verification,
             which asks whether the code solves its equations correctly. The agreement of the two solution methods on the synthetic case is
-            verification and appears under <a href={hrefFor('verify')}>Verify</a>.
+            verification and appears under <a href={hrefDocumentation('evidence-verification')}>the verification evidence</a>.
           </p>
-          <h4>What the Validate page will show</h4>
+          <h4>What the experimental comparison will show</h4>
           <ul className="prose-list">
             <li>
               Measured release from the{' '}
@@ -46,8 +45,7 @@ export const validate: DocContribution = {
             </li>
             <li>Model predictions only from reviewed runs with the matching nuclide, particle geometry and temperature history.</li>
             <li>
-              R² is the only displayed agreement metric: it is computed in Rust per release-versus-time curve and shown only where the
-              comparison is scientifically defensible, otherwise a caption below the graph says why. No registered dataset supports one today.
+              The agreement metric and where it is shown: see <a href={hrefDocumentation('r2-requirements')}>R² and its suitability requirements</a>.
             </li>
           </ul>
         </>

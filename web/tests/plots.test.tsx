@@ -29,7 +29,7 @@ import {
 import type { GraphDiv } from '../src/plots/plotly';
 import { RadialProfile, ReleaseCurves, SimPlots } from '../src/plots/SimPlots';
 import { readPlotTheme } from '../src/plots/theme';
-import { Validate } from '../src/sections/Validate';
+import { DOC_SECTIONS, itemsOf } from '../src/documentation';
 import { cloneConfig, DEFAULT_CASE } from '../src/data/case';
 import * as session from '../src/solver/session';
 import type { CompareOk, RunOk } from '../src/solver/types';
@@ -394,15 +394,10 @@ describe('comparison and validation layers are independent', () => {
     expect(useStrato.getState().view.showDifference).toBe(true);
   });
 
-  it('keeps the validation switch disabled while no prediction exists, and operating it changes nothing', () => {
-    render(<Validate />);
-    const sw = screen.getByTestId('toggle-validation');
-    expect(sw.getAttribute('aria-disabled')).toBe('true');
-    expect(sw.getAttribute('aria-checked')).toBe('false');
-    const before = useStrato.getState().view;
-    fireEvent.click(sw);
-    fireEvent.keyDown(sw, { key: 'Enter' });
-    expect(useStrato.getState().view).toEqual(before);
+  it('has no validation switch any more: the statement of why no prediction is compared is one entry of Scientific Documentation', () => {
+    // The disabled placeholder switch of the Validate page left with that page; its reason stays, once.
+    expect(itemsOf('limitations').some((i) => i.id === 'validate-limits')).toBe(true);
+    expect(DOC_SECTIONS.some((s) => s.id === 'limitations')).toBe(true);
   });
 });
 

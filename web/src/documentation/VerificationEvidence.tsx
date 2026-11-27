@@ -7,7 +7,6 @@ import { statusOf, useCatalogue } from '../research/catalogue';
 import { StatusChip } from '../research/StatusChip';
 import { hrefDocumentation } from '../route';
 import { useStrato } from '../state/store';
-import { SectionHeading } from './common';
 
 /** One line: the method, its result label and its research status. Version, build and scope are in Scientific Documentation. */
 function VerifyStatus() {
@@ -40,10 +39,10 @@ function VerifyStatus() {
   );
 }
 
-export function Verify() {
+/** The numerical verification evidence (moved from the Verify page): the status line, the figures and the table of observed orders. */
+export function VerificationEvidence() {
   return (
-    <article className="section" data-section="verify">
-      <SectionHeading>Verification of the BTCS solver</SectionHeading>
+    <div data-testid="verification-evidence">
       <VerifyStatus />
       <MethodComparisonPanel />
       <div className="plot-grid plot-grid--two">
@@ -51,6 +50,6 @@ export function Verify() {
         <BalancePanelVerify />
       </div>
       <ObservedOrdersTable />
-    </article>
+    </div>
   );
 }

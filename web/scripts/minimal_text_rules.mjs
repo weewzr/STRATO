@@ -5,12 +5,13 @@
 //
 // A snapshot is { id, page, text, shellText, captions, proseWords }:
 //   id         a unique id of the rendered view ("compare", "research-roadmap", ...)
-//   page       the page it belongs to: explore, compare, validate, verify, research, data, about,
-//              documentation. The temporary exceptions below are named by page.
+//   page       the page it belongs to: explore, basis, research, documentation. The temporary exceptions below are named by page.
 //   text       the visible text of the main interface of that view
 //   shellText  the visible text of the header and footer (the same on every page, checked once as "shell")
 //   captions   the visible text of every figure caption and table caption of the view
 //   proseWords the number of words of explanatory prose before the first control, equation, graph or table
+//   badges     (optional) the visible text of every badge or chip of the main interface of that view (elements with the class badge, chip or status-chip, or a data-status or data-label attribute)
+//   shellBadges (optional, with shellText) the same for the header and the footer
 //   longestBlockWords, longestBlockText (optional) the longest paragraph or list item outside tables, and its first words
 
 /** A figure or table caption is about one sentence: at most this many characters (with its "Figure n." prefix). */
@@ -31,7 +32,10 @@ export const DOCUMENTATION_PAGE = 'documentation';
 /** No single paragraph or list item of a page (outside Scientific Documentation) is longer than this many words. */
 export const BLOCK_MAX_WORDS = 100;
 
-export const RULES = ['build-hash', 'path', 'caption', 'prose', 'block', 'disclaimer'];
+export const RULES = ['build-hash', 'path', 'caption', 'prose', 'block', 'disclaimer', 'status-badge'];
+
+/** The status words: rendered as a badge or chip they may stand on Scientific Documentation only. */
+export const STATUS_WORDS = /\b(?:planned|pending|researched|implemented|verified|validated|computed|precomputed|not verified)\b/i;
 
 export const RULE_MESSAGES = {
   'build-hash': 'a build hash or digest in the main interface (it belongs in Scientific Documentation)',
@@ -40,6 +44,7 @@ export const RULE_MESSAGES = {
   prose: `more than ${PROSE_MAX_WORDS} words of prose before the first control, equation, graph or table`,
   block: `a paragraph or list item longer than ${BLOCK_MAX_WORDS} words anywhere on a page (long explanations belong in Scientific Documentation)`,
   disclaimer: 'a registered disclaimer sentence that appears more than once in the site (it belongs once in Scientific Documentation)',
+  'status-badge': 'a status word (planned, pending, researched, implemented, verified, validated, computed, precomputed, not verified) rendered as a badge or chip outside Scientific Documentation (statuses are records of Scientific Documentation)',
 };
 
 // Hexadecimal word of 7 to 64 characters with at least one digit and one letter a-f: a commit hash or digest.
@@ -108,6 +113,7 @@ export function evaluateSnapshots(snapshots, exceptions = TEMPORARY_EXCEPTIONS) 
   if (shell) {
     for (const m of matches(shell.shellText, HASH_PATTERN)) add('shell', 'build-hash', `header or footer: "${m}"`);
     for (const m of matches(shell.shellText, PATH_PATTERN)) add('shell', 'path', `header or footer: "${m}"`);
+    for (const b of shell.shellBadges ?? []) if (STATUS_WORDS.test(b)) add('shell', 'status-badge', `header or footer: badge "${norm(b)}"`);
   }
 
   for (const s of snapshots) {
@@ -115,6 +121,7 @@ export function evaluateSnapshots(snapshots, exceptions = TEMPORARY_EXCEPTIONS) 
     if (!technical) {
       for (const m of matches(s.text, HASH_PATTERN)) add(s.page, 'build-hash', `${s.id}: "${m}"`);
       for (const m of matches(s.text, PATH_PATTERN)) add(s.page, 'path', `${s.id}: "${m}"`);
+      for (const b of s.badges ?? []) if (STATUS_WORDS.test(b)) add(s.page, 'status-badge', `: badge "${norm(b)}"`);
       const limit = PROSE_MAX_WORDS_BY_PAGE[s.page] ?? PROSE_MAX_WORDS;
       if ((s.longestBlockWords ?? 0) > BLOCK_MAX_WORDS) add(s.page, 'block', `${s.id}: a block of ${s.longestBlockWords} words ("${short(s.longestBlockText ?? '')}"; limit ${BLOCK_MAX_WORDS})`);
       if (s.proseWords > limit) add(s.page, 'prose', `${s.id}: ${s.proseWords} words of prose before the first control, equation, graph or table (limit ${limit})`);

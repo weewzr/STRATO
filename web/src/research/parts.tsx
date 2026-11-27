@@ -1,48 +1,17 @@
 import { useId } from 'react';
 import { isRowAvailable } from '../equation/availability';
-import { hrefDocumentation, hrefFor } from '../route';
+import { hrefFor } from '../route';
 import { useStrato } from '../state/store';
 import { TableBox } from '../sections/common';
 import { Cite } from './Blocks';
 import { referenceRow, type Catalogue, type GalleryRow, type MechanismRow } from './catalogue';
 import { entryHref, gallerySpecies, linkCheckedDate, rowKey } from './entries';
 import { NoteText } from './PathLink';
-import { STATUSES, isImplementedStatus } from './status';
+import { isImplementedStatus } from './status';
 import { StatusChip } from './StatusChip';
 
 // Building blocks of the research catalogue interface (web phase 5.5). Every value shown comes
 // from the generated catalogue; these components only arrange it.
-
-/**
- * The five statuses in one row, each a word and a shape (the definition is the hover title of the chip). The
- * definitions are printed once, in Scientific Documentation, which the link leads to.
- */
-export function StatusLegend({ id, title = 'Research status' }: { id?: string; title?: string }) {
-  const own = useId();
-  const head = id ?? own;
-  return (
-    <section className="status-legend" aria-labelledby={head} data-testid="status-legend">
-      <p className="status-legend__title" id={head}>
-        {title}
-      </p>
-      <ul className="status-legend__list" aria-label="The five research statuses">
-        {STATUSES.map((s) => (
-          <li key={s}>
-            <StatusChip status={s} legend />
-          </li>
-        ))}
-      </ul>
-      <a className="status-legend__more" href={hrefDocumentation('research-status-scale')}>
-        Definitions
-      </a>
-    </section>
-  );
-}
-
-/** A row's chip: the status of that catalogue row (mechanism, species and material domain). */
-export function RowChip({ row, compact = false }: { row: MechanismRow; compact?: boolean }) {
-  return <StatusChip status={row.status} mechanism={row.mechanism_id} row={rowKey(row)} compact={compact} />;
-}
 
 /**
  * The live-simulation switch of a catalogue row. Present, focusable and disabled while the row is
@@ -79,8 +48,7 @@ export function CatalogueSwitch({ row, compact = false }: { row: MechanismRow; c
         <span className="mech__swatch mech__swatch--dotted" aria-hidden="true" />
         <span className="mech__name">Live simulation{row.species !== 'all' ? `, ${row.species}` : ''}</span>
         <span className="mech__term">
-          Not available: status {row.status}
-          {reason ? `; ${reason}` : ''}
+          Not available{reason ? `: ${reason}` : ''}
         </span>
         <span className="mech__state">Off</span>
       </button>
@@ -138,7 +106,6 @@ export function RowRecords({ rows, catalogue, showEntryLink = false }: { rows: r
             <p className="record__name">
               {showEntryLink && r.entry ? <a href={entryHref(r.entry)}>{r.name}</a> : r.name}
             </p>
-            <RowChip row={r} />
           </div>
           <CatalogueSwitch row={r} />
           <dl className="record__meta">
@@ -158,15 +125,7 @@ export function RowRecords({ rows, catalogue, showEntryLink = false }: { rows: r
               <dt>Brick</dt>
               <dd>{r.brick ?? 'none'}</dd>
             </div>
-            <div>
-              <dt>Status since</dt>
-              <dd>{r.status_date || 'not recorded'}</dd>
-            </div>
           </dl>
-          <p className="record__basis">
-            <span className="record__lead">Basis of the status: </span>
-            <NoteText text={r.status_basis} />
-          </p>
           <div className="record__params">
             <p className="record__lead">Required parameters</p>
             <Parameters items={r.required_parameters} />
@@ -252,7 +211,6 @@ export function GalleryItem({ item, catalogue }: { item: GalleryRow; catalogue: 
         <h3 className="gallery-item__title" id={`g-${item.item_id}`}>
           {item.title}
         </h3>
-        <StatusChip status={item.status} compact />
       </div>
       {showsImage && item.kind === 'screenshot' ? (
         <figure className="gallery-item__figure">
@@ -382,7 +340,6 @@ export function RowList({ rows, label, testId }: { rows: readonly MechanismRow[]
     <ul className="row-list" aria-label={label} data-testid={testId}>
       {rows.map((r) => (
         <li key={rowKey(r)} className="row-list__item">
-          <RowChip row={r} compact />
           <span className="row-list__name">{r.entry ? <a href={entryHref(r.entry)}>{r.name}</a> : r.name}</span>
           <span className="row-list__meta">
             {r.species === 'all' ? 'any species' : r.species}, {r.material_domain.replace(/_/g, ' ')}
@@ -404,7 +361,6 @@ export function RowTable({ rows, label }: { rows: readonly MechanismRow[]; label
             <th scope="col">Mechanism</th>
             <th scope="col">Species</th>
             <th scope="col">Brick</th>
-            <th scope="col">Research status</th>
           </tr>
         </thead>
         <tbody>
@@ -413,9 +369,6 @@ export function RowTable({ rows, label }: { rows: readonly MechanismRow[]; label
               <th scope="row">{r.entry ? <a href={entryHref(r.entry)}>{r.name}</a> : r.name}</th>
               <td>{r.species === 'all' ? 'any' : r.species}</td>
               <td className="num-col">{r.brick ?? ''}</td>
-              <td>
-                <RowChip row={r} compact />
-              </td>
             </tr>
           ))}
         </tbody>

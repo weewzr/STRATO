@@ -279,18 +279,18 @@ These rules are binding for every current and future page and feature of the sit
 9. Units, concise dataset identifiers and source links stay where they are needed. Under an experimental graph stand the APA citation and the direct publication link; where R² is unavailable, a short caption below the graph says why (never a warning or label inside the plot).
 10. Nothing scientific is deleted. A sentence that carries an assumption, a limitation, a definition, a verification statement, an interpretation, a citation or a source link and leaves a page exists afterwards, once, in Scientific Documentation or in a repository document that Scientific Documentation links to. Only repetition, implementation commentary and filler are removed. Scientific statements are moved verbatim or shortened without changing their meaning, and numerical verification is never called experimental validation.
 
-### 12.2 What each page shows first
+### 12.2 The four pages and what each shows first
+
+The navigation has exactly four entries, in this order. The earlier addresses (compare, validate, verify, data, about) redirect to the place that now holds their content.
 
 | Page | First content |
 |---|---|
-| Explore | the progressive governing equation, the operating-scenario buttons, the Numerical Interpretation and the live simulation, then the results |
-| Compare | the baseline-versus-current graphs and their controls |
-| Validate | the experimental graphs with R² where it is supported; otherwise a compact status |
-| Verify | the numerical verification graphs and results |
-| Research | mechanisms, species and publications |
-| Data | searchable scientific parameters and their citations |
-| About | a short professional project introduction |
-| Scientific Documentation | a table of contents, then the seven sections of Section 12.4 |
+| Explore (default) | the progressive governing equation, the operating-scenario buttons, the Numerical Interpretation and the live simulation, then the results |
+| Basis | the TRISO particle with its five layers, the baseline governing equation, the fundamental assumptions, Method A and Method B, and the synthetic benchmark; diagrams, equations and small tables, almost no prose |
+| Research Catalogue | the three regimes, the nine species, mechanisms, papers, citations and research gaps; no research-progress badge, chip or legend |
+| Scientific Documentation | a text filter and a table of contents, then expandable sections (Section 12.4) |
+
+No status badge or chip stands on Explore, Basis or Research Catalogue, in the header or in the footer. Research and implementation statuses are records of Scientific Documentation, generated from the same catalogue data.
 
 ### 12.3 Limits that are checked mechanically
 
@@ -298,17 +298,17 @@ The content check of the built site (`web/scripts/check_content.mjs`, rules in `
 
 - a build hash, digest, repository path, source file name or build command in the visible text of any page except Scientific Documentation (a link's address may contain a path; its visible text may not);
 - a figure or table caption longer than 220 characters (about one sentence);
-- more than 60 words of prose before the first control, equation, graph, table or reference list of a page (the About introduction may use up to 120 words, because it has none of these);
-- a registered disclaimer sentence that appears more than once in the whole site (the registered sentences are listed in the rules file; add a sentence there when it is found repeated).
+- more than 60 words of prose before the first control, equation, graph, table or reference list of a page (a page that opens with a short introduction and has none of these may use up to 120 words);
+- a registered disclaimer sentence that appears more than once in the whole site (the registered sentences are listed in the rules file; add a sentence there when it is found repeated);
+- a status word (planned, pending, researched, implemented, verified, validated, computed, precomputed, not verified) rendered as a badge or chip on any page, in the header or in the footer, other than Scientific Documentation.
 
 No page is excepted: `TEMPORARY_EXCEPTIONS` of the rules file is empty, and no page or feature is added to it. A paragraph or list item of more than 100 words fails the check on every page except Scientific Documentation; typeset formulas are not counted as prose.
 
 ### 12.4 Scientific Documentation
 
-The page is the last entry of the navigation and has an in-page table of contents. Its sections, each with anchors that other pages can link to, are: assumptions; model limitations; derivations (links to the rendered derivation documents); verification methodology; experimental interpretation; technical implementation and build information (the build hash, the solver version and the source-code paths live here); data provenance. Each section holds headed short paragraphs, lists and tables, not a wall of prose. The content of each section comes from one small module per source page (`web/src/documentation/`), so that a page or feature adds its material without editing another page's file.
-
+The page is the last entry of the navigation. It has a text filter over its entries, an in-page table of contents and sections and entries that expand and collapse. Its sections, each with anchors that other pages can link to, are: assumptions; model limitations; derivations (links to the rendered derivation documents) and numerical methods; verification methodology; numerical verification evidence (the figures and tables of the former Verify page and the comparison with the baseline); experimental interpretation (the comparison methodology, the R-squared suitability requirements and the experimental graphs); parameters, references and downloads; research and implementation statuses (a table generated from the catalogue, and what the solver of the build implements); the advanced solver configuration (a mount point); technical implementation and build information (the build hash, the solver version and the source-code paths live here); data provenance. Each section holds headed short paragraphs, lists and tables, not a wall of prose. The content comes from one small module per source (`web/src/documentation/`), so that a page or feature adds its material without editing another page's file.
 A new feature that needs a qualification, an assumption or a method description adds an entry to its own module and links to it from its page in a few words.
 
 ### 12.5 Wording
 
-State a qualification at most once on the whole site. Name quantities in full with their units. Do not describe how the page is built. Where Section 7 asks for a statement on every catalogue entry ("planned for a future phase", "research concept, not solved"), the entry carries its research status, a word with its shape, and at most a few words; the full explanation stands once in Scientific Documentation.
+State a qualification at most once on the whole site. Name quantities in full with their units. Do not describe how the page is built. Where Section 7 asks for a statement on every catalogue entry ("planned for a future phase", "research concept, not solved"), the entry carries at most a few words and no status badge; the status and the full explanation stand once in Scientific Documentation.

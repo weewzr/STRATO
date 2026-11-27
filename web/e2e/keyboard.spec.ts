@@ -110,10 +110,10 @@ test.describe('keyboard at 1280 px', () => {
   test('section links work with Enter and focus the new heading', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
-    await page.getByRole('navigation', { name: 'Sections' }).getByRole('link', { name: 'Data' }).focus();
+    await page.getByRole('navigation', { name: 'Sections' }).getByRole('link', { name: 'Scientific Documentation' }).focus();
     await page.keyboard.press('Enter');
-    await expect(page).toHaveURL(/#\/data$/);
-    await expect(page.locator('[data-section="data"] h1')).toBeFocused();
+    await expect(page).toHaveURL(/#\/documentation$/);
+    await expect(page.locator('[data-section="documentation"] h1')).toBeFocused();
   });
 
   test('the layer inspector works from the keyboard', async ({ page, problems }) => {

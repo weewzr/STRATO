@@ -68,7 +68,7 @@ test.describe('content and data', () => {
 
   test('the case CSV download carries its provenance header', async ({ page, request, problems }) => {
     void problems;
-    await gotoSection(page, 'data');
+    await gotoSection(page, 'documentation');
     const href = await page.getByTestId('download-case').getAttribute('href');
     expect(href).toBe('/STRATO/data/synthetic_five_layer.case.csv');
     const res = await request.get(href as string);
@@ -84,7 +84,7 @@ test.describe('content and data', () => {
     await gotoAdvanced(page);
     const field = page.getByTestId('d-field-0');
     await field.fill('3e-12');
-    await page.getByRole('navigation', { name: 'Sections' }).getByRole('link', { name: 'Data' }).click();
+    await page.getByRole('navigation', { name: 'Sections' }).getByRole('link', { name: 'Scientific Documentation' }).click();
     const table = page.getByTestId('input-table');
     await expect(table.locator('tr.is-changed')).toHaveCount(1);
     await expect(table.locator('tr.is-changed')).toContainText('3e-12');

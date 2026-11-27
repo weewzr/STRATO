@@ -3,9 +3,7 @@ import { METHOD_1, METHOD_2 } from '../methods';
 import { Badge } from '../panels/Badge';
 import { LiveDownloads } from '../panels/Downloads';
 import { ParameterProvenance, References } from '../panels/Provenance';
-import { hrefDocumentation } from '../route';
 import { useStrato } from '../state/store';
-import { SectionHeading } from './common';
 
 /** Precomputed native output of the synthetic case (web/public/data, written by strato-webtools precomputed). */
 const PRECOMPUTED: { file: string; title: string }[] = [
@@ -15,27 +13,35 @@ const PRECOMPUTED: { file: string; title: string }[] = [
   { file: 'btcs_independent_check.csv', title: 'Independent check' },
 ];
 
-/**
- * The Data section (prompt/DESIGN_SPECIFICATION.md Sections 8.4 and 8.5): the parameters in use with
- * their class and source, the downloads of the live results and of the precomputed native output, and
- * the reference list. Descriptions of the files and the provenance of the case file are in Scientific
- * Documentation (documentation/data.tsx).
- */
-export function Data() {
+/** The parameters in use with their class and source (moved from the Data page). */
+export function ParametersEvidence() {
+  const caseId = useStrato((s) => s.caseId);
+  const entry = findCase(caseId);
+  if (!entry) return null;
+  return (
+    <div data-testid="parameters-evidence">
+      <ParameterProvenance entry={entry} />
+    </div>
+  );
+}
+
+/** The reference list of the Data page. */
+export function ReferencesEvidence() {
+  return (
+    <div data-testid="references-evidence">
+      <References />
+    </div>
+  );
+}
+
+/** The downloads of the live results and of the precomputed native output (moved from the Data page). */
+export function DownloadsEvidence() {
   const caseId = useStrato((s) => s.caseId);
   const entry = findCase(caseId);
   if (!entry) return null;
   const base = import.meta.env.BASE_URL;
   return (
-    <article className="section" data-section="data">
-      <SectionHeading>Data</SectionHeading>
-
-      <ParameterProvenance entry={entry} />
-
-      <h2>References</h2>
-      <References />
-
-      <h2>Downloads</h2>
+    <div data-testid="downloads-evidence">
       <LiveDownloads />
       <ul className="downloads">
         <li className="downloads__item" data-testid="dl-precomputed">
@@ -62,9 +68,6 @@ export function Data() {
           </div>
         </li>
       </ul>
-      <p className="muted">
-        <a href={hrefDocumentation('data-files')}>File contents and provenance</a>
-      </p>
-    </article>
+    </div>
   );
 }

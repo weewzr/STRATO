@@ -53,14 +53,16 @@ for (const vp of VIEWPORTS) {
     test('phone targets: the footer link, the figure links and the switches are 44 px', async ({ page, problems }) => {
       void problems;
       test.skip(vp.width >= 768, 'phone width only');
-      await gotoSection(page, 'compare');
+      await page.goto('./#/documentation/evidence-comparison');
+      await expect(page.getByTestId('compare-figure')).toBeVisible();
       const height = (sel: string) => page.locator(sel).first().evaluate((e) => e.getBoundingClientRect().height);
       expect(await height('.status__link')).toBeGreaterThanOrEqual(43.5);
       expect(await height('a.link-target')).toBeGreaterThanOrEqual(43.5);
       expect(await height('.switch-row .plot-option')).toBeGreaterThanOrEqual(43.5);
       await gotoSection(page, 'research');
       expect(await height('.species-card__head')).toBeGreaterThanOrEqual(43.5);
-      await gotoSection(page, 'data');
+      await page.goto('./#/documentation/evidence-parameters');
+      await expect(page.getByTestId('input-table')).toBeVisible();
       expect(await height('caption a.link-target')).toBeGreaterThanOrEqual(43.5);
     });
 
@@ -98,9 +100,9 @@ for (const vp of VIEWPORTS) {
         await expect(nav).toBeHidden();
       } else {
         await expect(nav).toBeVisible();
-        await nav.getByRole('link', { name: 'Verify' }).click();
-        await expect(page.locator('[data-section="verify"] h1')).toBeVisible();
-        await expect(nav.getByRole('link', { name: 'Verify' })).toHaveAttribute('aria-current', 'page');
+        await nav.getByRole('link', { name: 'Scientific Documentation' }).click();
+        await expect(page.locator('[data-section="documentation"] h1')).toBeVisible();
+        await expect(nav.getByRole('link', { name: 'Scientific Documentation' })).toHaveAttribute('aria-current', 'page');
       }
     });
   });

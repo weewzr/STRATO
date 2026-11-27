@@ -1,4 +1,4 @@
-import { BUILD } from '../build';
+import { BUILD, REPO_URL, repoFile } from '../build';
 import { METHOD_1, METHOD_2 } from '../methods';
 import { Badge } from '../panels/Badge';
 import { hrefDocumentation } from '../route';
@@ -166,6 +166,25 @@ export const about: DocContribution = {
     },
   ],
   // The definitions of the result labels belong with the provenance of results, not with the experimental interpretation.
-  provenance: [{ id: 'about-labels', title: 'Result labels', body: <ResultLabels /> }],
+  provenance: [
+    { id: 'about-labels', title: 'Result labels', body: <ResultLabels /> },
+    {
+      id: 'about-credits',
+      title: 'Licence, credits and citation',
+      body: (
+        <>
+          <p>
+            <a href={REPO_URL}>Repository</a> and <a href={repoFile('CITATION.cff')}>citation metadata</a>. Licence: GNU Affero General Public
+            License, version 3 (AGPL-3.0-only).
+          </p>
+          <p>
+            Credits: the status line and the explicit labels follow Theodore&apos;s{' '}
+            <a href="https://github.com/theodoreOnzGit/outram-park-backend">Outram Park</a> dispersion demonstration (AGPL-3.0-only; no file of
+            it is copied here). Typefaces Literata, IBM Plex Sans and IBM Plex Mono, SIL Open Font License 1.1.
+          </p>
+        </>
+      ),
+    },
+  ],
   implementation: [{ id: 'about-build-contents', title: 'Contents of this build', body: <BuildContentsTable /> }],
 };

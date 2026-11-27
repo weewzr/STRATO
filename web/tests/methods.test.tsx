@@ -116,8 +116,8 @@ describe('the page offers exactly two methods', () => {
 });
 
 describe('quantities are named in full with their units', () => {
-  it('uses no bare symbol as the name of a control, a table header or a result on Explore and Verify', async () => {
-    for (const id of ['explore', 'verify']) {
+  it('uses no bare symbol as the name of a control, a table header or a result on Explore, Basis and Scientific Documentation (where the verification evidence now stands)', async () => {
+    for (const id of ['explore', 'basis', 'documentation']) {
       window.location.hash = `#/${id}`;
       const { unmount } = render(<App />);
       await waitFor(() => expect(document.querySelector(`[data-section="${id}"] h1`)).not.toBeNull());

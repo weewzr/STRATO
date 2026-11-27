@@ -8,7 +8,7 @@ import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { allItemIds } from '../src/documentation';
 import { BuildContentsTable } from '../src/documentation/about';
-import { About } from '../src/sections/About';
+import { Basis } from '../src/sections/Basis';
 import { Documentation } from '../src/sections/Documentation';
 
 /** Phase id (such as "4", "5.5", "6.1") to its status cell, read from the "Web demo phases" table. */
@@ -61,22 +61,24 @@ describe('Scientific Documentation, contents of this build', () => {
 // Documentation (same six documents, same index link); documentation.test.tsx asserts them against the
 // published set of crates/strato-docsite.
 
-describe('About page', () => {
-  it('is a short introduction with the links to Scientific Documentation, the repository and the citation metadata', () => {
-    render(<About />);
+describe('Basis page', () => {
+  it('is concise and visual: the particle, the equation, the assumptions, the two methods and the benchmark, with no badge', () => {
+    render(<Basis />);
     const page = screen.getByRole('article');
     expect(within(page).getAllByRole('heading', { level: 1 })).toHaveLength(1);
-    expect(within(page).getByRole('link', { name: 'Scientific Documentation' }).getAttribute('href')).toBe('#/documentation');
-    expect(within(page).getByRole('link', { name: 'Repository' }).getAttribute('href')).toMatch(/github\.com\/weewzr\/STRATO$/);
-    expect(within(page).getByRole('link', { name: 'Citation metadata' }).getAttribute('href')).toMatch(/CITATION\.cff$/);
-    // The four result labels stay as a legend; the page has no table and no build table.
-    for (const label of ['COMPUTED v2.0', 'PRECOMPUTED', 'ILLUSTRATIVE', 'MEASURED']) expect(within(page).getByText(label)).toBeTruthy();
-    expect(within(page).queryByRole('table')).toBeNull();
-    expect((page.textContent ?? '').split(/\s+/).length).toBeLessThan(220);
+    expect(within(page).getByTestId('basis-particle').querySelector('svg')).toBeTruthy();
+    const layers = within(screen.getByTestId('basis-layers')).getAllByRole('row').slice(1);
+    expect(layers.map((r) => r.querySelector('th')?.textContent?.trim())).toEqual(['kernel', 'buffer', 'IPyC', 'SiC', 'OPyC']);
+    expect(page.querySelector('[role="math"]')).toBeTruthy();
+    expect(within(screen.getByTestId('basis-assumptions')).getAllByRole('row').length).toBeGreaterThan(3);
+    expect(screen.getByTestId('basis-method-a').textContent).toContain('Method A: BTCS');
+    expect(screen.getByTestId('basis-method-b').textContent).toContain('Method B: Sturm');
+    expect(within(screen.getByTestId('basis-benchmark')).getAllByRole('row')).toHaveLength(6);
+    expect(page.querySelector('.badge, .status-chip, [data-label], [data-status]')).toBeNull();
+    expect((page.textContent ?? '').split(/\s+/).length).toBeLessThan(450);
   });
-
   it('has its scientific statements in Scientific Documentation, once each', () => {
-    for (const id of ['about-model', 'about-implemented', 'about-method-b-scope', 'about-methods', 'about-labels', 'about-build-contents']) {
+    for (const id of ['about-model', 'about-implemented', 'about-method-b-scope', 'about-methods', 'about-labels', 'about-build-contents', 'about-credits']) {
       expect(allItemIds(), id).toContain(id);
     }
     render(<Documentation />);
@@ -86,6 +88,7 @@ describe('About page', () => {
     once('The release fraction is the share of the initial inventory that has left through the outer surface.');
     once('Produced earlier by the native STRATO binary');
     once('multilayer Sturm-Liouville eigenfunction series');
+    once('SIL Open Font License 1.1');
     expect(screen.getByTestId('build-table')).toBeTruthy();
   });
 });

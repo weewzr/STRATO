@@ -187,10 +187,10 @@ describe('Explore page (final layout of 27 Nov 2026)', () => {
   });
 });
 describe('App', () => {
-  it('routes between the seven sections by hash', async () => {
+  it('routes between the four pages by hash', async () => {
     render(<App />);
     expect(document.querySelector('[data-section="explore"] h1')).toBeTruthy();
-    for (const id of ['compare', 'validate', 'verify', 'research', 'data', 'about', 'explore']) {
+    for (const id of ['basis', 'research', 'documentation', 'explore']) {
       await act(async () => {
         window.location.hash = `#/${id}`;
         window.dispatchEvent(new HashChangeEvent('hashchange'));
@@ -200,27 +200,29 @@ describe('App', () => {
     }
   });
 
-  it('lists the inputs that differ from the baseline on Compare', async () => {
+  it('lists the inputs that differ from the baseline under the comparison evidence of Scientific Documentation, reached by the old Compare address', async () => {
     useStrato.getState().setRegionField(3, 'diffusivity_m2_s', 4e-14);
     window.location.hash = '#/compare';
     render(<App />);
-    const table = screen.getByTestId('diff-table');
+    const table = await screen.findByTestId('diff-table');
+    expect(window.location.hash).toBe('#/documentation/evidence-comparison');
     expect(within(table).getByText('Diffusivity of the SiC layer (m²/s)')).toBeTruthy();
     expect(within(table).getByText('4e-14')).toBeTruthy();
   });
 
-  it('shows the case provenance in Scientific Documentation and the searchable parameters on Data', () => {
-    // The case file, its digest and its commit moved from Data to Scientific Documentation (documentation/data.tsx).
+  it('shows the case provenance and the searchable parameters in Scientific Documentation, and the old Data address leads there', async () => {
     window.location.hash = '#/documentation';
     const { unmount } = render(<App />);
     const prov = screen.getByTestId('provenance');
     expect(within(prov).getByText(caseJson.input_sha256)).toBeTruthy();
     expect(within(prov).getByText(caseJson.input_file)).toBeTruthy();
+    expect(screen.getByTestId('provenance-search')).toBeTruthy();
     unmount();
     window.location.hash = '#/data';
     render(<App />);
-    expect(screen.getByTestId('provenance-search')).toBeTruthy();
-    expect(screen.queryByTestId('provenance')).toBeNull();
+    await screen.findByTestId('provenance-search');
+    expect(document.querySelector('[data-section="documentation"]')).toBeTruthy();
+    expect(window.location.hash).toBe('#/documentation/evidence-parameters');
   });
 
   it('opens the numerical controls from the manual solver on a narrow layout (AdvancedSolver with its entry to the controls)', async () => {

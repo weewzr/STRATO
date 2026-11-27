@@ -13,8 +13,7 @@ vi.mock('../src/graph/files', () => ({
   COMPARISON_FILE_CHECKS: [],
 }));
 
-import { Compare } from '../src/sections/Compare';
-import { Validate } from '../src/sections/Validate';
+import { ExperimentalEvidence } from '../src/documentation/evidence';
 import { initialState, useStrato } from '../src/state/store';
 
 const MOUNT = '[data-mount="experimental-comparison-graph"]';
@@ -24,10 +23,9 @@ beforeEach(() => {
   state.files = [];
 });
 
-describe('the mount points of Compare and Validate', () => {
+describe('the mount point of the experimental graphs in Scientific Documentation', () => {
   for (const [name, Page] of [
-    ['Compare', Compare],
-    ['Validate', Validate],
+    ['Experimental comparison graphs', ExperimentalEvidence],
   ] as const) {
     it(`${name}: empty with no comparison file in the build`, () => {
       const { container } = render(<Page />);

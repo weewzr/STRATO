@@ -1,6 +1,6 @@
 import { test as base, expect, type Page } from '@playwright/test';
 
-export const SECTIONS = ['explore', 'compare', 'validate', 'verify', 'research', 'data', 'about', 'documentation'] as const;
+export const SECTIONS = ['explore', 'basis', 'research', 'documentation'] as const;
 
 /** The widths of prompt/TESTING_AND_VALIDATION.md Section 3, row 1. */
 export const VIEWPORTS = [
