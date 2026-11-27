@@ -119,7 +119,7 @@ describe('Explore after a run of the baseline, an edit, a second run and a switc
     // Fission-product generation selected.
     act(() => useStrato.getState().setSelection({ physics: 'generation' }));
     expect(screen.getByTestId('unsupported-simulation').textContent).toContain('No simulation for this selection');
-    expect(header().textContent).toMatch(/^Method A: BTCS v2\.0\.0/);
+    expect(header().textContent).toMatch(/^Method A: BTCS v2\.1\.0/);
     expect(header().querySelector('[data-label]')).toBeNull();
     expect(header().textContent).not.toMatch(/COMPUTED|VERIFIED/i);
     expect(document.querySelector('.badge')).toBeNull();
