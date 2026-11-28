@@ -214,10 +214,14 @@ test.describe('selection, address and keyboard', () => {
 test.describe('interactive graphs', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('removes the four graph-type buttons and graph title while keeping Graph B curves, overlays, and single Δ annotations', async ({ page, problems }) => {
+  test('locks Species to Cs-137 only, removes graph-type buttons and title, and keeps overlay toggles interactive', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     await expect(page.getByTestId('graph-toggles')).toHaveCount(0);
+    await expect(page.getByText(/Solver: \d/).first()).toBeVisible({ timeout: 30_000 });
+    const species = page.getByTestId('species-select');
+    await expect(species.locator('option')).toHaveText(['Cs-137']);
+    await expect(species).toHaveValue('cs137');
     const temp = page.getByTestId('temperature-select');
     await expect(temp.locator('option')).toHaveText(['1200 °C', '1350 °C', '1500 °C', '1600 °C', '1700 °C', '1800 °C'], { timeout: 30_000 });
     const plot = page.getByTestId('explore-plot-release-graph');
@@ -238,81 +242,53 @@ test.describe('interactive graphs', () => {
     await page.getByTestId('overlay-method-b').check();
   });
 
-  test('draw authentic s5 operating scenario curves with no graph title for Cs-137 and leave future physics empty', async ({ page, problems }) => {
+  test('keeps all six temperatures available across every operation and physics selection, and updates Cs-137 plots cleanly', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
+    const expectedTemps = ['1200 °C', '1350 °C', '1500 °C', '1600 °C', '1700 °C', '1800 °C'];
+    const species = page.getByTestId('species-select');
+    const temp = page.getByTestId('temperature-select');
     const plot = page.getByTestId('explore-plot-release-graph');
     await expect(plot).toBeVisible({ timeout: 30_000 });
-    for (const operation of ['shutdown', 'startup', 'control-rod', 'refuelling']) {
-      await page.getByTestId(`operation-${operation}`).click();
-      await expect(page.getByTestId('graph-panel')).toHaveAttribute('data-empty', 'false');
-      await expect(page.getByTestId('scenario-curve-note')).toBeVisible();
-      const t = await plot.evaluate((el) => (el as unknown as { layout?: { title?: { text?: string } } }).layout?.title?.text ?? '');
-      expect(t).toBe('');
-    }
-    await page.goto('./#/explore?physics=future');
-    await expect(page.getByTestId('graph-panel')).toHaveAttribute('data-empty', 'true');
-  });
 
-  test('draw live WASM curves for Sr-90 under baseline, decay, and temperature, and none for generation or combined', async ({ page, problems }) => {
-    void problems;
-    await gotoSection(page, 'explore');
-    await page.getByTestId('species-select').selectOption('sr90');
-    const temp = page.getByTestId('temperature-select');
-    await expect(temp.locator('option')).toHaveText(['1600 °C', '1700 °C', '1800 °C'], { timeout: 30_000 });
-    const configs: [string, { gen: boolean; dec: boolean; tmp: boolean }, boolean][] = [
-      ['P01', { gen: false, dec: false, tmp: false }, true],
-      ['P03', { gen: false, dec: true, tmp: false }, true],
-      ['P04', { gen: false, dec: false, tmp: true }, true],
-      ['P02', { gen: true, dec: false, tmp: false }, false],
-      ['P08', { gen: true, dec: true, tmp: true }, false],
-    ];
-    for (const [label, f, expectPlot] of configs) {
-      await page.getByTestId('mech-generation').setChecked(f.gen);
-      await page.getByTestId('mech-decay').setChecked(f.dec);
-      await page.getByTestId('mech-temperature').setChecked(f.tmp);
-      if (expectPlot) {
-        const plot = page.getByTestId('explore-plot-release-graph');
-        await expect(plot, label).toBeVisible({ timeout: 30_000 });
-      } else {
-        await expect(page.getByTestId('graph-panel'), label).toHaveAttribute('data-empty', 'true');
+    // Steady-state across all 6 temperatures updates Cs-137 graph without plot titles
+    for (const tc of ['1200', '1350', '1500', '1600', '1700', '1800']) {
+      await temp.selectOption(tc);
+      await expect(temp.locator('option')).toHaveText(expectedTemps);
+      await expect(species.locator('option')).toHaveText(['Cs-137']);
+      await expect(page.getByTestId('graph-panel')).toHaveAttribute('data-empty', 'false');
+      const title = await plot.evaluate((el) => (el as unknown as { layout?: { title?: { text?: string } } }).layout?.title?.text ?? '');
+      expect(title).toBe('');
+    }
+
+    // All 5 operations preserve Cs-137 only + all 6 temperatures
+    for (const operation of ['steady', 'shutdown', 'startup', 'control-rod', 'refuelling']) {
+      await page.getByTestId(`operation-${operation}`).click();
+      await expect(species.locator('option')).toHaveText(['Cs-137']);
+      await expect(temp.locator('option')).toHaveText(expectedTemps);
+      await expect(page.getByTestId('graph-panel')).toHaveAttribute('data-empty', 'false');
+      if (operation !== 'steady') {
+        await expect(page.getByTestId('scenario-curve-note')).toBeVisible();
       }
     }
-  });
 
-  test('draw the radioactive decay curve for every species the page offers, each having a registered decay constant', async ({ page, problems }) => {
-    void problems;
-    await gotoSection(page, 'explore');
-    await page.getByTestId('mech-decay').check();
-    await expect.poll(() => page.getByTestId('species-select').locator('option').count(), { timeout: 30_000 }).toBeGreaterThanOrEqual(4);
-    const ids = await page.getByTestId('species-select').locator('option').evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value));
-    expect(ids.length).toBeGreaterThanOrEqual(4);
-    for (const id of ids) {
-      await page.getByTestId('species-select').selectOption(id);
-      await expect(page.getByTestId('explore-plot-release-graph'), id).toBeVisible({ timeout: 30_000 });
-      await expect(page.getByTestId('graph-panel')).toHaveAttribute('data-empty', 'false');
-    }
-  });
-
-  test('overlays registered Sr-90 experimental data, caption, citation, and link directly on cumulative release', async ({ page, problems }) => {
-    void problems;
-    await gotoSection(page, 'explore');
-    await page.getByTestId('species-select').selectOption('sr90');
-    await expect(page.getByTestId('dataset-select')).toBeVisible({ timeout: 30_000 });
-    const plot = page.getByTestId('explore-plot-release-graph');
-    await expect(plot).toBeVisible();
-    await expect.poll(() => plot.evaluate((el) => ((el as unknown as { data?: unknown[] }).data ?? []).length), { timeout: 30_000 }).toBeGreaterThanOrEqual(2);
-    await expect(page.getByTestId('experiment-model-note')).toHaveCount(0);
+    // Return to Steady-state and switch across P01, P02 (with controlled overlay), P04, P08
+    await page.getByTestId('operation-steady').click();
+    await page.getByTestId('mech-generation').check();
+    await expect(page.getByTestId('overlay-controlled')).toBeVisible();
+    await expect(temp.locator('option')).toHaveText(expectedTemps);
+    await page.getByTestId('mech-generation').uncheck();
     await page.getByTestId('mech-temperature').check();
-    await expect(page.getByTestId('experiment-model-note')).toContainText('temperature-dependent diffusion');
-    const markers = await plot.evaluate((el) =>
-      (el as unknown as { data: { mode: string; marker?: { color: string; symbol: string } }[] }).data.filter((t) => t.mode === 'markers').map((t) => `${t.marker?.color}/${t.marker?.symbol}`),
-    );
-    expect(markers.length).toBeGreaterThan(0);
-    for (const m of markers) expect(m).toMatch(/^#111111\/(circle|triangle-down)$/);
-    await expect(page.getByTestId('experiment-caption')).not.toBeEmpty();
-    await expect(page.getByTestId('experiment-apa')).toContainText(/\(\d{4}\)/);
-    await expect(page.getByTestId('experiment-link')).toHaveAttribute('href', /^https?:\/\//);
-    expect(await prose(page)).not.toMatch(STATUS_WORDS);
+    await expect(temp.locator('option')).toHaveText(expectedTemps);
+    await page.getByTestId('mech-generation').check();
+    await page.getByTestId('mech-decay').check();
+    await expect(temp.locator('option')).toHaveText(expectedTemps);
+    await expect(page.getByTestId('graph-panel')).toHaveAttribute('data-empty', 'false');
+
+    // Future physics still keeps Species = Cs-137 and all 6 temperatures while leaving the plot frame empty
+    await page.goto('./#/explore?physics=future');
+    await expect(species.locator('option')).toHaveText(['Cs-137']);
+    await expect(temp.locator('option')).toHaveText(expectedTemps);
+    await expect(page.getByTestId('graph-panel')).toHaveAttribute('data-empty', 'true');
   });
 });

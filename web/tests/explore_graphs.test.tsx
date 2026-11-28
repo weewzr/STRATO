@@ -2,12 +2,12 @@
 // by element and the same object; the colours and markers of the decisions 53, 69 and 74; the temperature
 // and species selectors; and the clean EMPTY panel (no text node, no curve) for every operation other than
 // steady-state operation, for Future species-specific physics and wherever no result exists.
-import { act, render, screen } from '@testing-library/react';
+import { act, render, renderHook, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { SCENARIO_IDS } from '../src/equation/capability';
 import { GRAPH_IDS } from '../src/equation/selectionIds';
-import { ExploreGraphs, type GraphChoices } from '../src/graph/ExploreGraphs';
+import { ExploreGraphs, useGraphChoices, type GraphChoices } from '../src/graph/ExploreGraphs';
 import { COMPARISONS, datasetsAt, datasetsOf, offeredTemperatures, stageRequest, type Species } from '../src/graph/exploreData';
 import { experimentFigure, isBound, methodsFigure, profileFigure, releaseFigure } from '../src/graph/exploreFigures';
 import { COLOURS } from '../src/graph/plotModel';
@@ -298,6 +298,33 @@ describe('the panel of the graphs', () => {
     expect(useStrato.getState().selection.temperature).toBe(1700);
     await user.selectOptions(species, 'cs137');
     expect(useStrato.getState().selection).toMatchObject({ species: 'cs137', dataset: '' });
+  });
+});
+
+describe('useGraphChoices canonical Cs-137 and six temperatures', () => {
+  it('offers Cs-137 as the only species and preserves all six temperatures across every scenario and physics mode', () => {
+    const { result, rerender } = renderHook(() => useGraphChoices());
+    expect(result.current.species).toEqual([{ id: 'cs137', name: 'Cs-137', element: 'Cs' }]);
+    expect(result.current.current).toEqual({ id: 'cs137', name: 'Cs-137', element: 'Cs' });
+    expect(result.current.temperatures).toEqual([1200, 1350, 1500, 1600, 1700, 1800]);
+    expect(result.current.temperature).toBe(1700);
+
+    // Even if URL/store carries another species or scenario, Cs-137 and all 6 temperatures remain fixed.
+    for (const scenario of SCENARIO_IDS) {
+      for (const physics of ['baseline', 'combined', 'future'] as const) {
+        act(() => useStrato.getState().setSelection({ species: 'sr90', scenario, physics, temperature: 1350 }));
+        rerender();
+        expect(result.current.species, `${scenario}/${physics}`).toEqual([{ id: 'cs137', name: 'Cs-137', element: 'Cs' }]);
+        expect(result.current.current?.id, `${scenario}/${physics}`).toBe('cs137');
+        expect(result.current.temperatures, `${scenario}/${physics}`).toEqual([1200, 1350, 1500, 1600, 1700, 1800]);
+        expect(result.current.temperature, `${scenario}/${physics}`).toBe(1350);
+      }
+    }
+
+    // Out-of-range temperature falls back cleanly to 1700.
+    act(() => useStrato.getState().setSelection({ temperature: 999 }));
+    rerender();
+    expect(result.current.temperature).toBe(1700);
   });
 });
 

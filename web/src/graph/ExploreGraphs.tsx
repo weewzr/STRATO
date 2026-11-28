@@ -8,8 +8,6 @@ import {
   datasetLabel,
   datasetsAt,
   datasetsOf,
-  offeredTemperatures,
-  speciesFromOptions,
   stageRequest,
   type ComparisonRecord,
   type Species,
@@ -22,19 +20,19 @@ import {
   STUDY39,
   study39CurveFigure,
 } from './exploreFigures';
-import { useOptions, useStageResult, type StageResult } from './useStageResult';
+import { useStageResult, type StageResult } from './useStageResult';
 
 // LOWER RIGHT of Explore: INTERACTIVE GRAPHS (Stage 1 Refinement).
 // Always displays cumulative fission-product release against time without the four legacy graph-type
 // toggle buttons or an intrusive long plot title. Automatically updates across P01–P08 mechanisms,
-// species, temperature, operating scenario, and independent Method A / Method B / Experimental overlays.
+// Cs-137, all six canonical temperatures (1200–1800 °C), operating scenario, and independent Method A /
+// Method B / Experimental overlays.
 
 const RELEASE_TITLE = 'Cumulative release fraction against time';
 
-const CANONICAL_FALLBACK_SPECIES: readonly Species[] = [
-  { id: 'cs137', name: 'Cs-137', element: 'Cs' },
-  { id: 'sr90', name: 'Sr-90', element: 'Sr' },
-];
+const CS137_SPECIES: Species = { id: 'cs137', name: 'Cs-137', element: 'Cs' };
+const CANONICAL_SPECIES: readonly Species[] = [CS137_SPECIES];
+const CANONICAL_TEMPERATURES: readonly number[] = [...STUDY39.temperatures];
 
 export interface GraphChoices {
   species: Species[];
@@ -47,44 +45,16 @@ export interface GraphChoices {
   result: StageResult | null;
 }
 
-/** Resolve the species, temperature, dataset, and WASM stage request for the active selection. */
+/** Resolve Cs-137 as the sole species and keep all six canonical temperatures available in the dropdown. */
 export function useGraphChoices(): GraphChoices {
   const sel = useStrato((s) => s.selection);
-  const options = useOptions();
-  const species = useMemo(() => {
-    const wasmList = speciesFromOptions(options);
-    if (wasmList.length === 0) return [...CANONICAL_FALLBACK_SPECIES];
-    const seen = new Set(wasmList.map((s) => s.id));
-    const extras = CANONICAL_FALLBACK_SPECIES.filter((c) => !seen.has(c.id));
-    return [...wasmList, ...extras];
-  }, [options]);
-
-  const current =
-    (sel.species ? species.find((s) => s.id === sel.species) : species.find((s) => s.id === 'cs137') ?? species[0]) ??
-    null;
-
-  const isCanonicalCsSteady = current?.id === 'cs137' && sel.scenario === 'steady';
-  const temperatures = useMemo(() => {
-    if (isCanonicalCsSteady) return [...STUDY39.temperatures];
-    return current ? offeredTemperatures(current.element) : [];
-  }, [isCanonicalCsSteady, current]);
-
-  const defaultTemp = isCanonicalCsSteady ? 1700 : (temperatures[0] ?? null);
-  const temperature =
-    sel.temperature !== null && temperatures.includes(sel.temperature) ? sel.temperature : defaultTemp;
-
-  const request = useMemo(
-    () =>
-      sel.scenario === 'steady' && current !== null && temperature !== null && !isCanonicalCsSteady
-        ? stageRequest(sel.physics, current, temperature)
-        : null,
-    [sel.scenario, sel.physics, current, temperature, isCanonicalCsSteady],
-  );
-  const datasets = useMemo(
-    () => (sel.scenario === 'steady' && current !== null && temperature !== null ? datasetsAt(datasetsOf(current), temperature) : []),
-    [sel.scenario, current, temperature],
-  );
-  const dataset = datasets.find((d) => d.curve_id === sel.dataset) ?? datasets[0] ?? null;
+  const species = useMemo(() => [...CANONICAL_SPECIES], []);
+  const current = CS137_SPECIES;
+  const temperatures = useMemo(() => [...CANONICAL_TEMPERATURES], []);
+  const temperature = sel.temperature !== null && temperatures.includes(sel.temperature) ? sel.temperature : 1700;
+  const request: StageRequest | null = null;
+  const datasets: ComparisonRecord[] = [];
+  const dataset: ComparisonRecord | null = null;
   const result = useStageResult(request);
   return { species, current, temperatures, temperature, datasets, dataset, request, result };
 }
