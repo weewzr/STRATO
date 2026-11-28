@@ -86,6 +86,19 @@ describe('what the model equation shows', () => {
     expect(equationsOf('discretisation').length).toBeGreaterThan(8);
   });
 
+  it('places every equation number in its own non-overlapping .nstep__tag column outside .nstep__math instead of inline KaTeX .katex-tag', () => {
+    render(<NumericalSections applicability={null} />);
+    open('method-a', 'discretisation', 'assumptions');
+    act(() => useStrato.getState().setSelection({ physics: 'combined' }));
+    const tagged = Array.from(document.querySelectorAll<HTMLElement>('.nstep__eq[data-has-tag="true"]'));
+    expect(tagged.length).toBeGreaterThan(5);
+    for (const eq of tagged) {
+      expect(eq.querySelector('.nstep__math')).not.toBeNull();
+      expect(eq.querySelector('.nstep__tag')?.textContent).toMatch(/^\(.+\)$/);
+      expect(eq.querySelector('.katex-tag')).toBeNull();
+    }
+  });
+
   it('writes the operation as a note inside the item where it acts, only where its mechanism is part of the model equation', () => {
     render(<NumericalSections applicability={null} />);
     open('discretisation', 'method-a');

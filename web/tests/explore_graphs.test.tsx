@@ -187,55 +187,36 @@ describe('the panel of the graphs', () => {
 
   it('is empty, and shows nothing of an earlier selection, where there is no result for a non-canonical selection', () => {
     render(<ExploreGraphs choices={choices({ result: null })} />);
-    act(() => useStrato.getState().setSelection({ species: 'sr90' }));
-    for (const graph of ['release', 'profile', 'methods'] as const) {
-      act(() => useStrato.getState().setSelection({ graph, scenario: 'steady', physics: 'baseline', species: 'sr90' }));
-      expect(screen.getByTestId('graph-panel').dataset.empty).toBe('true');
-      expect(text(screen.getByTestId('graph-panel'))).toBe('');
-    }
-    // Method A against Method B has nothing to draw where Method B gave no value on sr90.
-    render(<ExploreGraphs choices={choices({ result: { key: 'k', reply: stage, analytical: null } })} />);
-    act(() => useStrato.getState().setSelection({ graph: 'methods', species: 'sr90' }));
-    expect(screen.getAllByTestId('graph-panel').at(-1)?.dataset.empty).toBe('true');
+    act(() => useStrato.getState().setSelection({ scenario: 'steady', physics: 'baseline', species: 'sr90' }));
+    expect(screen.getByTestId('graph-panel').dataset.empty).toBe('true');
+    expect(text(screen.getByTestId('graph-panel'))).toBe('');
   });
 
-  it('draws for steady-state operation where a result exists, and the frame is gone', () => {
+  it('draws cumulative release with no graph title and overlays experimental data for Sr-90 when a result exists', () => {
     render(<ExploreGraphs choices={choices()} />);
-    act(() => useStrato.getState().setSelection({ species: 'sr90' }));
-    for (const graph of ['release', 'profile', 'methods', 'experiment'] as const) {
-      act(() => useStrato.getState().setSelection({ graph, scenario: 'steady', physics: 'baseline', species: 'sr90' }));
-      expect(screen.getByTestId('graph-panel').dataset.empty, graph).toBe('false');
-      expect(screen.queryByTestId('graph-empty'), graph).toBeNull();
-    }
-  });
-
-  it('shows the caption, the APA citation and the link beneath the non-canonical experimental graph only', () => {
-    render(<ExploreGraphs choices={choices()} />);
-    act(() => useStrato.getState().setSelection({ species: 'sr90' }));
-    expect(screen.queryByTestId('experiment-citation')).toBeNull();
-    act(() => useStrato.getState().setSelection({ graph: 'experiment', species: 'sr90' }));
+    act(() => useStrato.getState().setSelection({ species: 'sr90', scenario: 'steady', physics: 'baseline' }));
+    expect(screen.getByTestId('graph-panel').dataset.empty).toBe('false');
+    expect(screen.queryByTestId('graph-empty')).toBeNull();
     const file = datasetsOf(SR)[0];
     expect(screen.getByTestId('experiment-caption').textContent).toBe(file?.caption.caption_text);
     expect(screen.getByTestId('experiment-apa').textContent).toBe(file?.caption.source_citation_apa);
     expect(screen.getByTestId('experiment-link').getAttribute('href')).toBe(file?.caption.source_link);
-    act(() => useStrato.getState().setSelection({ scenario: 'startup' }));
-    expect(screen.queryByTestId('experiment-citation')).toBeNull();
   });
 
-  it('names the model configuration beneath the non-canonical experimental graph only under temperature-dependent diffusion', () => {
+  it('names the model configuration beneath the non-canonical graph only under temperature-dependent diffusion', () => {
     render(<ExploreGraphs choices={choices()} />);
-    act(() => useStrato.getState().setSelection({ graph: 'experiment', scenario: 'steady', physics: 'baseline', species: 'sr90' }));
+    act(() => useStrato.getState().setSelection({ scenario: 'steady', physics: 'baseline', species: 'sr90' }));
     expect(screen.queryByTestId('experiment-model-note')).toBeNull();
     expect(screen.getByTestId('experiment-caption')).toBeTruthy();
     act(() => useStrato.getState().setSelection({ physics: 'temperature' }));
     expect(screen.getByTestId('experiment-model-note').textContent).toMatch(/temperature-dependent diffusion/);
   });
 
-  it('offers and draws an experimental dataset only for its species, at its test temperature, beside a drawn model curve; otherwise the clean empty panel', () => {
+  it('offers a dataset only for its species, at its test temperature, beside a drawn model curve; otherwise no dataset select', () => {
     const AG: Species = { id: 'ag110m', name: 'Ag-110m', element: 'Ag' };
     const text = (el: Element) => el.textContent ?? '';
-    const forAg = (temperature: number, extra: Partial<GraphChoices> = {}) => {
-      const request = stageRequest('baseline', AG, temperature);
+    const forAg = (temperature: number, physics: 'baseline' | 'generation' | 'combined' | 'decay' = 'baseline', extra: Partial<GraphChoices> = {}) => {
+      const request = stageRequest(physics, AG, temperature);
       return choices({
         species: [AG],
         current: AG,
@@ -249,38 +230,37 @@ describe('the panel of the graphs', () => {
       });
     };
     const select = (physics: 'baseline' | 'generation' | 'combined' | 'decay') =>
-      useStrato.setState({ selection: { ...useStrato.getState().selection, graph: 'experiment', scenario: 'steady', physics, species: 'ag110m', dataset: '' } });
+      useStrato.setState({ selection: { ...useStrato.getState().selection, scenario: 'steady', physics, species: 'ag110m', dataset: '' } });
     // 1600 degC: the datasets held at 1600, never the stepped 1000 to 1600 history.
     select('baseline');
-    const { unmount } = render(<ExploreGraphs choices={forAg(1600)} />);
+    const { unmount } = render(<ExploreGraphs choices={forAg(1600, 'baseline')} />);
     const ids = Array.from((screen.getByTestId('dataset-select') as HTMLSelectElement).options).map((o) => o.value);
     expect(ids).toEqual(['IAEA97-K31-AG110M', 'STEMPIEN23-433-AG110M', 'STEMPIEN23-643-AG110M']);
     expect(text(screen.getByTestId('dataset-select'))).not.toMatch(/stepped/);
     unmount();
-    // 1700 degC: nothing is held there, so no selector, no label, no caption, no citation, no markers.
+    // 1700 degC: no dataset held there, so no selector, no caption, no citation, while cumulative release still draws.
     for (const physics of ['baseline', 'decay'] as const) {
       select(physics);
-      const view = render(<ExploreGraphs choices={forAg(1700)} />);
+      const view = render(<ExploreGraphs choices={forAg(1700, physics)} />);
       expect(screen.queryByTestId('dataset-select')).toBeNull();
       expect(screen.queryByText('Dataset')).toBeNull();
       expect(screen.queryByTestId('experiment-citation')).toBeNull();
-      expect(screen.getByTestId('graph-panel').dataset.empty).toBe('true');
-      expect(text(screen.getByTestId('graph-panel'))).toBe('');
+      expect(screen.getByTestId('graph-panel').dataset.empty).toBe('false');
       view.unmount();
     }
-    // A model equation that draws no model curve (a source) leaves the experimental view empty as well, even at 1800 degC where a dataset exists.
+    // A model equation that draws no model curve (a source) leaves the Ag view empty as well, even at 1800 degC where a dataset exists.
     for (const physics of ['generation', 'combined'] as const) {
       select(physics);
-      const view = render(<ExploreGraphs choices={forAg(1800)} />);
+      const view = render(<ExploreGraphs choices={forAg(1800, physics)} />);
       expect(screen.queryByTestId('dataset-select')).toBeNull();
       expect(screen.queryByText('Dataset')).toBeNull();
       expect(screen.queryByTestId('experiment-citation')).toBeNull();
       expect(screen.getByTestId('graph-panel').dataset.empty).toBe('true');
       view.unmount();
     }
-    // Every operation other than steady-state operation: no selector either.
-    useStrato.setState({ selection: { ...useStrato.getState().selection, graph: 'experiment', scenario: 'startup', physics: 'baseline', species: 'ag110m' } });
-    render(<ExploreGraphs choices={forAg(1600)} />);
+    // Every operation other than steady-state operation: no selector for Ag-110m either.
+    useStrato.setState({ selection: { ...useStrato.getState().selection, scenario: 'startup', physics: 'baseline', species: 'ag110m' } });
+    render(<ExploreGraphs choices={forAg(1600, 'baseline')} />);
     expect(screen.queryByTestId('dataset-select')).toBeNull();
     expect(screen.queryByText('Dataset')).toBeNull();
   });
@@ -303,25 +283,16 @@ describe('the panel of the graphs', () => {
     expect(screen.getByTestId('graph-panel').textContent).toBe('');
   });
 
-  it('has four compact toggles, one species select, one temperature select in 100 degC steps shown in degC, and a dataset select for Sr-90 experiment', async () => {
+  it('removes the four graph-type toggle buttons and provides Species, Temperature, Dataset, and three independent overlay checkboxes', async () => {
     const user = userEvent.setup();
     render(<ExploreGraphs choices={choices()} />);
     act(() => useStrato.getState().setSelection({ species: 'sr90' }));
-    const toggles = screen.getByRole('radiogroup', { name: 'Graph' });
-    expect(Array.from(toggles.querySelectorAll('[role="radio"]')).map((r) => r.textContent)).toEqual([
-      'Cumulative release fraction against time',
-      'Radial concentration profile',
-      'Method A against Method B',
-      'Experimental comparison',
-    ]);
+    expect(screen.queryByTestId('graph-toggles')).toBeNull();
     const temp = screen.getByTestId('temperature-select') as HTMLSelectElement;
     expect(Array.from(temp.options).map((o) => o.textContent)).toEqual(['1600 °C', '1700 °C', '1800 °C']);
     expect(Array.from(temp.options).map((o) => Number(o.value) % 100)).toEqual([0, 0, 0]);
     const species = screen.getByTestId('species-select') as HTMLSelectElement;
     expect(Array.from(species.options).map((o) => o.textContent)).toEqual(['Sr-90', 'Cs-137']);
-    expect(screen.queryByTestId('dataset-select')).toBeNull();
-    await user.click(screen.getByTestId('graph-experiment'));
-    expect(useStrato.getState().selection.graph).toBe('experiment');
     expect((screen.getByTestId('dataset-select') as HTMLSelectElement).options.length).toBe(datasetsAt(datasetsOf(SR), 1600).length);
     await user.selectOptions(temp, '1700');
     expect(useStrato.getState().selection.temperature).toBe(1700);

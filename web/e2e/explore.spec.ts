@@ -112,12 +112,12 @@ test.describe('selection, address and keyboard', () => {
     await page.getByTestId('operation-steady').click();
     await expect(page).toHaveURL(/#\/explore\?config=P05$/);
     // A copied address reproduces the view, and the selection survives navigation to another section and back.
-    await page.goto('./#/explore?config=P05&scenario=startup&open=pseudocode&graph=profile');
+    await page.goto('./#/explore?config=P05&scenario=startup&open=pseudocode');
     await expect(page.getByTestId('mech-generation')).toBeChecked();
     await expect(page.getByTestId('mech-decay')).toBeChecked();
     await expect(page.getByTestId('mech-temperature')).not.toBeChecked();
     await expect(page.getByTestId('operation-startup')).toHaveAttribute('aria-checked', 'true');
-    await expect(page.getByTestId('graph-profile')).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByTestId('graph-toggles')).toHaveCount(0);
     await expect(page.getByTestId('num-toggle-pseudocode')).toHaveAttribute('aria-expanded', 'true');
     await page.getByRole('navigation', { name: 'Sections' }).getByRole('link', { name: 'Research' }).click();
     await expect(page.locator('[data-section="research"] h1')).toBeVisible();
@@ -176,19 +176,55 @@ test.describe('selection, address and keyboard', () => {
     expect(await prose(page)).not.toMatch(STATUS_WORDS);
     expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
   });
+
+  for (const width of [1440, 1024, 768, 390] as const) {
+    test(`mathematical equation numbers never overlap expressions at ${width} px across all accordions`, async ({ page, problems }) => {
+      void problems;
+      await page.setViewportSize({ width, height: 900 });
+      await gotoNumerical(page, ['method-a', 'method-b', 'discretisation', 'pseudocode', 'assumptions', 'limitations'], 'physics=combined&scenario=shutdown');
+      await expect(page.locator('[data-section="explore"] .katex-error')).toHaveCount(0);
+      const collisions = await page.evaluate(() => {
+        const problems: string[] = [];
+        const sectionBox = document.querySelector('.xarea--numerical')?.getBoundingClientRect();
+        for (const eq of Array.from(document.querySelectorAll<HTMLElement>('.nstep__eq[data-has-tag="true"]'))) {
+          const math = eq.querySelector<HTMLElement>('.nstep__math');
+          const tag = eq.querySelector<HTMLElement>('.nstep__tag');
+          if (!math || !tag) {
+            problems.push(`missing child in ${eq.dataset.eq ?? 'unknown'}`);
+            continue;
+          }
+          if (eq.querySelector('.katex-tag')) problems.push(`inline katex-tag still present in ${eq.dataset.eq ?? ''}`);
+          const mRect = math.getBoundingClientRect();
+          const tRect = tag.getBoundingClientRect();
+          if (mRect.right > tRect.left + 1) {
+            problems.push(`overlap ${eq.dataset.eq ?? ''}: math.right=${mRect.right.toFixed(1)} > tag.left=${tRect.left.toFixed(1)}`);
+          }
+          if (sectionBox && tRect.right > sectionBox.right + 2) {
+            problems.push(`clipped tag ${eq.dataset.eq ?? ''}: tag.right=${tRect.right.toFixed(1)} > section.right=${sectionBox.right.toFixed(1)}`);
+          }
+        }
+        return problems;
+      });
+      expect(collisions, `collisions at ${width}px`).toEqual([]);
+      expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
+    });
+  }
 });
 
 test.describe('interactive graphs', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('draw canonical Cs-137 study39 Graph B curves with independent overlay checkboxes and single Δ annotations', async ({ page, problems }) => {
+  test('removes the four graph-type buttons and graph title while keeping Graph B curves, overlays, and single Δ annotations', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
+    await expect(page.getByTestId('graph-toggles')).toHaveCount(0);
     const temp = page.getByTestId('temperature-select');
     await expect(temp.locator('option')).toHaveText(['1200 °C', '1350 °C', '1500 °C', '1600 °C', '1700 °C', '1800 °C'], { timeout: 30_000 });
     const plot = page.getByTestId('explore-plot-release-graph');
     await expect(plot).toBeVisible({ timeout: 30_000 });
     await expect.poll(() => plot.evaluate((el) => ((el as unknown as { data?: unknown[] }).data ?? []).length), { timeout: 30_000 }).toBeGreaterThanOrEqual(3);
+    const layoutTitle = await plot.evaluate((el) => (el as unknown as { layout?: { title?: { text?: string } } }).layout?.title?.text ?? '');
+    expect(layoutTitle).toBe('');
     // Uncheck Method B -> Experimental + Method A remain
     await page.getByTestId('overlay-method-b').uncheck();
     await expect.poll(() => plot.evaluate((el) => ((el as unknown as { data?: unknown[] }).data ?? []).length)).toBe(2);
@@ -202,14 +238,17 @@ test.describe('interactive graphs', () => {
     await page.getByTestId('overlay-method-b').check();
   });
 
-  test('draw authentic s5 operating scenario curves for Cs-137 and leave future physics empty', async ({ page, problems }) => {
+  test('draw authentic s5 operating scenario curves with no graph title for Cs-137 and leave future physics empty', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
-    await expect(page.getByTestId('explore-plot-release-graph')).toBeVisible({ timeout: 30_000 });
+    const plot = page.getByTestId('explore-plot-release-graph');
+    await expect(plot).toBeVisible({ timeout: 30_000 });
     for (const operation of ['shutdown', 'startup', 'control-rod', 'refuelling']) {
       await page.getByTestId(`operation-${operation}`).click();
       await expect(page.getByTestId('graph-panel')).toHaveAttribute('data-empty', 'false');
       await expect(page.getByTestId('scenario-curve-note')).toBeVisible();
+      const t = await plot.evaluate((el) => (el as unknown as { layout?: { title?: { text?: string } } }).layout?.title?.text ?? '');
+      expect(t).toBe('');
     }
     await page.goto('./#/explore?physics=future');
     await expect(page.getByTestId('graph-panel')).toHaveAttribute('data-empty', 'true');
@@ -254,20 +293,16 @@ test.describe('interactive graphs', () => {
     }
   });
 
-  test('draw the registered experimental data with its caption, citation and link beneath for Sr-90, and its model curves only under temperature-dependent diffusion', async ({ page, problems }) => {
+  test('overlays registered Sr-90 experimental data, caption, citation, and link directly on cumulative release', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     await page.getByTestId('species-select').selectOption('sr90');
-    await page.getByTestId('graph-experiment').click();
     await expect(page.getByTestId('dataset-select')).toBeVisible({ timeout: 30_000 });
-    const plot = page.getByTestId('explore-plot-experiment-graph');
+    const plot = page.getByTestId('explore-plot-release-graph');
     await expect(plot).toBeVisible();
-    const lines = () => plot.evaluate((el) => ((el as unknown as { data?: { mode: string }[] }).data ?? []).filter((t) => t.mode === 'lines').length);
-    await expect.poll(() => plot.evaluate((el) => ((el as unknown as { data?: unknown[] }).data ?? []).length), { timeout: 30_000 }).toBeGreaterThan(0);
-    expect(await lines()).toBe(0);
+    await expect.poll(() => plot.evaluate((el) => ((el as unknown as { data?: unknown[] }).data ?? []).length), { timeout: 30_000 }).toBeGreaterThanOrEqual(2);
     await expect(page.getByTestId('experiment-model-note')).toHaveCount(0);
     await page.getByTestId('mech-temperature').check();
-    await expect.poll(lines, { timeout: 30_000 }).toBeGreaterThan(0);
     await expect(page.getByTestId('experiment-model-note')).toContainText('temperature-dependent diffusion');
     const markers = await plot.evaluate((el) =>
       (el as unknown as { data: { mode: string; marker?: { color: string; symbol: string } }[] }).data.filter((t) => t.mode === 'markers').map((t) => `${t.marker?.color}/${t.marker?.symbol}`),

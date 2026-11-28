@@ -1,6 +1,5 @@
-import { useId, useMemo, useRef, type KeyboardEvent } from 'react';
+import { useId, useMemo } from 'react';
 import { CONFIG_LABELS, flagsToConfigId } from '../equation/capability';
-import { GRAPH_IDS, type GraphId } from '../equation/selectionIds';
 import { METHOD_1, METHOD_2 } from '../methods';
 import { Plot } from '../plots/Plot';
 import { usePlotTheme } from '../plots/theme';
@@ -18,8 +17,6 @@ import {
 } from './exploreData';
 import {
   experimentFigure,
-  methodsFigure,
-  profileFigure,
   releaseFigure,
   scenarioCurveFigure,
   STUDY39,
@@ -27,18 +24,12 @@ import {
 } from './exploreFigures';
 import { useOptions, useStageResult, type StageResult } from './useStageResult';
 
-// LOWER RIGHT of Explore: INTERACTIVE GRAPHS (Phase 3 Option B).
-// Provides three independent overlay checkboxes (Method A — BTCS, Method B — Sturm–Liouville,
-// Experimental data), canonical Phase 3 Cs-137 progressive physics matrix P01–P08 across
-// 1200–1800 °C with Graph B styling and immutable single Δ endpoint annotations, authentic
-// Stage 5 operating-scenario curves for Cs-137 and Sr-90, and live WASM curves for all other cases.
+// LOWER RIGHT of Explore: INTERACTIVE GRAPHS (Stage 1 Refinement).
+// Always displays cumulative fission-product release against time without the four legacy graph-type
+// toggle buttons or an intrusive long plot title. Automatically updates across P01–P08 mechanisms,
+// species, temperature, operating scenario, and independent Method A / Method B / Experimental overlays.
 
-const GRAPH_LABEL: Record<GraphId, string> = {
-  release: 'Cumulative release fraction against time',
-  profile: 'Radial concentration profile',
-  methods: 'Method A against Method B',
-  experiment: 'Experimental comparison',
-};
+const RELEASE_TITLE = 'Cumulative release fraction against time';
 
 const CANONICAL_FALLBACK_SPECIES: readonly Species[] = [
   { id: 'cs137', name: 'Cs-137', element: 'Cs' },
@@ -68,12 +59,11 @@ export function useGraphChoices(): GraphChoices {
     return [...wasmList, ...extras];
   }, [options]);
 
-  // Empty selection defaults to canonical Cs-137 when steady or WASM's first entry otherwise.
   const current =
     (sel.species ? species.find((s) => s.id === sel.species) : species.find((s) => s.id === 'cs137') ?? species[0]) ??
     null;
 
-  const isCanonicalCsSteady = current?.id === 'cs137' && sel.scenario === 'steady' && sel.graph !== 'profile';
+  const isCanonicalCsSteady = current?.id === 'cs137' && sel.scenario === 'steady';
   const temperatures = useMemo(() => {
     if (isCanonicalCsSteady) return [...STUDY39.temperatures];
     return current ? offeredTemperatures(current.element) : [];
@@ -87,62 +77,19 @@ export function useGraphChoices(): GraphChoices {
     () =>
       sel.scenario === 'steady' && current !== null && temperature !== null && !isCanonicalCsSteady
         ? stageRequest(sel.physics, current, temperature)
-        : sel.scenario === 'steady' && current !== null && temperature !== null && sel.graph === 'profile'
-          ? stageRequest(sel.physics, current, temperature)
-          : null,
-    [sel.scenario, sel.physics, sel.graph, current, temperature, isCanonicalCsSteady],
+        : null,
+    [sel.scenario, sel.physics, current, temperature, isCanonicalCsSteady],
   );
   const datasets = useMemo(
-    () => (request !== null ? datasetsAt(datasetsOf(current), temperature) : []),
-    [request, current, temperature],
+    () => (sel.scenario === 'steady' && current !== null && temperature !== null ? datasetsAt(datasetsOf(current), temperature) : []),
+    [sel.scenario, current, temperature],
   );
   const dataset = datasets.find((d) => d.curve_id === sel.dataset) ?? datasets[0] ?? null;
   const result = useStageResult(request);
   return { species, current, temperatures, temperature, datasets, dataset, request, result };
 }
 
-function Toggle({ value, onChange }: { value: GraphId; onChange: (g: GraphId) => void }) {
-  const refs = useRef<(HTMLButtonElement | null)[]>([]);
-  const onKey = (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
-    let next: number | null = null;
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (i + 1) % GRAPH_IDS.length;
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (i - 1 + GRAPH_IDS.length) % GRAPH_IDS.length;
-    if (e.key === 'Home') next = 0;
-    if (e.key === 'End') next = GRAPH_IDS.length - 1;
-    if (next === null) return;
-    e.preventDefault();
-    const id = GRAPH_IDS[next];
-    if (id) {
-      onChange(id);
-      refs.current[next]?.focus();
-    }
-  };
-  return (
-    <div className="xbtns xbtns--graphs" role="radiogroup" aria-label="Graph" data-testid="graph-toggles">
-      {GRAPH_IDS.map((id, i) => (
-        <button
-          key={id}
-          ref={(el) => {
-            refs.current[i] = el;
-          }}
-          type="button"
-          role="radio"
-          aria-checked={id === value}
-          tabIndex={id === value ? 0 : -1}
-          className={`xbtn${id === value ? ' is-current' : ''}`}
-          data-testid={`graph-${id}`}
-          onClick={() => onChange(id)}
-          onKeyDown={(e) => onKey(e, i)}
-        >
-          {GRAPH_LABEL[id]}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
-  const graph = useStrato((s) => s.selection.graph);
   const physics = useStrato((s) => s.selection.physics);
   const mechanisms = useStrato((s) => s.selection.mechanisms);
   const scenario = useStrato((s) => s.selection.scenario);
@@ -155,9 +102,9 @@ export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
 
   const configId = flagsToConfigId(mechanisms);
   const hasAnyOverlay = overlays.methodA || overlays.methodB || overlays.experiment;
-  const isCanonicalCsSteady = current?.id === 'cs137' && scenario === 'steady' && graph !== 'profile' && physics !== 'future';
+  const isCanonicalCsSteady = current?.id === 'cs137' && scenario === 'steady' && physics !== 'future';
   const isScenarioCurve =
-    scenario !== null && scenario !== 'steady' && (current?.id === 'cs137' || current?.id === 'sr90') && physics !== 'future' && graph !== 'profile';
+    scenario !== null && scenario !== 'steady' && (current?.id === 'cs137' || current?.id === 'sr90') && physics !== 'future';
 
   const drawable = scenario === 'steady' && physics !== 'future';
   const expected = useMemo(
@@ -166,7 +113,7 @@ export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
   );
   const result = expected !== null && choices.result?.key === expected.key ? choices.result : null;
   const datasets = useMemo(
-    () => (expected !== null ? datasetsAt(datasetsOf(current, choices.datasets), temperature) : []),
+    () => (expected !== null && current !== null && temperature !== null ? datasetsAt(datasetsOf(current, choices.datasets), temperature) : []),
     [expected, current, temperature, choices.datasets],
   );
   const dataset = datasets.find((d) => d.curve_id === choices.dataset?.curve_id) ?? datasets[0] ?? null;
@@ -188,15 +135,16 @@ export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
 
   const wasmFigure = useMemo(() => {
     if (isCanonicalCsSteady || isScenarioCurve || !drawable) return null;
-    if (graph === 'experiment') return dataset !== null ? experimentFigure(dataset, theme, physics === 'temperature', overlays) : null;
-    if (result === null) return null;
-    if (graph === 'release') return releaseFigure(result.reply, theme, overlays, result.analytical);
-    if (graph === 'profile') return profileFigure(result.reply, theme);
-    return methodsFigure(result.reply, result.analytical, theme, overlays);
-  }, [isCanonicalCsSteady, isScenarioCurve, drawable, graph, dataset, result, theme, physics, overlays]);
+    if (result === null) {
+      // If a comparison dataset exists for a model configuration without a single-run WASM curve (e.g. +G) and experiment overlay is active:
+      return dataset !== null && overlays.experiment && physics === 'temperature' ? experimentFigure(dataset, theme, true, overlays) : null;
+    }
+    return releaseFigure(result.reply, theme, overlays, result.analytical, dataset);
+  }, [isCanonicalCsSteady, isScenarioCurve, drawable, result, theme, overlays, dataset, physics]);
 
   const figure = studyView?.figure ?? scenarioView?.figure ?? wasmFigure;
-  const showExperiment = !isCanonicalCsSteady && !isScenarioCurve && graph === 'experiment' && figure !== null && dataset !== null;
+  const showNonCanonicalExpCitation =
+    !isCanonicalCsSteady && !isScenarioCurve && drawable && figure !== null && dataset !== null && overlays.experiment && expected !== null;
   const name = current?.name ?? '';
 
   const methodBNotice = useMemo(() => {
@@ -215,7 +163,6 @@ export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
       <h2 className="xarea__title" id={ids.title}>
         Interactive graphs
       </h2>
-      <Toggle value={graph} onChange={(g) => setSelection({ graph: g })} />
       <div className="xselects">
         <label className="xselect" htmlFor={ids.species}>
           <span className="xselect__label">Species</span>
@@ -249,7 +196,7 @@ export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
             ))}
           </select>
         </label>
-        {!isCanonicalCsSteady && graph === 'experiment' && datasets.length > 0 ? (
+        {!isCanonicalCsSteady && !isScenarioCurve && overlays.experiment && datasets.length > 0 ? (
           <label className="xselect xselect--wide" htmlFor={ids.dataset}>
             <span className="xselect__label">Dataset</span>
             <select
@@ -310,7 +257,7 @@ export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
         ) : null}
       </div>
 
-      <div className="gpanel" data-testid="graph-panel" data-graph={graph} data-empty={figure === null ? 'true' : 'false'}>
+      <div className="gpanel" data-testid="graph-panel" data-graph="release" data-empty={figure === null ? 'true' : 'false'}>
         {figure === null ? (
           <div className="gpanel__frame" data-testid="graph-empty">
             {!hasAnyOverlay ? (
@@ -322,10 +269,10 @@ export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
         ) : (
           <Plot
             figure={figure}
-            testId={`explore-plot-${graph}`}
-            height={250}
+            testId="explore-plot-release"
+            height={285}
             quiet
-            label={`${GRAPH_LABEL[graph]}${name ? `, ${name}` : ''}${
+            label={`${RELEASE_TITLE}${name ? `, ${name}` : ''}${
               isCanonicalCsSteady && temperature !== null
                 ? `, ${String(temperature)} °C (${configId} ${CONFIG_LABELS[configId].stageAlias})`
                 : temperature !== null
@@ -348,7 +295,7 @@ export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
         </p>
       ) : null}
 
-      {showExperiment ? (
+      {showNonCanonicalExpCitation ? (
         <div className="gcite" data-testid="experiment-citation">
           <p className="gcite__caption" data-testid="experiment-caption">
             {dataset.caption.caption_text}

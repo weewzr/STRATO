@@ -240,10 +240,39 @@
   border-left: 3px solid var(--accent);
 }
 .nstep__eq {
-  overflow-x: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-2) 0;
 }
-.nstep__eq .tex--display {
-  margin: var(--space-1) 0;
+.nstep__math {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 4px;
+}
+.nstep__math:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.nstep__math .tex--display,
+.nstep__math .katex-display {
+  margin: 0;
+  text-align: left;
+}
+.nstep__math .katex-display > .katex {
+  text-align: left;
+  white-space: nowrap;
+}
+.nstep__tag {
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  white-space: nowrap;
+  text-align: right;
+  padding-left: var(--space-2);
 }
 .npseudo {
   margin: 0 0 var(--space-3);

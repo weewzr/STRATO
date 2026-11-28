@@ -5,7 +5,7 @@ import { mechanismsOf, type Mechanism, type PhysicsSelection, type ScenarioId } 
 import { NOTATION, NUMERICAL_ITEMS, scenarioNote, type ItemId } from './numerics';
 import { HOOKS, PSEUDOCODE } from './pseudocode';
 import { SECTION_IDS, type SectionId } from './selectionIds';
-import { conditionsFor, equationNumber, mainEquations, physicsAdditions, STEP_DEFS, type Stage } from './terms';
+import { conditionsFor, equationNumber, mainEquations, physicsAdditions, STEP_DEFS, type ShownEquation, type Stage } from './terms';
 import { RichText, Tex } from './Tex';
 
 // LOWER LEFT of Explore: NUMERICAL INTERPRETATION, six expandable sections, all collapsed by default
@@ -32,7 +32,22 @@ const SECTION_TITLE: Record<SectionId, string> = {
   limitations: 'Limitations',
 };
 
-const withTag = (latex: string, tag: string | null): string => (tag ? `${latex} \\tag{${tag}}` : latex);
+/** Displayed equation with a non-overlapping dedicated right-hand number column and horizontal scroll on math overflow. */
+function NumberedEq({ eq }: { eq: ShownEquation }) {
+  const tag = equationNumber(eq);
+  return (
+    <div className="nstep__eq" data-eq={eq.id} data-has-tag={tag ? 'true' : 'false'}>
+      <div className="nstep__math" tabIndex={0} role="group" aria-label={tag ? `Equation (${tag})` : eq.label}>
+        <Tex display latex={eq.latex} />
+      </div>
+      {tag ? (
+        <span className="nstep__tag" data-eq-tag={tag}>
+          ({tag})
+        </span>
+      ) : null}
+    </div>
+  );
+}
 
 /** One derivation step in lean form: its name, its equations with their numbers and its caption, as terms.ts holds them. */
 function StepBlock({ stage, physics, additions = true }: { stage: Stage; physics: PhysicsSelection; additions?: boolean }) {
@@ -42,9 +57,7 @@ function StepBlock({ stage, physics, additions = true }: { stage: Stage; physics
     <div className="nstep" data-stage={stage}>
       <h4 className="nstep__title">{def.name}</h4>
       {mainEquations(stage).map((e) => (
-        <div className="nstep__eq" key={`${stage}-${e.id}`} data-eq={e.id}>
-          <Tex display latex={withTag(e.latex, equationNumber(e))} />
-        </div>
+        <NumberedEq key={`${stage}-${e.id}`} eq={e} />
       ))}
       <p className="nstep__text">{def.summary}</p>
       {add.note !== null
@@ -55,9 +68,7 @@ function StepBlock({ stage, physics, additions = true }: { stage: Stage; physics
           ))
         : null}
       {add.equations.map((e) => (
-        <div className="nstep__eq" key={`${stage}-add-${e.id}`} data-eq={e.id}>
-          <Tex display latex={withTag(e.latex, equationNumber(e))} />
-        </div>
+        <NumberedEq key={`${stage}-add-${e.id}`} eq={e} />
       ))}
     </div>
   );
@@ -170,9 +181,7 @@ function Assumptions() {
             <RichText text={conditions.note} />
           </p>
           {conditions.equations.map((e) => (
-            <div className="nstep__eq" key={e.id} data-eq={e.id}>
-              <Tex display latex={withTag(e.latex, equationNumber(e))} />
-            </div>
+            <NumberedEq key={e.id} eq={e} />
           ))}
         </div>
       ) : null}

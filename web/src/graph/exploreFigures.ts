@@ -182,16 +182,38 @@ export function methodBTrace(a: AnalyticalReply | null): Trace | null {
   return methodB(a.times_h, a.release_fraction, 'stage-method-b');
 }
 
-/** Cumulative release fraction against time: respects independent Method A and Method B overlay flags. */
-export function releaseFigure(stage: StageOk, theme: PlotTheme, overlays: OverlayFlags = ALL_OVERLAYS, analytical: AnalyticalReply | null = null): Figure | null {
+/** Cumulative release fraction against time: respects independent Method A, Method B, and Experimental overlay flags. */
+export function releaseFigure(
+  stage: StageOk,
+  theme: PlotTheme,
+  overlays: OverlayFlags = ALL_OVERLAYS,
+  analytical: AnalyticalReply | null = null,
+  dataset: ComparisonRecord | null = null,
+): Figure | null {
   const data: Trace[] = [];
   if (overlays.methodA) data.push(methodA(stage.series.times_h, stage.series.release_fraction, 'stage-method-a'));
   if (overlays.methodB) {
     const b = methodBTrace(analytical);
     if (b !== null) data.push(b);
   }
+  if (overlays.experiment && dataset !== null) {
+    const measured = dataset.experiment.points.filter((p) => !isBound(p.point_class));
+    const bounds = dataset.experiment.points.filter((p) => isBound(p.point_class));
+    const markers = (list: typeof measured, name: string, id: string, symbol: string): Trace => ({
+      type: 'scatter',
+      name,
+      x: list.map((p) => p.time_h),
+      y: list.map((p) => p.value),
+      mode: 'markers',
+      marker: { color: COLOURS.observations, size: 8, symbol, line: { color: '#ffffff', width: 1 } },
+      hovertemplate: hoverRelease('h', name),
+      meta: { id, label: name, unit: '1' },
+    });
+    if (measured.length > 0) data.push(markers(measured, 'Experimental measurements', 'exp-measurements', 'circle'));
+    if (bounds.length > 0) data.push(markers(bounds, 'Experimental upper bounds', 'exp-upper-bounds', 'triangle-down'));
+  }
   if (data.length === 0) return null;
-  return { data, layout: releaseLayout(theme, 'h', { showlegend: data.length > 1 }) };
+  return { data, layout: releaseLayout(theme, 'h', { showlegend: data.length > 1 || (overlays.experiment && dataset !== null) }) };
 }
 
 /** Method A against Method B: draws whichever selected curves exist when Method B answered. */
@@ -451,11 +473,10 @@ export function study39CurveFigure(
   if (traces.length === 0) return { figure: null, methodBReason, methodBdrawn };
 
   const layout = baseLayout(theme, {
-    title: { text: `Cs-137 — ${temp} °C (${labelShort})`, font: { size: 13 } },
     xaxis: axis(theme, 'Time (hours)', { rangemode: 'tozero', hoverformat: '.6~g' }),
     yaxis: axis(theme, 'Cumulative Cs-137 release (%)', { rangemode: 'tozero' }),
     annotations,
-    margin: { l: 64, r: 16, t: 40, b: 48, pad: 0 },
+    margin: { l: 64, r: 16, t: 28, b: 48, pad: 0 },
   });
   return { figure: { data: traces, layout }, methodBReason, methodBdrawn };
 }
@@ -503,10 +524,9 @@ export function scenarioCurveFigure(
   });
 
   const layout = baseLayout(theme, {
-    title: { text: `${cur.nuclide} — ${SCENARIO_LABEL[scenario]} (BTCS operating history)`, font: { size: 13 } },
     xaxis: axis(theme, 'Time (hours)', { rangemode: 'tozero', hoverformat: '.6~g' }),
     yaxis: axis(theme, 'Cumulative release of generated inventory (%)', { rangemode: 'tozero' }),
-    margin: { l: 68, r: 16, t: 40, b: 48, pad: 0 },
+    margin: { l: 68, r: 16, t: 28, b: 48, pad: 0 },
   });
   return { figure: { data: traces, layout }, series: cur };
 }
