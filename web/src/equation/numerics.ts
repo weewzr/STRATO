@@ -26,7 +26,7 @@
 //   13    Numerical verification                  14    Numerical verification and convergence
 //
 // Items nine to eleven had no derivation before: they are written from Document 5.
-import { mechanismsOf, type BuildCapability, type BuildStatus, type Mechanism, type PhysicsId, type ScenarioId } from './capability';
+import { mechanismsOf, type BuildCapability, type BuildStatus, type Mechanism, type PhysicsId, type PhysicsSelection, type ScenarioId } from './capability';
 import type { Stage } from './terms';
 
 export type ItemId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14;
@@ -82,13 +82,14 @@ export const ITEM_EXPAND_IDS: readonly string[] = ITEM_IDS.map(itemExpandId);
 export const effectivePhysics = (physics: PhysicsId): PhysicsId => (physics === 'future' ? 'combined' : physics);
 
 /** Whether an item is shown for a model equation. An operation never hides or adds an item: it adds notes inside them. */
-export function itemVisible(item: NumericalItem, physics: PhysicsId): boolean {
+export function itemVisible(item: NumericalItem, physics: PhysicsSelection): boolean {
   if (item.mechanism === null) return true;
-  return mechanismsOf(effectivePhysics(physics)).includes(item.mechanism);
+  const resolved: PhysicsSelection = typeof physics === 'string' ? effectivePhysics(physics) : physics;
+  return mechanismsOf(resolved).includes(item.mechanism);
 }
 
 /** The ids of the items shown for a model equation, in order. */
-export function visibleItems(physics: PhysicsId): ItemId[] {
+export function visibleItems(physics: PhysicsSelection): ItemId[] {
   return NUMERICAL_ITEMS.filter((it) => itemVisible(it, physics)).map((it) => it.id);
 }
 

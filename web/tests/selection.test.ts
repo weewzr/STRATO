@@ -4,7 +4,7 @@
 // 2026, which encoded the rule "a scenario selects the combined model".
 import { act } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { PHYSICS_IDS, SCENARIO_IDS } from '../src/equation/capability';
+import { configIdToFlags, flagsOf, PHYSICS_CONFIG_IDS, PHYSICS_IDS, SCENARIO_IDS } from '../src/equation/capability';
 import { GRAPH_IDS, SECTION_IDS } from '../src/equation/selectionIds';
 import { exploreHash, formatSelection, hasSelectionKeys, parseSelection, startAddressSync } from '../src/state/address';
 import { DEFAULT_SELECTION, normaliseSelection, useStrato, type Selection } from '../src/state/store';
@@ -17,7 +17,19 @@ const goTo = (hash: string) => {
 describe('selection state', () => {
   it('starts as baseline diffusion with steady-state operation, nothing expanded, the release graph', () => {
     expect(useStrato.getState().selection).toEqual(DEFAULT_SELECTION);
-    expect(DEFAULT_SELECTION).toEqual({ physics: 'baseline', scenario: 'steady', expanded: [], graph: 'release', species: '', temperature: null, dataset: '' });
+    expect(DEFAULT_SELECTION).toEqual({
+      physics: 'baseline',
+      mechanisms: { generation: false, decay: false, temperature: false },
+      speciesPhysics: 'none',
+      scenario: 'steady',
+      expanded: [],
+      graph: 'release',
+      species: '',
+      temperature: null,
+      dataset: '',
+      overlays: { methodA: true, methodB: true, experiment: true },
+      controlledCompare: false,
+    });
   });
 
   for (const physics of PHYSICS_IDS) {
@@ -27,7 +39,7 @@ describe('selection state', () => {
           useStrato.getState().setSelection({ physics, scenario, expanded });
           const sel = useStrato.getState().selection;
           // The two groups are independent: nothing is changed to suit the other.
-          expect(sel).toEqual({ ...DEFAULT_SELECTION, physics, scenario, expanded });
+          expect(sel).toEqual({ ...DEFAULT_SELECTION, physics, mechanisms: flagsOf(physics), scenario, expanded });
           expect(parseSelection(formatSelection(sel))).toEqual(sel);
           expect(parseSelection(exploreHash(sel).split('?')[1] ?? '')).toEqual(sel);
         });
@@ -35,12 +47,22 @@ describe('selection state', () => {
     }
   }
 
+  for (const cid of PHYSICS_CONFIG_IDS) {
+    it(`round-trips Option B configuration ${cid} cleanly through the store and address`, () => {
+      const mechanisms = configIdToFlags(cid);
+      useStrato.getState().setSelection({ mechanisms, overlays: { methodA: true, methodB: false, experiment: true } });
+      const sel = useStrato.getState().selection;
+      expect(sel.mechanisms).toEqual(mechanisms);
+      expect(parseSelection(formatSelection(sel))).toEqual(sel);
+    });
+  }
+
   it('changes one part and keeps the others', () => {
     const s = useStrato.getState();
     s.setSelection({ physics: 'decay' });
     s.setSelection({ scenario: 'startup' });
     s.setExpanded('method-a', true);
-    expect(useStrato.getState().selection).toEqual({ ...DEFAULT_SELECTION, physics: 'decay', scenario: 'startup', expanded: ['method-a'] });
+    expect(useStrato.getState().selection).toEqual({ ...DEFAULT_SELECTION, physics: 'decay', mechanisms: flagsOf('decay'), scenario: 'startup', expanded: ['method-a'] });
     s.setExpanded('method-a', false);
     expect(useStrato.getState().selection.expanded).toEqual([]);
   });
@@ -57,7 +79,7 @@ describe('selection state', () => {
     s.setSelection({ physics: 'future' });
     expect(useStrato.getState().selection).toMatchObject({ physics: 'future', scenario: 'refuelling' });
     // An address names the two parts independently as well.
-    expect(parseSelection('physics=decay&scenario=control-rod')).toEqual({ ...DEFAULT_SELECTION, physics: 'decay', scenario: 'control-rod' });
+    expect(parseSelection('physics=decay&scenario=control-rod')).toEqual({ ...DEFAULT_SELECTION, physics: 'decay', mechanisms: flagsOf('decay'), scenario: 'control-rod' });
     expect(normaliseSelection({ physics: 'temperature', scenario: 'refuelling' })).toMatchObject({ physics: 'temperature', scenario: 'refuelling' });
   });
 
@@ -113,7 +135,17 @@ describe('selection in the address', () => {
     // A copied address reproduces the view: a fresh state, then the address is followed.
     act(() => useStrato.setState({ selection: { ...DEFAULT_SELECTION, expanded: [] } }));
     act(() => goTo('#/explore?physics=future&scenario=shutdown&open=pseudocode&graph=methods&species=cs137&temperature=1800'));
-    expect(useStrato.getState().selection).toEqual({ physics: 'future', scenario: 'shutdown', expanded: ['pseudocode'], graph: 'methods', species: 'cs137', temperature: 1800, dataset: '' });
+    expect(useStrato.getState().selection).toEqual({
+      ...DEFAULT_SELECTION,
+      physics: 'future',
+      mechanisms: flagsOf('future'),
+      scenario: 'shutdown',
+      expanded: ['pseudocode'],
+      graph: 'methods',
+      species: 'cs137',
+      temperature: 1800,
+      dataset: '',
+    });
   });
 
   it('rewrites an address with invalid values to the selection actually held', () => {

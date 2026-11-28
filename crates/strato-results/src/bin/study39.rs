@@ -500,7 +500,69 @@ fn run_study39(repo: &Path, commit: &str) -> Result<(), String> {
 
     let mut profile_entries: Vec<J> = Vec::new();
     let mut c02_entries: Vec<J> = Vec::new();
+    let mut c02_all24_entries: Vec<J> = Vec::new();
     let mut stage_b_check_rows: Vec<J> = Vec::new();
+    let c_init_ctrl = g_ref * (620.2 * 24.0 * H);
+
+    let mut push_c02_24 = |t_c: f64,
+                           cfg_id: &str,
+                           stage_name: &str,
+                           run_base: &ScenarioRun,
+                           b_res: &MethodB,
+                           use_total: bool,
+                           sample_h: &[f64],
+                           sample_s: &[f64]| {
+        match b_res {
+            MethodB::Available(avail) => {
+                let tb: Vec<f64> = run_base.rows.iter().map(|r| r.t_s).collect();
+                let fb_raw: Vec<f64> = run_base
+                    .rows
+                    .iter()
+                    .map(|r| {
+                        if use_total {
+                            r.release_fraction_of_total.unwrap_or(0.0)
+                        } else {
+                            r.release_fraction_of_initial.unwrap_or(0.0)
+                        }
+                    })
+                    .collect();
+                let mut abs_diffs = Vec::new();
+                for (k, &ts) in sample_s.iter().enumerate() {
+                    if let Some(vb) = avail.values[k] {
+                        let va = lin(&tb, &fb_raw, ts).unwrap_or(f64::NAN);
+                        abs_diffs.push((va - vb).abs());
+                    }
+                }
+                let max_abs = abs_diffs.iter().copied().fold(0.0_f64, f64::max);
+                let final_a =
+                    lin(&tb, &fb_raw, *sample_s.last().unwrap_or(&0.0)).unwrap_or(f64::NAN);
+                let final_b = avail.values.last().copied().flatten();
+                c02_all24_entries.push(J::obj(vec![
+                    ("temperature_c", J::Num(t_c)),
+                    ("config_id", J::s(cfg_id)),
+                    ("stage", J::s(stage_name)),
+                    ("b_available", J::Bool(true)),
+                    ("compared_points", J::Int(abs_diffs.len() as i64)),
+                    ("total_sample_points", J::Int(sample_h.len() as i64)),
+                    ("valid_from_h", J::Num(avail.valid_from_s / H)),
+                    ("accuracy_floor", J::Num(avail.accuracy_floor)),
+                    ("max_abs_diff_pp", J::Num(max_abs * 100.0)),
+                    ("final_f_a", J::Num(final_a)),
+                    ("final_f_b", J::opt(final_b)),
+                ]));
+            }
+            MethodB::NotAvailable(na) => {
+                c02_all24_entries.push(J::obj(vec![
+                    ("temperature_c", J::Num(t_c)),
+                    ("config_id", J::s(cfg_id)),
+                    ("stage", J::s(stage_name)),
+                    ("b_available", J::Bool(false)),
+                    ("reason_code", J::s(na.code)),
+                    ("reason", J::s(na.reason.clone())),
+                ]));
+            }
+        }
+    };
 
     for spec in &TEMPS {
         let t_i = spec.t_c.round() as i64;
@@ -637,6 +699,16 @@ fn run_study39(repo: &Path, commit: &str) -> Result<(), String> {
                 ("final_f_b", J::opt(fb_end)),
             ]));
         }
+        push_c02_24(
+            spec.t_c,
+            "P01",
+            "Stage A (baseline)",
+            &run_a_base,
+            &b_a,
+            false,
+            &sample_h,
+            &sample_s,
+        );
 
         // ---- Stage B: Constant D(T_nom), G = G_ref, lambda = 0, Fresh ----
         let def_b = ScenarioDefinition {
@@ -746,6 +818,16 @@ fn run_study39(repo: &Path, commit: &str) -> Result<(), String> {
             spec.end_h,
             fb_b_end.map_or(String::new(), |v| format!("{v:.12e}"))
         ));
+        push_c02_24(
+            spec.t_c,
+            "P02",
+            "Stage B (+G, Fresh)",
+            &run_b_base,
+            &b_b,
+            true,
+            &sample_h,
+            &sample_s,
+        );
 
         // ---- Stage C (progressive: G + decay, Fresh, F_gen) ----
         let run_c_base = run_scenario(
@@ -812,6 +894,16 @@ fn run_study39(repo: &Path, commit: &str) -> Result<(), String> {
             spec.end_h,
             fc_b_end.map_or(String::new(), |v| format!("{v:.12e}"))
         ));
+        push_c02_24(
+            spec.t_c,
+            "P05",
+            "Stage C (+G, +lambda, Fresh)",
+            &run_c_base,
+            &b_c,
+            true,
+            &sample_h,
+            &sample_s,
+        );
 
         // ---- Stage C decay-only (G=0, decay ON, KernelUniform, for heating-test comparison) ----
         let run_cd_base = run_scenario(
@@ -878,6 +970,16 @@ fn run_study39(repo: &Path, commit: &str) -> Result<(), String> {
             spec.end_h,
             fcd_b_end.map_or(String::new(), |v| format!("{v:.12e}"))
         ));
+        push_c02_24(
+            spec.t_c,
+            "P03",
+            "Stage C decay-only (G=0, +lambda)",
+            &run_cd_base,
+            &b_cd,
+            false,
+            &sample_h,
+            &sample_s,
+        );
 
         // ---- Stage D Isothermal (D(T) dynamic Arrhenius mid-step, G=0, decay=0 -> verifies C16=Stage A) ----
         let run_di_base = run_scenario(
@@ -1097,8 +1199,8 @@ fn run_study39(repo: &Path, commit: &str) -> Result<(), String> {
                 decay_constant_per_s: lambda,
                 reference_generation_mol_m3_s: g_ref,
                 diffusion: Diffusion::OfTemperature(&dyn_c16),
-                profile_times_s: ramp_profile_s,
-                extra_boundaries_s: ramp_extra_s,
+                profile_times_s: ramp_profile_s.clone(),
+                extra_boundaries_s: ramp_extra_s.clone(),
             },
         )
         .map_err(|e| e.to_string())?;
@@ -1130,11 +1232,169 @@ fn run_study39(repo: &Path, commit: &str) -> Result<(), String> {
             &b_ramp_na,
             true,
             "F_gen = M_rel / (M^0 + M_gen)",
-            vec![("history_id", J::s(hist_label))],
+            vec![("history_id", J::s(hist_label.clone()))],
             &mut balance_rows,
         )?;
         summary_rows.push(format!(
             "{t_i},{},stage_d_combined,{fdc_a_end:.12e},,{bdc_ok},{rdc_bnd:.6e}",
+            spec.end_h
+        ));
+
+        // ---- P06 (Generation + D(r, T(t)) ramp, decay OFF, Fresh, F_gen) ----
+        let run_p06_base = run_scenario(
+            &def_comb,
+            &ScenarioConfig {
+                radii_m: r_m,
+                intervals: BASE_INTERVALS,
+                initial: InitialState::Fresh,
+                decay_constant_per_s: 0.0,
+                reference_generation_mol_m3_s: g_ref,
+                diffusion: Diffusion::OfTemperature(&dyn_c16),
+                profile_times_s: vec![],
+                extra_boundaries_s: ramp_extra_s.clone(),
+            },
+        )
+        .map_err(|e| e.to_string())?;
+        let run_p06_fine = run_scenario(
+            &def_comb_fine,
+            &ScenarioConfig {
+                radii_m: r_m,
+                intervals: REFINE_INTERVALS,
+                initial: InitialState::Fresh,
+                decay_constant_per_s: 0.0,
+                reference_generation_mol_m3_s: g_ref,
+                diffusion: Diffusion::OfTemperature(&dyn_c16),
+                profile_times_s: vec![],
+                extra_boundaries_s: vec![],
+            },
+        )
+        .map_err(|e| e.to_string())?;
+        let key_p06 = format!("{t_i}c_p06_gen_temp");
+        let (fp06_a_end, _, bp06_ok, rp06_bnd, _) = sample_and_save_case(
+            &prov,
+            &out_dir,
+            &key_p06,
+            "P06 (+G; decay OFF; D(r; T(t)); Fresh)",
+            spec.t_c,
+            &run_p06_base,
+            &run_p06_fine,
+            hold_start_s,
+            &sample_h,
+            &b_ramp_na,
+            true,
+            "F_gen = M_rel / (M^0 + M_gen)",
+            vec![("history_id", J::s(hist_label))],
+            &mut balance_rows,
+        )?;
+        summary_rows.push(format!(
+            "{t_i},{},p06_gen_temp,{fp06_a_end:.12e},,{bp06_ok},{rp06_bnd:.6e}",
+            spec.end_h
+        ));
+
+        // ---- Controlled matched-inventory runs (C_init = g_ref * 620.2 EFPD, common F = M_rel/(M^0+M_gen)) ----
+        let run_ctrl_gd0_base = run_scenario(
+            &def_b,
+            &ScenarioConfig {
+                radii_m: r_m,
+                intervals: BASE_INTERVALS,
+                initial: InitialState::KernelUniform {
+                    c_init: c_init_ctrl,
+                },
+                decay_constant_per_s: 0.0,
+                reference_generation_mol_m3_s: g_ref,
+                diffusion: Diffusion::Constant(d_const),
+                profile_times_s: vec![],
+                extra_boundaries_s: extra_s.clone(),
+            },
+        )
+        .map_err(|e| e.to_string())?;
+        let run_ctrl_gd0_fine = run_scenario(
+            &def_b_fine,
+            &ScenarioConfig {
+                radii_m: r_m,
+                intervals: REFINE_INTERVALS,
+                initial: InitialState::KernelUniform {
+                    c_init: c_init_ctrl,
+                },
+                decay_constant_per_s: 0.0,
+                reference_generation_mol_m3_s: g_ref,
+                diffusion: Diffusion::Constant(d_const),
+                profile_times_s: vec![],
+                extra_boundaries_s: extra_s.clone(),
+            },
+        )
+        .map_err(|e| e.to_string())?;
+        let (fct0_a_end, _, _, rct0_bnd, _) = sample_and_save_case(
+            &prov,
+            &out_dir,
+            &format!("{t_i}c_ctrl_gen_on_decay_off"),
+            "Controlled (+G matched C_init; decay OFF)",
+            spec.t_c,
+            &run_ctrl_gd0_base,
+            &run_ctrl_gd0_fine,
+            0.0,
+            &sample_h,
+            &b_ramp_na,
+            true,
+            "F = M_rel / (M^0 + M_gen)",
+            vec![("c_init_mol_m3", J::Num(c_init_ctrl))],
+            &mut balance_rows,
+        )?;
+        summary_rows.push(format!(
+            "{t_i},{},ctrl_gen_on_decay_off,{fct0_a_end:.12e},,false,{rct0_bnd:.6e}",
+            spec.end_h
+        ));
+
+        let run_ctrl_gd1_base = run_scenario(
+            &def_b,
+            &ScenarioConfig {
+                radii_m: r_m,
+                intervals: BASE_INTERVALS,
+                initial: InitialState::KernelUniform {
+                    c_init: c_init_ctrl,
+                },
+                decay_constant_per_s: lambda,
+                reference_generation_mol_m3_s: g_ref,
+                diffusion: Diffusion::Constant(d_const),
+                profile_times_s: vec![],
+                extra_boundaries_s: extra_s.clone(),
+            },
+        )
+        .map_err(|e| e.to_string())?;
+        let run_ctrl_gd1_fine = run_scenario(
+            &def_b_fine,
+            &ScenarioConfig {
+                radii_m: r_m,
+                intervals: REFINE_INTERVALS,
+                initial: InitialState::KernelUniform {
+                    c_init: c_init_ctrl,
+                },
+                decay_constant_per_s: lambda,
+                reference_generation_mol_m3_s: g_ref,
+                diffusion: Diffusion::Constant(d_const),
+                profile_times_s: vec![],
+                extra_boundaries_s: extra_s.clone(),
+            },
+        )
+        .map_err(|e| e.to_string())?;
+        let (fct1_a_end, _, _, rct1_bnd, _) = sample_and_save_case(
+            &prov,
+            &out_dir,
+            &format!("{t_i}c_ctrl_gen_on_decay_on"),
+            "Controlled (+G +lambda matched C_init)",
+            spec.t_c,
+            &run_ctrl_gd1_base,
+            &run_ctrl_gd1_fine,
+            0.0,
+            &sample_h,
+            &b_ramp_na,
+            true,
+            "F = M_rel / (M^0 + M_gen)",
+            vec![("c_init_mol_m3", J::Num(c_init_ctrl))],
+            &mut balance_rows,
+        )?;
+        summary_rows.push(format!(
+            "{t_i},{},ctrl_gen_on_decay_on,{fct1_a_end:.12e},,false,{rct1_bnd:.6e}",
             spec.end_h
         ));
 
@@ -1325,7 +1585,10 @@ fn run_study39(repo: &Path, commit: &str) -> Result<(), String> {
     let c02_json = json_file(
         &prov,
         "study39_c02_method_a_vs_b",
-        vec![("comparisons", J::Arr(c02_entries))],
+        vec![
+            ("comparisons", J::Arr(c02_entries)),
+            ("all_24_constant_t", J::Arr(c02_all24_entries)),
+        ],
     );
     write_text(
         &out_dir.join("diagnostics").join("c02_method_a_vs_b.json"),

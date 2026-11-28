@@ -7,7 +7,7 @@
     "solver_version": "2.1.0",
     "pipeline": "strato-results 0.1.0",
     "schema_version": "1",
-    "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+    "commit": "HEAD",
     "solver_source_sha256": "0ea05c504c44b19378319d02c9216ec75d660f2c5fd23317c03258c071028cbe",
     "input_sha256": {
       "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
@@ -110,6 +110,245 @@
       "max_rel_diff": 3.02264801916262e-1,
       "final_f_a": 2.755708527409307e-1,
       "final_f_b": 2.7558544686994435e-1
+    }
+  ],
+  "all_24_constant_t": [
+    {
+      "temperature_c": 1.2e3,
+      "config_id": "P01",
+      "stage": "Stage A (baseline)",
+      "b_available": true,
+      "compared_points": 3,
+      "total_sample_points": 161,
+      "valid_from_h": 1.0904358255643096e0,
+      "accuracy_floor": 7.941138363168362e-7,
+      "max_abs_diff_pp": 6.20527061090658e-5,
+      "final_f_a": 1.8420638015617134e-4,
+      "final_f_b": 1.835858530950807e-4
+    },
+    {
+      "temperature_c": 1.2e3,
+      "config_id": "P02",
+      "stage": "Stage B (+G, Fresh)",
+      "b_available": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 66, COVER_SENSITIVITY x 53, BEFORE_MIN_VALID_TIME x 42; first valid time 3.926e3 s, accuracy floor 7.9e-7)"
+    },
+    {
+      "temperature_c": 1.2e3,
+      "config_id": "P05",
+      "stage": "Stage C (+G, +lambda, Fresh)",
+      "b_available": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 66, COVER_SENSITIVITY x 53, BEFORE_MIN_VALID_TIME x 42; first valid time 3.926e3 s, accuracy floor 7.9e-7)"
+    },
+    {
+      "temperature_c": 1.2e3,
+      "config_id": "P03",
+      "stage": "Stage C decay-only (G=0, +lambda)",
+      "b_available": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 101, BEFORE_MIN_VALID_TIME x 42, COVER_SENSITIVITY x 18; first valid time 3.926e3 s, accuracy floor 7.9e-7)"
+    },
+    {
+      "temperature_c": 1.35e3,
+      "config_id": "P01",
+      "stage": "Stage A (baseline)",
+      "b_available": true,
+      "compared_points": 19,
+      "total_sample_points": 162,
+      "valid_from_h": 3.490185736940397e-1,
+      "accuracy_floor": 2.849563623470332e-7,
+      "max_abs_diff_pp": 3.2443432019593765e-4,
+      "final_f_a": 1.4751014102322426e-2,
+      "final_f_b": 1.4748112547127712e-2
+    },
+    {
+      "temperature_c": 1.35e3,
+      "config_id": "P02",
+      "stage": "Stage B (+G, Fresh)",
+      "b_available": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 82, COVER_SENSITIVITY x 53, BEFORE_MIN_VALID_TIME x 27; first valid time 1.256e3 s, accuracy floor 2.8e-7)"
+    },
+    {
+      "temperature_c": 1.35e3,
+      "config_id": "P05",
+      "stage": "Stage C (+G, +lambda, Fresh)",
+      "b_available": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 82, COVER_SENSITIVITY x 53, BEFORE_MIN_VALID_TIME x 27; first valid time 1.256e3 s, accuracy floor 2.8e-7)"
+    },
+    {
+      "temperature_c": 1.35e3,
+      "config_id": "P03",
+      "stage": "Stage C decay-only (G=0, +lambda)",
+      "b_available": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 117, BEFORE_MIN_VALID_TIME x 27, COVER_SENSITIVITY x 18; first valid time 1.256e3 s, accuracy floor 2.8e-7)"
+    },
+    {
+      "temperature_c": 1.5e3,
+      "config_id": "P01",
+      "stage": "Stage A (baseline)",
+      "b_available": true,
+      "compared_points": 44,
+      "total_sample_points": 166,
+      "valid_from_h": 8.58929533456853e-2,
+      "accuracy_floor": 7.045053366957499e-8,
+      "max_abs_diff_pp": 9.89589291105434e-4,
+      "final_f_a": 1.8682143195664924e-1,
+      "final_f_b": 1.8683025843758194e-1
+    },
+    {
+      "temperature_c": 1.5e3,
+      "config_id": "P02",
+      "stage": "Stage B (+G, Fresh)",
+      "b_available": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 104, COVER_SENSITIVITY x 53, BEFORE_MIN_VALID_TIME x 9; first valid time 3.092e2 s, accuracy floor 7.0e-8)"
+    },
+    {
+      "temperature_c": 1.5e3,
+      "config_id": "P05",
+      "stage": "Stage C (+G, +lambda, Fresh)",
+      "b_available": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 104, COVER_SENSITIVITY x 53, BEFORE_MIN_VALID_TIME x 9; first valid time 3.092e2 s, accuracy floor 7.0e-8)"
+    },
+    {
+      "temperature_c": 1.5e3,
+      "config_id": "P03",
+      "stage": "Stage C decay-only (G=0, +lambda)",
+      "b_available": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 139, COVER_SENSITIVITY x 18, BEFORE_MIN_VALID_TIME x 9; first valid time 3.092e2 s, accuracy floor 7.0e-8)"
+    },
+    {
+      "temperature_c": 1.6e3,
+      "config_id": "P01",
+      "stage": "Stage A (baseline)",
+      "b_available": true,
+      "compared_points": 18,
+      "total_sample_points": 121,
+      "valid_from_h": 4.4444444444444446e-2,
+      "accuracy_floor": 1.7576448657497995e-8,
+      "max_abs_diff_pp": 2.2764078460245883e-4,
+      "final_f_a": 3.0285776110048567e-3,
+      "final_f_b": 3.026301203158832e-3
+    },
+    {
+      "temperature_c": 1.6e3,
+      "config_id": "P02",
+      "stage": "Stage B (+G, Fresh)",
+      "b_available": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 67, COVER_SENSITIVITY x 53, BEFORE_MIN_VALID_TIME x 1; first valid time 1.600e2 s, accuracy floor 1.8e-8)"
+    },
+    {
+      "temperature_c": 1.6e3,
+      "config_id": "P05",
+      "stage": "Stage C (+G, +lambda, Fresh)",
+      "b_available": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 67, COVER_SENSITIVITY x 53, BEFORE_MIN_VALID_TIME x 1; first valid time 1.600e2 s, accuracy floor 1.8e-8)"
+    },
+    {
+      "temperature_c": 1.6e3,
+      "config_id": "P03",
+      "stage": "Stage C decay-only (G=0, +lambda)",
+      "b_available": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 103, COVER_SENSITIVITY x 17, BEFORE_MIN_VALID_TIME x 1; first valid time 1.600e2 s, accuracy floor 1.8e-8)"
+    },
+    {
+      "temperature_c": 1.7e3,
+      "config_id": "P01",
+      "stage": "Stage A (baseline)",
+      "b_available": true,
+      "compared_points": 39,
+      "total_sample_points": 122,
+      "valid_from_h": 4.4444444444444446e-2,
+      "accuracy_floor": 3.85489697415442e-9,
+      "max_abs_diff_pp": 5.002906356691567e-4,
+      "final_f_a": 5.3711278367280284e-2,
+      "final_f_b": 5.371094315595093e-2
+    },
+    {
+      "temperature_c": 1.7e3,
+      "config_id": "P02",
+      "stage": "Stage B (+G, Fresh)",
+      "b_available": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 69, COVER_SENSITIVITY x 52, BEFORE_MIN_VALID_TIME x 1; first valid time 1.600e2 s, accuracy floor 3.9e-9)"
+    },
+    {
+      "temperature_c": 1.7e3,
+      "config_id": "P05",
+      "stage": "Stage C (+G, +lambda, Fresh)",
+      "b_available": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 69, COVER_SENSITIVITY x 52, BEFORE_MIN_VALID_TIME x 1; first valid time 1.600e2 s, accuracy floor 3.9e-9)"
+    },
+    {
+      "temperature_c": 1.7e3,
+      "config_id": "P03",
+      "stage": "Stage C decay-only (G=0, +lambda)",
+      "b_available": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 104, COVER_SENSITIVITY x 17, BEFORE_MIN_VALID_TIME x 1; first valid time 1.600e2 s, accuracy floor 3.9e-9)"
+    },
+    {
+      "temperature_c": 1.8e3,
+      "config_id": "P01",
+      "stage": "Stage A (baseline)",
+      "b_available": true,
+      "compared_points": 55,
+      "total_sample_points": 120,
+      "valid_from_h": 4.4444444444444446e-2,
+      "accuracy_floor": 8.989624004070998e-10,
+      "max_abs_diff_pp": 1.5056528449553484e-3,
+      "final_f_a": 2.755708527409307e-1,
+      "final_f_b": 2.7558544686994435e-1
+    },
+    {
+      "temperature_c": 1.8e3,
+      "config_id": "P02",
+      "stage": "Stage B (+G, Fresh)",
+      "b_available": true,
+      "compared_points": 52,
+      "total_sample_points": 120,
+      "valid_from_h": 4.4444444444444446e-2,
+      "accuracy_floor": 8.989624004070998e-10,
+      "max_abs_diff_pp": 1.7292382422300773e-3,
+      "final_f_a": 1.2386453990298427e-1,
+      "final_f_b": 1.2385432523439534e-1
+    },
+    {
+      "temperature_c": 1.8e3,
+      "config_id": "P05",
+      "stage": "Stage C (+G, +lambda, Fresh)",
+      "b_available": true,
+      "compared_points": 52,
+      "total_sample_points": 120,
+      "valid_from_h": 4.4444444444444446e-2,
+      "accuracy_floor": 8.989624004070998e-10,
+      "max_abs_diff_pp": 1.728907102164362e-3,
+      "final_f_a": 1.23834822272023e-1,
+      "final_f_b": 1.2382461473526608e-1
+    },
+    {
+      "temperature_c": 1.8e3,
+      "config_id": "P03",
+      "stage": "Stage C decay-only (G=0, +lambda)",
+      "b_available": true,
+      "compared_points": 55,
+      "total_sample_points": 120,
+      "valid_from_h": 4.4444444444444446e-2,
+      "accuracy_floor": 8.989624004070998e-10,
+      "max_abs_diff_pp": 1.5065918457369057e-3,
+      "final_f_a": 2.754823176248207e-1,
+      "final_f_b": 2.754969151505515e-1
     }
   ]
 }

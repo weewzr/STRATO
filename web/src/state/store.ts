@@ -2,7 +2,21 @@
 // Defaults come from the generated case JSON (strato-webtools case), never from literals.
 import { create } from 'zustand';
 import { cloneConfig, DEFAULT_CASE, findCase, type RegionConfig, type CaseConfig } from '../data/case';
-import { DEFAULT_PHYSICS, DEFAULT_SCENARIO, PHYSICS_IDS, SCENARIO_IDS, type PhysicsId, type ScenarioId } from '../equation/capability';
+import {
+  DEFAULT_MECHANISMS,
+  DEFAULT_OVERLAYS,
+  DEFAULT_PHYSICS,
+  DEFAULT_SCENARIO,
+  flagsOf,
+  flagsToPhysicsId,
+  PHYSICS_IDS,
+  SCENARIO_IDS,
+  type OverlayFlags,
+  type PhysicsFlags,
+  type PhysicsId,
+  type ScenarioId,
+  type SpeciesPhysicsId,
+} from '../equation/capability';
 import { DEFAULT_GRAPH, GRAPH_IDS, SECTION_IDS, type GraphId } from '../equation/selectionIds';
 import type { BtcsLimits, BuildInfo, CompareOk, Grid, RunResponse, ValidateReply } from '../solver/types';
 
@@ -17,6 +31,10 @@ import type { BtcsLimits, BuildInfo, CompareOk, Grid, RunResponse, ValidateReply
  */
 export interface Selection {
   physics: PhysicsId;
+  /** Independent mechanism flags for Option B stages P01–P08. */
+  mechanisms: PhysicsFlags;
+  /** Future species-specific physics selector. */
+  speciesPhysics: SpeciesPhysicsId;
   /** The selected operation (steady-state operation by default). */
   scenario: ScenarioId | null;
   /** Ids of the expanded sections of the Numerical Interpretation (equation/selectionIds.ts: SECTION_IDS). */
@@ -29,8 +47,24 @@ export interface Selection {
   temperature: number | null;
   /** Id of the experimental dataset (the comparison file); empty for the first one of the species. */
   dataset: string;
+  /** Independent graph curve overlay toggles. */
+  overlays: OverlayFlags;
+  /** Optional controlled matched-inventory curve overlay (when applicable). */
+  controlledCompare: boolean;
 }
-export const DEFAULT_SELECTION: Selection = { physics: DEFAULT_PHYSICS, scenario: DEFAULT_SCENARIO, expanded: [], graph: DEFAULT_GRAPH, species: '', temperature: null, dataset: '' };
+export const DEFAULT_SELECTION: Selection = {
+  physics: DEFAULT_PHYSICS,
+  mechanisms: { ...DEFAULT_MECHANISMS },
+  speciesPhysics: 'none',
+  scenario: DEFAULT_SCENARIO,
+  expanded: [],
+  graph: DEFAULT_GRAPH,
+  species: '',
+  temperature: null,
+  dataset: '',
+  overlays: { ...DEFAULT_OVERLAYS },
+  controlledCompare: false,
+};
 /** The ids that `expanded` may hold, in the fixed order in which they are kept. */
 export const EXPANDABLE_IDS: readonly string[] = SECTION_IDS;
 export type RunStatus = 'idle' | 'running' | 'ok' | 'rejected' | 'error';
@@ -213,30 +247,62 @@ export function inputKey(cfg: CaseConfig): string {
 /** A selection that holds only valid parts: anything else becomes the default; the expanded ids are unique and in a fixed order. */
 export function normaliseSelection(sel: {
   physics?: string | undefined;
+  mechanisms?: Partial<PhysicsFlags> | undefined;
+  speciesPhysics?: string | undefined;
   scenario?: string | null | undefined;
   expanded?: readonly string[] | undefined;
   graph?: string | undefined;
   species?: string | undefined;
   temperature?: number | null | undefined;
   dataset?: string | undefined;
+  overlays?: Partial<OverlayFlags> | undefined;
+  controlledCompare?: boolean | undefined;
 }): Selection {
-  const physics = PHYSICS_IDS.includes(sel.physics as PhysicsId) ? (sel.physics as PhysicsId) : DEFAULT_SELECTION.physics;
+  const hasExplicitPhysics = sel.physics !== undefined && PHYSICS_IDS.includes(sel.physics as PhysicsId);
+  const rawMech = sel.mechanisms;
+  const mechanisms: PhysicsFlags = rawMech
+    ? {
+        generation: Boolean(rawMech.generation),
+        decay: Boolean(rawMech.decay),
+        temperature: Boolean(rawMech.temperature),
+      }
+    : hasExplicitPhysics
+      ? flagsOf(sel.physics as PhysicsId)
+      : { ...DEFAULT_MECHANISMS };
+  const physics: PhysicsId = hasExplicitPhysics ? (sel.physics as PhysicsId) : flagsToPhysicsId(mechanisms);
+  const speciesPhysics: SpeciesPhysicsId = 'none';
   const scenario = SCENARIO_IDS.includes(sel.scenario as ScenarioId) ? (sel.scenario as ScenarioId) : DEFAULT_SELECTION.scenario;
   const expanded = EXPANDABLE_IDS.filter((id) => (sel.expanded ?? []).includes(id));
   const graph = GRAPH_IDS.includes(sel.graph as GraphId) ? (sel.graph as GraphId) : DEFAULT_SELECTION.graph;
   const text = (x: string | undefined): string => (typeof x === 'string' && /^[A-Za-z0-9._-]{1,80}$/.test(x) ? x : '');
   const temperature = typeof sel.temperature === 'number' && Number.isFinite(sel.temperature) ? sel.temperature : null;
+  const overlays: OverlayFlags = sel.overlays
+    ? {
+        methodA: sel.overlays.methodA ?? DEFAULT_OVERLAYS.methodA,
+        methodB: sel.overlays.methodB ?? DEFAULT_OVERLAYS.methodB,
+        experiment: sel.overlays.experiment ?? DEFAULT_OVERLAYS.experiment,
+      }
+    : { ...DEFAULT_OVERLAYS };
+  const controlledCompare = Boolean(sel.controlledCompare);
   // The model equation and the operation are independent: neither is changed to suit the other.
-  return { physics, scenario, expanded, graph, species: text(sel.species), temperature, dataset: text(sel.dataset) };
+  return { physics, mechanisms, speciesPhysics, scenario, expanded, graph, species: text(sel.species), temperature, dataset: text(sel.dataset), overlays, controlledCompare };
 }
 
 export const sameSelection = (a: Selection, b: Selection): boolean =>
   a.physics === b.physics &&
+  a.mechanisms.generation === b.mechanisms.generation &&
+  a.mechanisms.decay === b.mechanisms.decay &&
+  a.mechanisms.temperature === b.mechanisms.temperature &&
+  a.speciesPhysics === b.speciesPhysics &&
   a.scenario === b.scenario &&
   a.graph === b.graph &&
   a.species === b.species &&
   a.temperature === b.temperature &&
   a.dataset === b.dataset &&
+  a.overlays.methodA === b.overlays.methodA &&
+  a.overlays.methodB === b.overlays.methodB &&
+  a.overlays.experiment === b.overlays.experiment &&
+  a.controlledCompare === b.controlledCompare &&
   a.expanded.length === b.expanded.length &&
   a.expanded.every((id, i) => id === b.expanded[i]);
 
@@ -246,7 +312,12 @@ export function initialState() {
     config: cloneConfig(DEFAULT_CASE.config),
     baselineConfig: cloneConfig(DEFAULT_CASE.config),
     capabilities: [] as string[],
-    selection: { ...DEFAULT_SELECTION, expanded: [] as string[] } as Selection,
+    selection: {
+      ...DEFAULT_SELECTION,
+      mechanisms: { ...DEFAULT_MECHANISMS },
+      overlays: { ...DEFAULT_OVERLAYS },
+      expanded: [] as string[],
+    } as Selection,
     run: null,
     baselineRun: null,
     status: 'idle' as RunStatus,
@@ -336,9 +407,16 @@ export const useStrato = create<StratoState>()((set, get) => ({
 
 
   setSelection: (patch) => {
-    // The two groups of buttons are independent: a patch of one never changes the other.
-    const next = normaliseSelection({ ...get().selection, ...patch });
-    if (!sameSelection(next, get().selection)) set({ selection: next });
+    // The model equation mechanisms and operation groups are independent: changing one never alters the other.
+    const prev = get().selection;
+    const merged: Parameters<typeof normaliseSelection>[0] = { ...prev, ...patch };
+    if (patch.mechanisms !== undefined && patch.physics === undefined) {
+      merged.physics = flagsToPhysicsId(patch.mechanisms);
+    } else if (patch.physics !== undefined && patch.mechanisms === undefined) {
+      merged.mechanisms = flagsOf(patch.physics);
+    }
+    const next = normaliseSelection(merged);
+    if (!sameSelection(next, prev)) set({ selection: next });
   },
 
   setExpanded: (id, open) => {

@@ -12,8 +12,37 @@ export const MECHANISMS: readonly Mechanism[] = ['generation', 'decay', 'tempera
 
 /** The physics selection of the Explore page: the baseline, one mechanism on its own, or all of them. */
 export type PhysicsId = 'baseline' | Mechanism | 'combined' | 'future';
-/** The six buttons of MODEL EQUATION, in order. 'future' (species-specific physics) shows the combined equation and is never a simulation. */
+/** The six legacy buttons of MODEL EQUATION, in order. 'future' shows the combined equation and is never a simulation. */
 export const PHYSICS_IDS: readonly PhysicsId[] = ['baseline', 'generation', 'decay', 'temperature', 'combined', 'future'];
+
+/** Option B independent physics toggles (P01–P08), species-specific physics selector, and 3 graph overlays. */
+export type PhysicsConfigId = 'P01' | 'P02' | 'P03' | 'P04' | 'P05' | 'P06' | 'P07' | 'P08';
+export const PHYSICS_CONFIG_IDS: readonly PhysicsConfigId[] = ['P01', 'P02', 'P03', 'P04', 'P05', 'P06', 'P07', 'P08'];
+export interface PhysicsFlags {
+  generation: boolean;
+  decay: boolean;
+  temperature: boolean;
+}
+export type PhysicsSelection = PhysicsId | PhysicsFlags;
+export type SpeciesPhysicsId = 'none';
+export interface OverlayFlags {
+  methodA: boolean;
+  methodB: boolean;
+  experiment: boolean;
+}
+export const DEFAULT_MECHANISMS: PhysicsFlags = { generation: false, decay: false, temperature: false };
+export const DEFAULT_OVERLAYS: OverlayFlags = { methodA: true, methodB: true, experiment: true };
+
+export const CONFIG_LABELS: Record<PhysicsConfigId, { stageAlias: string; summary: string }> = {
+  P01: { stageAlias: 'Stage A', summary: 'Baseline diffusion' },
+  P02: { stageAlias: 'Stage B', summary: 'Baseline + generation' },
+  P03: { stageAlias: 'Stage C (decay-only; G=0)', summary: 'Baseline + decay' },
+  P04: { stageAlias: 'Stage D (heating ramp; G=0)', summary: 'Baseline + temperature-dependent D(T)' },
+  P05: { stageAlias: 'Stage C', summary: 'Baseline + generation + decay' },
+  P06: { stageAlias: 'P06 (+G, T(t))', summary: 'Baseline + generation + temperature-dependent D(T)' },
+  P07: { stageAlias: 'Stage D (+decay, T(t))', summary: 'Baseline + decay + temperature-dependent D(T)' },
+  P08: { stageAlias: 'Stage D (combined)', summary: 'Baseline + generation + decay + temperature-dependent D(T)' },
+};
 
 /** Operating scenarios (directive Section 3). Steady-state operation is the default. */
 export type ScenarioId = 'steady' | 'shutdown' | 'startup' | 'control-rod' | 'refuelling';
@@ -89,15 +118,70 @@ function weakest(all: BuildStatus[]): BuildStatus {
 /** The simulation may use a mechanism, the baseline or a scenario only at the verified status. */
 export const isSimulable = (s: BuildStatus): boolean => s === 'verified';
 
+/** Convert either a legacy PhysicsId or a PhysicsFlags object into canonical boolean flags. */
+export function flagsOf(physics: PhysicsSelection): PhysicsFlags {
+  if (typeof physics !== 'string') {
+    return { generation: Boolean(physics.generation), decay: Boolean(physics.decay), temperature: Boolean(physics.temperature) };
+  }
+  if (physics === 'baseline') return { generation: false, decay: false, temperature: false };
+  if (physics === 'combined' || physics === 'future') return { generation: true, decay: true, temperature: true };
+  return {
+    generation: physics === 'generation',
+    decay: physics === 'decay',
+    temperature: physics === 'temperature',
+  };
+}
+
+/** Map active mechanism flags to the canonical P01–P08 configuration id. */
+export function flagsToConfigId(flags: PhysicsFlags): PhysicsConfigId {
+  const { generation: g, decay: d, temperature: t } = flags;
+  if (!g && !d && !t) return 'P01';
+  if (g && !d && !t) return 'P02';
+  if (!g && d && !t) return 'P03';
+  if (!g && !d && t) return 'P04';
+  if (g && d && !t) return 'P05';
+  if (g && !d && t) return 'P06';
+  if (!g && d && t) return 'P07';
+  return 'P08';
+}
+
+export function configIdToFlags(id: PhysicsConfigId): PhysicsFlags {
+  switch (id) {
+    case 'P01':
+      return { generation: false, decay: false, temperature: false };
+    case 'P02':
+      return { generation: true, decay: false, temperature: false };
+    case 'P03':
+      return { generation: false, decay: true, temperature: false };
+    case 'P04':
+      return { generation: false, decay: false, temperature: true };
+    case 'P05':
+      return { generation: true, decay: true, temperature: false };
+    case 'P06':
+      return { generation: true, decay: false, temperature: true };
+    case 'P07':
+      return { generation: false, decay: true, temperature: true };
+    case 'P08':
+      return { generation: true, decay: true, temperature: true };
+  }
+}
+
+export function flagsToPhysicsId(flags: PhysicsFlags): PhysicsId {
+  const { generation: g, decay: d, temperature: t } = flags;
+  const count = Number(g) + Number(d) + Number(t);
+  if (count === 0) return 'baseline';
+  if (count === 1) return g ? 'generation' : d ? 'decay' : 'temperature';
+  return 'combined';
+}
+
 /** The mechanisms that a physics selection switches on. */
-export function mechanismsOf(physics: PhysicsId): Mechanism[] {
-  if (physics === 'baseline') return [];
-  if (physics === 'combined' || physics === 'future') return [...MECHANISMS];
-  return [physics];
+export function mechanismsOf(physics: PhysicsSelection): Mechanism[] {
+  const f = flagsOf(physics);
+  return MECHANISMS.filter((m) => f[m]);
 }
 
 /** The status of a physics selection: the weakest of the baseline and the mechanisms it contains. */
-export function physicsStatus(cap: BuildCapability, physics: PhysicsId): BuildStatus {
+export function physicsStatus(cap: BuildCapability, physics: PhysicsSelection): BuildStatus {
   return weakest([cap.baseline, ...mechanismsOf(physics).map((m) => cap.mechanisms[m])]);
 }
 
@@ -131,7 +215,7 @@ export const SCENARIO_NAME: Record<ScenarioId, string> = {
 };
 
 /** Whether the build can run the selection; never substitutes another model (the page shows nothing instead). */
-export function selectionSupport(cap: BuildCapability, physics: PhysicsId, scenario: ScenarioId | null): SelectionSupport {
+export function selectionSupport(cap: BuildCapability, physics: PhysicsSelection, scenario: ScenarioId | null): SelectionSupport {
   const missing: string[] = [];
   if (!isSimulable(cap.baseline)) missing.push('the baseline BTCS model');
   for (const m of mechanismsOf(physics)) if (!isSimulable(cap.mechanisms[m])) missing.push(MECHANISM_NAME[m]);
@@ -153,7 +237,7 @@ export function phrase(names: readonly string[]): string {
 }
 
 /** The mechanism ids a run asks the wrapper for: the baseline capability and the selected mechanisms (the client drops what is not available). */
-export function runMechanisms(physics: PhysicsId): string[] {
+export function runMechanisms(physics: PhysicsSelection): string[] {
   return [BTCS_CAPABILITY, ...mechanismsOf(physics).map((m) => WRAPPER_ID[m])];
 }
 

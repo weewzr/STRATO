@@ -80,7 +80,19 @@ describe('store actions', () => {
   });
 
   it('start with the default selection: baseline physics, steady-state operation, nothing expanded, the release graph', () => {
-    expect(useStrato.getState().selection).toEqual({ physics: 'baseline', scenario: 'steady', expanded: [], graph: 'release', species: '', temperature: null, dataset: '' });
+    expect(useStrato.getState().selection).toEqual({
+      physics: 'baseline',
+      mechanisms: { generation: false, decay: false, temperature: false },
+      speciesPhysics: 'none',
+      scenario: 'steady',
+      expanded: [],
+      graph: 'release',
+      species: '',
+      temperature: null,
+      dataset: '',
+      overlays: { methodA: true, methodB: true, experiment: true },
+      controlledCompare: false,
+    });
   });
 
   it('select and clear a layer', () => {

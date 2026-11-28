@@ -7,6 +7,9 @@ temperature_c,duration_h,stage_key,final_f_method_a,final_f_method_b,b_available
 1200,10138,stage_d_ramp_decay_off,1.847326655376e-4,,false,8.894954e-3
 1200,10138,stage_d_ramp_decay_on,1.804724636814e-4,,false,2.903460e-2
 1200,10138,stage_d_combined,2.345325758076e-5,,false,3.343458e-2
+1200,10138,p06_gen_temp,2.395287259396e-5,,false,8.896032e-3
+1200,10138,ctrl_gen_on_decay_off,1.191098911646e-4,,false,3.171827e-3
+1200,10138,ctrl_gen_on_decay_on,1.163924283269e-4,,false,1.756274e-2
 1350,10685,stage_a,1.475101410232e-2,1.474811254713e-2,true,3.254573e-3
 1350,10685,stage_b,3.666005379878e-3,,false,3.254574e-3
 1350,10685,stage_c,3.601714279080e-3,,false,3.447427e-3
@@ -15,6 +18,9 @@ temperature_c,duration_h,stage_key,final_f_method_a,final_f_method_b,b_available
 1350,10685,stage_d_ramp_decay_off,1.475982102498e-2,,false,8.416349e-3
 1350,10685,stage_d_ramp_decay_on,1.445062270331e-2,,false,3.215325e-2
 1350,10685,stage_d_combined,3.628853313782e-3,,false,3.487485e-2
+1350,10685,p06_gen_temp,3.693772376246e-3,,false,9.507355e-3
+1350,10685,ctrl_gen_on_decay_off,1.011885748791e-2,,false,3.255595e-3
+1350,10685,ctrl_gen_on_decay_on,9.912680229796e-3,,false,3.447411e-3
 1500,11866,stage_a,1.868214319566e-1,1.868302584376e-1,true,1.757751e-2
 1500,11866,stage_b,7.861370225146e-2,,false,1.757746e-2
 1500,11866,stage_c,7.754585395036e-2,,false,4.748240e-2
@@ -23,6 +29,9 @@ temperature_c,duration_h,stage_key,final_f_method_a,final_f_method_b,b_available
 1500,11866,stage_d_ramp_decay_off,1.868537027349e-1,,false,8.756185e-3
 1500,11866,stage_d_ramp_decay_on,1.834997150166e-1,,false,3.299307e-2
 1500,11866,stage_d_combined,7.780252448629e-2,,false,3.487485e-2
+1500,11866,p06_gen_temp,7.887605204228e-2,,false,9.507355e-3
+1500,11866,ctrl_gen_on_decay_off,1.388231320672e-1,,false,1.757750e-2
+1500,11866,ctrl_gen_on_decay_on,1.364907519512e-1,,false,4.748255e-2
 1600,400,stage_a,3.028577611005e-3,3.026301203159e-3,true,3.774467e-3
 1600,400,stage_b,5.686913557157e-4,,false,3.774531e-3
 1600,400,stage_c,5.682687300333e-4,,false,5.125736e-3
@@ -31,6 +40,9 @@ temperature_c,duration_h,stage_key,final_f_method_a,final_f_method_b,b_available
 1600,400,stage_d_ramp_decay_off,3.102844265770e-3,,false,1.419463e-2
 1600,400,stage_d_ramp_decay_on,3.099945138186e-3,,false,3.798446e-2
 1600,400,stage_d_combined,7.514490410339e-4,,false,4.976146e-2
+1600,400,p06_gen_temp,7.520419172989e-4,,false,1.460234e-2
+1600,400,ctrl_gen_on_decay_off,2.964202905277e-3,,false,3.810464e-3
+1600,400,ctrl_gen_on_decay_on,2.961672877424e-3,,false,5.130660e-3
 1700,272,stage_a,5.371127836728e-2,5.371094315595e-2,true,1.667968e-2
 1700,272,stage_b,1.694317022885e-2,,false,1.667846e-2
 1700,272,stage_c,1.693646037496e-2,,false,4.935136e-2
@@ -39,6 +51,9 @@ temperature_c,duration_h,stage_key,final_f_method_a,final_f_method_b,b_available
 1700,272,stage_d_ramp_decay_off,5.455993002437e-2,,false,1.419463e-2
 1700,272,stage_d_ramp_decay_on,5.452861672184e-2,,false,3.798446e-2
 1700,272,stage_d_combined,2.102089632127e-2,,false,4.976146e-2
+1700,272,p06_gen_temp,2.103002851977e-2,,false,1.460234e-2
+1700,272,ctrl_gen_on_decay_off,5.305144768169e-2,,false,5.335290e-3
+1700,272,ctrl_gen_on_decay_on,5.302550883078e-2,,false,2.134826e-2
 1800,222,stage_a,2.755708527409e-1,2.755854468699e-1,true,8.675771e-3
 1800,222,stage_b,1.238645399030e-1,1.238543252344e-1,true,1.164407e-2
 1800,222,stage_c,1.238348222720e-1,1.238246147353e-1,true,3.776965e-2
@@ -47,3 +62,6 @@ temperature_c,duration_h,stage_key,final_f_method_a,final_f_method_b,b_available
 1800,222,stage_d_ramp_decay_off,2.784240296250e-1,,false,1.419463e-2
 1800,222,stage_d_ramp_decay_on,2.783097563056e-1,,false,3.798446e-2
 1800,222,stage_d_combined,1.449524358233e-1,,false,4.976146e-2
+1800,222,p06_gen_temp,1.449919857145e-1,,false,1.460234e-2
+1800,222,ctrl_gen_on_decay_off,2.733414714591e-1,,false,8.770365e-3
+1800,222,ctrl_gen_on_decay_on,2.732538017674e-1,,false,2.663965e-2

@@ -83,28 +83,25 @@ test.describe('keyboard at 1280 px', () => {
     await expect(page.getByTestId('issue-count')).toHaveText('Inputs equal the baseline.');
   });
 
-  test('the model-equation and operation choices are one tab stop each, move with the arrow keys, announce the change and write the address', async ({ page, problems }) => {
+  test('Select a Modelling Stage checkboxes and Operation radio group work by keyboard, announce changes, and sync the address', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
-    const baseline = page.getByTestId('physics-baseline');
-    await baseline.focus();
-    await expect(baseline).toBeFocused();
-    await page.keyboard.press('ArrowRight');
-    await expect(page.getByTestId('physics-generation')).toBeFocused();
-    await expect(page.getByTestId('physics-generation')).toHaveAttribute('aria-checked', 'true');
-    await expect(page.getByTestId('physics-announce')).toContainText('enters the right-hand side');
+    const gen = page.getByTestId('mech-generation');
+    await gen.focus();
+    await expect(gen).toBeFocused();
+    await page.keyboard.press('Space');
+    await expect(gen).toBeChecked();
+    await expect(page.getByTestId('physics-announce')).toContainText('P02');
     await expect(page).toHaveURL(/#\/explore\?physics=generation$/);
-    await page.keyboard.press('End');
-    await expect(page.getByTestId('physics-future')).toHaveAttribute('aria-checked', 'true');
-    await expect(page).toHaveURL(/#\/explore\?physics=future$/);
-    // Tab leaves the group: only the selected choice is a tab stop.
-    await page.keyboard.press('Tab');
-    expect(await page.evaluate(() => document.activeElement?.closest('[data-testid="physics-picker"]') === null)).toBe(true);
+    await page.getByTestId('mech-decay').focus();
+    await page.keyboard.press('Space');
+    await expect(page.getByTestId('config-id-label')).toContainText('P05');
+    await expect(page).toHaveURL(/#\/explore\?config=P05$/);
     await page.getByTestId('operation-steady').focus();
     await page.keyboard.press('ArrowRight');
     await expect(page.getByTestId('operation-shutdown')).toBeFocused();
     await expect(page.getByTestId('operation-shutdown')).toHaveAttribute('aria-checked', 'true');
-    await expect(page).toHaveURL(/#\/explore\?physics=future&scenario=shutdown$/);
+    await expect(page).toHaveURL(/#\/explore\?config=P05&scenario=shutdown$/);
   });
 
   test('section links work with Enter and focus the new heading', async ({ page, problems }) => {

@@ -3,7 +3,17 @@
 // typesetting is the directive's own (r^2); the repository documents write the same power as (r)^2 and
 // nothing else differs. The combined equation is also
 // equation (1) of Document 5 (docs/mathematics/btcs/05_generation_decay_temperature.md).
-import { MECHANISMS, type Mechanism, type PhysicsId, type ScenarioId } from './capability';
+import {
+  CONFIG_LABELS,
+  flagsOf,
+  flagsToConfigId,
+  mechanismsOf,
+  type Mechanism,
+  type PhysicsFlags,
+  type PhysicsId,
+  type PhysicsSelection,
+  type ScenarioId,
+} from './capability';
 
 export const D_CONSTANT = 'D';
 export const D_TEMPERATURE = 'D(r,T)';
@@ -44,8 +54,9 @@ export const isTimed = (scenario: ScenarioId | null): boolean => scenario !== nu
  * nothing: G and T are constants. Every other scenario changes existing symbols only, G to G(r,t) and D(r,T)
  * to D(r,T(t)), and only where the mechanism is part of the selection; it never adds a term.
  */
-export function equationPieces(physics: PhysicsId, scenario: ScenarioId | null = null): Piece[] {
-  const on = (m: Mechanism) => physics === m || physics === 'combined' || physics === 'future';
+export function equationPieces(physics: PhysicsSelection, scenario: ScenarioId | null = null): Piece[] {
+  const flags = flagsOf(physics);
+  const on = (m: Mechanism) => flags[m];
   const timed = isTimed(scenario);
   const dSymbol = !on('temperature') ? D_CONSTANT : timed ? D_SCENARIO : D_TEMPERATURE;
   const dShown = !on('temperature') ? D_CONSTANT : mark(timed ? 'geq-hi geq-hi--scenario' : 'geq-hi geq-hi--temperature', dSymbol);
@@ -73,7 +84,7 @@ export function equationPieces(physics: PhysicsId, scenario: ScenarioId | null =
 }
 
 /** The whole equation as one TeX string (structural tests and the accessible name). */
-export function equationTex(physics: PhysicsId, scenario: ScenarioId | null = null): string {
+export function equationTex(physics: PhysicsSelection, scenario: ScenarioId | null = null): string {
   return equationPieces(physics, scenario)
     .map((p) => p.tex)
     .join(' ');
@@ -165,8 +176,21 @@ export const TERM_MEANINGS: readonly TermMeaning[] = [
   },
 ];
 
+/** Live-region announcement sentence for any of the eight Option B configurations (P01–P08) and operation. */
+export function physicsConfigAnnouncement(flags: PhysicsFlags, scenario: ScenarioId | null = null): string {
+  const cid = flagsToConfigId(flags);
+  const meta = CONFIG_LABELS[cid];
+  const timed = isTimed(scenario);
+  const dDesc = !flags.temperature ? 'constant D' : timed ? 'time-varying D(r,T(t))' : 'D(r,T)';
+  const extras = [
+    flags.generation ? (timed ? 'plus G(r,t)' : 'plus G') : null,
+    flags.decay ? 'minus lambda C' : null,
+  ].filter(Boolean);
+  return `${cid} (${meta.stageAlias}): ${meta.summary} with ${dDesc}${extras.length ? ` and ${extras.join(' and ')}` : ''}.`;
+}
+
 /** The meanings that apply to a selection: the two baseline terms, then each selected mechanism in the order of the equation. */
-export function meaningsFor(physics: PhysicsId): TermMeaning[] {
-  const sel = new Set<Mechanism>(physics === 'baseline' ? [] : physics === 'combined' || physics === 'future' ? MECHANISMS : [physics]);
+export function meaningsFor(physics: PhysicsSelection): TermMeaning[] {
+  const sel = new Set<Mechanism>(mechanismsOf(physics));
   return TERM_MEANINGS.filter((t) => t.mechanism === null || sel.has(t.mechanism));
 }

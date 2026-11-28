@@ -36,7 +36,7 @@ for (const vp of [
 
       // Fission-product generation selected on Explore: nothing changes in the manual solver, and nothing is run.
       await page.goto('./#/explore?physics=generation');
-      await expect(page.getByTestId('physics-generation')).toHaveAttribute('aria-checked', 'true');
+      await expect(page.getByTestId('mech-generation')).toBeChecked();
       await gotoAdvanced(page);
       await expect(page.getByTestId('block-d')).toHaveAttribute('data-supported', 'true');
       await expect(page.getByTestId('release-value')).toBeVisible();

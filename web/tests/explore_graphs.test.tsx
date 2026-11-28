@@ -5,7 +5,7 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { PHYSICS_IDS, SCENARIO_IDS } from '../src/equation/capability';
+import { SCENARIO_IDS } from '../src/equation/capability';
 import { GRAPH_IDS } from '../src/equation/selectionIds';
 import { ExploreGraphs, type GraphChoices } from '../src/graph/ExploreGraphs';
 import { COMPARISONS, datasetsAt, datasetsOf, offeredTemperatures, stageRequest, type Species } from '../src/graph/exploreData';
@@ -56,8 +56,8 @@ beforeEach(() => {
 });
 
 describe('the traces are the replies, element by element', () => {
-  it('draws Method A of the stage reply as a solid blue line with the very arrays of the reply', () => {
-    const fig = releaseFigure(stage, theme);
+  it('draws Method A of the stage reply as a solid red line with the very arrays of the reply', () => {
+    const fig = releaseFigure(stage, theme)!;
     expect(fig.data).toHaveLength(1);
     const t = fig.data[0];
     expect(t?.x).toBe(stage.series.times_h);
@@ -72,10 +72,10 @@ describe('the traces are the replies, element by element', () => {
 
   it('draws the model curves of a comparison file only when asked, and the measurements alone otherwise', () => {
     const file = COMPARISONS[0]!;
-    const alone = experimentFigure(file, theme, false);
+    const alone = experimentFigure(file, theme, false)!;
     expect(alone.data.some((d) => d.meta?.id === 'exp-method-a' || d.meta?.id === 'exp-method-b')).toBe(false);
     expect(alone.data.some((d) => d.meta?.id === 'exp-measurements' || d.meta?.id === 'exp-upper-bounds')).toBe(true);
-    expect(experimentFigure(file, theme, true).data.some((d) => d.meta?.id === 'exp-method-a')).toBe(true);
+    expect(experimentFigure(file, theme, true)!.data.some((d) => d.meta?.id === 'exp-method-a')).toBe(true);
   });
 
   it('draws Method B red and solid from the reply of analytical, with nulls kept as gaps, and none where the wrapper gave no value', () => {
@@ -107,7 +107,7 @@ describe('the traces are the replies, element by element', () => {
   it('draws the registered experimental curves: black markers, upper bounds as downward triangles, the model curve of the file', () => {
     expect(COMPARISONS.length).toBeGreaterThan(0);
     for (const file of COMPARISONS) {
-      const fig = experimentFigure(file, theme);
+      const fig = experimentFigure(file, theme)!;
       const a = fig.data[0];
       expect(a?.x, file.curve_id).toBe(file.model.method_a.time_h);
       expect(a?.y, file.curve_id).toBe(file.model.method_a.release_fraction);
@@ -135,7 +135,7 @@ describe('the traces are the replies, element by element', () => {
   it('writes an R squared label only where a record holds a value, in the colour of its method', () => {
     const file = JSON.parse(JSON.stringify(COMPARISONS[0])) as (typeof COMPARISONS)[number];
     file.r2_records = [{ method: 'A', status: 'available', label_plain: 'R² = 0.95' }, { method: 'B', status: 'unavailable', label_plain: null }];
-    const ann = experimentFigure(file, theme).layout.annotations as { text: string; font: { color: string } }[];
+    const ann = experimentFigure(file, theme)!.layout.annotations as { text: string; font: { color: string } }[];
     expect(ann).toHaveLength(1);
     expect(ann[0]).toMatchObject({ text: 'R² = 0.95', font: { color: '#DC2626' } });
   });
@@ -149,19 +149,29 @@ describe('the panel of the graphs', () => {
     return out.join('');
   };
 
-  it('is an empty frame, with no text node and no curve, for every operation except steady-state operation, whatever the model equation and the result', () => {
-    render(<ExploreGraphs choices={choices()} />);
-    for (const graph of GRAPH_IDS) {
-      for (const scenario of SCENARIO_IDS.filter((s) => s !== 'steady')) {
-        for (const physics of PHYSICS_IDS) {
-          act(() => useStrato.getState().setSelection({ graph, scenario, physics }));
-          const panel = screen.getByTestId('graph-panel');
-          expect(panel.dataset.empty, `${graph}/${scenario}/${physics}`).toBe('true');
-          expect(text(panel), `${graph}/${scenario}/${physics}`).toBe('');
-          expect(panel.querySelector('svg, canvas, .js-plotly-plot')).toBeNull();
-          expect(screen.queryByTestId('experiment-citation')).toBeNull();
-        }
-      }
+  it('draws authentic s5 scenario curves for Cs-137 and Sr-90 and renders Option B 7 overlay combinations cleanly', async () => {
+    const user = userEvent.setup();
+    render(<ExploreGraphs choices={choices({ current: { id: 'cs137', name: 'Cs-137', element: 'Cs' }, temperature: 1700 })} />);
+    expect(screen.getByTestId('graph-panel').dataset.empty).toBe('false');
+    // Uncheck all three overlay toggles -> clean empty prompt, then re-enable any one
+    await user.click(screen.getByTestId('overlay-method-a'));
+    await user.click(screen.getByTestId('overlay-method-b'));
+    await user.click(screen.getByTestId('overlay-experiment'));
+    expect(screen.getByTestId('overlay-empty-note')).toBeTruthy();
+    await user.click(screen.getByTestId('overlay-experiment'));
+    expect(screen.getByTestId('graph-panel').dataset.empty).toBe('false');
+    await user.click(screen.getByTestId('overlay-method-a'));
+    for (const scenario of SCENARIO_IDS.filter((s) => s !== 'steady')) {
+      act(() => useStrato.getState().setSelection({ graph: 'release', scenario, physics: 'baseline' }));
+      expect(screen.getByTestId('graph-panel').dataset.empty, `cs137/${scenario}`).toBe('false');
+      expect(screen.getByTestId('scenario-curve-note')).toBeTruthy();
+    }
+    // Unsupported species/physics still leaves an empty frame with no placeholder curve.
+    const EU: Species = { id: 'eu154', name: 'Eu-154', element: 'Eu' };
+    render(<ExploreGraphs choices={choices({ species: [EU], current: EU, temperatures: [], temperature: null, request: null, result: null })} />);
+    for (const scenario of SCENARIO_IDS.filter((s) => s !== 'steady')) {
+      act(() => useStrato.getState().setSelection({ graph: 'release', scenario, physics: 'baseline', species: 'eu154' }));
+      expect(screen.getAllByTestId('graph-panel').at(-1)?.dataset.empty, `eu/${scenario}`).toBe('true');
     }
   });
 
@@ -175,44 +185,46 @@ describe('the panel of the graphs', () => {
     }
   });
 
-  it('is empty, and shows nothing of an earlier selection, where there is no result for the selection', () => {
+  it('is empty, and shows nothing of an earlier selection, where there is no result for a non-canonical selection', () => {
     render(<ExploreGraphs choices={choices({ result: null })} />);
+    act(() => useStrato.getState().setSelection({ species: 'sr90' }));
     for (const graph of ['release', 'profile', 'methods'] as const) {
-      act(() => useStrato.getState().setSelection({ graph, scenario: 'steady', physics: 'baseline' }));
+      act(() => useStrato.getState().setSelection({ graph, scenario: 'steady', physics: 'baseline', species: 'sr90' }));
       expect(screen.getByTestId('graph-panel').dataset.empty).toBe('true');
       expect(text(screen.getByTestId('graph-panel'))).toBe('');
     }
-    // Method A against Method B has nothing to draw where Method B gave no value.
+    // Method A against Method B has nothing to draw where Method B gave no value on sr90.
     render(<ExploreGraphs choices={choices({ result: { key: 'k', reply: stage, analytical: null } })} />);
-    act(() => useStrato.getState().setSelection({ graph: 'methods' }));
+    act(() => useStrato.getState().setSelection({ graph: 'methods', species: 'sr90' }));
     expect(screen.getAllByTestId('graph-panel').at(-1)?.dataset.empty).toBe('true');
   });
 
   it('draws for steady-state operation where a result exists, and the frame is gone', () => {
     render(<ExploreGraphs choices={choices()} />);
+    act(() => useStrato.getState().setSelection({ species: 'sr90' }));
     for (const graph of ['release', 'profile', 'methods', 'experiment'] as const) {
-      act(() => useStrato.getState().setSelection({ graph, scenario: 'steady', physics: 'baseline' }));
+      act(() => useStrato.getState().setSelection({ graph, scenario: 'steady', physics: 'baseline', species: 'sr90' }));
       expect(screen.getByTestId('graph-panel').dataset.empty, graph).toBe('false');
       expect(screen.queryByTestId('graph-empty'), graph).toBeNull();
     }
   });
 
-  it('shows the caption, the APA citation and the link beneath the experimental graph only', () => {
+  it('shows the caption, the APA citation and the link beneath the non-canonical experimental graph only', () => {
     render(<ExploreGraphs choices={choices()} />);
+    act(() => useStrato.getState().setSelection({ species: 'sr90' }));
     expect(screen.queryByTestId('experiment-citation')).toBeNull();
-    act(() => useStrato.getState().setSelection({ graph: 'experiment' }));
+    act(() => useStrato.getState().setSelection({ graph: 'experiment', species: 'sr90' }));
     const file = datasetsOf(SR)[0];
     expect(screen.getByTestId('experiment-caption').textContent).toBe(file?.caption.caption_text);
     expect(screen.getByTestId('experiment-apa').textContent).toBe(file?.caption.source_citation_apa);
     expect(screen.getByTestId('experiment-link').getAttribute('href')).toBe(file?.caption.source_link);
-    // The experimental comparison is empty again as soon as the operation is not steady-state operation.
     act(() => useStrato.getState().setSelection({ scenario: 'startup' }));
     expect(screen.queryByTestId('experiment-citation')).toBeNull();
   });
 
-  it('names the model configuration beneath the experimental graph only under temperature-dependent diffusion', () => {
+  it('names the model configuration beneath the non-canonical experimental graph only under temperature-dependent diffusion', () => {
     render(<ExploreGraphs choices={choices()} />);
-    act(() => useStrato.getState().setSelection({ graph: 'experiment', scenario: 'steady', physics: 'baseline' }));
+    act(() => useStrato.getState().setSelection({ graph: 'experiment', scenario: 'steady', physics: 'baseline', species: 'sr90' }));
     expect(screen.queryByTestId('experiment-model-note')).toBeNull();
     expect(screen.getByTestId('experiment-caption')).toBeTruthy();
     act(() => useStrato.getState().setSelection({ physics: 'temperature' }));
@@ -236,7 +248,8 @@ describe('the panel of the graphs', () => {
         ...extra,
       });
     };
-    const select = (physics: 'baseline' | 'generation' | 'combined' | 'decay') => useStrato.setState({ selection: { ...useStrato.getState().selection, graph: 'experiment', scenario: 'steady', physics, dataset: '' } });
+    const select = (physics: 'baseline' | 'generation' | 'combined' | 'decay') =>
+      useStrato.setState({ selection: { ...useStrato.getState().selection, graph: 'experiment', scenario: 'steady', physics, species: 'ag110m', dataset: '' } });
     // 1600 degC: the datasets held at 1600, never the stepped 1000 to 1600 history.
     select('baseline');
     const { unmount } = render(<ExploreGraphs choices={forAg(1600)} />);
@@ -266,7 +279,7 @@ describe('the panel of the graphs', () => {
       view.unmount();
     }
     // Every operation other than steady-state operation: no selector either.
-    useStrato.setState({ selection: { ...useStrato.getState().selection, graph: 'experiment', scenario: 'startup', physics: 'baseline' } });
+    useStrato.setState({ selection: { ...useStrato.getState().selection, graph: 'experiment', scenario: 'startup', physics: 'baseline', species: 'ag110m' } });
     render(<ExploreGraphs choices={forAg(1600)} />);
     expect(screen.queryByTestId('dataset-select')).toBeNull();
     expect(screen.queryByText('Dataset')).toBeNull();
@@ -274,9 +287,8 @@ describe('the panel of the graphs', () => {
 
   it('draws the radioactive decay curve for a species with a registered decay constant and leaves the panel empty for one without', () => {
     const AG: Species = { id: 'ag110m', name: 'Ag-110m', element: 'Ag' };
-    useStrato.setState({ selection: { ...useStrato.getState().selection, graph: 'release', scenario: 'steady', physics: 'decay' } });
+    useStrato.setState({ selection: { ...useStrato.getState().selection, graph: 'release', scenario: 'steady', physics: 'decay', species: 'sr90' } });
     const EU: Species = { id: 'eu154', name: 'Eu-154', element: 'Eu' };
-    // Sr-90 (generation table) and Ag-110m (decay register only) both have a registered constant and draw.
     for (const sp of [SR, AG]) {
       const withConstant = stageRequest('decay', sp, 1600);
       expect(withConstant, sp.name).not.toBeNull();
@@ -291,9 +303,10 @@ describe('the panel of the graphs', () => {
     expect(screen.getByTestId('graph-panel').textContent).toBe('');
   });
 
-  it('has four compact toggles, one species select, one temperature select in 100 degC steps shown in degC, and a dataset select for the experiment', async () => {
+  it('has four compact toggles, one species select, one temperature select in 100 degC steps shown in degC, and a dataset select for Sr-90 experiment', async () => {
     const user = userEvent.setup();
     render(<ExploreGraphs choices={choices()} />);
+    act(() => useStrato.getState().setSelection({ species: 'sr90' }));
     const toggles = screen.getByRole('radiogroup', { name: 'Graph' });
     expect(Array.from(toggles.querySelectorAll('[role="radio"]')).map((r) => r.textContent)).toEqual([
       'Cumulative release fraction against time',

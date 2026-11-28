@@ -10,7 +10,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { PHYSICS_IDS, SCENARIO_IDS } from '../src/equation/capability';
 import { ExploreControls, ExploreEquation, FUTURE_LINKS } from '../src/equation/ExploreEquation';
 import { legendRows } from '../src/equation/legend';
-import { D_SCENARIO, equationPieces, equationTex, G_SCENARIO, PHYSICS_CHANGE, PHYSICS_LABEL } from '../src/equation/physics';
+import { D_SCENARIO, equationPieces, equationTex, G_SCENARIO, physicsConfigAnnouncement } from '../src/equation/physics';
 import { SCENARIO_LABEL } from '../src/equation/scenarios';
 import { CATALOGUE } from '../src/research/catalogue';
 import { initialState, useStrato } from '../src/state/store';
@@ -21,71 +21,65 @@ beforeEach(() => {
 
 const radios = (name: string) => within(screen.getByRole('radiogroup', { name })).getAllByRole('radio');
 
-describe('MODEL EQUATION and OPERATION', () => {
-  it('has six compact buttons for the model equation and, beneath them, five for the operation, each group one radio group', () => {
+describe('Select a Modelling Stage and Operation (Option B)', () => {
+  it('renders four stage checkboxes (Baseline locked checked), Species-Specific Physics dropdown, and five Operation radio buttons', () => {
     render(<ExploreControls />);
-    const model = radios('Model equation');
-    expect(model.map((r) => r.textContent)).toEqual([
-      'Baseline diffusion',
-      'Fission-product generation',
-      'Radioactive decay',
-      'Temperature-dependent diffusion',
-      'Combined model',
-      'Future species-specific physics',
-    ]);
-    expect(model.map((r) => r.textContent)).toEqual(PHYSICS_IDS.map((p) => PHYSICS_LABEL[p]));
+    const baseline = screen.getByTestId('mech-baseline') as HTMLInputElement;
+    const gen = screen.getByTestId('mech-generation') as HTMLInputElement;
+    const decay = screen.getByTestId('mech-decay') as HTMLInputElement;
+    const temp = screen.getByTestId('mech-temperature') as HTMLInputElement;
+    expect(baseline.checked).toBe(true);
+    expect(baseline.disabled).toBe(true);
+    expect([gen.checked, decay.checked, temp.checked]).toEqual([false, false, false]);
+    expect(screen.getByTestId('config-id-label').textContent).toContain('P01');
+
+    const spSelect = screen.getByTestId('species-physics-select') as HTMLSelectElement;
+    expect(Array.from(spSelect.options).map((o) => o.textContent)).toEqual(['None — Future development']);
+
     const operation = radios('Operation');
     expect(operation.map((r) => r.textContent)).toEqual(['Steady-state operation', 'Shutdown and cooldown', 'Startup', 'Control-rod insertion', 'Refuelling']);
     expect(operation.map((r) => r.textContent)).toEqual(SCENARIO_IDS.map((s) => SCENARIO_LABEL[s]));
-    // The first group comes first in the page.
     const a = screen.getByTestId('model-equation');
     const b = screen.getByTestId('operation');
     expect(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    // One tab stop in each group, on the checked button.
-    expect(model.map((r) => r.getAttribute('tabindex'))).toEqual(['0', '-1', '-1', '-1', '-1', '-1']);
     expect(operation.map((r) => r.getAttribute('tabindex'))).toEqual(['0', '-1', '-1', '-1', '-1']);
-    expect(radios('Model equation')[0]?.getAttribute('aria-checked')).toBe('true');
     expect(radios('Operation')[0]?.getAttribute('aria-checked')).toBe('true');
   });
 
-  it('selects an operation without changing the model equation, and a model equation without changing the operation', async () => {
+  it('toggles all P01–P08 mechanism checkboxes independently of the operation', async () => {
     const user = userEvent.setup();
     render(<ExploreControls />);
     for (const s of SCENARIO_IDS) {
       await user.click(screen.getByTestId(`operation-${s}`));
       expect(useStrato.getState().selection).toMatchObject({ physics: 'baseline', scenario: s });
     }
-    await user.click(screen.getByTestId('physics-decay'));
-    expect(useStrato.getState().selection).toMatchObject({ physics: 'decay', scenario: 'refuelling' });
+    await user.click(screen.getByTestId('mech-generation'));
+    expect(screen.getByTestId('config-id-label').textContent).toContain('P02');
+    await user.click(screen.getByTestId('mech-decay'));
+    expect(screen.getByTestId('config-id-label').textContent).toContain('P05');
+    await user.click(screen.getByTestId('mech-temperature'));
+    expect(screen.getByTestId('config-id-label').textContent).toContain('P08');
     await user.click(screen.getByTestId('operation-startup'));
-    expect(useStrato.getState().selection).toMatchObject({ physics: 'decay', scenario: 'startup' });
-    expect(screen.getByTestId('physics-decay').getAttribute('aria-checked')).toBe('true');
-    // Nothing is switched on silently: no announcement, no notice about a coupling.
+    expect(useStrato.getState().selection.scenario).toBe('startup');
+    expect(useStrato.getState().selection.mechanisms).toEqual({ generation: true, decay: true, temperature: true });
     expect(document.body.textContent).not.toMatch(/requires it|is selected, because/);
   });
 
-  it('is operated by the keyboard: arrows select and move focus, Home and End jump, in each group', async () => {
+  it('is operated by the keyboard: Tab checks boxes, arrows and Home/End navigate Operation radios', async () => {
     const user = userEvent.setup();
     render(<ExploreControls />);
-    screen.getByTestId('physics-baseline').focus();
-    await user.keyboard('{ArrowRight}{ArrowRight}');
-    expect(useStrato.getState().selection.physics).toBe('decay');
-    expect(document.activeElement).toBe(screen.getByTestId('physics-decay'));
-    await user.keyboard('{End}');
-    expect(useStrato.getState().selection.physics).toBe('future');
-    await user.keyboard('{ArrowRight}');
-    expect(useStrato.getState().selection.physics).toBe('baseline');
-    await user.keyboard('{ArrowLeft}');
-    expect(useStrato.getState().selection.physics).toBe('future');
+    screen.getByTestId('mech-generation').focus();
+    await user.keyboard(' ');
+    expect(useStrato.getState().selection.mechanisms.generation).toBe(true);
     screen.getByTestId('operation-steady').focus();
     await user.keyboard('{End}');
     expect(useStrato.getState().selection.scenario).toBe('refuelling');
     await user.keyboard('{Home}');
     expect(useStrato.getState().selection.scenario).toBe('steady');
-    expect(useStrato.getState().selection.physics).toBe('future');
+    expect(useStrato.getState().selection.mechanisms.generation).toBe(true);
   });
 
-  it('carries no status word on a button', () => {
+  it('carries no status word or status badge on the controls', () => {
     render(<ExploreControls />);
     expect(document.body.textContent).not.toMatch(/\b(planned|verified|computed|implemented|precomputed|validated)\b/i);
     expect(document.querySelectorAll('[data-status], .bstatus, .badge')).toHaveLength(0);
@@ -149,15 +143,15 @@ describe('the governing equation', () => {
     expect(hi.some((t) => t.includes('D(r,T(t))'))).toBe(true);
   });
 
-  it('announces a change of the model equation in a polite live region, but not on the first render', () => {
+  it('announces a change of the configuration or operation in a polite live region, but not on the first render', () => {
     render(<ExploreEquation />);
     const live = screen.getByTestId('physics-announce');
     expect(live.getAttribute('aria-live')).toBe('polite');
     expect(live.textContent).toBe('');
     act(() => useStrato.getState().setSelection({ physics: 'generation' }));
-    expect(live.textContent).toBe(PHYSICS_CHANGE.generation);
+    expect(live.textContent).toBe(physicsConfigAnnouncement({ generation: true, decay: false, temperature: false }, 'steady'));
     act(() => useStrato.getState().setSelection({ scenario: 'startup' }));
-    expect(live.textContent).toBe(PHYSICS_CHANGE.generation);
+    expect(live.textContent).toBe(physicsConfigAnnouncement({ generation: true, decay: false, temperature: false }, 'startup'));
   });
 });
 

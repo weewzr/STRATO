@@ -7,6 +7,9 @@ case_key,stage,t_c,steps,assemblies,max_residual_over_bound,max_relative_residua
 1200c_stage_d_ramp_decay_off,Stage D (heating ramp; decay OFF),1200,4085,79,8.894954e-3,2.029346e-7,1.000000e0,1.000000e0
 1200c_stage_d_ramp_decay_on,Stage D (heating ramp; decay ON),1200,4085,79,2.903460e-2,3.036306e-7,1.000001e0,1.000001e0
 1200c_stage_d_combined,Stage D (combined: G + decay + D(r; T(t))),1200,4085,79,3.343458e-2,1.527493e-7,1.000001e0,1.000001e0
+1200c_p06_gen_temp,P06 (+G; decay OFF; D(r; T(t)); Fresh),1200,4085,79,8.896032e-3,1.016367e-7,1.000000e0,1.000000e0
+1200c_ctrl_gen_on_decay_off,Controlled (+G matched C_init; decay OFF),1200,10000,1,3.171827e-3,5.768641e-8,1.000000e0,1.000000e0
+1200c_ctrl_gen_on_decay_on,Controlled (+G +lambda matched C_init),1200,10000,1,1.756274e-2,3.155424e-7,1.000003e0,1.000003e0
 1350c_stage_a,Stage A,1350,10000,1,3.254573e-3,7.558522e-8,1.000000e0,1.000000e0
 1350c_stage_b,Stage B,1350,10000,1,3.254574e-3,3.850352e-8,1.000000e0,1.000000e0
 1350c_stage_c,Stage C (G + decay),1350,10000,1,3.447427e-3,4.041184e-8,1.000003e0,1.000003e0
@@ -15,6 +18,9 @@ case_key,stage,t_c,steps,assemblies,max_residual_over_bound,max_relative_residua
 1350c_stage_d_ramp_decay_off,Stage D (heating ramp; decay OFF),1350,4097,91,8.416349e-3,2.810676e-8,1.000000e0,1.000000e0
 1350c_stage_d_ramp_decay_on,Stage D (heating ramp; decay ON),1350,4097,91,3.215325e-2,2.529570e-8,1.000001e0,1.000001e0
 1350c_stage_d_combined,Stage D (combined: G + decay + D(r; T(t))),1350,4097,91,3.487485e-2,1.292483e-8,1.000001e0,1.000001e0
+1350c_p06_gen_temp,P06 (+G; decay OFF; D(r; T(t)); Fresh),1350,4097,91,9.507355e-3,1.433702e-8,1.000000e0,1.000000e0
+1350c_ctrl_gen_on_decay_off,Controlled (+G matched C_init; decay OFF),1350,10000,1,3.255595e-3,6.008959e-8,1.000000e0,1.000000e0
+1350c_ctrl_gen_on_decay_on,Controlled (+G +lambda matched C_init),1350,10000,1,3.447411e-3,6.285666e-8,1.000003e0,1.000003e0
 1500c_stage_a,Stage A,1500,10002,4,1.757751e-2,1.549303e-7,1.000000e0,1.000000e0
 1500c_stage_b,Stage B,1500,10002,4,1.757746e-2,1.497426e-7,1.000000e0,1.000000e0
 1500c_stage_c,Stage C (G + decay),1500,10002,4,4.748240e-2,1.183603e-7,1.000003e0,1.000003e0
@@ -23,6 +29,9 @@ case_key,stage,t_c,steps,assemblies,max_residual_over_bound,max_relative_residua
 1500c_stage_d_ramp_decay_off,Stage D (heating ramp; decay OFF),1500,4111,106,8.756185e-3,1.500108e-7,1.000000e0,1.000000e0
 1500c_stage_d_ramp_decay_on,Stage D (heating ramp; decay ON),1500,4111,106,3.299307e-2,4.508443e-7,1.000001e0,1.000001e0
 1500c_stage_d_combined,Stage D (combined: G + decay + D(r; T(t))),1500,4111,106,3.487485e-2,3.014265e-7,1.000001e0,1.000001e0
+1500c_p06_gen_temp,P06 (+G; decay OFF; D(r; T(t)); Fresh),1500,4111,106,9.507355e-3,9.596318e-8,1.000000e0,1.000000e0
+1500c_ctrl_gen_on_decay_off,Controlled (+G matched C_init; decay OFF),1500,10002,4,1.757750e-2,1.526292e-7,1.000000e0,1.000000e0
+1500c_ctrl_gen_on_decay_on,Controlled (+G +lambda matched C_init),1500,10002,4,4.748255e-2,2.291459e-7,1.000003e0,1.000003e0
 1600c_stage_a,Stage A,1600,10000,1,3.774467e-3,3.352683e-9,1.000000e0,1.000000e0
 1600c_stage_b,Stage B,1600,10000,1,3.774531e-3,1.695191e-9,1.000000e0,1.000000e0
 1600c_stage_c,Stage C (G + decay),1600,10000,1,5.125736e-3,2.301251e-9,1.000000e0,1.000000e0
@@ -31,6 +40,9 @@ case_key,stage,t_c,steps,assemblies,max_residual_over_bound,max_relative_residua
 1600c_stage_d_ramp_decay_off,Stage D (heating ramp; decay OFF),1600,4126,73,1.419463e-2,2.138432e-9,1.000000e0,1.000000e0
 1600c_stage_d_ramp_decay_on,Stage D (heating ramp; decay ON),1600,4126,73,3.798446e-2,1.869026e-8,1.000000e0,1.000000e0
 1600c_stage_d_combined,Stage D (combined: G + decay + D(r; T(t))),1600,4126,73,4.976146e-2,9.776261e-9,1.000000e0,1.000000e0
+1600c_p06_gen_temp,P06 (+G; decay OFF; D(r; T(t)); Fresh),1600,4126,73,1.460234e-2,1.042652e-9,1.000000e0,1.000000e0
+1600c_ctrl_gen_on_decay_off,Controlled (+G matched C_init; decay OFF),1600,10000,1,3.810464e-3,3.309431e-9,1.000000e0,1.000000e0
+1600c_ctrl_gen_on_decay_on,Controlled (+G +lambda matched C_init),1600,10000,1,5.130660e-3,4.491866e-9,1.000000e0,1.000000e0
 1700c_stage_a,Stage A,1700,10087,9,1.667968e-2,2.754528e-9,1.000000e0,1.000000e0
 1700c_stage_b,Stage B,1700,10087,9,1.667846e-2,3.016195e-9,1.000000e0,1.000000e0
 1700c_stage_c,Stage C (G + decay),1700,10087,9,4.935136e-2,4.193112e-9,1.000000e0,1.000000e0
@@ -39,6 +51,9 @@ case_key,stage,t_c,steps,assemblies,max_residual_over_bound,max_relative_residua
 1700c_stage_d_ramp_decay_off,Stage D (heating ramp; decay OFF),1700,4139,89,1.419463e-2,2.334389e-9,1.000000e0,1.000000e0
 1700c_stage_d_ramp_decay_on,Stage D (heating ramp; decay ON),1700,4138,87,3.798446e-2,1.206698e-8,1.000000e0,1.000000e0
 1700c_stage_d_combined,Stage D (combined: G + decay + D(r; T(t))),1700,4139,89,4.976146e-2,6.569083e-9,1.000000e0,1.000000e0
+1700c_p06_gen_temp,P06 (+G; decay OFF; D(r; T(t)); Fresh),1700,4138,87,1.460234e-2,1.560447e-9,1.000000e0,1.000000e0
+1700c_ctrl_gen_on_decay_off,Controlled (+G matched C_init; decay OFF),1700,10085,7,5.335290e-3,2.812494e-9,1.000000e0,1.000000e0
+1700c_ctrl_gen_on_decay_on,Controlled (+G +lambda matched C_init),1700,10085,7,2.134826e-2,1.137505e-8,1.000000e0,1.000000e0
 1800c_stage_a,Stage A,1800,10006,11,8.675771e-3,7.432911e-10,1.000000e0,1.000000e0
 1800c_stage_b,Stage B,1800,10006,11,1.164407e-2,6.865623e-10,1.000000e0,1.000000e0
 1800c_stage_c,Stage C (G + decay),1800,10006,11,3.776965e-2,3.174856e-9,1.000000e0,1.000000e0
@@ -47,3 +62,6 @@ case_key,stage,t_c,steps,assemblies,max_residual_over_bound,max_relative_residua
 1800c_stage_d_ramp_decay_off,Stage D (heating ramp; decay OFF),1800,4147,99,1.419463e-2,1.446580e-9,1.000000e0,1.000000e0
 1800c_stage_d_ramp_decay_on,Stage D (heating ramp; decay ON),1800,4146,97,3.798446e-2,3.587579e-9,1.000000e0,1.000000e0
 1800c_stage_d_combined,Stage D (combined: G + decay + D(r; T(t))),1800,4147,99,4.976146e-2,4.831370e-9,1.000000e0,1.000000e0
+1800c_p06_gen_temp,P06 (+G; decay OFF; D(r; T(t)); Fresh),1800,4146,97,1.460234e-2,2.046765e-9,1.000000e0,1.000000e0
+1800c_ctrl_gen_on_decay_off,Controlled (+G matched C_init; decay OFF),1800,10004,9,8.770365e-3,8.364090e-10,1.000000e0,1.000000e0
+1800c_ctrl_gen_on_decay_on,Controlled (+G +lambda matched C_init),1800,10004,9,2.663965e-2,4.332240e-9,1.000000e0,1.000000e0

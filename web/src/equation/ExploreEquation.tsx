@@ -1,21 +1,26 @@
 import { useId, useRef, useState, type KeyboardEvent } from 'react';
 import { entryHref } from '../research/entries';
 import { useStrato } from '../state/store';
-import { PHYSICS_IDS, SCENARIO_IDS, type PhysicsId, type ScenarioId } from './capability';
+import {
+  CONFIG_LABELS,
+  flagsToConfigId,
+  SCENARIO_IDS,
+  type PhysicsConfigId,
+  type ScenarioId,
+  type SpeciesPhysicsId,
+} from './capability';
 import { useSideScroll } from './EquationBuilder';
 import { legendRows } from './legend';
-import { equationPieces, isTimed, PHYSICS_CHANGE, PHYSICS_CHANGE_SCENARIO, PHYSICS_LABEL, type Piece } from './physics';
-import { SCENARIO_LABEL } from './scenarios';
+import { equationPieces, isTimed, meaningsFor, physicsConfigAnnouncement, type Piece } from './physics';
+import { SCENARIO_LABEL, SCENARIOS } from './scenarios';
 import { Tex } from './Tex';
 
-// UPPER LEFT, UPPER CENTRE AND RIGHT of Explore (final directive, Sections 7 to 9). MODEL EQUATION (six
-// buttons) and OPERATION (five buttons) are two independent groups over the one shared selection:
-// choosing an operation never changes the model equation, and nothing is switched on silently. The
-// governing equation is the progressive one of equation/physics.ts (the base equation is kept, +G and the
-// decay term enter at the right, D becomes D(r,T) inside the operator, an operation shows G(r,t) and
-// D(r,T(t)) where it prescribes a history and adds no term); the legend lists only its variables.
+// UPPER LEFT, UPPER CENTRE AND RIGHT of Explore (Phase 3 Option B).
+// "Select a Modelling Stage" uses four independent checkboxes (Baseline locked checked, plus Generation,
+// Decay, and Temperature-dependent diffusion across P01–P08) and a "Species-Specific Physics" selector.
+// "Operation" remains an independent group beneath: changing one never changes the other.
 
-/** The documented research mechanisms that Future species-specific physics links to (data/research/mechanisms.csv). */
+/** The documented research mechanisms that Species-specific physics links to (data/research/mechanisms.csv). */
 export const FUTURE_LINKS: readonly { label: string; entry: string }[] = [
   { label: 'Silver trapping and detrapping', entry: 'docs/research/ag_trapping_detrapping.md' },
   { label: 'Grain-boundary transport', entry: 'docs/research/ag_grain_boundary_transport.md' },
@@ -83,26 +88,71 @@ function RadioButtons<T extends string>({
   );
 }
 
-/** UPPER LEFT: MODEL EQUATION and, beneath it, OPERATION. */
+/** UPPER LEFT: Select a Modelling Stage (checkboxes + Species-Specific Physics) and, beneath it, Operation. */
 export function ExploreControls() {
-  const physics = useStrato((s) => s.selection.physics);
+  const mechanisms = useStrato((s) => s.selection.mechanisms);
+  const speciesPhysics = useStrato((s) => s.selection.speciesPhysics);
   const scenario = useStrato((s) => s.selection.scenario);
   const setSelection = useStrato((s) => s.setSelection);
-  const ids = { model: useId(), operation: useId() };
+  const ids = { model: useId(), speciesPhys: useId(), operation: useId() };
+  const configId: PhysicsConfigId = flagsToConfigId(mechanisms);
+  const meta = CONFIG_LABELS[configId];
+
   return (
     <div className="xcontrols" data-area="controls">
       <section className="xarea xarea--model" aria-labelledby={ids.model} data-testid="model-equation">
-        <h2 className="xarea__title" id={ids.model}>
-          Model equation
-        </h2>
-        <RadioButtons<PhysicsId>
-          ids={PHYSICS_IDS}
-          value={physics}
-          label="Model equation"
-          name={(id) => PHYSICS_LABEL[id]}
-          testPrefix="physics"
-          onChange={(id) => setSelection({ physics: id })}
-        />
+        <div className="xarea__head">
+          <h2 className="xarea__title" id={ids.model}>
+            Select a Modelling Stage
+          </h2>
+          <span className="xconfig-tag" data-testid="config-id-label">
+            {configId} — {meta.stageAlias}
+          </span>
+        </div>
+        <div className="xchecks" role="group" aria-labelledby={ids.model} data-testid="physics-checkboxes">
+          <label className="xcheck xcheck--locked">
+            <input type="checkbox" checked disabled data-testid="mech-baseline" />
+            <span>Baseline diffusion</span>
+          </label>
+          <label className="xcheck">
+            <input
+              type="checkbox"
+              checked={mechanisms.generation}
+              data-testid="mech-generation"
+              onChange={(e) => setSelection({ mechanisms: { ...mechanisms, generation: e.target.checked } })}
+            />
+            <span>Fission-product generation</span>
+          </label>
+          <label className="xcheck">
+            <input
+              type="checkbox"
+              checked={mechanisms.decay}
+              data-testid="mech-decay"
+              onChange={(e) => setSelection({ mechanisms: { ...mechanisms, decay: e.target.checked } })}
+            />
+            <span>Radioactive decay</span>
+          </label>
+          <label className="xcheck">
+            <input
+              type="checkbox"
+              checked={mechanisms.temperature}
+              data-testid="mech-temperature"
+              onChange={(e) => setSelection({ mechanisms: { ...mechanisms, temperature: e.target.checked } })}
+            />
+            <span>Temperature-dependent diffusion</span>
+          </label>
+        </div>
+        <label className="xselect xselect--species-phys" htmlFor={ids.speciesPhys}>
+          <span className="xselect__label">Species-Specific Physics</span>
+          <select
+            id={ids.speciesPhys}
+            value={speciesPhysics}
+            data-testid="species-physics-select"
+            onChange={(e) => setSelection({ speciesPhysics: e.target.value as SpeciesPhysicsId })}
+          >
+            <option value="none">None — Future development</option>
+          </select>
+        </label>
       </section>
       <section className="xarea xarea--operation" aria-labelledby={ids.operation} data-testid="operation">
         <h2 className="xarea__title" id={ids.operation}>
@@ -138,27 +188,41 @@ function EquationPiece({ piece, timed }: { piece: Piece; timed: boolean }) {
   );
 }
 
-/** UPPER CENTRE AND RIGHT: the governing equation, large, with the legend of its variables directly beneath. */
+/** UPPER CENTRE AND RIGHT: the governing equation, large, with the legend and active mechanism/operation explanations directly beneath. */
 export function ExploreEquation() {
   const physics = useStrato((s) => s.selection.physics);
+  const mechanisms = useStrato((s) => s.selection.mechanisms);
   const scenario = useStrato((s) => s.selection.scenario);
-  const pieces = equationPieces(physics, scenario);
+  const configId = flagsToConfigId(mechanisms);
+  const pieces = equationPieces(mechanisms, scenario);
   const timed = isTimed(scenario);
-  const rows = legendRows(physics, scenario);
+  const rows = legendRows(mechanisms, scenario);
+  const meanings = meaningsFor(mechanisms);
   const box = useRef<HTMLDivElement>(null);
-  const side = useSideScroll(box, `${physics}/${scenario ?? 'none'}`);
+  const side = useSideScroll(box, `${configId}/${scenario ?? 'none'}`);
   const ids = { title: useId(), hint: useId() };
 
-  // The live-region sentence: set while rendering when the model equation differs from the one last rendered.
-  const [seen, setSeen] = useState<PhysicsId | null>(null);
+  // Live-region sentence: updated whenever config or scenario changes after initial render.
+  const selKey = `${configId}/${scenario ?? 'none'}`;
+  const [seen, setSeen] = useState<string | null>(null);
   const [message, setMessage] = useState('');
-  if (seen !== physics) {
-    setSeen(physics);
-    if (seen !== null) setMessage((timed ? PHYSICS_CHANGE_SCENARIO[physics] : undefined) ?? PHYSICS_CHANGE[physics]);
+  if (seen !== selKey) {
+    setSeen(selKey);
+    if (seen !== null) setMessage(physicsConfigAnnouncement(mechanisms, scenario));
   }
 
+  const opExplanation = scenario ? SCENARIOS[scenario].explanation : [];
+
   return (
-    <section className="xarea xarea--equation geq" aria-labelledby={ids.title} data-testid="governing-equation" data-area="equation" data-physics={physics} data-scenario={scenario ?? 'none'}>
+    <section
+      className="xarea xarea--equation geq"
+      aria-labelledby={ids.title}
+      data-testid="governing-equation"
+      data-area="equation"
+      data-physics={physics}
+      data-config={configId}
+      data-scenario={scenario ?? 'none'}
+    >
       <h2 className="xarea__title" id={ids.title}>
         Governing equation
       </h2>
@@ -167,7 +231,9 @@ export function ExploreEquation() {
           className="geq__eq"
           data-testid="equation-governing"
           ref={box}
-          {...(side.scrolls ? { tabIndex: 0, role: 'region', 'aria-label': 'Governing equation, scrolls sideways', 'aria-describedby': ids.hint } : { role: 'group', 'aria-label': 'Governing equation' })}
+          {...(side.scrolls
+            ? { tabIndex: 0, role: 'region', 'aria-label': 'Governing equation, scrolls sideways', 'aria-describedby': ids.hint }
+            : { role: 'group', 'aria-label': 'Governing equation' })}
         >
           {pieces.map((p) => (
             <EquationPiece key={p.id} piece={p} timed={timed} />
@@ -207,6 +273,20 @@ export function ExploreEquation() {
           ))}
         </tbody>
       </table>
+      <div className="geq-explain" data-testid="equation-explanations">
+        <ul className="geq-explain__list">
+          {meanings.map((m) => (
+            <li key={m.id}>
+              <strong>{m.name}:</strong> {m.meaning}
+            </li>
+          ))}
+        </ul>
+        {scenario ? (
+          <div className="geq-explain__op" data-testid="operation-explanation">
+            <strong>{SCENARIO_LABEL[scenario]} operation:</strong> {opExplanation.join(' ')}
+          </div>
+        ) : null}
+      </div>
       {physics === 'future' ? (
         <ul className="xfuture" aria-label="Documented research mechanisms" data-testid="future-links">
           {FUTURE_LINKS.map((l) => (

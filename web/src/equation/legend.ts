@@ -1,6 +1,6 @@
 // The variable legend under the governing equation (final directive, Section 9): symbol, meaning and SI
 // unit of ONLY the variables of the displayed equation. Display text: nothing here is evaluated.
-import { mechanismsOf, type PhysicsId, type ScenarioId } from './capability';
+import { mechanismsOf, type PhysicsSelection, type ScenarioId } from './capability';
 import { D_CONSTANT, D_SCENARIO, D_TEMPERATURE, G_SCENARIO, isTimed } from './physics';
 
 export interface LegendRow {
@@ -27,7 +27,7 @@ const U = {
  * those of the combined model. An operation that prescribes a history changes the symbols G and D(r,T) of the
  * rows that exist; it never adds a row for a term the equation does not show.
  */
-export function legendRows(physics: PhysicsId, scenario: ScenarioId | null): LegendRow[] {
+export function legendRows(physics: PhysicsSelection, scenario: ScenarioId | null): LegendRow[] {
   const mech = mechanismsOf(physics);
   const timed = isTimed(scenario);
   const rows: LegendRow[] = [

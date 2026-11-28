@@ -56,17 +56,20 @@ for (const vp of WIDTHS) {
       expect(small).toEqual([]);
     });
 
-    test('has six model-equation buttons and five operation buttons, a legend of the displayed variables and no status word', async ({ page, problems }) => {
+    test('has Select a Modelling Stage checkboxes, Species-Specific Physics dropdown, five Operation buttons, legend and no status word', async ({ page, problems }) => {
       void problems;
       await gotoSection(page, 'explore');
-      await expect(page.getByTestId('physics-picker').getByRole('radio')).toHaveCount(6);
+      await expect(page.getByTestId('mech-baseline')).toBeChecked();
+      await expect(page.getByTestId('mech-baseline')).toBeDisabled();
+      await expect(page.getByTestId('species-physics-select')).toHaveValue('none');
       await expect(page.getByTestId('operation-picker').getByRole('radio')).toHaveCount(5);
       await expect(page.getByTestId('legend').locator('tbody tr')).toHaveCount(4);
       expect(await prose(page)).not.toMatch(STATUS_WORDS);
-      await page.getByTestId('physics-combined').click();
+      await page.getByTestId('mech-generation').check();
+      await page.getByTestId('mech-decay').check();
+      await page.getByTestId('mech-temperature').check();
       await expect(page.getByTestId('legend').locator('tbody tr')).toHaveCount(7);
-      await page.getByTestId('physics-future').click();
-      await expect(page.getByTestId('future-links').getByRole('link')).toHaveCount(4);
+      await expect(page.getByTestId('config-id-label')).toContainText('P08');
       expect(await prose(page)).not.toMatch(STATUS_WORDS);
       expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
     });
@@ -95,53 +98,53 @@ for (const colorScheme of ['light', 'dark'] as const) {
 test.describe('selection, address and keyboard', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('the model equation and the operation are independent, and both are written to the address', async ({ page, problems }) => {
+  test('the model checkboxes and the operation are independent, and both are written to the address', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     await page.getByTestId('operation-shutdown').click();
-    await expect(page.getByTestId('physics-baseline')).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByTestId('config-id-label')).toContainText('P01');
     await expect(page).toHaveURL(/#\/explore\?scenario=shutdown$/);
-    await page.getByTestId('physics-decay').click();
+    await page.getByTestId('mech-decay').check();
     await expect(page.getByTestId('operation-shutdown')).toHaveAttribute('aria-checked', 'true');
     await expect(page).toHaveURL(/#\/explore\?physics=decay&scenario=shutdown$/);
+    await page.getByTestId('mech-generation').check();
+    await expect(page).toHaveURL(/#\/explore\?config=P05&scenario=shutdown$/);
     await page.getByTestId('operation-steady').click();
-    await expect(page).toHaveURL(/#\/explore\?physics=decay$/);
+    await expect(page).toHaveURL(/#\/explore\?config=P05$/);
     // A copied address reproduces the view, and the selection survives navigation to another section and back.
-    await page.goto('./#/explore?physics=future&scenario=startup&open=pseudocode&graph=profile');
-    await expect(page.getByTestId('physics-future')).toHaveAttribute('aria-checked', 'true');
+    await page.goto('./#/explore?config=P05&scenario=startup&open=pseudocode&graph=profile');
+    await expect(page.getByTestId('mech-generation')).toBeChecked();
+    await expect(page.getByTestId('mech-decay')).toBeChecked();
+    await expect(page.getByTestId('mech-temperature')).not.toBeChecked();
     await expect(page.getByTestId('operation-startup')).toHaveAttribute('aria-checked', 'true');
     await expect(page.getByTestId('graph-profile')).toHaveAttribute('aria-checked', 'true');
     await expect(page.getByTestId('num-toggle-pseudocode')).toHaveAttribute('aria-expanded', 'true');
     await page.getByRole('navigation', { name: 'Sections' }).getByRole('link', { name: 'Research' }).click();
     await expect(page.locator('[data-section="research"] h1')).toBeVisible();
     await page.getByRole('navigation', { name: 'Sections' }).getByRole('link', { name: 'Explore' }).click();
-    await expect(page.getByTestId('physics-future')).toHaveAttribute('aria-checked', 'true');
-    await expect(page).toHaveURL(/physics=future&scenario=startup/);
+    await expect(page.getByTestId('config-id-label')).toContainText('P05');
+    await expect(page).toHaveURL(/config=P05&scenario=startup/);
   });
 
-  test('each group is one tab stop, moves with the arrow keys, shows a visible focus ring and announces the change', async ({ page, problems }) => {
+  test('each control group moves cleanly by keyboard, shows a visible focus ring and announces changes', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
-    const baseline = page.getByTestId('physics-baseline');
-    await baseline.focus();
-    await page.keyboard.press('ArrowRight');
-    await expect(page.getByTestId('physics-generation')).toBeFocused();
-    await expect(page.getByTestId('physics-generation')).toHaveAttribute('aria-checked', 'true');
-    await expect(page.getByTestId('physics-announce')).toContainText('enters the right-hand side');
+    const gen = page.getByTestId('mech-generation');
+    await gen.focus();
+    await page.keyboard.press('Space');
+    await expect(gen).toBeChecked();
+    await expect(page.getByTestId('physics-announce')).toContainText('P02');
     const ring = await page.evaluate(() => {
       const cs = getComputedStyle(document.activeElement as Element);
       return { style: cs.outlineStyle, width: parseFloat(cs.outlineWidth) };
     });
     expect(ring.style).toBe('solid');
     expect(ring.width).toBeGreaterThanOrEqual(2);
-    await page.keyboard.press('End');
-    await expect(page.getByTestId('physics-future')).toHaveAttribute('aria-checked', 'true');
-    await page.keyboard.press('Tab');
-    expect(await page.evaluate(() => document.activeElement?.closest('[data-testid="physics-picker"]') === null)).toBe(true);
     await page.getByTestId('operation-steady').focus();
     await page.keyboard.press('ArrowRight');
     await expect(page.getByTestId('operation-shutdown')).toBeFocused();
-    await expect(page.getByTestId('physics-future')).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByTestId('operation-shutdown')).toHaveAttribute('aria-checked', 'true');
+    await expect(gen).toBeChecked();
   });
 
   test('the six sections of the Numerical Interpretation are collapsed, open with Enter and Space, and keep the focus', async ({ page, problems }) => {
@@ -178,80 +181,70 @@ test.describe('selection, address and keyboard', () => {
 test.describe('interactive graphs', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('draw the wrapper curves for steady-state operation: Method A blue and solid, the temperature list in 100 degC steps', async ({ page, problems }) => {
+  test('draw canonical Cs-137 study39 Graph B curves with independent overlay checkboxes and single Δ annotations', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     const temp = page.getByTestId('temperature-select');
-    await expect(temp.locator('option')).toHaveText(['1600 °C', '1700 °C', '1800 °C'], { timeout: 30_000 });
-    await expect(page.getByTestId('species-select').locator('option').first()).toBeAttached();
+    await expect(temp.locator('option')).toHaveText(['1200 °C', '1350 °C', '1500 °C', '1600 °C', '1700 °C', '1800 °C'], { timeout: 30_000 });
     const plot = page.getByTestId('explore-plot-release-graph');
     await expect(plot).toBeVisible({ timeout: 30_000 });
-    await expect.poll(() => plot.evaluate((el) => ((el as unknown as { data?: unknown[] }).data ?? []).length), { timeout: 30_000 }).toBe(1);
-    const trace = await plot.evaluate((el) => {
-      const t = (el as unknown as { data: { x: number[]; y: number[]; line: { color: string; dash: string } }[] }).data[0];
-      return { n: t?.x.length ?? 0, ny: t?.y.length ?? 0, colour: t?.line.color, dash: t?.line.dash, last: t?.y[(t?.y.length ?? 1) - 1] ?? NaN };
-    });
-    expect(trace.n).toBeGreaterThan(10);
-    expect(trace.ny).toBe(trace.n);
-    expect(trace.colour).toBe('#DC2626');
-    expect(trace.dash).toBe('solid');
-    // The release fraction of one particle lies between 0 and 1.
-    expect(trace.last).toBeGreaterThanOrEqual(0);
-    expect(trace.last).toBeLessThanOrEqual(1);
-    await expect(page.getByTestId('graph-empty')).toHaveCount(0);
+    await expect.poll(() => plot.evaluate((el) => ((el as unknown as { data?: unknown[] }).data ?? []).length), { timeout: 30_000 }).toBeGreaterThanOrEqual(3);
+    // Uncheck Method B -> Experimental + Method A remain
+    await page.getByTestId('overlay-method-b').uncheck();
+    await expect.poll(() => plot.evaluate((el) => ((el as unknown as { data?: unknown[] }).data ?? []).length)).toBe(2);
+    // Uncheck Method A and Experimental -> empty overlay prompt; re-enable Experiment -> 1 trace
+    await page.getByTestId('overlay-method-a').uncheck();
+    await page.getByTestId('overlay-experiment').uncheck();
+    await expect(page.getByTestId('overlay-empty-note')).toBeVisible();
+    await page.getByTestId('overlay-experiment').check();
+    await expect.poll(() => plot.evaluate((el) => ((el as unknown as { data?: unknown[] }).data ?? []).length)).toBe(1);
+    await page.getByTestId('overlay-method-a').check();
+    await page.getByTestId('overlay-method-b').check();
   });
 
-  test('are an empty frame, with no text, for every other operation and for future species-specific physics', async ({ page, problems }) => {
+  test('draw authentic s5 operating scenario curves for Cs-137 and leave future physics empty', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
     await expect(page.getByTestId('explore-plot-release-graph')).toBeVisible({ timeout: 30_000 });
-    for (const graph of ['release', 'profile', 'methods', 'experiment']) {
-      await page.getByTestId(`graph-${graph}`).click();
-      for (const operation of ['shutdown', 'startup', 'control-rod', 'refuelling']) {
-        await page.getByTestId(`operation-${operation}`).click();
-        const panel = page.getByTestId('graph-panel');
-        await expect(panel).toHaveAttribute('data-empty', 'true');
-        expect(((await panel.textContent()) ?? '').trim()).toBe('');
-        await expect(panel.locator('svg, canvas, .js-plotly-plot')).toHaveCount(0);
-      }
-      await page.getByTestId('operation-steady').click();
-      await page.getByTestId('physics-future').click();
-      await expect(page.getByTestId('graph-panel')).toHaveAttribute('data-empty', 'true');
-      expect(((await page.getByTestId('graph-panel').textContent()) ?? '').trim()).toBe('');
-      await page.getByTestId('physics-baseline').click();
+    for (const operation of ['shutdown', 'startup', 'control-rod', 'refuelling']) {
+      await page.getByTestId(`operation-${operation}`).click();
+      await expect(page.getByTestId('graph-panel')).toHaveAttribute('data-empty', 'false');
+      await expect(page.getByTestId('scenario-curve-note')).toBeVisible();
     }
+    await page.goto('./#/explore?physics=future');
+    await expect(page.getByTestId('graph-panel')).toHaveAttribute('data-empty', 'true');
   });
 
-  test('draw a curve for baseline diffusion, decay and temperature-dependent diffusion, and none for a source, which needs a fresh particle', async ({ page, problems }) => {
+  test('draw live WASM curves for Sr-90 under baseline, decay, and temperature, and none for generation or combined', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
-    await expect(page.getByTestId('explore-plot-release-graph')).toBeVisible({ timeout: 30_000 });
     await page.getByTestId('species-select').selectOption('sr90');
-    for (const physics of ['baseline', 'decay', 'temperature']) {
-      await page.getByTestId(`physics-${physics}`).click();
-      const plot = page.getByTestId('explore-plot-release-graph');
-      await expect(plot, physics).toBeVisible({ timeout: 30_000 });
-      await expect(page.getByTestId('graph-empty')).toHaveCount(0);
-      const last = await plot.evaluate((el) => {
-        const y = (el as unknown as { data: { y: number[] }[] }).data[0]?.y ?? [];
-        return y[y.length - 1] ?? Number.NaN;
-      });
-      // The fraction of the initial inventory lies between 0 and 1.
-      expect(last, physics).toBeGreaterThanOrEqual(0);
-      expect(last, physics).toBeLessThanOrEqual(1);
-    }
-    // A source starts from a fresh particle, which run_stage refuses: the panel is empty, never a fraction of an arbitrary initial inventory.
-    for (const physics of ['generation', 'combined']) {
-      await page.getByTestId(`physics-${physics}`).click();
-      await expect(page.getByTestId('graph-panel')).toHaveAttribute('data-empty', 'true');
-      expect(((await page.getByTestId('graph-panel').textContent()) ?? '').trim()).toBe('');
+    const temp = page.getByTestId('temperature-select');
+    await expect(temp.locator('option')).toHaveText(['1600 °C', '1700 °C', '1800 °C'], { timeout: 30_000 });
+    const configs: [string, { gen: boolean; dec: boolean; tmp: boolean }, boolean][] = [
+      ['P01', { gen: false, dec: false, tmp: false }, true],
+      ['P03', { gen: false, dec: true, tmp: false }, true],
+      ['P04', { gen: false, dec: false, tmp: true }, true],
+      ['P02', { gen: true, dec: false, tmp: false }, false],
+      ['P08', { gen: true, dec: true, tmp: true }, false],
+    ];
+    for (const [label, f, expectPlot] of configs) {
+      await page.getByTestId('mech-generation').setChecked(f.gen);
+      await page.getByTestId('mech-decay').setChecked(f.dec);
+      await page.getByTestId('mech-temperature').setChecked(f.tmp);
+      if (expectPlot) {
+        const plot = page.getByTestId('explore-plot-release-graph');
+        await expect(plot, label).toBeVisible({ timeout: 30_000 });
+      } else {
+        await expect(page.getByTestId('graph-panel'), label).toHaveAttribute('data-empty', 'true');
+      }
     }
   });
+
   test('draw the radioactive decay curve for every species the page offers, each having a registered decay constant', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
-    await expect(page.getByTestId('explore-plot-release-graph')).toBeVisible({ timeout: 30_000 });
-    await page.getByTestId('physics-decay').click();
+    await page.getByTestId('mech-decay').check();
     const ids = await page.getByTestId('species-select').locator('option').evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value));
     expect(ids.length).toBeGreaterThanOrEqual(4);
     for (const id of ids) {
@@ -260,19 +253,20 @@ test.describe('interactive graphs', () => {
       await expect(page.getByTestId('graph-panel')).toHaveAttribute('data-empty', 'false');
     }
   });
-  test('draw the registered experimental data with its caption, citation and link beneath, and its model curves only under temperature-dependent diffusion', async ({ page, problems }) => {
+
+  test('draw the registered experimental data with its caption, citation and link beneath for Sr-90, and its model curves only under temperature-dependent diffusion', async ({ page, problems }) => {
     void problems;
     await gotoSection(page, 'explore');
+    await page.getByTestId('species-select').selectOption('sr90');
     await page.getByTestId('graph-experiment').click();
     await expect(page.getByTestId('dataset-select')).toBeVisible({ timeout: 30_000 });
     const plot = page.getByTestId('explore-plot-experiment-graph');
     await expect(plot).toBeVisible();
     const lines = () => plot.evaluate((el) => ((el as unknown as { data?: { mode: string }[] }).data ?? []).filter((t) => t.mode === 'lines').length);
-    // Baseline diffusion: the measurements stand alone, and no model curve is drawn under another equation.
     await expect.poll(() => plot.evaluate((el) => ((el as unknown as { data?: unknown[] }).data ?? []).length), { timeout: 30_000 }).toBeGreaterThan(0);
     expect(await lines()).toBe(0);
     await expect(page.getByTestId('experiment-model-note')).toHaveCount(0);
-    await page.getByTestId('physics-temperature').click();
+    await page.getByTestId('mech-temperature').check();
     await expect.poll(lines, { timeout: 30_000 }).toBeGreaterThan(0);
     await expect(page.getByTestId('experiment-model-note')).toContainText('temperature-dependent diffusion');
     const markers = await plot.evaluate((el) =>

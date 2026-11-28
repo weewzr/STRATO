@@ -1,0 +1,1613 @@
+{
+  "schema_version": 1,
+  "commit": "f2d40699fbd2f54f89fefbab5da24f65a7878d0c",
+  "counts": {
+    "method_a": 48,
+    "method_b_potentially_supported": 24,
+    "method_b_available_drawn": 9,
+    "experimental": 6,
+    "verification": 3,
+    "total": 81
+  },
+  "stage_to_p_map": [
+    {
+      "stage": "Stage A",
+      "config_id": "P01",
+      "generation": false,
+      "decay": false,
+      "temperature": false,
+      "curve_suffix": "stage_a"
+    },
+    {
+      "stage": "Stage B",
+      "config_id": "P02",
+      "generation": true,
+      "decay": false,
+      "temperature": false,
+      "curve_suffix": "stage_b"
+    },
+    {
+      "stage": "Stage C (decay-only; G=0)",
+      "config_id": "P03",
+      "generation": false,
+      "decay": true,
+      "temperature": false,
+      "curve_suffix": "stage_c_decay_only"
+    },
+    {
+      "stage": "Stage D (heating ramp; G=0)",
+      "config_id": "P04",
+      "generation": false,
+      "decay": false,
+      "temperature": true,
+      "curve_suffix": "stage_d_ramp_decay_off"
+    },
+    {
+      "stage": "Stage C",
+      "config_id": "P05",
+      "generation": true,
+      "decay": true,
+      "temperature": false,
+      "curve_suffix": "stage_c"
+    },
+    {
+      "stage": "P06 (+G, T(t))",
+      "config_id": "P06",
+      "generation": true,
+      "decay": false,
+      "temperature": true,
+      "curve_suffix": "p06_gen_temp"
+    },
+    {
+      "stage": "Stage D (+decay, T(t))",
+      "config_id": "P07",
+      "generation": false,
+      "decay": true,
+      "temperature": true,
+      "curve_suffix": "stage_d_ramp_decay_on"
+    },
+    {
+      "stage": "Stage D (combined)",
+      "config_id": "P08",
+      "generation": true,
+      "decay": true,
+      "temperature": true,
+      "curve_suffix": "stage_d_combined"
+    }
+  ],
+  "entries": [
+    {
+      "entry_id": "MA-P01-1200",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P01",
+      "stage_alias": "Stage A",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1200,
+      "curve_file": "data/study39/curves/1200c_stage_a.json",
+      "delta_pp": -4.981579361984383,
+      "label_text": "\u0394 vs upper bound = -4.982 pp",
+      "comparison_class": "Upper-bound comparison (post-irradiation G=0)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P01-1350",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P01",
+      "stage_alias": "Stage A",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1350,
+      "curve_file": "data/study39/curves/1350c_stage_a.json",
+      "delta_pp": -3.5248985897677576,
+      "label_text": "\u0394 vs upper bound = -3.525 pp",
+      "comparison_class": "Upper-bound comparison (post-irradiation G=0)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P01-1500",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P01",
+      "stage_alias": "Stage A",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1500,
+      "curve_file": "data/study39/curves/1500c_stage_a.json",
+      "delta_pp": 13.682143195664926,
+      "label_text": "\u0394 vs upper bound = +13.682 pp",
+      "comparison_class": "Upper-bound comparison (post-irradiation G=0)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P01-1600",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P01",
+      "stage_alias": "Stage A",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1600,
+      "curve_file": "data/study39/curves/1600c_stage_a.json",
+      "delta_pp": 0.24253983662518053,
+      "label_text": "\u0394 vs upper bound = +0.243 pp",
+      "comparison_class": "Upper-bound comparison (post-irradiation G=0)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P01-1700",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P01",
+      "stage_alias": "Stage A",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1700,
+      "curve_file": "data/study39/curves/1700c_stage_a.json",
+      "delta_pp": -0.11997240085486055,
+      "label_text": "\u0394 = -0.120 pp",
+      "comparison_class": "Physically comparable validation (G=0 anneal)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P01-1800",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P01",
+      "stage_alias": "Stage A",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1800,
+      "curve_file": "data/study39/curves/1800c_stage_a.json",
+      "delta_pp": 12.847085274093068,
+      "label_text": "\u0394 = +12.847 pp",
+      "comparison_class": "Physically comparable bounded validation (w=1/25 failed SiC)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P02-1200",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P02",
+      "stage_alias": "Stage B",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1200,
+      "curve_file": "data/study39/curves/1200c_stage_b.json",
+      "delta_pp": -4.997646598369651,
+      "label_text": "\u0394 vs upper bound = -4.998 pp",
+      "comparison_class": "Upper-bound raw difference (non-equivalent F_gen)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P02-1350",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P02",
+      "stage_alias": "Stage B",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1350,
+      "curve_file": "data/study39/curves/1350c_stage_b.json",
+      "delta_pp": -4.633399462012163,
+      "label_text": "\u0394 vs upper bound = -4.633 pp",
+      "comparison_class": "Upper-bound raw difference (non-equivalent F_gen)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P02-1500",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P02",
+      "stage_alias": "Stage B",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1500,
+      "curve_file": "data/study39/curves/1500c_stage_b.json",
+      "delta_pp": 2.861370225146129,
+      "label_text": "\u0394 vs upper bound = +2.861 pp",
+      "comparison_class": "Upper-bound raw difference (non-equivalent F_gen)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P02-1600",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P02",
+      "stage_alias": "Stage B",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1600,
+      "curve_file": "data/study39/curves/1600c_stage_b.json",
+      "delta_pp": 0.04274741556597636,
+      "label_text": "\u0394 vs upper bound = +0.043 pp",
+      "comparison_class": "Upper-bound raw difference (non-equivalent F_gen)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P02-1700",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P02",
+      "stage_alias": "Stage B",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1700,
+      "curve_file": "data/study39/curves/1700c_stage_b.json",
+      "delta_pp": -3.7751873960062383,
+      "label_text": "\u0394 = -3.775 pp",
+      "comparison_class": "Raw endpoint difference (non-equivalent F_gen vs G=0 anneal)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P02-1800",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P02",
+      "stage_alias": "Stage B",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1800,
+      "curve_file": "data/study39/curves/1800c_stage_b.json",
+      "delta_pp": -2.3235460097015728,
+      "label_text": "\u0394 = -2.324 pp",
+      "comparison_class": "Raw endpoint difference (non-equivalent F_gen vs G=0 anneal)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P03-1200",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P03",
+      "stage_alias": "Stage C (decay-only; G=0)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1200,
+      "curve_file": "data/study39/curves/1200c_stage_c_decay_only.json",
+      "delta_pp": -4.982002848867682,
+      "label_text": "\u0394 vs upper bound = -4.982 pp",
+      "comparison_class": "Upper-bound comparison (post-irradiation G=0)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P03-1350",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P03",
+      "stage_alias": "Stage C (decay-only; G=0)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1350,
+      "curve_file": "data/study39/curves/1350c_stage_c_decay_only.json",
+      "delta_pp": -3.5557015622119934,
+      "label_text": "\u0394 vs upper bound = -3.556 pp",
+      "comparison_class": "Upper-bound comparison (post-irradiation G=0)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P03-1500",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P03",
+      "stage_alias": "Stage C (decay-only; G=0)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1500,
+      "curve_file": "data/study39/curves/1500c_stage_c_decay_only.json",
+      "delta_pp": 13.348098088796679,
+      "label_text": "\u0394 vs upper bound = +13.348 pp",
+      "comparison_class": "Upper-bound comparison (post-irradiation G=0)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P03-1600",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P03",
+      "stage_alias": "Stage C (decay-only; G=0)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1600,
+      "curve_file": "data/study39/curves/1600c_stage_c_decay_only.json",
+      "delta_pp": 0.24234114522183464,
+      "label_text": "\u0394 vs upper bound = +0.242 pp",
+      "comparison_class": "Upper-bound comparison (post-irradiation G=0)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P03-1700",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P03",
+      "stage_alias": "Stage C (decay-only; G=0)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1700,
+      "curve_file": "data/study39/curves/1700c_stage_c_decay_only.json",
+      "delta_pp": -0.12257635650652354,
+      "label_text": "\u0394 = -0.123 pp",
+      "comparison_class": "Physically comparable validation (G=0 anneal)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P03-1800",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P03",
+      "stage_alias": "Stage C (decay-only; G=0)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1800,
+      "curve_file": "data/study39/curves/1800c_stage_c_decay_only.json",
+      "delta_pp": 12.838231762482078,
+      "label_text": "\u0394 = +12.838 pp",
+      "comparison_class": "Physically comparable bounded validation (w=1/25 failed SiC)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P04-1200",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P04",
+      "stage_alias": "Stage D (heating ramp; G=0)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": false,
+        "temperature": true
+      },
+      "temperature_c": 1200,
+      "curve_file": "data/study39/curves/1200c_stage_d_ramp_decay_off.json",
+      "delta_pp": -4.981526733446241,
+      "label_text": "\u0394 vs upper bound = -4.982 pp",
+      "comparison_class": "Upper-bound comparison (post-irradiation G=0)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P04-1350",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P04",
+      "stage_alias": "Stage D (heating ramp; G=0)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": false,
+        "temperature": true
+      },
+      "temperature_c": 1350,
+      "curve_file": "data/study39/curves/1350c_stage_d_ramp_decay_off.json",
+      "delta_pp": -3.524017897502022,
+      "label_text": "\u0394 vs upper bound = -3.524 pp",
+      "comparison_class": "Upper-bound comparison (post-irradiation G=0)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P04-1500",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P04",
+      "stage_alias": "Stage D (heating ramp; G=0)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": false,
+        "temperature": true
+      },
+      "temperature_c": 1500,
+      "curve_file": "data/study39/curves/1500c_stage_d_ramp_decay_off.json",
+      "delta_pp": 13.68537027348724,
+      "label_text": "\u0394 vs upper bound = +13.685 pp",
+      "comparison_class": "Upper-bound comparison (post-irradiation G=0)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P04-1600",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P04",
+      "stage_alias": "Stage D (heating ramp; G=0)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": false,
+        "temperature": true
+      },
+      "temperature_c": 1600,
+      "curve_file": "data/study39/curves/1600c_stage_d_ramp_decay_off.json",
+      "delta_pp": 0.249175314388007,
+      "label_text": "\u0394 vs upper bound = +0.249 pp",
+      "comparison_class": "Upper-bound comparison (post-irradiation G=0)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P04-1700",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P04",
+      "stage_alias": "Stage D (heating ramp; G=0)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": false,
+        "temperature": true
+      },
+      "temperature_c": 1700,
+      "curve_file": "data/study39/curves/1700c_stage_d_ramp_decay_off.json",
+      "delta_pp": -0.03515986178343408,
+      "label_text": "\u0394 = -0.035 pp",
+      "comparison_class": "Physically comparable validation (G=0 anneal)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P04-1800",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P04",
+      "stage_alias": "Stage D (heating ramp; G=0)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": false,
+        "temperature": true
+      },
+      "temperature_c": 1800,
+      "curve_file": "data/study39/curves/1800c_stage_d_ramp_decay_off.json",
+      "delta_pp": 13.132402962497626,
+      "label_text": "\u0394 = +13.132 pp",
+      "comparison_class": "Physically comparable bounded validation (w=1/25 failed SiC)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P05-1200",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P05",
+      "stage_alias": "Stage C",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1200,
+      "curve_file": "data/study39/curves/1200c_stage_c.json",
+      "delta_pp": -4.997695556285321,
+      "label_text": "\u0394 vs upper bound = -4.998 pp",
+      "comparison_class": "Upper-bound raw difference (non-equivalent F_gen)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P05-1350",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P05",
+      "stage_alias": "Stage C",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1350,
+      "curve_file": "data/study39/curves/1350c_stage_c.json",
+      "delta_pp": -4.639828572092021,
+      "label_text": "\u0394 vs upper bound = -4.640 pp",
+      "comparison_class": "Upper-bound raw difference (non-equivalent F_gen)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P05-1500",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P05",
+      "stage_alias": "Stage C",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1500,
+      "curve_file": "data/study39/curves/1500c_stage_c.json",
+      "delta_pp": 2.7545853950360093,
+      "label_text": "\u0394 vs upper bound = +2.755 pp",
+      "comparison_class": "Upper-bound raw difference (non-equivalent F_gen)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P05-1600",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P05",
+      "stage_alias": "Stage C",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1600,
+      "curve_file": "data/study39/curves/1600c_stage_c.json",
+      "delta_pp": 0.04271588971499508,
+      "label_text": "\u0394 vs upper bound = +0.043 pp",
+      "comparison_class": "Upper-bound raw difference (non-equivalent F_gen)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P05-1700",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P05",
+      "stage_alias": "Stage C",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1700,
+      "curve_file": "data/study39/curves/1700c_stage_c.json",
+      "delta_pp": -3.7758512012585537,
+      "label_text": "\u0394 = -3.776 pp",
+      "comparison_class": "Raw endpoint difference (non-equivalent F_gen vs G=0 anneal)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P05-1800",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P05",
+      "stage_alias": "Stage C",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1800,
+      "curve_file": "data/study39/curves/1800c_stage_c.json",
+      "delta_pp": -2.326517772797701,
+      "label_text": "\u0394 = -2.327 pp",
+      "comparison_class": "Raw endpoint difference (non-equivalent F_gen vs G=0 anneal)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P06-1200",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P06",
+      "stage_alias": "P06 (+G, T(t))",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": false,
+        "temperature": true
+      },
+      "temperature_c": 1200,
+      "curve_file": "data/study39/curves/1200c_p06_gen_temp.json",
+      "delta_pp": -4.997604712740604,
+      "label_text": "\u0394 vs upper bound = -4.998 pp",
+      "comparison_class": "Upper-bound raw difference (non-equivalent F_gen)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P06-1350",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P06",
+      "stage_alias": "P06 (+G, T(t))",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": false,
+        "temperature": true
+      },
+      "temperature_c": 1350,
+      "curve_file": "data/study39/curves/1350c_p06_gen_temp.json",
+      "delta_pp": -4.630622762375429,
+      "label_text": "\u0394 vs upper bound = -4.631 pp",
+      "comparison_class": "Upper-bound raw difference (non-equivalent F_gen)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P06-1500",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P06",
+      "stage_alias": "P06 (+G, T(t))",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": false,
+        "temperature": true
+      },
+      "temperature_c": 1500,
+      "curve_file": "data/study39/curves/1500c_p06_gen_temp.json",
+      "delta_pp": 2.8876052042276403,
+      "label_text": "\u0394 vs upper bound = +2.888 pp",
+      "comparison_class": "Upper-bound raw difference (non-equivalent F_gen)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P06-1600",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P06",
+      "stage_alias": "P06 (+G, T(t))",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": false,
+        "temperature": true
+      },
+      "temperature_c": 1600,
+      "curve_file": "data/study39/curves/1600c_p06_gen_temp.json",
+      "delta_pp": 0.058475583594996,
+      "label_text": "\u0394 vs upper bound = +0.058 pp",
+      "comparison_class": "Upper-bound raw difference (non-equivalent F_gen)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P06-1700",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P06",
+      "stage_alias": "P06 (+G, T(t))",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": false,
+        "temperature": true
+      },
+      "temperature_c": 1700,
+      "curve_file": "data/study39/curves/1700c_p06_gen_temp.json",
+      "delta_pp": -3.367520832247829,
+      "label_text": "\u0394 = -3.368 pp",
+      "comparison_class": "Raw endpoint difference (non-equivalent F_gen vs G=0 anneal)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P06-1800",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P06",
+      "stage_alias": "P06 (+G, T(t))",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": false,
+        "temperature": true
+      },
+      "temperature_c": 1800,
+      "curve_file": "data/study39/curves/1800c_p06_gen_temp.json",
+      "delta_pp": -0.2108014285534171,
+      "label_text": "\u0394 = -0.211 pp",
+      "comparison_class": "Raw endpoint difference (non-equivalent F_gen vs G=0 anneal)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P07-1200",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P07",
+      "stage_alias": "Stage D (+decay, T(t))",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": true,
+        "temperature": true
+      },
+      "temperature_c": 1200,
+      "curve_file": "data/study39/curves/1200c_stage_d_ramp_decay_on.json",
+      "delta_pp": -4.981952753631858,
+      "label_text": "\u0394 vs upper bound = -4.982 pp",
+      "comparison_class": "Upper-bound comparison (post-irradiation G=0)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P07-1350",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P07",
+      "stage_alias": "Stage D (+decay, T(t))",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": true,
+        "temperature": true
+      },
+      "temperature_c": 1350,
+      "curve_file": "data/study39/curves/1350c_stage_d_ramp_decay_on.json",
+      "delta_pp": -3.5549377296685067,
+      "label_text": "\u0394 vs upper bound = -3.555 pp",
+      "comparison_class": "Upper-bound comparison (post-irradiation G=0)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P07-1500",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P07",
+      "stage_alias": "Stage D (+decay, T(t))",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": true,
+        "temperature": true
+      },
+      "temperature_c": 1500,
+      "curve_file": "data/study39/curves/1500c_stage_d_ramp_decay_on.json",
+      "delta_pp": 13.349971501656965,
+      "label_text": "\u0394 vs upper bound = +13.350 pp",
+      "comparison_class": "Upper-bound comparison (post-irradiation G=0)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P07-1600",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P07",
+      "stage_alias": "Stage D (+decay, T(t))",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": true,
+        "temperature": true
+      },
+      "temperature_c": 1600,
+      "curve_file": "data/study39/curves/1600c_stage_d_ramp_decay_on.json",
+      "delta_pp": 0.24895107772654207,
+      "label_text": "\u0394 vs upper bound = +0.249 pp",
+      "comparison_class": "Upper-bound comparison (post-irradiation G=0)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P07-1700",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P07",
+      "stage_alias": "Stage D (+decay, T(t))",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": true,
+        "temperature": true
+      },
+      "temperature_c": 1700,
+      "curve_file": "data/study39/curves/1700c_stage_d_ramp_decay_on.json",
+      "delta_pp": -0.03826304387340024,
+      "label_text": "\u0394 = -0.038 pp",
+      "comparison_class": "Physically comparable validation (G=0 anneal)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P07-1800",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P07",
+      "stage_alias": "Stage D (+decay, T(t))",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": true,
+        "temperature": true
+      },
+      "temperature_c": 1800,
+      "curve_file": "data/study39/curves/1800c_stage_d_ramp_decay_on.json",
+      "delta_pp": 13.12097563056488,
+      "label_text": "\u0394 = +13.121 pp",
+      "comparison_class": "Physically comparable bounded validation (w=1/25 failed SiC)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P08-1200",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P08",
+      "stage_alias": "Stage D (combined)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": true,
+        "temperature": true
+      },
+      "temperature_c": 1200,
+      "curve_file": "data/study39/curves/1200c_stage_d_combined.json",
+      "delta_pp": -4.997654674241925,
+      "label_text": "\u0394 vs upper bound = -4.998 pp",
+      "comparison_class": "Upper-bound raw difference (non-equivalent F_gen)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P08-1350",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P08",
+      "stage_alias": "Stage D (combined)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": true,
+        "temperature": true
+      },
+      "temperature_c": 1350,
+      "curve_file": "data/study39/curves/1350c_stage_d_combined.json",
+      "delta_pp": -4.637114668621824,
+      "label_text": "\u0394 vs upper bound = -4.637 pp",
+      "comparison_class": "Upper-bound raw difference (non-equivalent F_gen)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P08-1500",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P08",
+      "stage_alias": "Stage D (combined)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": true,
+        "temperature": true
+      },
+      "temperature_c": 1500,
+      "curve_file": "data/study39/curves/1500c_stage_d_combined.json",
+      "delta_pp": 2.7802524486286866,
+      "label_text": "\u0394 vs upper bound = +2.780 pp",
+      "comparison_class": "Upper-bound raw difference (non-equivalent F_gen)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P08-1600",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P08",
+      "stage_alias": "Stage D (combined)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": true,
+        "temperature": true
+      },
+      "temperature_c": 1600,
+      "curve_file": "data/study39/curves/1600c_stage_d_combined.json",
+      "delta_pp": 0.058430137533245684,
+      "label_text": "\u0394 vs upper bound = +0.058 pp",
+      "comparison_class": "Upper-bound raw difference (non-equivalent F_gen)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P08-1700",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P08",
+      "stage_alias": "Stage D (combined)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": true,
+        "temperature": true
+      },
+      "temperature_c": 1700,
+      "curve_file": "data/study39/curves/1700c_stage_d_combined.json",
+      "delta_pp": -3.368425544460771,
+      "label_text": "\u0394 = -3.368 pp",
+      "comparison_class": "Raw endpoint difference (non-equivalent F_gen vs G=0 anneal)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MA-P08-1800",
+      "category": "Method A (BTCS)",
+      "method": "Method A",
+      "config_id": "P08",
+      "stage_alias": "Stage D (combined)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": true,
+        "temperature": true
+      },
+      "temperature_c": 1800,
+      "curve_file": "data/study39/curves/1800c_stage_d_combined.json",
+      "delta_pp": -0.2147564176683936,
+      "label_text": "\u0394 = -0.215 pp",
+      "comparison_class": "Raw endpoint difference (non-equivalent F_gen vs G=0 anneal)",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MB-P01-1200",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P01",
+      "stage_alias": "Stage A",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1200,
+      "applicable": true,
+      "reason_code": null,
+      "reason": null,
+      "valid_from_h": 1.0904358255643096,
+      "accuracy_floor": 7.941138363168362e-07,
+      "max_abs_diff_pp": 6.20527061090658e-05,
+      "delta_pp": -4.981641414690492,
+      "label_text": "\u0394 vs upper bound = -4.982 pp",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MB-P01-1350",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P01",
+      "stage_alias": "Stage A",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1350,
+      "applicable": true,
+      "reason_code": null,
+      "reason": null,
+      "valid_from_h": 0.3490185736940397,
+      "accuracy_floor": 2.849563623470332e-07,
+      "max_abs_diff_pp": 0.00032443432019593765,
+      "delta_pp": -3.5251887452872293,
+      "label_text": "\u0394 vs upper bound = -3.525 pp",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MB-P01-1500",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P01",
+      "stage_alias": "Stage A",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1500,
+      "applicable": true,
+      "reason_code": null,
+      "reason": null,
+      "valid_from_h": 0.0858929533456853,
+      "accuracy_floor": 7.045053366957499e-08,
+      "max_abs_diff_pp": 0.000989589291105434,
+      "delta_pp": 13.683025843758195,
+      "label_text": "\u0394 vs upper bound = +13.683 pp",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MB-P01-1600",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P01",
+      "stage_alias": "Stage A",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1600,
+      "applicable": true,
+      "reason_code": null,
+      "reason": null,
+      "valid_from_h": 0.044444444444444446,
+      "accuracy_floor": 1.7576448657497995e-08,
+      "max_abs_diff_pp": 0.00022764078460245883,
+      "delta_pp": 0.24232318928814567,
+      "label_text": "\u0394 vs upper bound = +0.242 pp",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MB-P01-1700",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P01",
+      "stage_alias": "Stage A",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1700,
+      "applicable": true,
+      "reason_code": null,
+      "reason": null,
+      "valid_from_h": 0.044444444444444446,
+      "accuracy_floor": 3.85489697415442e-09,
+      "max_abs_diff_pp": 0.0005002906356691567,
+      "delta_pp": -0.12000904045754227,
+      "label_text": "\u0394 = -0.120 pp",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MB-P01-1800",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P01",
+      "stage_alias": "Stage A",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1800,
+      "applicable": true,
+      "reason_code": null,
+      "reason": null,
+      "valid_from_h": 0.044444444444444446,
+      "accuracy_floor": 8.989624004070998e-10,
+      "max_abs_diff_pp": 0.0015056528449553484,
+      "delta_pp": 12.848544686994433,
+      "label_text": "\u0394 = +12.849 pp",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MB-P02-1200",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P02",
+      "stage_alias": "Stage B",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1200,
+      "applicable": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 66, COVER_SENSITIVITY x 53, BEFORE_MIN_VALID_TIME x 42; first valid time 3.926e3 s, accuracy floor 7.9e-7)",
+      "valid_from_h": null,
+      "accuracy_floor": null,
+      "max_abs_diff_pp": null,
+      "delta_pp": null,
+      "label_text": "withheld by analytical drawing mask",
+      "status": "withheld_by_mask"
+    },
+    {
+      "entry_id": "MB-P02-1350",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P02",
+      "stage_alias": "Stage B",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1350,
+      "applicable": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 82, COVER_SENSITIVITY x 53, BEFORE_MIN_VALID_TIME x 27; first valid time 1.256e3 s, accuracy floor 2.8e-7)",
+      "valid_from_h": null,
+      "accuracy_floor": null,
+      "max_abs_diff_pp": null,
+      "delta_pp": null,
+      "label_text": "withheld by analytical drawing mask",
+      "status": "withheld_by_mask"
+    },
+    {
+      "entry_id": "MB-P02-1500",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P02",
+      "stage_alias": "Stage B",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1500,
+      "applicable": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 104, COVER_SENSITIVITY x 53, BEFORE_MIN_VALID_TIME x 9; first valid time 3.092e2 s, accuracy floor 7.0e-8)",
+      "valid_from_h": null,
+      "accuracy_floor": null,
+      "max_abs_diff_pp": null,
+      "delta_pp": null,
+      "label_text": "withheld by analytical drawing mask",
+      "status": "withheld_by_mask"
+    },
+    {
+      "entry_id": "MB-P02-1600",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P02",
+      "stage_alias": "Stage B",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1600,
+      "applicable": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 67, COVER_SENSITIVITY x 53, BEFORE_MIN_VALID_TIME x 1; first valid time 1.600e2 s, accuracy floor 1.8e-8)",
+      "valid_from_h": null,
+      "accuracy_floor": null,
+      "max_abs_diff_pp": null,
+      "delta_pp": null,
+      "label_text": "withheld by analytical drawing mask",
+      "status": "withheld_by_mask"
+    },
+    {
+      "entry_id": "MB-P02-1700",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P02",
+      "stage_alias": "Stage B",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1700,
+      "applicable": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 69, COVER_SENSITIVITY x 52, BEFORE_MIN_VALID_TIME x 1; first valid time 1.600e2 s, accuracy floor 3.9e-9)",
+      "valid_from_h": null,
+      "accuracy_floor": null,
+      "max_abs_diff_pp": null,
+      "delta_pp": null,
+      "label_text": "withheld by analytical drawing mask",
+      "status": "withheld_by_mask"
+    },
+    {
+      "entry_id": "MB-P02-1800",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P02",
+      "stage_alias": "Stage B",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": false,
+        "temperature": false
+      },
+      "temperature_c": 1800,
+      "applicable": true,
+      "reason_code": null,
+      "reason": null,
+      "valid_from_h": 0.044444444444444446,
+      "accuracy_floor": 8.989624004070998e-10,
+      "max_abs_diff_pp": 0.0017292382422300773,
+      "delta_pp": -2.324567476560467,
+      "label_text": "\u0394 = -2.325 pp",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MB-P03-1200",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P03",
+      "stage_alias": "Stage C (decay-only; G=0)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1200,
+      "applicable": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 101, BEFORE_MIN_VALID_TIME x 42, COVER_SENSITIVITY x 18; first valid time 3.926e3 s, accuracy floor 7.9e-7)",
+      "valid_from_h": null,
+      "accuracy_floor": null,
+      "max_abs_diff_pp": null,
+      "delta_pp": null,
+      "label_text": "withheld by analytical drawing mask",
+      "status": "withheld_by_mask"
+    },
+    {
+      "entry_id": "MB-P03-1350",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P03",
+      "stage_alias": "Stage C (decay-only; G=0)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1350,
+      "applicable": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 117, BEFORE_MIN_VALID_TIME x 27, COVER_SENSITIVITY x 18; first valid time 1.256e3 s, accuracy floor 2.8e-7)",
+      "valid_from_h": null,
+      "accuracy_floor": null,
+      "max_abs_diff_pp": null,
+      "delta_pp": null,
+      "label_text": "withheld by analytical drawing mask",
+      "status": "withheld_by_mask"
+    },
+    {
+      "entry_id": "MB-P03-1500",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P03",
+      "stage_alias": "Stage C (decay-only; G=0)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1500,
+      "applicable": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 139, COVER_SENSITIVITY x 18, BEFORE_MIN_VALID_TIME x 9; first valid time 3.092e2 s, accuracy floor 7.0e-8)",
+      "valid_from_h": null,
+      "accuracy_floor": null,
+      "max_abs_diff_pp": null,
+      "delta_pp": null,
+      "label_text": "withheld by analytical drawing mask",
+      "status": "withheld_by_mask"
+    },
+    {
+      "entry_id": "MB-P03-1600",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P03",
+      "stage_alias": "Stage C (decay-only; G=0)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1600,
+      "applicable": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 103, COVER_SENSITIVITY x 17, BEFORE_MIN_VALID_TIME x 1; first valid time 1.600e2 s, accuracy floor 1.8e-8)",
+      "valid_from_h": null,
+      "accuracy_floor": null,
+      "max_abs_diff_pp": null,
+      "delta_pp": null,
+      "label_text": "withheld by analytical drawing mask",
+      "status": "withheld_by_mask"
+    },
+    {
+      "entry_id": "MB-P03-1700",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P03",
+      "stage_alias": "Stage C (decay-only; G=0)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1700,
+      "applicable": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 104, COVER_SENSITIVITY x 17, BEFORE_MIN_VALID_TIME x 1; first valid time 1.600e2 s, accuracy floor 3.9e-9)",
+      "valid_from_h": null,
+      "accuracy_floor": null,
+      "max_abs_diff_pp": null,
+      "delta_pp": null,
+      "label_text": "withheld by analytical drawing mask",
+      "status": "withheld_by_mask"
+    },
+    {
+      "entry_id": "MB-P03-1800",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P03",
+      "stage_alias": "Stage C (decay-only; G=0)",
+      "mechanisms": {
+        "baseline": true,
+        "generation": false,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1800,
+      "applicable": true,
+      "reason_code": null,
+      "reason": null,
+      "valid_from_h": 0.044444444444444446,
+      "accuracy_floor": 8.989624004070998e-10,
+      "max_abs_diff_pp": 0.0015065918457369057,
+      "delta_pp": 12.83969151505515,
+      "label_text": "\u0394 = +12.840 pp",
+      "status": "verified"
+    },
+    {
+      "entry_id": "MB-P05-1200",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P05",
+      "stage_alias": "Stage C",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1200,
+      "applicable": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 66, COVER_SENSITIVITY x 53, BEFORE_MIN_VALID_TIME x 42; first valid time 3.926e3 s, accuracy floor 7.9e-7)",
+      "valid_from_h": null,
+      "accuracy_floor": null,
+      "max_abs_diff_pp": null,
+      "delta_pp": null,
+      "label_text": "withheld by analytical drawing mask",
+      "status": "withheld_by_mask"
+    },
+    {
+      "entry_id": "MB-P05-1350",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P05",
+      "stage_alias": "Stage C",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1350,
+      "applicable": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 82, COVER_SENSITIVITY x 53, BEFORE_MIN_VALID_TIME x 27; first valid time 1.256e3 s, accuracy floor 2.8e-7)",
+      "valid_from_h": null,
+      "accuracy_floor": null,
+      "max_abs_diff_pp": null,
+      "delta_pp": null,
+      "label_text": "withheld by analytical drawing mask",
+      "status": "withheld_by_mask"
+    },
+    {
+      "entry_id": "MB-P05-1500",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P05",
+      "stage_alias": "Stage C",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1500,
+      "applicable": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 104, COVER_SENSITIVITY x 53, BEFORE_MIN_VALID_TIME x 9; first valid time 3.092e2 s, accuracy floor 7.0e-8)",
+      "valid_from_h": null,
+      "accuracy_floor": null,
+      "max_abs_diff_pp": null,
+      "delta_pp": null,
+      "label_text": "withheld by analytical drawing mask",
+      "status": "withheld_by_mask"
+    },
+    {
+      "entry_id": "MB-P05-1600",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P05",
+      "stage_alias": "Stage C",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1600,
+      "applicable": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 67, COVER_SENSITIVITY x 53, BEFORE_MIN_VALID_TIME x 1; first valid time 1.600e2 s, accuracy floor 1.8e-8)",
+      "valid_from_h": null,
+      "accuracy_floor": null,
+      "max_abs_diff_pp": null,
+      "delta_pp": null,
+      "label_text": "withheld by analytical drawing mask",
+      "status": "withheld_by_mask"
+    },
+    {
+      "entry_id": "MB-P05-1700",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P05",
+      "stage_alias": "Stage C",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1700,
+      "applicable": false,
+      "reason_code": "NOT_DRAWN_AT_ANY_TIME",
+      "reason": "the drawing mask of science design Section 4.2 accepts no value of this curve (OUTSIDE_ESTIMATED_REGIME x 69, COVER_SENSITIVITY x 52, BEFORE_MIN_VALID_TIME x 1; first valid time 1.600e2 s, accuracy floor 3.9e-9)",
+      "valid_from_h": null,
+      "accuracy_floor": null,
+      "max_abs_diff_pp": null,
+      "delta_pp": null,
+      "label_text": "withheld by analytical drawing mask",
+      "status": "withheld_by_mask"
+    },
+    {
+      "entry_id": "MB-P05-1800",
+      "category": "Method B (Sturm-Liouville)",
+      "method": "Method B",
+      "config_id": "P05",
+      "stage_alias": "Stage C",
+      "mechanisms": {
+        "baseline": true,
+        "generation": true,
+        "decay": true,
+        "temperature": false
+      },
+      "temperature_c": 1800,
+      "applicable": true,
+      "reason_code": null,
+      "reason": null,
+      "valid_from_h": 0.044444444444444446,
+      "accuracy_floor": 8.989624004070998e-10,
+      "max_abs_diff_pp": 0.001728907102164362,
+      "delta_pp": -2.3275385264733925,
+      "label_text": "\u0394 = -2.328 pp",
+      "status": "verified"
+    },
+    {
+      "entry_id": "EXP-D01",
+      "category": "Experimental Evidence",
+      "dataset_id": "D01",
+      "temperature_c": 1200,
+      "description": "Bullock (1984) / TE-2090 Table 22 UCO/UO2*(2) upper bounds",
+      "status": "verified_source"
+    },
+    {
+      "entry_id": "EXP-D02",
+      "category": "Experimental Evidence",
+      "dataset_id": "D02",
+      "temperature_c": 1350,
+      "description": "Bullock (1984) / TE-2090 Table 22 UCO/UO2*(2) upper bounds",
+      "status": "verified_source"
+    },
+    {
+      "entry_id": "EXP-D03",
+      "category": "Experimental Evidence",
+      "dataset_id": "D03",
+      "temperature_c": 1500,
+      "description": "Bullock (1984) / TE-2090 Fig. 124a & Table 22",
+      "status": "verified_source"
+    },
+    {
+      "entry_id": "EXP-D04",
+      "category": "Experimental Evidence",
+      "dataset_id": "D04",
+      "temperature_c": 1700,
+      "description": "Minato et al. (2000) HRB-22 ACT3 (exp:F125-Cs, N=8)",
+      "status": "verified_source"
+    },
+    {
+      "entry_id": "EXP-D05",
+      "category": "Experimental Evidence",
+      "dataset_id": "D05",
+      "temperature_c": 1800,
+      "description": "Minato et al. (2000) HRB-22 ACT4 (exp:F126-Cs, N=11, w=1/25 failed SiC)",
+      "status": "verified_source"
+    },
+    {
+      "entry_id": "EXP-D06",
+      "category": "Experimental Evidence",
+      "dataset_id": "D06",
+      "temperature_c": "955-1136",
+      "description": "AGR-1 irradiation C15 exploration (no comparable intact Cs-137 irradiation series)",
+      "status": "unavailable"
+    },
+    {
+      "entry_id": "VER-C01",
+      "category": "Verification",
+      "verification_id": "C01",
+      "title": "BTCS numerical convergence & 66-run mass-balance audit",
+      "status": "verified"
+    },
+    {
+      "entry_id": "VER-C02",
+      "category": "Verification",
+      "verification_id": "C02",
+      "title": "Method A vs Method B analytical verification",
+      "status": "verified"
+    },
+    {
+      "entry_id": "VER-C03",
+      "category": "Verification",
+      "verification_id": "C03",
+      "title": "Experimental deviation summary across Stages A-D / P01-P08",
+      "status": "verified"
+    }
+  ]
+}

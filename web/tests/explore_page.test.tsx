@@ -68,10 +68,12 @@ describe('Explore, whole page', () => {
     expect(container.textContent ?? '').not.toMatch(/Live simulation|Numerical controls|Solver:|commit|\b[0-9a-f]{7,40}\b/);
   });
 
-  it('shows the four areas, and the legend directly under the equation', () => {
+  it('shows the four areas, and canonical Cs-137 steady baseline draws immediately with legend directly under the equation', () => {
     const { container } = render(<Explore />);
     expect(Array.from(container.querySelectorAll('[data-area]')).map((a) => (a as HTMLElement).dataset.area)).toEqual(['controls', 'equation', 'numerical', 'graphs']);
     expect(container.querySelectorAll('h1')).toHaveLength(1);
+    expect(screen.getByTestId('graph-panel').dataset.empty).toBe('false');
+    act(() => useStrato.getState().setSelection({ physics: 'future' }));
     expect(screen.getByTestId('graph-panel').dataset.empty).toBe('true');
   });
 });

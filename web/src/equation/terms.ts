@@ -16,7 +16,7 @@
 //
 // The notation is that of directive Section 5: i the radial node index, j the time-step index,
 // C_i^j the concentration, the powers parenthesised.
-import type { PhysicsId } from './capability';
+import { mechanismsOf, type PhysicsId, type PhysicsSelection } from './capability';
 import { displayTag, type CodeRef, type DevCodeRef, type DocId, type DocRef } from './links';
 
 /** Steps one to fourteen are the baseline steps; fifteen to seventeen are the three mechanism steps (generation, decay, temperature). */
@@ -1321,12 +1321,13 @@ export const ADDITION_PHYSICS: readonly PhysicsId[] = ['generation', 'decay', 't
  * system, the generated, decayed and combined balance with the accounting. The baseline form of the step stays
  * as it is; these are additions to it, never a replacement.
  */
-export function physicsAdditions(stage: Stage, physics: PhysicsId): { equations: ShownEquation[]; note: string | null } {
+export function physicsAdditions(stage: Stage, physics: PhysicsSelection): { equations: ShownEquation[]; note: string | null } {
   const none = { equations: [], note: null };
-  if (physics === 'baseline') return none;
-  const gen = physics === 'generation' || physics === 'combined';
-  const dec = physics === 'decay' || physics === 'combined';
-  const tmp = physics === 'temperature' || physics === 'combined';
+  const m = mechanismsOf(physics);
+  const gen = m.includes('generation');
+  const dec = m.includes('decay');
+  const tmp = m.includes('temperature');
+  if (!gen && !dec && !tmp) return none;
   switch (stage) {
     case 1: {
       const named: string[] = [];
@@ -1341,9 +1342,10 @@ export function physicsAdditions(stage: Stage, physics: PhysicsId): { equations:
       if (gen) parts.push('the right-hand side vector gains the nodal source density multiplied by the time step');
       if (dec) parts.push('every diagonal entry gains the decay number of the step, as stated under the radioactive decay contribution');
       if (tmp) parts.push('the off-diagonal and diagonal entries are evaluated with the diffusivities of the step, as stated under the temperature-dependent diffusion coefficients');
-      const lead = physics === 'combined' ? 'The complete formulation of the combined model: ' : 'With the selected physics, ';
+      const combinedAll = gen && dec && tmp;
+      const lead = combinedAll ? 'The complete formulation of the combined model: ' : 'With the selected physics, ';
       return {
-        equations: physics === 'combined' ? [D5_EQ26, D5_ROW, D5_ROW0] : gen ? [D5_ROW] : [],
+        equations: combinedAll ? [D5_EQ26, D5_ROW, D5_ROW0] : gen ? [D5_ROW] : [],
         note: `${lead}${parts.join('; ')}.`,
       };
     }
@@ -1364,7 +1366,7 @@ export function physicsAdditions(stage: Stage, physics: PhysicsId): { equations:
       if (gen) lines.push('Source: a zero source reproduces the baseline bit for bit, the generated amount is exact, and for a constant kernel-only source without decay the discrete steady state equals the exact one (proved in the document on generation, decay and temperature).');
       if (dec) lines.push('Decay: the matrix stays a non-singular M-matrix, and without a source the decaying solution follows the discrete decay factor (proved in the same document).');
       if (tmp) lines.push('Temperature: without source and decay the norms do not grow for any temperature history, the time order is first (proved for a fixed grid; a proof outline with constants independent of the grid), and a constant temperature gives the constant-diffusivity run (proved in the same document).');
-      if (physics === 'combined') lines.push('Combined: the balance holds in exact arithmetic (proved); the convergence orders with source, decay and temperature history are observed, not proved.');
+      if (gen && dec && tmp) lines.push('Combined: the balance holds in exact arithmetic (proved); the convergence orders with source, decay and temperature history are observed, not proved.');
       return { equations: [], note: lines.join('\n') };
     }
     default:

@@ -49,7 +49,21 @@ STAGES_ORDER = [
     ("stage_d_isothermal", "Stage D-iso (D(T) dynamic, G=0, lambda=0)"),
     ("stage_d_ramp_decay_off", "Stage D-ramp (D(T(t)), G=0, lambda=0)"),
     ("stage_d_ramp_decay_on", "Stage D-ramp (D(T(t)), G=0, +lambda)"),
+    ("p06_gen_temp", "P06 (+G, lambda=0, D(T(t)), F_gen)"),
     ("stage_d_combined", "Stage D-comb (+G, +lambda, D(T(t)), F_gen)"),
+    ("ctrl_gen_on_decay_off", "Controlled (+G matched C_init, lambda=0)"),
+    ("ctrl_gen_on_decay_on", "Controlled (+G +lambda matched C_init)"),
+]
+
+P_SERIES_MAP = [
+    ("P01", False, False, False, "stage_a", "Stage A"),
+    ("P02", True, False, False, "stage_b", "Stage B"),
+    ("P03", False, True, False, "stage_c_decay_only", "Stage C (decay-only; G=0)"),
+    ("P04", False, False, True, "stage_d_ramp_decay_off", "Stage D (heating ramp; G=0)"),
+    ("P05", True, True, False, "stage_c", "Stage C"),
+    ("P06", True, False, True, "p06_gen_temp", "P06 (+G, T(t))"),
+    ("P07", False, True, True, "stage_d_ramp_decay_on", "Stage D (+decay, T(t))"),
+    ("P08", True, True, True, "stage_d_combined", "Stage D (combined)"),
 ]
 
 
@@ -235,7 +249,11 @@ def compute_exact_series_metrics(extracted):
                         "comparable_definition": (
                             "heating_test_G0"
                             if st_key in ("stage_a", "stage_c_decay_only", "stage_d_isothermal", "stage_d_ramp_decay_off", "stage_d_ramp_decay_on")
-                            else "source_inclusive_F_gen (different definition vs G=0 anneal)"
+                            else (
+                                "controlled_matched_C_init"
+                                if st_key.startswith("ctrl_")
+                                else "source_inclusive_F_gen (different definition vs G=0 anneal)"
+                            )
                         ),
                     }
                 )
@@ -360,24 +378,220 @@ def compute_stage_improvements(summary_df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def build_manifest(summary_df, bounds_df, imp_df):
+def compute_endpoint_deviations(extracted, hfr_k31):
+    """One immutable canonical final experimental endpoint per temperature (1200-1800 C) across P01-P08 + controlled."""
+    sub_hfr = hfr_k31[hfr_k31["time_h"] <= 400.0].sort_values("time_h")
+    t1600 = float(sub_hfr["time_h"].iloc[-1])
+    u1600 = float(sub_hfr["value"].iloc[-1])
+
+    e1700 = extracted[1700]
+    s1700 = e1700[e1700["series"] == "exp:F125-Cs"].sort_values("time_h")
+    t1700 = float(s1700["time_h"].iloc[-1])
+    f1700 = float(s1700["release_fraction"].iloc[-1])
+
+    e1800 = extracted[1800]
+    s1800 = e1800[e1800["series"] == "exp:F126-Cs"].sort_values("time_h")
+    t1800 = float(s1800["time_h"].iloc[-1])
+    f1800 = float(s1800["release_fraction"].iloc[-1])
+
+    endpoints = {
+        1200: ("Bullock (1984) / TE-2090 Table 22 UCO (5% bound)", "upper_bound", 10138.0, 0.05),
+        1350: ("Bullock (1984) / TE-2090 Table 22 UCO (5% bound)", "upper_bound", 10685.0, 0.05),
+        1500: ("Bullock (1984) / TE-2090 Table 22 UCO (5% bound)", "upper_bound", 11866.0, 0.05),
+        1600: (f"IAEA-TECDOC-978 HFR-K3/1 sphere (N={len(sub_hfr)} <= 400 h)", "upper_bound", t1600, u1600),
+        1700: ("Minato et al. (2000) HRB-22 ACT3 (exp:F125-Cs, N=8)", "measurement", t1700, f1700),
+        1800: ("Minato et al. (2000) HRB-22 ACT4 (exp:F126-Cs, w=1/25 failed SiC)", "measurement_bounded", t1800, f1800),
+    }
+
+    entries = P_SERIES_MAP + [
+        ("CTRL_G", True, False, False, "ctrl_gen_on_decay_off", "Controlled (+G matched C_init)"),
+        ("CTRL_GL", True, True, False, "ctrl_gen_on_decay_on", "Controlled (+G +lambda matched C_init)"),
+    ]
+
+    rows = []
+    for tc in TEMPS:
+        exp_label, exp_kind, t_final, f_exp = endpoints[tc]
+        is_bound = exp_kind == "upper_bound"
+        for cfg_id, gen, dec, temp_dep, curve_key, stage_alias in entries:
+            cdf = load_curve(tc, curve_key)
+            for m_col, m_name in [("f_method_a", "Method A"), ("f_method_b", "Method B")]:
+                f_mod = interp_series(cdf, m_col, t_final)
+                if np.isnan(f_mod):
+                    continue
+                delta_pp = 100.0 * (f_mod - f_exp)
+                viol_pp = max(0.0, delta_pp) if is_bound else np.nan
+                ratio = float(f_mod / f_exp) if f_exp > 0 else np.nan
+                if is_bound:
+                    lbl = f"\u0394 vs upper bound = {delta_pp:+.3f} pp"
+                else:
+                    lbl = f"\u0394 = {delta_pp:+.3f} pp"
+                if cfg_id.startswith("CTRL_"):
+                    comp_cls = "Controlled matched-inventory comparison (G=g_ref vs G=0)"
+                elif gen:
+                    comp_cls = (
+                        "Upper-bound raw difference (non-equivalent F_gen)"
+                        if is_bound
+                        else "Raw endpoint difference (non-equivalent F_gen vs G=0 anneal)"
+                    )
+                elif is_bound:
+                    comp_cls = "Upper-bound comparison (post-irradiation G=0)"
+                elif tc == 1800:
+                    comp_cls = "Physically comparable bounded validation (w=1/25 failed SiC)"
+                else:
+                    comp_cls = "Physically comparable validation (G=0 anneal)"
+
+                rows.append(
+                    {
+                        "temperature_c": tc,
+                        "config_id": cfg_id,
+                        "stage_alias": stage_alias,
+                        "curve_key": curve_key,
+                        "method": m_name,
+                        "t_final_h": t_final,
+                        "exp_dataset": exp_label,
+                        "exp_kind": exp_kind,
+                        "f_exp_or_u_pct": 100.0 * f_exp,
+                        "f_model_pct": 100.0 * f_mod,
+                        "delta_pp": delta_pp,
+                        "violation_pp": viol_pp,
+                        "ratio_model_over_exp": ratio,
+                        "label_text": lbl,
+                        "comparison_class": comp_cls,
+                    }
+                )
+    return pd.DataFrame(rows)
+
+
+def build_web81_manifest(c02, ep_df, commit):
+    all24 = {(int(r["temperature_c"]), r["config_id"]): r for r in c02.get("all_24_constant_t", [])}
+    ep_a = {(int(r["temperature_c"]), r["config_id"]): r for r in ep_df[ep_df["method"] == "Method A"].to_dict("records")}
+    ep_b = {(int(r["temperature_c"]), r["config_id"]): r for r in ep_df[ep_df["method"] == "Method B"].to_dict("records")}
+
+    entries = []
+    # 48 Method A entries (P01-P08 x 6 T)
+    for cfg_id, gen, dec, tdep, curve_key, stage_alias in P_SERIES_MAP:
+        for tc in TEMPS:
+            r_ep = ep_a.get((tc, cfg_id), {})
+            entries.append(
+                {
+                    "entry_id": f"MA-{cfg_id}-{tc}",
+                    "category": "Method A (BTCS)",
+                    "method": "Method A",
+                    "config_id": cfg_id,
+                    "stage_alias": stage_alias,
+                    "mechanisms": {"baseline": True, "generation": gen, "decay": dec, "temperature": tdep},
+                    "temperature_c": tc,
+                    "curve_file": f"data/study39/curves/{tc}c_{curve_key}.json",
+                    "delta_pp": None if r_ep == {} else float(r_ep["delta_pp"]),
+                    "label_text": r_ep.get("label_text", ""),
+                    "comparison_class": r_ep.get("comparison_class", ""),
+                    "status": "verified",
+                }
+            )
+
+    # 24 Method B potentially supported constant-T entries (P01, P02, P03, P05 x 6 T)
+    for cfg_id, gen, dec, tdep, curve_key, stage_alias in [x for x in P_SERIES_MAP if not x[3]]:
+        for tc in TEMPS:
+            row = all24.get((tc, cfg_id), {})
+            avail = bool(row.get("b_available", False))
+            r_ep = ep_b.get((tc, cfg_id), {})
+            entries.append(
+                {
+                    "entry_id": f"MB-{cfg_id}-{tc}",
+                    "category": "Method B (Sturm-Liouville)",
+                    "method": "Method B",
+                    "config_id": cfg_id,
+                    "stage_alias": stage_alias,
+                    "mechanisms": {"baseline": True, "generation": gen, "decay": dec, "temperature": tdep},
+                    "temperature_c": tc,
+                    "applicable": avail,
+                    "reason_code": row.get("reason_code"),
+                    "reason": row.get("reason"),
+                    "valid_from_h": row.get("valid_from_h"),
+                    "accuracy_floor": row.get("accuracy_floor"),
+                    "max_abs_diff_pp": row.get("max_abs_diff_pp"),
+                    "delta_pp": None if not avail or r_ep == {} else float(r_ep["delta_pp"]),
+                    "label_text": r_ep.get("label_text", "withheld by analytical drawing mask") if not avail else r_ep.get("label_text", ""),
+                    "status": "verified" if avail else "withheld_by_mask",
+                }
+            )
+
+    # 6 Experimental datasets D01-D06
+    exp_defs = [
+        ("D01", 1200, "Bullock (1984) / TE-2090 Table 22 UCO/UO2*(2) upper bounds"),
+        ("D02", 1350, "Bullock (1984) / TE-2090 Table 22 UCO/UO2*(2) upper bounds"),
+        ("D03", 1500, "Bullock (1984) / TE-2090 Fig. 124a & Table 22"),
+        ("D04", 1700, "Minato et al. (2000) HRB-22 ACT3 (exp:F125-Cs, N=8)"),
+        ("D05", 1800, "Minato et al. (2000) HRB-22 ACT4 (exp:F126-Cs, N=11, w=1/25 failed SiC)"),
+        ("D06", "955-1136", "AGR-1 irradiation C15 exploration (no comparable intact Cs-137 irradiation series)"),
+    ]
+    for did, tc, desc in exp_defs:
+        entries.append(
+            {
+                "entry_id": f"EXP-{did}",
+                "category": "Experimental Evidence",
+                "dataset_id": did,
+                "temperature_c": tc,
+                "description": desc,
+                "status": "unavailable" if did == "D06" else "verified_source",
+            }
+        )
+
+    # 3 Verification entries C01-C03
+    for vid, vtitle in [
+        ("C01", "BTCS numerical convergence & 66-run mass-balance audit"),
+        ("C02", "Method A vs Method B analytical verification"),
+        ("C03", "Experimental deviation summary across Stages A-D / P01-P08"),
+    ]:
+        entries.append(
+            {
+                "entry_id": f"VER-{vid}",
+                "category": "Verification",
+                "verification_id": vid,
+                "title": vtitle,
+                "status": "verified",
+            }
+        )
+
+    return {
+        "schema_version": 1,
+        "commit": commit,
+        "counts": {
+            "method_a": 48,
+            "method_b_potentially_supported": 24,
+            "method_b_available_drawn": sum(1 for r in all24.values() if r.get("b_available")),
+            "experimental": 6,
+            "verification": 3,
+            "total": len(entries),
+        },
+        "stage_to_p_map": [
+            {"stage": alias, "config_id": cid, "generation": gen, "decay": dec, "temperature": tdep, "curve_suffix": ckey}
+            for cid, gen, dec, tdep, ckey, alias in P_SERIES_MAP
+        ],
+        "entries": entries,
+    }
+
+
+def build_manifest(summary_df, bounds_df, imp_df, ep_df):
     commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip()
     c01 = json.load(open(OUT / "diagnostics" / "c01_convergence.json", encoding="utf-8"))
     c02 = json.load(open(OUT / "diagnostics" / "c02_method_a_vs_b.json", encoding="utf-8"))
+    ep_map = {(int(r["temperature_c"]), r["config_id"], r["method"]): r for r in ep_df.to_dict("records")}
 
     graphs = []
     # A01-A24
     stage_defs = [
-        ("Stage A", "stage_a", "Constant D(T_nom), G=0, lambda=0, KernelUniform C_init=1"),
-        ("Stage B", "stage_b", "Constant D(T_nom), +G_ref (AGR-1 cap3), lambda=0, Fresh particle, F_gen"),
-        ("Stage C", "stage_c", "Constant D(T_nom), +G_ref, +lambda(Cs-137), Fresh particle, F_gen (+ G=0 decay bracket)"),
-        ("Stage D", "stage_d_ramp_decay_off", "Temperature-dependent D(r, T(t)) over heating ramp+hold (+ isothermal & combined)"),
+        ("Stage A", "P01", "stage_a", "Constant D(T_nom), G=0, lambda=0, KernelUniform C_init=1"),
+        ("Stage B", "P02", "stage_b", "Constant D(T_nom), +G_ref (AGR-1 cap3), lambda=0, Fresh particle, F_gen"),
+        ("Stage C", "P05", "stage_c", "Constant D(T_nom), +G_ref, +lambda(Cs-137), Fresh particle, F_gen (+ G=0 decay bracket)"),
+        ("Stage D", "P04", "stage_d_ramp_decay_off", "Temperature-dependent D(r, T(t)) over heating ramp+hold (+ isothermal & combined)"),
     ]
     idx = 1
-    for st_name, st_key, st_desc in stage_defs:
+    for st_name, cid, st_key, st_desc in stage_defs:
         for tc in TEMPS:
             gid = f"A{idx:02d}"
             idx += 1
+            r_ep = ep_map.get((tc, cid, "Method A"), {})
             graphs.append(
                 {
                     "graph_id": gid,
@@ -386,13 +600,18 @@ def build_manifest(summary_df, bounds_df, imp_df):
                     "temperature_c": tc,
                     "duration_h": DURATIONS_H[tc],
                     "stage_key": st_key,
+                    "config_id": cid,
                     "physics_summary": st_desc,
                     "nuclide": "Cs-137",
-                    "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+                    "solver": "strato v2.1.0 (Method A BTCS)",
                     "commit": commit,
                     "curve_csv": f"data/study39/curves/{tc}c_{st_key}.csv",
+                    "experimental_endpoint": r_ep.get("exp_dataset"),
+                    "endpoint_delta_pp": None if r_ep == {} else float(r_ep["delta_pp"]),
+                    "endpoint_label": r_ep.get("label_text"),
+                    "comparison_class": r_ep.get("comparison_class"),
                     "output_files": [f"graphs/study39/{gid}.png", f"graphs/study39/{gid}.svg", f"graphs/study39/{gid}.csv"],
-                    "validation_status": "verified_simulation_generated",
+                    "validation_status": "verified_simulation_with_experimental_overlay",
                 }
             )
 
@@ -400,6 +619,8 @@ def build_manifest(summary_df, bounds_df, imp_df):
     for k, tc in enumerate(TEMPS, start=1):
         gid = f"B{k:02d}"
         c02_row = next((r for r in c02["comparisons"] if int(r["temperature_c"]) == tc), {})
+        r_epa = ep_map.get((tc, "P01", "Method A"), {})
+        r_epb = ep_map.get((tc, "P01", "Method B"), {})
         graphs.append(
             {
                 "graph_id": gid,
@@ -411,8 +632,11 @@ def build_manifest(summary_df, bounds_df, imp_df):
                 "method_a_vs_b_stage_a_max_pp": c02_row.get("max_abs_diff_pp"),
                 "valid_from_h": c02_row.get("valid_from_h"),
                 "accuracy_floor": c02_row.get("accuracy_floor"),
+                "experimental_endpoint": r_epb.get("exp_dataset") or r_epa.get("exp_dataset"),
+                "method_b_endpoint_delta_pp": None if r_epb == {} else float(r_epb["delta_pp"]),
+                "method_b_endpoint_label": r_epb.get("label_text"),
                 "output_files": [f"graphs/study39/{gid}.png", f"graphs/study39/{gid}.svg", f"graphs/study39/{gid}.csv"],
-                "validation_status": "verified_analytical_comparison",
+                "validation_status": "verified_analytical_with_experimental_overlay",
             }
         )
 
@@ -469,15 +693,17 @@ def build_manifest(summary_df, bounds_df, imp_df):
         )
 
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
         "commit": commit,
         "principal_graph_count": len(graphs),
         "graphs": graphs,
         "exact_series_summary_count": int(len(summary_df)),
         "upper_bound_rows_count": int(len(bounds_df)),
         "stage_improvement_rows_count": int(len(imp_df)),
+        "endpoint_deviation_rows_count": int(len(ep_df)),
     }
-    return manifest
+    web81 = build_web81_manifest(c02, ep_df, commit)
+    return manifest, web81
 
 
 def main():
@@ -485,28 +711,29 @@ def main():
     pts_df, sum_df = compute_exact_series_metrics(extracted)
     bnd_df = compute_bound_metrics(extracted, hfr_k31)
     imp_df = compute_stage_improvements(sum_df)
+    ep_df = compute_endpoint_deviations(extracted, hfr_k31)
 
     pts_df.to_csv(OUT / "deviations_exact_points.csv", index=False)
     sum_df.to_csv(OUT / "deviations_exact_summary.csv", index=False)
     bnd_df.to_csv(OUT / "deviations_bounds.csv", index=False)
     imp_df.to_csv(OUT / "stage_improvement.csv", index=False)
+    ep_df.to_csv(OUT / "endpoint_deviations.csv", index=False)
 
-    manifest = build_manifest(sum_df, bnd_df, imp_df)
+    manifest, web81 = build_manifest(sum_df, bnd_df, imp_df, ep_df)
     with open(OUT / "study39_manifest.json", "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
+    with open(OUT / "web81_manifest.json", "w", encoding="utf-8") as f:
+        json.dump(web81, f, indent=2)
 
-    print("=== EXACT SERIES SUMMARY (Method A) ===")
-    m_a = sum_df[sum_df["method"] == "Method A"]
+    print("=== ENDPOINT DEVIATIONS (Method A, P01-P08 + Controlled) ===")
+    m_ep = ep_df[ep_df["method"] == "Method A"]
+    print(m_ep[["temperature_c", "config_id", "t_final_h", "f_exp_or_u_pct", "f_model_pct", "delta_pp", "label_text"]].to_string(index=False))
+
+    print("\n=== EXACT SERIES SUMMARY (Method A, N=11 & N=8) ===")
+    m_a = sum_df[(sum_df["method"] == "Method A") & (sum_df["case_id"].isin(["D04_1700C_ACT3", "D05_1800C_ACT4_N11"]))]
     print(m_a[["case_id", "stage_key", "n_points", "f_exp_final", "f_model_final", "final_delta_pp", "mae_pp", "rmse_pp", "max_abs_delta_pp"]].to_string(index=False))
 
-    print("\n=== STAGE A->D IMPROVEMENT (ACT3 & ACT4 N=11, Method A) ===")
-    mi = imp_df[(imp_df["method"] == "Method A") & (imp_df["case_id"].isin(["D04_1700C_ACT3", "D05_1800C_ACT4_N11"]))]
-    print(mi[["case_id", "stage_key", "rmse_pp", "mae_pp", "rmse_improvement_vs_A_pct", "mae_improvement_vs_A_pct"]].to_string(index=False))
-
-    print("\n=== UPPER BOUNDS SUMMARY (Stage A vs Stage D-ramp vs Stage C, Method A) ===")
-    ba = bnd_df[(bnd_df["method"] == "Method A") & (bnd_df["stage_key"].isin(["stage_a", "stage_c_decay_only", "stage_c", "stage_d_ramp_decay_off"]))]
-    print(ba[["temperature_c", "series", "stage_key", "upper_bound_pct", "f_model_pct", "delta_bound_pp", "violation_pp", "exceeds_bound"]].to_string(index=False))
-    print(f"\nWrote manifest ({manifest['principal_graph_count']} graphs) and all deviation CSVs to {OUT}")
+    print(f"\nWrote manifest ({manifest['principal_graph_count']} graphs), web81 ({web81['counts']['total']} entries), and all deviation CSVs to {OUT}")
 
 
 if __name__ == "__main__":

@@ -1,113 +1,87 @@
 import { useMemo, useState } from 'react';
-import study39 from '../data/study39.json';
-import { METHOD_1, METHOD_2 } from '../methods';
-import { Plot, type Figure } from '../plots/Plot';
-import type { Layout, Trace } from '../plots/plotly';
+import { CONFIG_LABELS, PHYSICS_CONFIG_IDS, type PhysicsConfigId } from '../equation/capability';
+import { study39CurveFigure, STUDY39 } from '../graph/exploreFigures';
+import { Plot } from '../plots/Plot';
 import { usePlotTheme } from '../plots/theme';
 import { TableBox } from '../sections/common';
 
-type StageKey = 'stage_a' | 'stage_b' | 'stage_c' | 'stage_c_decay_only' | 'stage_d_ramp_decay_off';
-
-const STAGE_LABELS: Record<StageKey, string> = {
-  stage_a: 'Stage A — Baseline (const D, G=0, λ=0)',
-  stage_b: 'Stage B — +Fission generation G (Fresh, F_gen)',
-  stage_c: 'Stage C — +Generation G & Decay λ (F_gen)',
-  stage_c_decay_only: 'Stage C decay-only — G=0, +λ (F_init)',
-  stage_d_ramp_decay_off: 'Stage D — Heating ramp D(r, T(t))',
-};
-
 export function Phase2StudyEvidence() {
-  const [species] = useState<string>(study39.species);
   const [temp, setTemp] = useState<number>(1700);
-  const [stage, setStage] = useState<StageKey>('stage_d_ramp_decay_off');
+  const [configId, setConfigId] = useState<PhysicsConfigId>('P01');
+  const [showA, setShowA] = useState(true);
+  const [showB, setShowB] = useState(true);
+  const [showExp, setShowExp] = useState(true);
+  const [controlled, setControlled] = useState(false);
   const theme = usePlotTheme();
 
-  const figure: Figure | null = useMemo(() => {
-    const tKey = String(temp) as keyof typeof study39.curves;
-    const curve = study39.curves[tKey]?.[stage];
-    const stageA = study39.curves[tKey]?.stage_a;
-    const expList = study39.experimental[tKey] ?? [];
-    if (!curve) return null;
+  const { figure, methodBReason, methodBdrawn } = useMemo(
+    () =>
+      study39CurveFigure(
+        temp,
+        configId,
+        { methodA: showA, methodB: showB, experiment: showExp },
+        theme,
+        { controlled, includeRef: configId !== 'P01' },
+      ),
+    [temp, configId, showA, showB, showExp, controlled, theme],
+  );
 
-    const traces: Trace[] = [];
-    if (stage !== 'stage_a' && stageA) {
-      traces.push({
-        type: 'scatter',
-        mode: 'lines',
-        name: 'Stage A baseline ref',
-        x: stageA.time_h,
-        y: stageA.f_a.map((v) => v * 100),
-        line: { color: '#9CA3AF', dash: 'dot', width: 1.5 },
-      });
+  const act3And4 = useMemo(() => {
+    const out: {
+      temp: number;
+      dataset: string;
+      configId: string;
+      stageAlias: string;
+      fModelPct: number;
+      fExpPct: number;
+      deltaPp: number;
+      labelText: string;
+    }[] = [];
+    for (const cid of [...PHYSICS_CONFIG_IDS, 'CTRL_G', 'CTRL_GL']) {
+      for (const tc of [1700, 1800]) {
+        const r = STUDY39.endpoint_deviations.find((e) => e.temperature_c === tc && e.config_id === cid && e.method === 'Method A');
+        if (r) {
+          out.push({
+            temp: tc,
+            dataset: tc === 1700 ? 'ACT3 (5.456%)' : 'ACT4 (14.710%)',
+            configId: cid,
+            stageAlias: r.stage_alias,
+            fModelPct: r.f_model_pct,
+            fExpPct: r.f_exp_or_u_pct,
+            deltaPp: r.delta_pp,
+            labelText: r.label_text,
+          });
+        }
+      }
     }
-    traces.push({
-      type: 'scatter',
-      mode: 'lines',
-      name: `${METHOD_1} (${STAGE_LABELS[stage].split('—')[0]?.trim() ?? stage})`,
-      x: curve.time_h,
-      y: curve.f_a.map((v) => v * 100),
-      line: { color: '#DC2626', dash: 'solid', width: 2.3 },
-    });
-    if (curve.f_b.some((v) => v !== null)) {
-      traces.push({
-        type: 'scatter',
-        mode: 'lines',
-        name: METHOD_2,
-        x: curve.time_h,
-        y: curve.f_b.map((v) => (v === null ? null : v * 100)),
-        line: { color: '#2563EB', dash: 'dash', width: 1.8 },
-      });
-    }
-    for (const s of expList) {
-      const isUb = s.kind === 'upper_bound';
-      const isNc = s.kind === 'not_comparable_plotted';
-      traces.push({
-        type: 'scatter',
-        mode: 'markers',
-        name: s.series,
-        x: s.time_h,
-        y: s.f.map((v) => v * 100),
-        marker: isNc
-          ? { color: '#6B7280', symbol: 'circle-open', size: 6 }
-          : { color: '#111111', symbol: isUb ? 'triangle-down' : 'circle', size: isUb ? 9 : 7 },
-      });
-    }
-
-    const layout: Layout = {
-      margin: { t: 36, r: 18, b: 48, l: 58 },
-      title: { text: `Cs-137 — ${temp} °C (${STAGE_LABELS[stage]})`, font: { size: 13 } },
-      xaxis: { title: { text: 'Time (hours)' }, gridcolor: theme.grid },
-      yaxis: { title: { text: 'Cumulative release fraction (%)' }, gridcolor: theme.grid },
-      legend: { orientation: 'h', y: -0.22 },
-      height: 330,
-      paper_bgcolor: 'transparent',
-      plot_bgcolor: 'transparent',
-      font: { color: theme.text },
-    };
-    return { data: traces, layout };
-  }, [temp, stage, theme]);
+    return out;
+  }, []);
 
   return (
     <div data-testid="phase2-study39">
       <p>
-        Canonical {study39.graph_count}-graph Phase 2 investigation for <strong>{species}</strong> on AGR1-B-M16 across{' '}
-        {study39.temperatures.join(', ')} °C ({study39.verification.run_count} runs: spatial convergence order{' '}
-        {study39.verification.spatial_order.toFixed(3)}, temporal order {study39.verification.temporal_order.toFixed(3)}, max balance
-        residual/bound {study39.verification.max_residual_over_bound.toExponential(2)}, Method A vs B diff &le;{' '}
-        {study39.verification.max_ab_diff_pp.toExponential(2)} pp).
+        Canonical {STUDY39.graph_count}-graph Phase 3 investigation for <strong>{STUDY39.species}</strong> on AGR1-B-M16 across{' '}
+        {STUDY39.temperatures.join(', ')} °C ({STUDY39.verification.run_count} audited runs across P01–P08 and matched-inventory controls:
+        spatial convergence order {STUDY39.verification.spatial_order.toFixed(3)}, temporal order{' '}
+        {STUDY39.verification.temporal_order.toFixed(3)}, max balance residual/bound{' '}
+        {STUDY39.verification.max_residual_over_bound.toExponential(2)}, Stage A Method A vs B diff &le;{' '}
+        {STUDY39.verification.max_ab_diff_pp.toExponential(2)} pp). Website catalog holds{' '}
+        <strong>{STUDY39.web81.counts.total} entries</strong> ({STUDY39.web81.counts.method_a} Method A +{' '}
+        {STUDY39.web81.counts.method_b_potentially_supported} Method B potential [{STUDY39.web81.counts.method_b_available_drawn} drawn] +{' '}
+        {STUDY39.web81.counts.experimental} Experimental + {STUDY39.web81.counts.verification} Verification).
       </p>
 
-      <div className="xselects" style={{ marginBottom: '0.75rem' }}>
+      <div className="xselects" style={{ marginBottom: '0.5rem' }}>
         <label className="xselect">
           <span className="xselect__label">Species</span>
-          <select value={species} disabled aria-label="Phase 2 species">
+          <select value={STUDY39.species} disabled aria-label="Study 39 species">
             <option value="Cs-137">Cs-137</option>
           </select>
         </label>
         <label className="xselect">
           <span className="xselect__label">Temperature</span>
           <select value={temp} onChange={(e) => setTemp(Number(e.target.value))} data-testid="study39-temp">
-            {study39.temperatures.map((t) => (
+            {STUDY39.temperatures.map((t) => (
               <option key={t} value={t}>
                 {t} °C
               </option>
@@ -115,51 +89,137 @@ export function Phase2StudyEvidence() {
           </select>
         </label>
         <label className="xselect xselect--wide">
-          <span className="xselect__label">Stage</span>
-          <select value={stage} onChange={(e) => setStage(e.target.value as StageKey)} data-testid="study39-stage">
-            {(Object.keys(STAGE_LABELS) as StageKey[]).map((k) => (
-              <option key={k} value={k}>
-                {STAGE_LABELS[k]}
+          <span className="xselect__label">Physics configuration</span>
+          <select value={configId} onChange={(e) => setConfigId(e.target.value as PhysicsConfigId)} data-testid="study39-stage">
+            {PHYSICS_CONFIG_IDS.map((cid) => (
+              <option key={cid} value={cid}>
+                {cid} — {CONFIG_LABELS[cid].summary} ({CONFIG_LABELS[cid].stageAlias})
               </option>
             ))}
           </select>
         </label>
       </div>
 
-      {figure && <Plot figure={figure} height={330} testId="study39-plot" label={`Phase 2 Cs-137 at ${temp} °C`} />}
+      <div className="gchecks" role="group" aria-label="Documentation plot overlays">
+        <label className="gcheck">
+          <input type="checkbox" checked={showA} onChange={(e) => setShowA(e.target.checked)} />
+          <span>Method A</span>
+        </label>
+        <label className="gcheck">
+          <input type="checkbox" checked={showB} onChange={(e) => setShowB(e.target.checked)} />
+          <span>Method B</span>
+        </label>
+        <label className="gcheck">
+          <input type="checkbox" checked={showExp} onChange={(e) => setShowExp(e.target.checked)} />
+          <span>Experimental data</span>
+        </label>
+        {(configId === 'P02' || configId === 'P05') && (
+          <label className="gcheck">
+            <input type="checkbox" checked={controlled} onChange={(e) => setControlled(e.target.checked)} />
+            <span>Controlled matched-inventory</span>
+          </label>
+        )}
+      </div>
 
-      <TableBox label="Stage A to D exact deviation and improvement summary (ACT3 1700 °C and ACT4 1800 °C)">
-        <table className="table table--compact" data-testid="study39-exact-table">
+      {figure && <Plot figure={figure} height={330} testId="study39-plot" label={`Phase 3 Cs-137 at ${temp} °C (${configId})`} />}
+      {showB && !methodBdrawn && methodBReason && (
+        <p style={{ fontSize: '0.85rem', marginTop: '0.35rem' }}>Method B omitted: {methodBReason}</p>
+      )}
+
+      <TableBox label="Website 81-entry verification inventory">
+        <table className="table table--compact" data-testid="study39-web81-table">
           <caption className="table__caption">
-            <strong>Table P2-1.</strong> Exact time-series deviation (pp) and Stage A→D RMSE change for comparable Minato et al. (2000) HRB-22 tests (ACT3 N=8, ACT4 N=11).
+            <strong>Table P3-1.</strong> 81-entry canonical Cs-137 simulation, experimental, and verification inventory.
           </caption>
           <thead>
             <tr>
-              <th scope="col">Dataset</th>
-              <th scope="col">Stage</th>
-              <th scope="col" className="num-col">MAE</th>
-              <th scope="col" className="num-col">RMSE</th>
-              <th scope="col" className="num-col">IAE</th>
-              <th scope="col" className="num-col">End Δ</th>
-              <th scope="col" className="num-col">vs A</th>
+              <th scope="col">Category</th>
+              <th scope="col" className="num-col">Count</th>
+              <th scope="col">Scope</th>
             </tr>
           </thead>
           <tbody>
-            {study39.stage_improvement.map((r) => {
-              const stageShort =
-                STAGE_LABELS[r.stage_key as StageKey]?.split('—')[0]?.trim().replace('Stage ', '') ?? r.stage_key;
-              return (
-                <tr key={`${r.case_id}-${r.stage_key}`}>
-                  <th scope="row">{r.case_id.includes('ACT3') ? 'ACT3 (1700 °C)' : 'ACT4 (1800 °C)'}</th>
-                  <td>{stageShort}</td>
-                  <td className="num-col num">{r.mae_pp.toFixed(3)}</td>
-                  <td className="num-col num">{r.rmse_pp.toFixed(3)}</td>
-                  <td className="num-col num">{r.iae_time_avg_pp.toFixed(3)}</td>
-                  <td className="num-col num">{r.final_delta_pp >= 0 ? `+${r.final_delta_pp.toFixed(3)}` : r.final_delta_pp.toFixed(3)}</td>
-                  <td className="num-col num">{r.rmse_improvement_vs_A_pct >= 0 ? `+${r.rmse_improvement_vs_A_pct.toFixed(2)}%` : `${r.rmse_improvement_vs_A_pct.toFixed(2)}%`}</td>
-                </tr>
-              );
-            })}
+            <tr>
+              <th scope="row">Method A (BTCS)</th>
+              <td className="num-col num">{STUDY39.web81.counts.method_a}</td>
+              <td>P01–P08 × 6 temperatures (1200–1800 °C)</td>
+            </tr>
+            <tr>
+              <th scope="row">Method B (Sturm–Liouville)</th>
+              <td className="num-col num">{STUDY39.web81.counts.method_b_potentially_supported}</td>
+              <td>Constant-T configs P01–P03, P05 ({STUDY39.web81.counts.method_b_available_drawn} drawn; 15 withheld/mask)</td>
+            </tr>
+            <tr>
+              <th scope="row">Experimental datasets</th>
+              <td className="num-col num">{STUDY39.web81.counts.experimental}</td>
+              <td>D01 (1200) to D05 (1800 °C) + D06 normal-operation bound</td>
+            </tr>
+            <tr>
+              <th scope="row">Numerical verification</th>
+              <td className="num-col num">{STUDY39.web81.counts.verification}</td>
+              <td>C01 convergence/mass balance, C02 A-vs-B, C03 deviations</td>
+            </tr>
+            <tr>
+              <th scope="row">Total inventory</th>
+              <td className="num-col num"><strong>{STUDY39.web81.counts.total}</strong></td>
+              <td>Manifest verified against rust/study39 outputs</td>
+            </tr>
+          </tbody>
+        </table>
+      </TableBox>
+
+      <TableBox label="Mapping between Stage A–D labels and P01–P08 checkbox configurations">
+        <table className="table table--compact" data-testid="study39-mapping-table">
+          <caption className="table__caption">
+            <strong>Table P3-2.</strong> Equivalence between historical Stages A–D and independent Option B checkboxes P01–P08.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Config</th>
+              <th scope="col">Report alias</th>
+              <th scope="col">Gen G</th>
+              <th scope="col">Decay λ</th>
+              <th scope="col">T(t)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {STUDY39.web81.stage_to_p_map.map((m) => (
+              <tr key={m.config_id}>
+                <th scope="row">{m.config_id}</th>
+                <td>{m.stage}</td>
+                <td>{m.generation ? 'On' : 'Off'}</td>
+                <td>{m.decay ? 'On' : 'Off'}</td>
+                <td>{m.temperature ? 'On' : 'Off'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </TableBox>
+
+      <TableBox label="Comparable endpoint deviations at 1700 °C ACT3 and 1800 °C ACT4">
+        <table className="table table--compact" data-testid="study39-exact-table">
+          <caption className="table__caption">
+            <strong>Table P3-3.</strong> Canonical final-endpoint comparison (Δ = Model − Experiment) at 1700 °C (ACT3) and 1800 °C (ACT4).
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Config</th>
+              <th scope="col">Test</th>
+              <th scope="col" className="num-col">Model (%)</th>
+              <th scope="col" className="num-col">Exp (%)</th>
+              <th scope="col" className="num-col">End Δ (pp)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {act3And4.map((r) => (
+              <tr key={`${r.configId}-${r.temp}`}>
+                <th scope="row">{r.configId}</th>
+                <td>{r.dataset}</td>
+                <td className="num-col num">{r.fModelPct.toFixed(3)}</td>
+                <td className="num-col num">{r.fExpPct.toFixed(3)}</td>
+                <td className="num-col num">{r.deltaPp >= 0 ? `+${r.deltaPp.toFixed(3)}` : r.deltaPp.toFixed(3)}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </TableBox>

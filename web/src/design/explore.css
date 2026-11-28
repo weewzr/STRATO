@@ -331,3 +331,92 @@
 .gcite a {
   color: var(--accent);
 }
+
+/* Option B progressive physics checkboxes and overlay toggles. */
+.xarea__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-2);
+}
+.xconfig-tag {
+  margin: 0 0 var(--space-2);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.xchecks {
+  display: grid;
+  gap: 3px;
+  margin-bottom: 6px;
+}
+.xcheck {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 2px 8px;
+  font-size: var(--fs-ui);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.xcheck--locked {
+  opacity: 0.85;
+  cursor: default;
+}
+.xcheck input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+.xselect--species-phys {
+  margin-top: var(--space-1);
+}
+.geq-explain {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+.geq-explain__list {
+  margin: 0 0 var(--space-1);
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 3px;
+}
+.geq-explain__op {
+  margin: 4px 0 0;
+}
+.gchecks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0;
+}
+.gcheck {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  font-size: var(--fs-small);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.gcheck input[type='checkbox'] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--accent);
+}
+.gnote {
+  margin: var(--space-2) 0 0;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}

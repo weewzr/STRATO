@@ -152,7 +152,7 @@ export const evidence: DocContribution = {
     },
     {
       id: 'evidence-phase2-study39',
-      title: 'Phase 2 Cs-137 progressive physics study (1200–1800 °C, 39 graphs)',
+      title: 'Phase 3 Cs-137 study matrix & 81-entry verification inventory (1200–1800 °C)',
       lazy: true,
       body: <Phase2StudyEvidence />,
     },

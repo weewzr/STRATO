@@ -3,21 +3,48 @@
 //   #/explore?physics=generation&scenario=startup&open=numerical
 // A part that has its default value is left out; a bare #/explore is the default view. Nothing is
 // stored in the browser: the address and the in-memory store (state/store.ts) are the only places.
+import { configIdToFlags, flagsToConfigId, flagsToPhysicsId, PHYSICS_CONFIG_IDS, type OverlayFlags, type PhysicsConfigId } from '../equation/capability';
 import { sectionFromHash } from '../route';
 import { DEFAULT_SELECTION, normaliseSelection, sameSelection, useStrato, type Selection } from './store';
 
-const KEYS = ['physics', 'scenario', 'open', 'graph', 'species', 'temperature', 'dataset'] as const;
+const KEYS = ['physics', 'config', 'scenario', 'open', 'graph', 'species', 'temperature', 'dataset', 'overlays', 'controlled'] as const;
+
+function formatOverlays(o: OverlayFlags): string | null {
+  if (o.methodA && o.methodB && o.experiment) return null;
+  const parts = [o.methodA ? 'A' : null, o.methodB ? 'B' : null, o.experiment ? 'Exp' : null].filter(Boolean);
+  return parts.length > 0 ? parts.join(',') : 'none';
+}
+
+function parseOverlays(raw: string | null): Partial<OverlayFlags> | undefined {
+  if (raw === null) return undefined;
+  const trimmed = raw.trim();
+  if (trimmed === '' || trimmed === 'none') return { methodA: false, methodB: false, experiment: false };
+  const tokens = new Set(trimmed.split(',').map((s) => s.trim().toLowerCase()));
+  return {
+    methodA: tokens.has('a') || tokens.has('methoda'),
+    methodB: tokens.has('b') || tokens.has('methodb'),
+    experiment: tokens.has('exp') || tokens.has('experiment'),
+  };
+}
 
 /** The query (without the question mark) that stands for a selection; empty for the default selection. */
 export function formatSelection(sel: Selection): string {
   const q = new URLSearchParams();
-  if (sel.physics !== DEFAULT_SELECTION.physics) q.set('physics', sel.physics);
+  const cid = flagsToConfigId(sel.mechanisms);
+  if (cid === 'P05' || cid === 'P06' || cid === 'P07') {
+    q.set('config', cid);
+  } else if (sel.physics !== DEFAULT_SELECTION.physics) {
+    q.set('physics', sel.physics);
+  }
   if (sel.scenario !== DEFAULT_SELECTION.scenario) q.set('scenario', sel.scenario ?? 'none');
   if (sel.expanded.length > 0) q.set('open', sel.expanded.join(','));
   if (sel.graph !== DEFAULT_SELECTION.graph) q.set('graph', sel.graph);
   if (sel.species !== '') q.set('species', sel.species);
   if (sel.temperature !== null) q.set('temperature', String(sel.temperature));
   if (sel.dataset !== '') q.set('dataset', sel.dataset);
+  const ov = formatOverlays(sel.overlays);
+  if (ov !== null) q.set('overlays', ov);
+  if (sel.controlledCompare) q.set('controlled', '1');
   return q.toString().replace(/%2C/g, ',');
 }
 
@@ -25,14 +52,22 @@ export function formatSelection(sel: Selection): string {
 export function parseSelection(query: string): Selection {
   const q = new URLSearchParams(query);
   const t = q.get('temperature');
+  const rawCfg = q.get('config');
+  const hasValidCfg = rawCfg !== null && PHYSICS_CONFIG_IDS.includes(rawCfg as PhysicsConfigId);
+  const mechanisms = hasValidCfg ? configIdToFlags(rawCfg as PhysicsConfigId) : undefined;
+  const rawPhysics = q.get('physics') ?? undefined;
+  const physics = hasValidCfg && !rawPhysics ? flagsToPhysicsId(mechanisms!) : rawPhysics;
   return normaliseSelection({
-    physics: q.get('physics') ?? undefined,
+    physics,
+    mechanisms,
     scenario: q.get('scenario') ?? undefined,
     expanded: (q.get('open') ?? '').split(',').filter(Boolean),
     graph: q.get('graph') ?? undefined,
     species: q.get('species') ?? undefined,
     temperature: t !== null && t.trim() !== '' ? Number(t) : null,
     dataset: q.get('dataset') ?? undefined,
+    overlays: parseOverlays(q.get('overlays')),
+    controlledCompare: q.get('controlled') === '1' || q.get('controlled') === 'true',
   });
 }
 

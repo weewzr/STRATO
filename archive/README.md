@@ -1,15 +1,16 @@
 # STRATO Archival Index
 
-This directory preserves superseded plans, historical snapshots, and auxiliary reference material kept for full provenance without interfering with active Phase 2 execution.
+This directory preserves superseded intermediate deliverables and historical snapshots kept for provenance without interfering with active Phase 3 execution.
 
-## Authoritative Phase 2 Locations
-- **Canonical simulation data & deviation tables:** [`../data/study39/`](../data/study39/)
-- **Principal 39 graphs + 10 supporting diagnostics:** [`../graphs/study39/`](../graphs/study39/)
-- **Final Research Report (DOCX & PDF):** [`../deliverables/report/`](../deliverables/report/)
-- **Final Editable PowerPoint Deck (109 slides):** [`../deliverables/powerpoint/`](../deliverables/powerpoint/)
-- **Website & WebAssembly Solver:** [`../web/`](../web/) and [`../crates/strato-wasm/`](../crates/strato-wasm/)
-- **Baseline Results Pipeline (verified commit `47c6175`):** [`../data/results/`](../data/results/) and [`../crates/strato-results/`](../crates/strato-results/)
+## Authoritative Phase 3 Deliverables
+- **Canonical simulation data, 66-run audit & 81-entry web manifest:** [`../data/study39/`](../data/study39/)
+- **Principal 39 Graph B figures + 10 supporting diagnostics (PNG 300 dpi, SVG, CSV):** [`../graphs/study39/`](../graphs/study39/)
+- **Final Restored Research Report (DOCX & 92-page PDF):** [`../deliverables/report/STRATO_Research_Report_Phase3_Final.pdf`](../deliverables/report/STRATO_Research_Report_Phase3_Final.pdf) ([`.docx`](../deliverables/report/STRATO_Research_Report_Phase3_Final.docx))
+- **Final Editable PowerPoint Presentation (97 slides, PPTX):** [`../deliverables/powerpoint/STRATO_Presentation_Phase3_Final.pptx`](../deliverables/powerpoint/STRATO_Presentation_Phase3_Final.pptx)
+- **Website (Option B P01–P08 + 3 overlays + s5 scenarios) & WebAssembly Solver:** [`../web/`](../web/) and [`../crates/strato-wasm/`](../crates/strato-wasm/)
+- **Baseline Results Pipeline:** [`../data/results/`](../data/results/) and [`../crates/strato-results/`](../crates/strato-results/)
 
-## Archived Historical Items
-- Legacy/historical handover records, intermediate verification reports, and the complete 212-graph Phase 1 baseline archive remain preserved read-only in the external Phase 1 research archive (`STRATO_Archive`).
-- Legacy superseded documentation/prompt artefacts in `docs/development/` and `prompt/` are retained in their original Git paths where referenced by automated repository integrity checks (`strato-webtools`, `strato-docsite`, and Vitest build tables).
+## Archived Items
+- **Superseded Phase 2 Report & PowerPoint (`archive/phase2/`):** [`phase2/report/`](phase2/report/) (`STRATO_Research_Report_Phase2_Final.{docx,pdf}`) and [`phase2/powerpoint/`](phase2/powerpoint/) (`STRATO_Presentation_Phase2_Final.pptx`) were archived when Phase 3 restored the original pre-Phase-2 full research report formatting/derivations and reconstructed the 97-slide Graph B PowerPoint deck.
+- **External Read-Only Phase 1 Archive (`STRATO_Archive`):** Preserves the original pre-Phase-2 research report, 105-slide baseline PowerPoint, 212 historical graphs, parameter registers, and historical agent handovers outside the active repository tree.
+- **Reference Documentation Folders:** `docs/development/` and `prompt/` remain in their repository paths where verified by `strato-webtools`, `strato-docsite`, and Vitest documentation link checks.

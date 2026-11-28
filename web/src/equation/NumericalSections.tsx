@@ -1,8 +1,8 @@
 import { useId, type ReactNode } from 'react';
 import { METHOD_1, METHOD_2, METHOD_2_DETAIL } from '../methods';
 import { useStrato } from '../state/store';
-import { mechanismsOf, type Mechanism, type PhysicsId, type ScenarioId } from './capability';
-import { effectivePhysics, NOTATION, NUMERICAL_ITEMS, scenarioNote, type ItemId } from './numerics';
+import { mechanismsOf, type Mechanism, type PhysicsSelection, type ScenarioId } from './capability';
+import { NOTATION, NUMERICAL_ITEMS, scenarioNote, type ItemId } from './numerics';
 import { HOOKS, PSEUDOCODE } from './pseudocode';
 import { SECTION_IDS, type SectionId } from './selectionIds';
 import { conditionsFor, equationNumber, mainEquations, physicsAdditions, STEP_DEFS, type Stage } from './terms';
@@ -35,7 +35,7 @@ const SECTION_TITLE: Record<SectionId, string> = {
 const withTag = (latex: string, tag: string | null): string => (tag ? `${latex} \\tag{${tag}}` : latex);
 
 /** One derivation step in lean form: its name, its equations with their numbers and its caption, as terms.ts holds them. */
-function StepBlock({ stage, physics, additions = true }: { stage: Stage; physics: PhysicsId; additions?: boolean }) {
+function StepBlock({ stage, physics, additions = true }: { stage: Stage; physics: PhysicsSelection; additions?: boolean }) {
   const def = STEP_DEFS[stage];
   const add = additions ? physicsAdditions(stage, physics) : { equations: [], note: null };
   return (
@@ -63,11 +63,11 @@ function StepBlock({ stage, physics, additions = true }: { stage: Stage; physics
   );
 }
 
-function OperationNote({ item, physics, scenario }: { item: ItemId; physics: PhysicsId; scenario: ScenarioId | null }) {
+function OperationNote({ item, physics, scenario }: { item: ItemId; physics: PhysicsSelection; scenario: ScenarioId | null }) {
   const row = NUMERICAL_ITEMS.find((i) => i.id === item);
   if (!row) return null;
   // A note belongs to the mechanism it acts on: it is shown only where that mechanism is part of the model equation.
-  if (row.mechanism !== null && !mechanismsOf(effectivePhysics(physics)).includes(row.mechanism)) return null;
+  if (row.mechanism !== null && !mechanismsOf(physics).includes(row.mechanism)) return null;
   const note = scenarioNote(scenario, item);
   if (note === null) return null;
   return (
@@ -80,7 +80,7 @@ function OperationNote({ item, physics, scenario }: { item: ItemId; physics: Phy
 /** Mechanisms of the model equation, in the order of the steps 15 to 17. */
 const MECHANISM_STAGE: Record<Mechanism, Stage> = { generation: 15, decay: 16, temperature: 17 };
 
-function MethodA({ physics, scenario }: { physics: PhysicsId; scenario: ScenarioId | null }) {
+function MethodA({ physics, scenario }: { physics: PhysicsSelection; scenario: ScenarioId | null }) {
   return (
     <>
       <StepBlock stage={11} physics={physics} />
@@ -105,20 +105,19 @@ function MethodB({ applicability }: { applicability: Applicability | null }) {
   );
 }
 
-function Discretisation({ physics, scenario }: { physics: PhysicsId; scenario: ScenarioId | null }) {
-  const effective = effectivePhysics(physics);
-  const mechanisms = mechanismsOf(effective);
+function Discretisation({ physics, scenario }: { physics: PhysicsSelection; scenario: ScenarioId | null }) {
+  const mechanisms = mechanismsOf(physics);
   return (
     <>
       <p className="nstep__text">
         <RichText text={NOTATION} />
       </p>
       {([5, 6, 7, 8, 9, 10] as const).map((s) => (
-        <StepBlock key={s} stage={s} physics={effective} />
+        <StepBlock key={s} stage={s} physics={physics} />
       ))}
       {mechanisms.map((m) => (
         <div key={m}>
-          <StepBlock stage={MECHANISM_STAGE[m]} physics={effective} additions={false} />
+          <StepBlock stage={MECHANISM_STAGE[m]} physics={physics} additions={false} />
           <OperationNote item={m === 'generation' ? 9 : m === 'decay' ? 10 : 11} physics={physics} scenario={scenario} />
         </div>
       ))}
@@ -126,8 +125,8 @@ function Discretisation({ physics, scenario }: { physics: PhysicsId; scenario: S
   );
 }
 
-function Pseudocode({ physics }: { physics: PhysicsId }) {
-  const mechanisms = mechanismsOf(effectivePhysics(physics));
+function Pseudocode({ physics }: { physics: PhysicsSelection }) {
+  const mechanisms = mechanismsOf(physics);
   return (
     <>
       {PSEUDOCODE.map((b) => (
@@ -227,14 +226,14 @@ function Section({ id, children }: { id: SectionId; children: ReactNode }) {
 
 /** The six sections. `applicability` is the wrapper's answer for the current request (null where none was asked). */
 export function NumericalSections({ applicability }: { applicability: Applicability | null }) {
-  const physics = useStrato((s) => s.selection.physics);
+  const mechanisms = useStrato((s) => s.selection.mechanisms);
   const scenario = useStrato((s) => s.selection.scenario);
   const heading = useId();
   const body: Record<SectionId, ReactNode> = {
-    'method-a': <MethodA physics={physics} scenario={scenario} />,
+    'method-a': <MethodA physics={mechanisms} scenario={scenario} />,
     'method-b': <MethodB applicability={applicability} />,
-    discretisation: <Discretisation physics={physics} scenario={scenario} />,
-    pseudocode: <Pseudocode physics={physics} />,
+    discretisation: <Discretisation physics={mechanisms} scenario={scenario} />,
+    pseudocode: <Pseudocode physics={mechanisms} />,
     assumptions: <Assumptions />,
     limitations: <Limitations />,
   };
