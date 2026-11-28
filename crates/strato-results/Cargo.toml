@@ -15,6 +15,10 @@ path = "src/lib.rs"
 name = "strato-results"
 path = "src/main.rs"
 
+[[bin]]
+name = "study39"
+path = "src/bin/study39.rs"
+
 [dependencies]
 anyhow = "1"
 # The verified solver with the scenario engine and the analytical module.

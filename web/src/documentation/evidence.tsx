@@ -10,6 +10,7 @@ import { TableBox } from '../sections/common';
 import { useStrato } from '../state/store';
 import { ComparisonEvidence } from './ComparisonEvidence';
 import { DownloadsEvidence, ParametersEvidence, ReferencesEvidence } from './DataEvidence';
+import { Phase2StudyEvidence } from './Phase2StudyEvidence';
 import type { DocContribution } from './types';
 import { VerificationEvidence } from './VerificationEvidence';
 
@@ -148,6 +149,12 @@ export const evidence: DocContribution = {
       title: 'Experimental comparison graphs',
       lazy: true,
       body: <ExperimentalEvidence />,
+    },
+    {
+      id: 'evidence-phase2-study39',
+      title: 'Phase 2 Cs-137 progressive physics study (1200–1800 °C, 39 graphs)',
+      lazy: true,
+      body: <Phase2StudyEvidence />,
     },
   ],
   evidence: [

@@ -1,0 +1,689 @@
+{
+  "schema_version": 1,
+  "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+  "principal_graph_count": 39,
+  "graphs": [
+    {
+      "graph_id": "A01",
+      "group": "A",
+      "title": "Stage A \u2014 1200 \u00b0C",
+      "temperature_c": 1200,
+      "duration_h": 10138.0,
+      "stage_key": "stage_a",
+      "physics_summary": "Constant D(T_nom), G=0, lambda=0, KernelUniform C_init=1",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1200c_stage_a.csv",
+      "output_files": [
+        "graphs/study39/A01.png",
+        "graphs/study39/A01.svg",
+        "graphs/study39/A01.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A02",
+      "group": "A",
+      "title": "Stage A \u2014 1350 \u00b0C",
+      "temperature_c": 1350,
+      "duration_h": 10685.0,
+      "stage_key": "stage_a",
+      "physics_summary": "Constant D(T_nom), G=0, lambda=0, KernelUniform C_init=1",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1350c_stage_a.csv",
+      "output_files": [
+        "graphs/study39/A02.png",
+        "graphs/study39/A02.svg",
+        "graphs/study39/A02.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A03",
+      "group": "A",
+      "title": "Stage A \u2014 1500 \u00b0C",
+      "temperature_c": 1500,
+      "duration_h": 11866.0,
+      "stage_key": "stage_a",
+      "physics_summary": "Constant D(T_nom), G=0, lambda=0, KernelUniform C_init=1",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1500c_stage_a.csv",
+      "output_files": [
+        "graphs/study39/A03.png",
+        "graphs/study39/A03.svg",
+        "graphs/study39/A03.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A04",
+      "group": "A",
+      "title": "Stage A \u2014 1600 \u00b0C",
+      "temperature_c": 1600,
+      "duration_h": 400.0,
+      "stage_key": "stage_a",
+      "physics_summary": "Constant D(T_nom), G=0, lambda=0, KernelUniform C_init=1",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1600c_stage_a.csv",
+      "output_files": [
+        "graphs/study39/A04.png",
+        "graphs/study39/A04.svg",
+        "graphs/study39/A04.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A05",
+      "group": "A",
+      "title": "Stage A \u2014 1700 \u00b0C",
+      "temperature_c": 1700,
+      "duration_h": 272.0,
+      "stage_key": "stage_a",
+      "physics_summary": "Constant D(T_nom), G=0, lambda=0, KernelUniform C_init=1",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1700c_stage_a.csv",
+      "output_files": [
+        "graphs/study39/A05.png",
+        "graphs/study39/A05.svg",
+        "graphs/study39/A05.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A06",
+      "group": "A",
+      "title": "Stage A \u2014 1800 \u00b0C",
+      "temperature_c": 1800,
+      "duration_h": 222.0,
+      "stage_key": "stage_a",
+      "physics_summary": "Constant D(T_nom), G=0, lambda=0, KernelUniform C_init=1",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1800c_stage_a.csv",
+      "output_files": [
+        "graphs/study39/A06.png",
+        "graphs/study39/A06.svg",
+        "graphs/study39/A06.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A07",
+      "group": "A",
+      "title": "Stage B \u2014 1200 \u00b0C",
+      "temperature_c": 1200,
+      "duration_h": 10138.0,
+      "stage_key": "stage_b",
+      "physics_summary": "Constant D(T_nom), +G_ref (AGR-1 cap3), lambda=0, Fresh particle, F_gen",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1200c_stage_b.csv",
+      "output_files": [
+        "graphs/study39/A07.png",
+        "graphs/study39/A07.svg",
+        "graphs/study39/A07.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A08",
+      "group": "A",
+      "title": "Stage B \u2014 1350 \u00b0C",
+      "temperature_c": 1350,
+      "duration_h": 10685.0,
+      "stage_key": "stage_b",
+      "physics_summary": "Constant D(T_nom), +G_ref (AGR-1 cap3), lambda=0, Fresh particle, F_gen",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1350c_stage_b.csv",
+      "output_files": [
+        "graphs/study39/A08.png",
+        "graphs/study39/A08.svg",
+        "graphs/study39/A08.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A09",
+      "group": "A",
+      "title": "Stage B \u2014 1500 \u00b0C",
+      "temperature_c": 1500,
+      "duration_h": 11866.0,
+      "stage_key": "stage_b",
+      "physics_summary": "Constant D(T_nom), +G_ref (AGR-1 cap3), lambda=0, Fresh particle, F_gen",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1500c_stage_b.csv",
+      "output_files": [
+        "graphs/study39/A09.png",
+        "graphs/study39/A09.svg",
+        "graphs/study39/A09.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A10",
+      "group": "A",
+      "title": "Stage B \u2014 1600 \u00b0C",
+      "temperature_c": 1600,
+      "duration_h": 400.0,
+      "stage_key": "stage_b",
+      "physics_summary": "Constant D(T_nom), +G_ref (AGR-1 cap3), lambda=0, Fresh particle, F_gen",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1600c_stage_b.csv",
+      "output_files": [
+        "graphs/study39/A10.png",
+        "graphs/study39/A10.svg",
+        "graphs/study39/A10.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A11",
+      "group": "A",
+      "title": "Stage B \u2014 1700 \u00b0C",
+      "temperature_c": 1700,
+      "duration_h": 272.0,
+      "stage_key": "stage_b",
+      "physics_summary": "Constant D(T_nom), +G_ref (AGR-1 cap3), lambda=0, Fresh particle, F_gen",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1700c_stage_b.csv",
+      "output_files": [
+        "graphs/study39/A11.png",
+        "graphs/study39/A11.svg",
+        "graphs/study39/A11.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A12",
+      "group": "A",
+      "title": "Stage B \u2014 1800 \u00b0C",
+      "temperature_c": 1800,
+      "duration_h": 222.0,
+      "stage_key": "stage_b",
+      "physics_summary": "Constant D(T_nom), +G_ref (AGR-1 cap3), lambda=0, Fresh particle, F_gen",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1800c_stage_b.csv",
+      "output_files": [
+        "graphs/study39/A12.png",
+        "graphs/study39/A12.svg",
+        "graphs/study39/A12.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A13",
+      "group": "A",
+      "title": "Stage C \u2014 1200 \u00b0C",
+      "temperature_c": 1200,
+      "duration_h": 10138.0,
+      "stage_key": "stage_c",
+      "physics_summary": "Constant D(T_nom), +G_ref, +lambda(Cs-137), Fresh particle, F_gen (+ G=0 decay bracket)",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1200c_stage_c.csv",
+      "output_files": [
+        "graphs/study39/A13.png",
+        "graphs/study39/A13.svg",
+        "graphs/study39/A13.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A14",
+      "group": "A",
+      "title": "Stage C \u2014 1350 \u00b0C",
+      "temperature_c": 1350,
+      "duration_h": 10685.0,
+      "stage_key": "stage_c",
+      "physics_summary": "Constant D(T_nom), +G_ref, +lambda(Cs-137), Fresh particle, F_gen (+ G=0 decay bracket)",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1350c_stage_c.csv",
+      "output_files": [
+        "graphs/study39/A14.png",
+        "graphs/study39/A14.svg",
+        "graphs/study39/A14.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A15",
+      "group": "A",
+      "title": "Stage C \u2014 1500 \u00b0C",
+      "temperature_c": 1500,
+      "duration_h": 11866.0,
+      "stage_key": "stage_c",
+      "physics_summary": "Constant D(T_nom), +G_ref, +lambda(Cs-137), Fresh particle, F_gen (+ G=0 decay bracket)",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1500c_stage_c.csv",
+      "output_files": [
+        "graphs/study39/A15.png",
+        "graphs/study39/A15.svg",
+        "graphs/study39/A15.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A16",
+      "group": "A",
+      "title": "Stage C \u2014 1600 \u00b0C",
+      "temperature_c": 1600,
+      "duration_h": 400.0,
+      "stage_key": "stage_c",
+      "physics_summary": "Constant D(T_nom), +G_ref, +lambda(Cs-137), Fresh particle, F_gen (+ G=0 decay bracket)",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1600c_stage_c.csv",
+      "output_files": [
+        "graphs/study39/A16.png",
+        "graphs/study39/A16.svg",
+        "graphs/study39/A16.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A17",
+      "group": "A",
+      "title": "Stage C \u2014 1700 \u00b0C",
+      "temperature_c": 1700,
+      "duration_h": 272.0,
+      "stage_key": "stage_c",
+      "physics_summary": "Constant D(T_nom), +G_ref, +lambda(Cs-137), Fresh particle, F_gen (+ G=0 decay bracket)",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1700c_stage_c.csv",
+      "output_files": [
+        "graphs/study39/A17.png",
+        "graphs/study39/A17.svg",
+        "graphs/study39/A17.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A18",
+      "group": "A",
+      "title": "Stage C \u2014 1800 \u00b0C",
+      "temperature_c": 1800,
+      "duration_h": 222.0,
+      "stage_key": "stage_c",
+      "physics_summary": "Constant D(T_nom), +G_ref, +lambda(Cs-137), Fresh particle, F_gen (+ G=0 decay bracket)",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1800c_stage_c.csv",
+      "output_files": [
+        "graphs/study39/A18.png",
+        "graphs/study39/A18.svg",
+        "graphs/study39/A18.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A19",
+      "group": "A",
+      "title": "Stage D \u2014 1200 \u00b0C",
+      "temperature_c": 1200,
+      "duration_h": 10138.0,
+      "stage_key": "stage_d_ramp_decay_off",
+      "physics_summary": "Temperature-dependent D(r, T(t)) over heating ramp+hold (+ isothermal & combined)",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1200c_stage_d_ramp_decay_off.csv",
+      "output_files": [
+        "graphs/study39/A19.png",
+        "graphs/study39/A19.svg",
+        "graphs/study39/A19.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A20",
+      "group": "A",
+      "title": "Stage D \u2014 1350 \u00b0C",
+      "temperature_c": 1350,
+      "duration_h": 10685.0,
+      "stage_key": "stage_d_ramp_decay_off",
+      "physics_summary": "Temperature-dependent D(r, T(t)) over heating ramp+hold (+ isothermal & combined)",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1350c_stage_d_ramp_decay_off.csv",
+      "output_files": [
+        "graphs/study39/A20.png",
+        "graphs/study39/A20.svg",
+        "graphs/study39/A20.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A21",
+      "group": "A",
+      "title": "Stage D \u2014 1500 \u00b0C",
+      "temperature_c": 1500,
+      "duration_h": 11866.0,
+      "stage_key": "stage_d_ramp_decay_off",
+      "physics_summary": "Temperature-dependent D(r, T(t)) over heating ramp+hold (+ isothermal & combined)",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1500c_stage_d_ramp_decay_off.csv",
+      "output_files": [
+        "graphs/study39/A21.png",
+        "graphs/study39/A21.svg",
+        "graphs/study39/A21.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A22",
+      "group": "A",
+      "title": "Stage D \u2014 1600 \u00b0C",
+      "temperature_c": 1600,
+      "duration_h": 400.0,
+      "stage_key": "stage_d_ramp_decay_off",
+      "physics_summary": "Temperature-dependent D(r, T(t)) over heating ramp+hold (+ isothermal & combined)",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1600c_stage_d_ramp_decay_off.csv",
+      "output_files": [
+        "graphs/study39/A22.png",
+        "graphs/study39/A22.svg",
+        "graphs/study39/A22.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A23",
+      "group": "A",
+      "title": "Stage D \u2014 1700 \u00b0C",
+      "temperature_c": 1700,
+      "duration_h": 272.0,
+      "stage_key": "stage_d_ramp_decay_off",
+      "physics_summary": "Temperature-dependent D(r, T(t)) over heating ramp+hold (+ isothermal & combined)",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1700c_stage_d_ramp_decay_off.csv",
+      "output_files": [
+        "graphs/study39/A23.png",
+        "graphs/study39/A23.svg",
+        "graphs/study39/A23.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "A24",
+      "group": "A",
+      "title": "Stage D \u2014 1800 \u00b0C",
+      "temperature_c": 1800,
+      "duration_h": 222.0,
+      "stage_key": "stage_d_ramp_decay_off",
+      "physics_summary": "Temperature-dependent D(r, T(t)) over heating ramp+hold (+ isothermal & combined)",
+      "nuclide": "Cs-137",
+      "solver": "strato v2.1.0 (Method A BTCS + Method B S-L where applicable)",
+      "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+      "curve_csv": "data/study39/curves/1800c_stage_d_ramp_decay_off.csv",
+      "output_files": [
+        "graphs/study39/A24.png",
+        "graphs/study39/A24.svg",
+        "graphs/study39/A24.csv"
+      ],
+      "validation_status": "verified_simulation_generated"
+    },
+    {
+      "graph_id": "B01",
+      "group": "B",
+      "title": "Analytical Sturm\u2013Liouville \u2014 1200 \u00b0C",
+      "temperature_c": 1200,
+      "duration_h": 10138.0,
+      "physics_summary": "Method B (Sturm-Liouville) vs equivalent Method A BTCS under Stages A, B, C; ramp Stage D withheld (TIME_VARYING_TEMPERATURE)",
+      "method_a_vs_b_stage_a_max_pp": 6.20527061090658e-05,
+      "valid_from_h": 1.0904358255643096,
+      "accuracy_floor": 7.941138363168362e-07,
+      "output_files": [
+        "graphs/study39/B01.png",
+        "graphs/study39/B01.svg",
+        "graphs/study39/B01.csv"
+      ],
+      "validation_status": "verified_analytical_comparison"
+    },
+    {
+      "graph_id": "B02",
+      "group": "B",
+      "title": "Analytical Sturm\u2013Liouville \u2014 1350 \u00b0C",
+      "temperature_c": 1350,
+      "duration_h": 10685.0,
+      "physics_summary": "Method B (Sturm-Liouville) vs equivalent Method A BTCS under Stages A, B, C; ramp Stage D withheld (TIME_VARYING_TEMPERATURE)",
+      "method_a_vs_b_stage_a_max_pp": 0.00032443432019593765,
+      "valid_from_h": 0.3490185736940397,
+      "accuracy_floor": 2.849563623470332e-07,
+      "output_files": [
+        "graphs/study39/B02.png",
+        "graphs/study39/B02.svg",
+        "graphs/study39/B02.csv"
+      ],
+      "validation_status": "verified_analytical_comparison"
+    },
+    {
+      "graph_id": "B03",
+      "group": "B",
+      "title": "Analytical Sturm\u2013Liouville \u2014 1500 \u00b0C",
+      "temperature_c": 1500,
+      "duration_h": 11866.0,
+      "physics_summary": "Method B (Sturm-Liouville) vs equivalent Method A BTCS under Stages A, B, C; ramp Stage D withheld (TIME_VARYING_TEMPERATURE)",
+      "method_a_vs_b_stage_a_max_pp": 0.000989589291105434,
+      "valid_from_h": 0.0858929533456853,
+      "accuracy_floor": 7.045053366957499e-08,
+      "output_files": [
+        "graphs/study39/B03.png",
+        "graphs/study39/B03.svg",
+        "graphs/study39/B03.csv"
+      ],
+      "validation_status": "verified_analytical_comparison"
+    },
+    {
+      "graph_id": "B04",
+      "group": "B",
+      "title": "Analytical Sturm\u2013Liouville \u2014 1600 \u00b0C",
+      "temperature_c": 1600,
+      "duration_h": 400.0,
+      "physics_summary": "Method B (Sturm-Liouville) vs equivalent Method A BTCS under Stages A, B, C; ramp Stage D withheld (TIME_VARYING_TEMPERATURE)",
+      "method_a_vs_b_stage_a_max_pp": 0.00022764078460245883,
+      "valid_from_h": 0.044444444444444446,
+      "accuracy_floor": 1.7576448657497995e-08,
+      "output_files": [
+        "graphs/study39/B04.png",
+        "graphs/study39/B04.svg",
+        "graphs/study39/B04.csv"
+      ],
+      "validation_status": "verified_analytical_comparison"
+    },
+    {
+      "graph_id": "B05",
+      "group": "B",
+      "title": "Analytical Sturm\u2013Liouville \u2014 1700 \u00b0C",
+      "temperature_c": 1700,
+      "duration_h": 272.0,
+      "physics_summary": "Method B (Sturm-Liouville) vs equivalent Method A BTCS under Stages A, B, C; ramp Stage D withheld (TIME_VARYING_TEMPERATURE)",
+      "method_a_vs_b_stage_a_max_pp": 0.0005002906356691567,
+      "valid_from_h": 0.044444444444444446,
+      "accuracy_floor": 3.85489697415442e-09,
+      "output_files": [
+        "graphs/study39/B05.png",
+        "graphs/study39/B05.svg",
+        "graphs/study39/B05.csv"
+      ],
+      "validation_status": "verified_analytical_comparison"
+    },
+    {
+      "graph_id": "B06",
+      "group": "B",
+      "title": "Analytical Sturm\u2013Liouville \u2014 1800 \u00b0C",
+      "temperature_c": 1800,
+      "duration_h": 222.0,
+      "physics_summary": "Method B (Sturm-Liouville) vs equivalent Method A BTCS under Stages A, B, C; ramp Stage D withheld (TIME_VARYING_TEMPERATURE)",
+      "method_a_vs_b_stage_a_max_pp": 0.0015056528449553484,
+      "valid_from_h": 0.044444444444444446,
+      "accuracy_floor": 8.989624004070998e-10,
+      "output_files": [
+        "graphs/study39/B06.png",
+        "graphs/study39/B06.svg",
+        "graphs/study39/B06.csv"
+      ],
+      "validation_status": "verified_analytical_comparison"
+    },
+    {
+      "graph_id": "C01",
+      "group": "C",
+      "title": "BTCS Numerical Convergence Study",
+      "spatial_order": 2.013564292248526,
+      "temporal_order": 1.077331010399304,
+      "output_files": [
+        "graphs/study39/C01.png",
+        "graphs/study39/C01.svg",
+        "graphs/study39/C01.csv"
+      ],
+      "validation_status": "verified_convergence_order_2_space_1_time"
+    },
+    {
+      "graph_id": "C02",
+      "group": "C",
+      "title": "Method A versus Method B",
+      "temperatures_c": [
+        1200,
+        1350,
+        1500,
+        1600,
+        1700,
+        1800
+      ],
+      "output_files": [
+        "graphs/study39/C02.png",
+        "graphs/study39/C02.svg",
+        "graphs/study39/C02.csv"
+      ],
+      "validation_status": "verified_numerical_analytical_agreement"
+    },
+    {
+      "graph_id": "C03",
+      "group": "C",
+      "title": "STRATO Experimental Deviation Summary",
+      "output_files": [
+        "graphs/study39/C03.png",
+        "graphs/study39/C03.svg",
+        "graphs/study39/C03.csv"
+      ],
+      "validation_status": "verified_experimental_deviation_summary"
+    },
+    {
+      "graph_id": "D01",
+      "group": "D",
+      "title": "Cs-137 release comparison \u2014 1200 \u00b0C",
+      "temperature_c": 1200,
+      "experimental_reference": "Bullock (1984) / IAEA-TECDOC-2090 Table 22 UCO/UO2*(2) 5% & <0.01% upper bounds",
+      "validation_status": "upper_bound_only",
+      "output_files": [
+        "graphs/study39/D01.png",
+        "graphs/study39/D01.svg",
+        "graphs/study39/D01.csv"
+      ]
+    },
+    {
+      "graph_id": "D02",
+      "group": "D",
+      "title": "Cs-137 release comparison \u2014 1350 \u00b0C",
+      "temperature_c": 1350,
+      "experimental_reference": "Bullock (1984) / IAEA-TECDOC-2090 Table 22 UCO/UO2*(2) 5% & <0.01% upper bounds",
+      "validation_status": "upper_bound_only",
+      "output_files": [
+        "graphs/study39/D02.png",
+        "graphs/study39/D02.svg",
+        "graphs/study39/D02.csv"
+      ]
+    },
+    {
+      "graph_id": "D03",
+      "group": "D",
+      "title": "Cs-137 release comparison \u2014 1500 \u00b0C",
+      "temperature_c": 1500,
+      "experimental_reference": "Bullock (1984) Fig. 1 / IAEA-TECDOC-2090 Fig. 124a & Table 22 (no AGR-1 1500 C Cs dataset exists)",
+      "validation_status": "upper_bound_plus_noncomparable_degraded_context",
+      "output_files": [
+        "graphs/study39/D03.png",
+        "graphs/study39/D03.svg",
+        "graphs/study39/D03.csv"
+      ]
+    },
+    {
+      "graph_id": "D04",
+      "group": "D",
+      "title": "Cs-137 release comparison \u2014 1700 \u00b0C",
+      "temperature_c": 1700,
+      "experimental_reference": "Minato et al. (2000) HRB-22 ACT3 / TE-2090 Fig. 125 (not AGR-1; N=8 intact particles)",
+      "validation_status": "comparable_exact_time_series",
+      "output_files": [
+        "graphs/study39/D04.png",
+        "graphs/study39/D04.svg",
+        "graphs/study39/D04.csv"
+      ]
+    },
+    {
+      "graph_id": "D05",
+      "group": "D",
+      "title": "Cs-137 release comparison \u2014 1800 \u00b0C",
+      "temperature_c": 1800,
+      "experimental_reference": "Minato et al. (2000) HRB-22 ACT4 / TE-2090 Fig. 126 (bounded w=1/25, N=11 incl. 4.6h cluster) + AGR-1 4-4-2 HUNN16-442 & JAERI-A non-comparable context",
+      "validation_status": "comparable_bounded_time_series",
+      "output_files": [
+        "graphs/study39/D05.png",
+        "graphs/study39/D05.svg",
+        "graphs/study39/D05.csv"
+      ]
+    },
+    {
+      "graph_id": "D06",
+      "group": "D",
+      "title": "AGR-1 irradiation-temperature comparison \u2014 approximately 955\u20131136 \u00b0C",
+      "temperature_c": "955-1136",
+      "experimental_reference": "AGR-1 irradiation C15 Cs-137 exploration (620.2 EFPD, 955/1028/1136 C); no direct Cs-137 irradiation validation possible",
+      "validation_status": "non_comparable_exploration_only",
+      "output_files": [
+        "graphs/study39/D06.png",
+        "graphs/study39/D06.svg",
+        "graphs/study39/D06.csv"
+      ]
+    }
+  ],
+  "exact_series_summary_count": 36,
+  "upper_bound_rows_count": 120,
+  "stage_improvement_rows_count": 36
+}

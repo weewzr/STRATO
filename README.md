@@ -1,222 +1,159 @@
-# STRATO: Spherical TRISO Analysis and Transport Operations
+# STRATO — Spherical TRISO Analysis and Transport Operations
 
-STRATO models how fission products (for example silver, caesium and strontium) diffuse out of a single TRISO coated fuel particle. It solves the same multilayer spherical diffusion problem two independent ways: **Method A**, a spherical backward-time centred-space (BTCS) finite-difference scheme written in Rust, and **Method B**, an exact multilayer Sturm-Liouville eigenfunction series. Each method is used to check the other. Version 2.0 replaces the finite-volume solver of version 1.x by the BTCS scheme and is verified numerically on synthetic cases. Generation, radioactive decay and temperature-dependent diffusivity are not part of the solver yet.
+[![CI](https://github.com/weewzr/STRATO/actions/workflows/ci.yml/badge.svg)](https://github.com/weewzr/STRATO/actions/workflows/ci.yml)
+[![Website](https://github.com/weewzr/STRATO/actions/workflows/web.yml/badge.svg)](https://github.com/weewzr/STRATO/actions/workflows/web.yml)
 
-> **Synthetic inputs.** The only bundled input, `inputs/synthetic/synthetic_five_layer.toml`, uses synthetic radii and diffusivities chosen for verification. They are not measured TRISO properties, and no result from this case is a prediction of real fission-product release.
+**STRATO** is an open-source, verification-first computational nuclear engineering project implemented in Rust (with WebAssembly browser execution) to model fission-product diffusion across intact five-layer tristructural isotropic (TRISO) fuel particles.
 
-> **Numerical verification is not experimental validation.** Every agreement reported in this repository between the two methods, or between a method and a closed-form or independently computed reference, shows that the stated equations are solved correctly. It does not show that the physics or the inputs are right, and none of it is a comparison with measurements.
+- **Public GitHub Repository:** <https://github.com/weewzr/STRATO>
+- **Deployed Interactive Website:** <https://weewzr.github.io/STRATO/>
+- **Final Research Report:** [`deliverables/report/STRATO_Research_Report_Phase2_Final.pdf`](deliverables/report/STRATO_Research_Report_Phase2_Final.pdf) ([`.docx`](deliverables/report/STRATO_Research_Report_Phase2_Final.docx))
+- **Final Editable PowerPoint:** [`deliverables/powerpoint/STRATO_Presentation_Phase2_Final.pptx`](deliverables/powerpoint/STRATO_Presentation_Phase2_Final.pptx)
 
-<p align="center">
-  <img src="docs/archive/finite-volume/v1.0.0/figures/triso_cross_section.png" alt="Cross-section of a TRISO particle showing the kernel, buffer, inner pyrolytic carbon, silicon carbide and outer pyrolytic carbon layers, with outer radii R1 to R5 marked, and below it the same five layers drawn as intervals along the radius r" width="640">
-</p>
+---
 
-The five layers of a TRISO particle and their outer radii $R_1$ to $R_5$. The figure is drawn to average AGR-1 Baseline dimensions (source in `docs/archive/finite-volume/v1.0.0/figures/v1_0_0_triso_cross_section.py`); the synthetic example uses different radii.
+## Central Research Question
 
-## Status
+> *To what extent does the progressive incorporation of additional transport physics improve the predictive accuracy of numerical fission-product release models in multilayer TRISO fuel particles?*
 
-**Version 2.1.0.** The solver is the BTCS scheme of `docs/mathematics/btcs/`. The baseline scope (Documents 0 to 4) is constant temperature, constant diffusivity in each layer, initial inventory in the kernel, perfect interface contact and an absorbing outer surface. Version 2.1.0 adds fission-product generation, radioactive decay and temperature-dependent diffusivity to the solver (Document 5), a scenario engine for the five operating scenarios, the extensions of the Sturm-Liouville series for decay and a kernel source (Document 6), the data registers with the experimental release curves, the comparison program and the shared results of `data/results/`. The live simulation of the website still runs the baseline scope; it is wired to the new solver in the following change. See [Development status](#development-status).
+---
 
-**What is verified.** The scheme as specified is proved conservative in exact arithmetic and positivity-preserving at every time step (Documents 1 and 2, reviewed independently). In floating point the code reports the balance residual together with an a-posteriori rounding bound, and the production tridiagonal solve is coded in the form for which the positivity proof holds. On the synthetic cases the observed order of the release fraction is 2 in space and about 1 in time. The release fraction is compared with the Sturm-Liouville series, with the closed series of the homogeneous sphere, and with a value computed by a separate-language reference (see [Verification](#verification)). These are numerical checks of the stated model. No result of this repository is validated against measurements.
+## Scientific Modelling Basis
 
-## Web demonstration
+- **Primary Nuclide:** $\text{Cs-137}$ ($t_{1/2} = 30.08\ \text{y}$, $\lambda = 7.302187\times 10^{-10}\ \text{s}^{-1}$, cumulative $^{235}\text{U}$ thermal fission yield $y = 0.062208$).
+- **AGR-1 Reference Generation Rate:** $\dot{F} = 8.699783\times 10^{19}\ \text{m}^{-3}\text{ s}^{-1}$ (Capsule 3 burnup-derived rate), giving $G_{\text{ref}} = y \dot{F} / N_{\text{A}} = 8.986773\times 10^{-6}\ \text{mol m}^{-3}\text{ s}^{-1}$.
+- **Diffusivity Correlations:** Published PARFUME / IAEA-TECDOC-978 effective Arrhenius sets from Collin et al. (2015, 2016) — `C16` for post-irradiation heating tests (`1200–1800 °C`) and `C15` for AGR-1 irradiation conditions (`955–1136 °C`), evaluated at mid-step temperatures ($R = 8.3145\ \text{J mol}^{-1}\text{ K}^{-1}$) without unverified tuning.
+- **Principal Temperatures:** Six heating-test temperatures (`1200, 1350, 1500, 1600, 1700, 1800 °C`) and three AGR-1 irradiation temperatures (`955, 1028, 1136 °C`, 620.2 EFPD).
 
-**Live: https://weewzr.github.io/STRATO/**
+### Five-Layer TRISO Geometry (`AGR1-B-M16`)
 
-The website has four pages: Explore (the default), Basis, Research Catalogue and Scientific Documentation (last). The older Compare, Validate, Verify, Data and About addresses redirect to them.
+| Layer | Outer Radius ($\mu\text{m}$) | Outer Radius ($\text{m}$) | Base Grid Intervals |
+| --- | ---: | ---: | ---: |
+| Kernel (UCO / $\text{UO}_2$ surrogate) | 175.0 | $1.750\times 10^{-4}$ | 160 |
+| Porous Carbon Buffer | 278.5 | $2.785\times 10^{-4}$ | 20 |
+| Inner Pyrolytic Carbon (IPyC) | 317.9 | $3.179\times 10^{-4}$ | 20 |
+| Silicon Carbide (SiC) | 353.2 | $3.532\times 10^{-4}$ | 160 |
+| Outer Pyrolytic Carbon (OPyC) | 394.2 | $3.942\times 10^{-4}$ | 20 |
 
-- **Explore** holds four areas. Upper left, six Model Equation buttons (baseline diffusion, fission-product generation, radioactive decay, temperature-dependent diffusion, combined model, future species-specific physics) and five Operation buttons (steady-state operation, shutdown and cooldown, startup, control-rod insertion, refuelling); the two choices are independent. Upper right, the selected governing equation with its variable legend and SI units. Lower left, the Numerical Interpretation (Method A: BTCS, Method B: Sturm-Liouville, discretisation, pseudocode, assumptions, limitations), which follows the selection. Lower right, the interactive graphs (cumulative release fraction, radial concentration profile, Method A against Method B, experimental comparison) with a species selector and a temperature selector in 100 degC steps. The graphs read the shared results files in `data/results/`, produced in Rust; the page formats numbers and computes none. Method A is drawn in red, Method B in blue and experimental measurements in black. A selection with no results file shows an empty graph panel and nothing else.
-- **Basis** gives the purpose, the TRISO layers, the baseline equation, the assumptions, the two methods and the synthetic benchmark. **Research Catalogue** keeps the three transport regimes, the species, the papers and the mechanisms.
-- **Scientific Documentation** holds everything that left the other pages: the derivations, the numerical methods, the assumptions and limitations, the comparison method and the R² requirements, the parameter table with its provenance, the APA references and links, the data downloads, the research and implementation statuses, the verification evidence and the build details. The manual baseline solver with its numerical controls and the 3D particle view is the entry "Manual baseline solver and numerical controls" of its section "Advanced solver configuration"; its code loads only when that entry is opened. Status labels appear only on this page.
+---
 
-The solver runs in the browser as the Rust BTCS solver compiled to WebAssembly; no equation is re-implemented in JavaScript. Every figure is a numerical verification of the stated model, not an experimental validation, and R² is shown only where a record holds a value.
+## Solution Methods
 
-The site also publishes the BTCS documents 0 to 4 and the register documents with the mathematics typeset: https://weewzr.github.io/STRATO/docs/index.html. Build, test and deployment commands: [`web/README.md`](web/README.md).
+### Method A — FDM-BTCS (`#DC2626`)
+Conservative spherical-shell Backward-Time, Centred-Space (BTCS) finite differences (`src/numerical/`):
+- Nodal placement on every material interface ($R_1 \dots R_4$) with shell conductances $K_{i,\text{outer}} = D_{i,\text{outer}} r_i r_{i+1} / \Delta r_{i,\text{outer}}$ and L'Hôpital centre closure $1 + 6\mathrm{Fo}_{\text{kernel}} + \kappa$.
+- Tridiagonal $O(N)$ Thomas M-matrix solver guaranteeing non-negativity, minimum row margin $\ge 1.0$, and a-posteriori floating-point mass-balance rounding bounds (`(F46)`).
 
-## Scientific objective
+### Method B — Sturm–Liouville Eigenfunction Series (`#2563EB`)
+Exact analytical multilayer eigenseries (`src/analytical/`):
+- Layer-by-layer transfer matrices with continuity of $u = r\varphi$ and jump $q_{\text{out}} = q_{\text{in}} + (D_{\text{out}} - D_{\text{in}}) u / R$, isolated by Sturm oscillation counting and bisection.
+- Exact analytical extensions for uniform decay ($\alpha_\mu + \lambda$) and piecewise-constant kernel sources at constant temperature, guarded by an explicit convergence mask (`valid_from_h`, `accuracy_floor`) and strict refusal under time-varying temperature (`TIME_VARYING_TEMPERATURE`).
 
-The objective is a transparent and verifiable model of fission-product release from a single TRISO particle. Every equation, numerical method and parameter should be traceable to a derivation or a published source. Version 2.0 provides the verified numerical foundation. Physical inputs from the literature are kept in the parameter register and are not read by the solver.
+---
 
-## Particle geometry
+## Stage A–D Modelling Progression
+
+| Stage | Governing Formulation | Physical Interpretation |
+| --- | --- | --- |
+| **Stage A** | $\partial_t C = r^{-2}\partial_r(r^2 D(r)\partial_r C)$, $G=0, \lambda=0$ | Baseline intact-particle diffusion ($F_{\text{init}} = M_{\text{rel}}/M^0$) |
+| **Stage B** | $+ G_{\text{kernel}}(t)\chi_{\text{kernel}}(r)$, $\lambda=0$, fresh start $C(r,0)=0$ | Active fission-product generation ($F_{\text{gen}} = M_{\text{rel}}/M_{\text{gen}}$) |
+| **Stage C** | $+ G(r,t) - \lambda C$ | Adds radioactive decay ($\kappa = \lambda\Delta t$); also run with $G=0$ decay bracket |
+| **Stage D** | $D(r, T(t))$ at mid-step $t_{\text{mid}} = (j + 0.5)\Delta t$ | Full `AGR1-ST-C16` / 50 °C/h heating-ramp trajectories + combined transport |
+
+---
+
+## Scientific Graph Inventory
+
+All **39 principal graphs** and **10 supporting diagnostics** are stored in PNG (300 dpi), SVG, and CSV under [`graphs/study39/`](graphs/study39/) and indexed in [`data/study39/study39_manifest.json`](data/study39/study39_manifest.json):
+- **Group A (`A01–A24`, 24 graphs):** Method A BTCS Stages A, B, C, and D across 1200, 1350, 1500, 1600, 1700, 1800 °C.
+- **Group B (`B01–B06`, 6 graphs):** Method B Sturm–Liouville vs equivalent Method A formulations across 1200–1800 °C.
+- **Group C (`C01–C03`, 3 graphs):** `C01` BTCS Numerical Convergence Study, `C02` Method A vs Method B Agreement, `C03` STRATO Experimental Deviation Summary.
+- **Group D (`D01–D06`, 6 graphs):** Experimental release comparisons at `1200, 1350, 1500, 1700, 1800 °C` and AGR-1 irradiation exploration at `955–1136 °C`.
+- **Supporting (`S01–S10`, 10 graphs):** Multi-temperature overviews, 1600 °C context (`HFR-K3/1` & `JAERI-A`), radial profiles $C(r, t)$, `C16` vs `C15` laws, heating ramps, scenarios `S1–S5`, and pointwise residuals.
+
+*(The baseline 212-graph collection, original 105-slide presentation, and 63-page Phase 1 report remain preserved read-only in the external research archive.)*
+
+---
+
+## Experimental Validation Methodology & Provenance Audit
+
+Model curves are evaluated at exact experimental timestamps $t_i$ via linear interpolation (never nearest-sample matching) and strictly separated by physical comparability:
+1. **Exact / Bounded Time Series (`1700–1800 °C`):** Minato et al. (2000) HRB-22 $\text{UO}_2$ particles — **ACT3 (`1700 °C`, $N=8$, intact)** and **ACT4 (`1800 °C`, $N=11$ including unresolved $0\text{–}10\ \text{h}$ cluster $t=4.6\pm 2.0\ \text{h}$, $1/25$ failed SiC bracket)** — NOT AGR-1 fuel. Metrics: $\Delta_s(t_i) = 100(F_s - F_{\text{exp}})$, $|\Delta_s|$, MAE, RMSE, max $|\Delta|$, trapezoidal IAE, and Stage A→D change (%).
+2. **Upper Bounds Only (`1200–1600 °C`):** Bullock (1984) / IAEA-TECDOC-2090 Table 22 (`5%` counting vs `0.01%` collector readings at `1200, 1350, 1500 °C`) and `IAEA97-K31-CS137` (`HFR-K3/1` sphere at `1600 °C`). Metrics: $\Delta_{\text{bound}}$, violation $V_s = \max(0, F_s - U_{\text{exp}})$, and ratio $F_s / U_{\text{exp}}$; never pooled into MAE/RMSE.
+3. **Non-Comparable Context:** Degraded Bullock `UO2`/`UC2` curves (`1500 °C`), AGR-1 4-4-2 `HUNN16-442-CS137` (5 failed particles), `IAEA97-JAERI-A` (incompatible denominator), and AGR-1 irradiation totals (`D06`; no time-resolved intact Cs-137 data).
+
+---
+
+## Key Numerical and Experimental Findings
+
+1. **Numerical Verification:** BTCS achieves observed convergence orders of **2.014 in space** ($O(\Delta r^2)$) and **1.077 in time** ($O(\Delta t)$). Across all **48 Stage A–D simulations**, maximum normalized floating-point mass-balance residual $|\varepsilon|/\text{bound}$ is **0.0498** ($\le 1.0$), minimum row margin is **1.0**, and Method A agrees with Method B within **$\le 1.51\times 10^{-3}$ pp** across `1200–1800 °C`.
+2. **Effect of Progressive Physics (`G=0` Anneals):**
+   - At **1700 °C (`ACT3`, $N=8$)**: Stage A (`RMSE = 0.240 pp, final Δ = -0.120 pp`) $\to$ Stage C decay-only (`RMSE = 0.241 pp, -0.23%`) $\to$ **Stage D heating ramp (`RMSE = 0.226 pp, final Δ = -0.035 pp`, +6.08% RMSE improvement, +7.97% MAE improvement)**.
+   - At **1800 °C (`ACT4`, $N=11$)**: Stage A (`RMSE = 7.519 pp, final Δ = +12.85 pp`, intact bracket `[+12.23, +16.40]` pp) $\to$ Stage C decay-only (`7.516 pp, +0.05%`) $\to$ **Stage D heating ramp (`7.706 pp`, −2.48%)**, where pre-hold ramp diffusion slightly increases existing overprediction.
+3. **Why Stages B/C (`+G`) Cannot Validate Furnace Tests:** Adding active fission generation (`+G`, $F_{\text{gen}}$ from $C=0$) shifts the release definition relative to source-free annealing ($G=0$, $F_{\text{init}}$), yielding lower fractions (`1.68%` at 1700 °C; `12.39%` at 1800 °C) that worsen ACT3 (`1.97 pp`, `−720%`) even while numerically sitting closer to ACT4 (`2.44 pp`). Numerical convergence and physical accuracy must never be conflated.
+4. **Upper Bounds (`1200–1600 °C`):** Models satisfy `5%` counting bounds at `1200 °C` (`0.0184%`) and `1350 °C` (`1.48%`), exceed `5%` at `1500 °C` (`18.68%`), and exceed the stricter `0.01%` collector readings at all three (`1.84x` to `1868x`) as well as `HFR-K3/1` at `1600 °C` (`153x`).
+
+---
+
+## Repository Structure
 
 ```text
-            r = 0                                                     r = R5
-  centre -- kernel -- buffer -- IPyC -- SiC -- OPyC -- outer surface (c = 0)
-   region   i = 1      i = 2     i = 3   i = 4   i = 5
-   outer    R1         R2        R3      R4      R5
+STRATO/
+├── src/                        # Core Rust library (Method A BTCS & Method B Sturm–Liouville)
+├── crates/
+│   ├── strato-data/            # Typed parameter, geometry, Arrhenius, and experimental registers
+│   ├── strato-scenarios/       # Scenario builders, heating histories, shared Method B driver
+│   ├── strato-compare/         # Convergence studies (spatial_convergence, temporal_convergence)
+│   ├── strato-results/         # Baseline results pipeline + Phase 2 `study39` simulation binary
+│   ├── strato-wasm/            # WebAssembly solver wrapper
+│   ├── strato-docsite/         # Mathematical documentation builder and link checker
+│   └── strato-webtools/        # Website catalogue, Wasm build, and byte-identity checkers
+├── data/
+│   ├── study39/                # Canonical Phase 2 curves, experimental subsets, deviations, manifest
+│   ├── results/                # Verified baseline pipeline outputs (strato-results --check)
+│   ├── experimental/           # Audited experimental release datasets & curve_assessment.csv
+│   └── ...                     # Geometry, diffusivity, decay, fission yield, temperature registers
+├── graphs/study39/             # All 39 principal graphs + 10 supporting diagnostics (PNG, SVG, CSV)
+├── deliverables/
+│   ├── report/                 # Phase 2 Research Report (DOCX & PDF)
+│   └── powerpoint/             # Phase 2 Editable PowerPoint Presentation (109 slides, PPTX)
+├── web/                        # Four-page React + TypeScript + Plotly + Wasm web application
+├── scripts/                    # Reproducible Python analysis, plotting, report, & deck builders
+├── docs/                       # Mathematical proofs (Documents 1–6) & ANTIGRAVITY_PROGRESS.md
+└── archive/                    # Legacy/archival index linking superseded reference material
 ```
 
-There are five concentric spherical layers, each with its own constant diffusivity $D_i$ in $\mathrm{m^2\,s^{-1}}$. The radii (in $\mathrm{m}$) and diffusivities are inputs.
+---
 
-The bundled synthetic case uses these values (the field `cells` of the input is the number of grid intervals of the layer):
+## Reproducibility Instructions
 
-| Layer $i$ | Name | Outer radius $R_i$ | Diffusivity $D_i$ | Grid intervals |
-|---|---|---|---|---|
-| 1 | Kernel | $2.0\times10^{-4}\ \mathrm{m}$ | $1.0\times10^{-12}\ \mathrm{m^2\,s^{-1}}$ | 40 |
-| 2 | Buffer | $3.0\times10^{-4}\ \mathrm{m}$ | $4.0\times10^{-10}\ \mathrm{m^2\,s^{-1}}$ | 40 |
-| 3 | IPyC | $3.5\times10^{-4}\ \mathrm{m}$ | $8.0\times10^{-13}\ \mathrm{m^2\,s^{-1}}$ | 40 |
-| 4 | SiC | $4.0\times10^{-4}\ \mathrm{m}$ | $2.0\times10^{-14}\ \mathrm{m^2\,s^{-1}}$ | 40 |
-| 5 | OPyC | $4.5\times10^{-4}\ \mathrm{m}$ | $7.0\times10^{-13}\ \mathrm{m^2\,s^{-1}}$ | 40 |
-
-The initial kernel concentration is $C_\mathrm{init} = 1.0\ \mathrm{mol\,m^{-3}}$, the time step is $\Delta t = 200\ \mathrm{s}$ and the end time is $2\times10^5\ \mathrm{s}$. The input records a temperature of $1000\ \mathrm{K}$, which the solver does not use in the calculation.
-
-## Mathematical model
-
-Inside layer $i$ the concentration $C(r,t)$ in $\mathrm{mol\,m^{-3}}$ obeys spherical diffusion:
-
-$$\frac{\partial C}{\partial t} = \frac{1}{r^2}\frac{\partial}{\partial r}\left(r^2 D_i \frac{\partial C}{\partial r}\right), \qquad R_{i-1} < r < R_i ,$$
-
-with $R_0 = 0$.
-
-| Assumption | Treatment |
-|---|---|
-| Centre | Symmetry, $\partial C/\partial r = 0$ at $r = 0$ |
-| Interfaces | Perfect contact: $C$ and the flux $D\,\partial C/\partial r$ are continuous |
-| Outer surface | Absorbing, $C(R_5, t) = 0$ |
-| Initial state | Uniform $C_\mathrm{init}$ in the kernel, zero elsewhere |
-| Temperature | Constant; the input value is recorded only |
-| Decay, generation | Not included |
-
-The release fraction is
-
-$$F(t) = \frac{M_\mathrm{rel}(t)}{M_0},$$
-
-the share of the initial inventory $M_0$ (in $\mathrm{mol}$) that has left through the outer surface by time $t$.
-
-### Method A: BTCS finite-difference solver
-
-`src/numerical/btcs.rs` and its modules (`grid`, `interfaces`, `boundary_conditions`, `coefficients`, `tridiagonal`, `inventory`, `diagnostics`) implement the final formulation of Document 2 (equations F1 onward):
-
-- the unknowns are nodal concentrations $C_i^j$ at the radii $r_i$ of a grid with a uniform spacing inside each layer and a node on each of the four material interfaces;
-- the time derivative is a backward difference, so each step solves one tridiagonal system for the new nodal values; the production solve is the elimination coded in the form of Document 2 (F24);
-- the four interface rows enforce continuity of $C$ and of the flux, the centre row uses the symmetric limit, and the outer node is fixed at zero;
-- the discrete inventory, the release rate and the cumulative release are accounted so that the balance residual can be reported at every step, together with its a-posteriori rounding bound.
-
-The solver accepts the existing TOML input; the temporal and spatial orders are observed, not assumed, and the documents say which properties are proved, outlined, observed or open.
-
-### Method B: Sturm-Liouville series
-
-`src/analytical/sturm_liouville.rs` uses the multilayer Sturm-Liouville eigenfunction expansion. It writes $u = rc$ in each layer and propagates $u$ and the flux through the layers. Eigenvalues are isolated by a Sturm count and refined by bisection. The release is the series
-
-$$F(t) = 1 - \sum_n w_n e^{-\Lambda_n t},$$
-
-with modal weights $w_n$ and decay rates $\Lambda_n$ in $\mathrm{s^{-1}}$. The code reports how many modes it used, the time from which the series is valid, and its round-off accuracy floor. `src/analytical/homogeneous_sphere.rs` holds the closed series of the homogeneous sphere that the regression checks use.
-
-### Derivations
-
-The derivation of Method A is in five documents under [`docs/mathematics/btcs/`](docs/mathematics/btcs/): [Document 0](docs/mathematics/btcs/00_original_documents.md) (account and algebra check of the original documents), [Document 1](docs/mathematics/btcs/01_from_ftcs_to_five_layer_btcs.md) (the derivation), [Document 2](docs/mathematics/btcs/02_final_formulation.md) (the final formulation, normative), [Document 3](docs/mathematics/btcs/03_rust_pseudocode.md) (Rust pseudocode) and [Document 4](docs/mathematics/btcs/04_equation_to_code_traceability.md) (every equation traced to its pseudocode, its Rust item and its test). The finite-volume derivation documents of version 1.x are archived in [`docs/archive/finite-volume/`](docs/archive/finite-volume/README.md) with a note on where the removed code is kept.
-
-## Installation
-
-Install a stable Rust toolchain (https://rustup.rs), then build:
-
-```bash
-git clone https://github.com/weewzr/STRATO.git
-cd STRATO
-cargo build --release
-```
-
-Dependency versions are pinned in `Cargo.lock`.
-
-## Running
-
-```bash
-cargo run --release --bin strato-btcs -- inputs/synthetic/synthetic_five_layer.toml
-```
-
-Options: `--out DIR` (output folder, default the `[output] directory` of the input), `--snapshots T1,T2,...` (times in seconds at which concentration profiles are written; each is served from the nearest step), `--commit HASH`, `--parameter-source TEXT` and `--parameter-class TEXT` (the source row and class that the exported parameters carry), `--max-nodes N` and `--max-steps N`.
-
-To run your own case, copy `inputs/literature/literature_inputs.template.toml` and fill in every `INSERT_VALUE_HERE`. The program refuses to run while any placeholder is left, and lists each one.
-
-## Outputs
-
-Files are written to the output folder (`results/synthetic-five-layer/` for the bundled case). Each carries a provenance header (solver version, commit, input digest, parameter source and class), and the column headers carry the full physical name with its unit.
-
-| File | Content |
-|---|---|
-| `btcs_timeseries.csv` | time (s), inventory (mol), cumulative release (mol), release fraction, release rate (mol/s), balance residual (mol) with its derived bound, concentration range (mol/m³) |
-| `btcs_profiles.csv` | concentration (mol/m³) at every node, with its radius (m), node class and material, at the requested snapshot times |
-| `btcs_run.json` | everything above plus the grid, the input, the matrix and series diagnostics |
-
-Standard output gives a `key=value` summary: number of nodes, step, number of steps, final release fraction, final inventory, the worst relative balance residual with the bound of the final step, and the minimum concentration.
-
-## Verification
-
-```bash
+```powershell
+# 1. Run core Rust solver & regression tests
 cargo test --release
-cargo run --release --example btcs_regression -- --commit "$(git rev-parse HEAD)"
+cargo run --release --example btcs_regression -- --commit (git rev-parse HEAD)
+
+# 2. Run Phase 2 canonical 39-graph Rust simulations
+cargo run --release --manifest-path crates/Cargo.toml --bin study39 -- --repo . --commit (git rev-parse HEAD)
+
+# 3. Compute experimental deviations, Stage A-D improvements, graphs, report & deck
+python scripts/study39_deviations.py
+python scripts/generate_study39_graphs.py
+python scripts/build_report.py
+python scripts/update_deck.py
+python scripts/export_web_study39.py
+
+# 4. Verify workspace crates & WebAssembly web app
+cargo test --manifest-path crates/Cargo.toml --release
+cargo run --locked --release --manifest-path crates/Cargo.toml -p strato-webtools -- build-wasm
+Set-Location web; npm ci; npm run lint; npm run typecheck; npm test -- --run; npm run build; npm run check:content
 ```
 
-The first command runs the unit, property, verification and regression tests. The second runs the independent check of every regression case and ends with `BTCS_REGRESSION_CHECK PASS`, failing otherwise. Continuous integration ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs the tests, this check, the synthetic case and a Python reference check of the analytical series on pushes to `main`, on version tags and on pull requests.
+---
 
-| Check | Result (synthetic five-layer case, 40 intervals per layer, $\Delta t = 200\ \mathrm{s}$) |
-|---|---|
-| Release fraction at $t = 2\times10^5\ \mathrm{s}$ | Method A: $F = 0.4324291$; Method B (series): $F = 0.4325556$ (the difference is the discretisation error of this mesh and step) |
-| Observed orders on the three regression cases | 1.999 to 2.000 in space and 0.93 to 1.02 in time, each case against a reference that contains no BTCS code (`tests/golden/btcs/README.md`) |
-| Balance residual | worst relative balance residual $6.9\times10^{-12}$; the derived a-posteriori bound of the final step is $1.1\times10^{-8}$ |
-| Minimum concentration | exactly 0 (no negative value) |
-| Series against a separate-language computation | the series value $F(2\times10^5\ \mathrm{s}) = 0.4325556390930383$ of a 50-digit Python reference agrees with the Rust series to better than $10^{-10}$ |
+## References and Acknowledgements
 
-The regression references in [`tests/golden/btcs/`](tests/golden/btcs/README.md) are the solver's own earlier output: they detect change and are not truth. Each case also carries an independent check against a reference that contains no BTCS code. The mathematics of the error and rounding statements is in Documents 1 and 2.
-
-This is **verification**: it shows that the code solves its equations correctly. Two methods can agree with each other and both still rest on the wrong physics or the wrong inputs. An internal comparison of the five-layer model against experimental release data was conducted at SNRSI. The early release curve agreed within 2%, with increasing deviation at later stages. These results are not yet public, and the public v1.0 release contains numerical verification only. Publication of experimental comparison results is planned for v2.0, with AGR-1 release data as a public-validation objective. See [`docs/development/provenance.md`](docs/development/provenance.md) for the evidence and the claims that remain unverified.
-
-## Development status
-
-| Version | Stage | Scope | Status |
-|---|---|---|---|
-| v1.0 | Phase 1 (developed June to October 2026) | Multilayer analytical and finite-volume diffusion model | Released (v1.0.0, v1.0.1); the finite-volume solver is retired and archived |
-| v2.0 | BTCS solver | Spherical BTCS finite-difference solver (Method A) beside the Sturm-Liouville series (Method B), with the web demonstration | Released (2.0.0) |
-| v2.1 | Physics and data | Radioactive decay, fission-product generation, Arrhenius diffusivity and temperature histories in the BTCS scheme; scenarios; Method B extensions; registers with experimental curves; comparison and shared results; WebAssembly interface of ABI 4 | Version 2.1.0 (the website's live simulation is wired in the following change) |
-| v3.0 | Future | Partition coefficients, matrix transport, inverse modelling, uncertainty quantification, particle populations | Planned |
-
-## Known limitations of v2.1.0
-
-- The only bundled input of the command line is synthetic, so the public example is not an experimental validation case. Literature parameters are collected in [`data/`](data/reference/README.md) and read by the scenario engine and the results program; no registered dataset supports a whole-curve R² today, so every comparison with a measurement is a plot only.
-- In the baseline problem temperature is constant and each layer's diffusivity does not depend on temperature; the stages with temperature-dependent diffusivity evaluate it at the temperature in the middle of each step.
-- Generation and decay exist in the stages and scenarios, not in the baseline problem. All inventory starts in the kernel.
-- Interfaces are in perfect contact, with no partition coefficients.
-- The outer surface is a perfect sink.
-- The model covers a single intact particle. Matrix, failed particles and populations are not modelled.
-- Backward time stepping is only first order in time, so the time step controls accuracy at early times.
-- Method B (the series) is valid for the baseline problem, for decay and a kernel source at a constant temperature through its extensions (only where their drawing mask accepts the value), and never when the temperature changes in time; it applies only from the time its validity rule reports.
-
-## Repository layout
-
-| Path | Content |
-|---|---|
-| `src/` | Rust library and the `strato-btcs` command line: analytical solver (Method B), BTCS solver (Method A), input handling, property functions, regression and export |
-| `tests/`, `examples/` | Unit, property, verification and regression tests, the BTCS regression references (`tests/golden/btcs/`), the analytical series reference (`tests/golden/analytical/`) and the regression check program |
-| `inputs/` | Synthetic five-layer case, the regression cases and the literature input template |
-| `data/` | Literature parameter register and CSV tables |
-| `docs/mathematics/` | BTCS Documents 0 to 4 (`btcs/`), the property functions, and two short notes at the old paths of the archived Phase 2 documents |
-| `docs/archive/finite-volume/` | The derivation, design and provenance documents and figures of version 1.x, with a note on where the removed code is |
-| `docs/development/` | The frontend audit, the visualisation library comparison, and short notes at the old paths of the archived provenance, review-package and change-plan documents |
-| `scripts/` | The Python reference check of the analytical series, the parameter-register tool and the register helpers (versions pinned in `requirements.lock.txt`) |
-| `web/` | Web demonstration (React, TypeScript, KaTeX, Plotly, three.js); see [`web/README.md`](web/README.md) |
-| `crates/` | WebAssembly wrapper of the solver (`strato-wasm`) and the tools workspace (`Cargo.toml`, with `strato-docsite`, which renders the documents into the site, `strato-webtools`, which generates the web data files and runs the catalogue and wasm build checks, and `strato-data`, the checks of the register files) |
-| `prompt/` | Instruction package for the web demo |
-
-## Documentation
-
-| Topic | Location |
-|---|---|
-| BTCS Documents 0 to 4 (derivation, final formulation, pseudocode, traceability) | [`docs/mathematics/btcs/`](docs/mathematics/btcs/) |
-| Documents of version 1.x, archived (derivations, Phase 2 design documents and their PDFs, provenance of the v1.0 results, review package, v1.0 to v2.0 change plan) | [`docs/archive/finite-volume/`](docs/archive/finite-volume/README.md) |
-| Contribution rules | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
-| Version history | [`CHANGELOG.md`](CHANGELOG.md) |
-
-## Key references
-
-- Gelbard, F. (2003). *Analytical modeling of fission product releases by diffusion from multicoated fuel particles* (SAND2002-3966). Sandia National Laboratories.
-- International Atomic Energy Agency. (1997). *Fuel performance and fission product behaviour in gas cooled reactors* (IAEA-TECDOC-978). IAEA.
-- Hales, J. D., Jiang, W., Toptan, A., & Gamble, K. A. (2021). Modeling fission product diffusion in TRISO fuel particles with BISON. *Journal of Nuclear Materials, 548*, 152840. https://doi.org/10.1016/j.jnucmat.2021.152840
-
-## Citation
-
-If you use STRATO, please cite it with the metadata in [`CITATION.cff`](CITATION.cff) (version 2.1.0).
+Full academic references (Bullock 1984; Collin et al. 2015, 2016; Demkowicz et al. 2015, 2016; Gelbard 2003; Gerczak et al. 2016; Hales et al. 2021; Hunn et al. 2014–2019; IAEA 1997, 2025; Miller et al. 2018; Minato et al. 2000; Morris et al. 2016; Parsons et al. 2024; Schappel et al. 2020; Simon et al. 2022; Stempien et al. 2023) are documented in [`deliverables/report/STRATO_Research_Report_Phase2_Final.pdf`](deliverables/report/STRATO_Research_Report_Phase2_Final.pdf) and in Scientific Documentation on the live website.
 
 ## Licence
 
-The `LICENSE` file on `main` is the GNU Affero General Public License, version 3, and `Cargo.toml` and `CITATION.cff` declare `AGPL-3.0-only`. See [`LICENSE`](LICENSE).
-
-Releases v1.0.0 and v1.0.1 were published under the MIT licence (the `LICENSE` file at both tags) and remain available under it. The change to AGPL-3.0-only was made after v1.0.1 to match the licence of the [Outram Park](https://github.com/theodoreOnzGit/outram-park-backend) project, whose interface the planned STRATO web demo builds on.
+Core solver source code (`src/`), Rust crates (`crates/`), and web application (`web/`) are licensed under **AGPL-3.0-only**.

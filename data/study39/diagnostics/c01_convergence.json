@@ -1,0 +1,223 @@
+{
+  "schema_version": "1",
+  "what": "study39_c01_convergence",
+  "provenance": {
+    "label": "numerical solution of the stated model; not experimental validation",
+    "solver": "STRATO BTCS five-layer spherical finite difference",
+    "solver_version": "2.1.0",
+    "pipeline": "strato-results 0.1.0",
+    "schema_version": "1",
+    "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+    "solver_source_sha256": "0ea05c504c44b19378319d02c9216ec75d660f2c5fd23317c03258c071028cbe",
+    "input_sha256": {
+      "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
+      "arrhenius.csv": "7af310fba1d4a994e9914523455ecafff927582295d8fa4a1b217cc6f12bd06e",
+      "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
+      "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
+      "temperature_histories.csv": "b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d",
+      "release_measurements.csv": "29f0d7bec6f40fb97c52c0bf7972782d7849a58f5f910527fe8efa8afa9ddda9",
+      "agr1_irradiation_conditions.csv": "31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d",
+      "agr1_burnup_by_cycle.csv": "e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f",
+      "agr1_power_history_digitised.csv": "25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a",
+      "scenarios/s1_normal_operation.csv": "c420e1e04e043ed0418099c27156cabda8188f40ce2fb239d1ce3916cccc7970",
+      "scenarios/s2_shutdown_cooldown.csv": "f575e9a42670e52293083907b3658fd7e3a99c279912861999f0cb847cbf6044",
+      "scenarios/s3_startup.csv": "bf2b6bd01168d0aa72f9db61f5fa4eae60ff39a81928eaed515ae8279916bfa7",
+      "scenarios/s4_control_rod_insertion.csv": "93856f2003ca65b7a7258d60819a47b8a651d695dffeff0fd7dc664b90309759",
+      "scenarios/s5_fuel_removal.csv": "4cad00101259e2fdbeec585f27d8910502a1858ab38bce59899c132b0caad9bb"
+    }
+  },
+  "spatial": [
+    {
+      "level": 1,
+      "step": 4.375e-5,
+      "count": 16,
+      "f_solver": 4.0841675644559094e-1,
+      "f_analytic": 4.0565140255997045e-1,
+      "f_analytic_bound": 3.557962413313863e-17,
+      "error": 2.7653538856204918e-3,
+      "order": null
+    },
+    {
+      "level": 2,
+      "step": 2.1875e-5,
+      "count": 31,
+      "f_solver": 4.0634596099559e-1,
+      "f_analytic": 4.0565140255997045e-1,
+      "f_analytic_bound": 3.557962413313863e-17,
+      "error": 6.945584356195522e-4,
+      "order": 1.9932961322890759e0
+    },
+    {
+      "level": 4,
+      "step": 1.09375e-5,
+      "count": 61,
+      "f_solver": 4.058251859751901e-1,
+      "f_analytic": 4.0565140255997045e-1,
+      "f_analytic_bound": 3.557962413313863e-17,
+      "error": 1.7378341521961937e-4,
+      "order": 1.9988056711584796e0
+    },
+    {
+      "level": 8,
+      "step": 5.46875e-6,
+      "count": 121,
+      "f_solver": 4.056948331068444e-1,
+      "f_analytic": 4.0565140255997045e-1,
+      "f_analytic_bound": 3.557962413313863e-17,
+      "error": 4.3430546873945985e-5,
+      "order": 2.0005083827930608e0
+    },
+    {
+      "level": 16,
+      "step": 2.734375e-6,
+      "count": 241,
+      "f_solver": 4.0566223543646124e-1,
+      "f_analytic": 4.0565140255997045e-1,
+      "f_analytic_bound": 3.557962413313863e-17,
+      "error": 1.0832876490785015e-5,
+      "order": 2.003293741636032e0
+    },
+    {
+      "level": 32,
+      "step": 1.3671875e-6,
+      "count": 481,
+      "f_solver": 4.056540854356061e-1,
+      "f_analytic": 4.0565140255997045e-1,
+      "f_analytic_bound": 3.557962413313863e-17,
+      "error": 2.682875635651172e-6,
+      "order": 2.013564292248526e0
+    }
+  ],
+  "temporal": [
+    {
+      "level": 1,
+      "step": 1.44e4,
+      "count": 25,
+      "f_solver": 3.990801959007087e-1,
+      "f_analytic": 4.0565140255997045e-1,
+      "f_analytic_bound": 3.557962413313863e-17,
+      "error": 6.571206659261752e-3,
+      "order": null
+    },
+    {
+      "level": 2,
+      "step": 7.2e3,
+      "count": 50,
+      "f_solver": 4.0226843417864844e-1,
+      "f_analytic": 4.0565140255997045e-1,
+      "f_analytic_bound": 3.557962413313863e-17,
+      "error": 3.3829683813220157e-3,
+      "order": 9.578686213113489e-1
+    },
+    {
+      "level": 4,
+      "step": 3.6e3,
+      "count": 100,
+      "f_solver": 4.0393541049261183e-1,
+      "f_analytic": 4.0565140255997045e-1,
+      "f_analytic_bound": 3.557962413313863e-17,
+      "error": 1.7159920673586182e-3,
+      "order": 9.79246809544815e-1
+    },
+    {
+      "level": 8,
+      "step": 1.8e3,
+      "count": 200,
+      "f_solver": 4.047881452285681e-1,
+      "f_analytic": 4.0565140255997045e-1,
+      "f_analytic_bound": 3.557962413313863e-17,
+      "error": 8.632573314023562e-4,
+      "order": 9.911802969539327e-1
+    },
+    {
+      "level": 16,
+      "step": 9e2,
+      "count": 400,
+      "f_solver": 4.052194578911148e-1,
+      "f_analytic": 4.0565140255997045e-1,
+      "f_analytic_bound": 3.557962413313863e-17,
+      "error": 4.3194466885565497e-4,
+      "order": 9.989441633131217e-1
+    },
+    {
+      "level": 32,
+      "step": 4.5e2,
+      "count": 800,
+      "f_solver": 4.0543636754294893e-1,
+      "f_analytic": 4.0565140255997045e-1,
+      "f_analytic_bound": 3.557962413313863e-17,
+      "error": 2.150350170215254e-4,
+      "order": 1.0062749059896894e0
+    },
+    {
+      "level": 64,
+      "step": 2.25e2,
+      "count": 1600,
+      "f_solver": 4.055451378420835e-1,
+      "f_analytic": 4.0565140255997045e-1,
+      "f_analytic_bound": 3.557962413313863e-17,
+      "error": 1.0626471788693914e-4,
+      "order": 1.016908940845399e0
+    },
+    {
+      "level": 128,
+      "step": 1.125e2,
+      "count": 3200,
+      "f_solver": 4.0559960212876695e-1,
+      "f_analytic": 4.0565140255997045e-1,
+      "f_analytic_bound": 3.557962413313863e-17,
+      "error": 5.180043120350808e-5,
+      "order": 1.0366266588531536e0
+    },
+    {
+      "level": 256,
+      "step": 5.625e1,
+      "count": 6400,
+      "f_solver": 4.0562685409019805e-1,
+      "f_analytic": 4.0565140255997045e-1,
+      "f_analytic_bound": 3.557962413313863e-17,
+      "error": 2.454846977240077e-5,
+      "order": 1.077331010399304e0
+    }
+  ],
+  "last_spatial_order": 2.013564292248526e0,
+  "last_temporal_order": 1.077331010399304e0,
+  "stage_b_fresh_vs_1e_9": [
+    {
+      "temperature_c": 1.2e3,
+      "f_fresh_end": 2.3534016303492802e-5,
+      "f_eps_1e_9_end": 2.3534016303982604e-5,
+      "abs_diff_end": 4.898018839474827e-16
+    },
+    {
+      "temperature_c": 1.35e3,
+      "f_fresh_end": 3.6660053798783774e-3,
+      "f_eps_1e_9_end": 3.6660053799104425e-3,
+      "abs_diff_end": 3.2065062410824297e-14
+    },
+    {
+      "temperature_c": 1.5e3,
+      "f_fresh_end": 7.86137022514613e-2,
+      "f_eps_1e_9_end": 7.861370091863619e-2,
+      "abs_diff_end": 1.3328251141642156e-9
+    },
+    {
+      "temperature_c": 1.6e3,
+      "f_fresh_end": 5.68691355715746e-4,
+      "f_eps_1e_9_end": 5.686913559058349e-4,
+      "abs_diff_end": 1.900889385134108e-13
+    },
+    {
+      "temperature_c": 1.7e3,
+      "f_fresh_end": 1.694317022884748e-2,
+      "f_eps_1e_9_end": 1.694317343335507e-2,
+      "abs_diff_end": 3.204507589837924e-9
+    },
+    {
+      "temperature_c": 1.8e3,
+      "f_fresh_end": 1.2386453990298427e-1,
+      "f_eps_1e_9_end": 1.2386454812255628e-1,
+      "abs_diff_end": 8.219572009138254e-9
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "schema_version": "1",
+  "what": "study39_parameters",
+  "provenance": {
+    "label": "numerical solution of the stated model; not experimental validation",
+    "solver": "STRATO BTCS five-layer spherical finite difference",
+    "solver_version": "2.1.0",
+    "pipeline": "strato-results 0.1.0",
+    "schema_version": "1",
+    "commit": "47c6175465bf5a10d1b741881280da3adebbdceb",
+    "solver_source_sha256": "0ea05c504c44b19378319d02c9216ec75d660f2c5fd23317c03258c071028cbe",
+    "input_sha256": {
+      "geometry.csv": "8d9b40d2606fa383ec6849142250caf7fa5087584a0610bbae2d9e2139a6556f",
+      "arrhenius.csv": "7af310fba1d4a994e9914523455ecafff927582295d8fa4a1b217cc6f12bd06e",
+      "decay.csv": "9da031c860098608ed210aba3aa0f872fb02673c3072828493492175f5cb7eaf",
+      "fission_yields.csv": "4f84cee65e9b72eaa005187e57a14970d4338e5b03d616cd6711929eaa5e2fe0",
+      "temperature_histories.csv": "b8e3ec8a4b591339d9b6fda48f0d2c77cae6d948f43ec89051e77e01c734ff0d",
+      "release_measurements.csv": "29f0d7bec6f40fb97c52c0bf7972782d7849a58f5f910527fe8efa8afa9ddda9",
+      "agr1_irradiation_conditions.csv": "31a452461037459243bfb97e6d5730993785f3bc9e18bb93afa0f180c411c87d",
+      "agr1_burnup_by_cycle.csv": "e8cfb6dba1a34fe4dbb74b6e7f424ea96cf36482c61765369956fde38c64e09f",
+      "agr1_power_history_digitised.csv": "25336cd3393de7234e3ebb46521c23382841b2ee5c46514a09537a1d7c086a4a",
+      "scenarios/s1_normal_operation.csv": "c420e1e04e043ed0418099c27156cabda8188f40ce2fb239d1ce3916cccc7970",
+      "scenarios/s2_shutdown_cooldown.csv": "f575e9a42670e52293083907b3658fd7e3a99c279912861999f0cb847cbf6044",
+      "scenarios/s3_startup.csv": "bf2b6bd01168d0aa72f9db61f5fa4eae60ff39a81928eaed515ae8279916bfa7",
+      "scenarios/s4_control_rod_insertion.csv": "93856f2003ca65b7a7258d60819a47b8a651d695dffeff0fd7dc664b90309759",
+      "scenarios/s5_fuel_removal.csv": "4cad00101259e2fdbeec585f27d8910502a1858ab38bce59899c132b0caad9bb"
+    }
+  },
+  "nuclide": "Cs-137",
+  "geometry_id": "AGR1-B-M16",
+  "outer_radii_m": [1.75e-4,2.785e-4,3.179e-4,3.5319999999999997e-4,3.942e-4],
+  "outer_radii_um": [1.75e2,2.785e2,3.179e2,3.532e2,3.942e2],
+  "decay_constant_per_s": 7.302187e-10,
+  "yield_per_fission": 6.2208e-2,
+  "fission_rate_density_per_m3_s": 8.69978329835975e19,
+  "reference_generation_mol_m3_s": 8.98677299307038e-6,
+  "intervals_base": [160,20,20,160,20],
+  "intervals_refined": [320,40,40,320,40],
+  "c16_diffusivities": [
+    {
+      "temperature_c": 1.2e3,
+      "temperature_k": 1.47315e3,
+      "diffusivities_m2_s": [2.252109186023022e-15,1e-8,8.470338294374903e-16,2.0430406338968914e-18,8.470338294374903e-16]
+    },
+    {
+      "temperature_c": 1.35e3,
+      "temperature_k": 1.62315e3,
+      "diffusivities_m2_s": [1.1698218763322272e-14,1e-8,4.521924854624762e-15,5.682675482844465e-18,4.521924854624762e-15]
+    },
+    {
+      "temperature_c": 1.5e3,
+      "temperature_k": 1.77315e3,
+      "diffusivities_m2_s": [5.0314493619396563e-14,1e-8,1.8183311997260076e-14,2.298574567727624e-17,1.8183311997260076e-14]
+    },
+    {
+      "temperature_c": 1.6e3,
+      "temperature_k": 1.87315e3,
+      "diffusivities_m2_s": [1.2503921785549537e-13,1e-8,4.062559476131478e-14,9.228940631020239e-17,4.062559476131478e-14]
+    },
+    {
+      "temperature_c": 1.7e3,
+      "temperature_k": 1.97315e3,
+      "diffusivities_m2_s": [3.0012259266696594e-13,1e-8,8.366401818753649e-14,4.2279466969137135e-16,8.366401818753649e-14]
+    },
+    {
+      "temperature_c": 1.8e3,
+      "temperature_k": 2.07315e3,
+      "diffusivities_m2_s": [6.975316764853693e-13,1e-8,1.6069812828229939e-13,1.832890105188039e-15,1.6069812828229939e-13]
+    }
+  ],
+  "c15_diffusivities": [
+    {
+      "temperature_c": 9.55e2,
+      "temperature_k": 1.22815e3,
+      "diffusivities_m2_s": [7.23418841159106e-17,1e-8,2.2785081338559662e-17,2.6551913015356865e-19,2.2785081338559662e-17]
+    },
+    {
+      "temperature_c": 1.028e3,
+      "temperature_k": 1.30115e3,
+      "diffusivities_m2_s": [2.280808726847108e-16,1e-8,7.71559089354865e-17,5.276680503084744e-19,7.71559089354865e-17]
+    },
+    {
+      "temperature_c": 1.136e3,
+      "temperature_k": 1.40915e3,
+      "diffusivities_m2_s": [1.0025877721293993e-15,1e-8,3.7187760963505167e-16,1.2792347113768985e-18,3.7187760963505167e-16]
+    }
+  ]
+}

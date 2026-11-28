@@ -1,0 +1,49 @@
+case_key,stage,t_c,steps,assemblies,max_residual_over_bound,max_relative_residual,min_row_margin,min_pivot_margin
+1200c_stage_a,Stage A,1200,10000,1,3.171824e-3,7.234962e-8,1.000000e0,1.000000e0
+1200c_stage_b,Stage B,1200,10000,1,3.173541e-3,3.615743e-8,1.000000e0,1.000000e0
+1200c_stage_c,Stage C (G + decay),1200,10000,1,1.756273e-2,1.984215e-7,1.000003e0,1.000003e0
+1200c_stage_c_decay_only,Stage C (decay-only; G=0),1200,10000,1,1.756274e-2,3.953130e-7,1.000003e0,1.000003e0
+1200c_stage_d_isothermal,Stage D (isothermal dynamic C16),1200,10000,1,3.171824e-3,7.234962e-8,1.000000e0,1.000000e0
+1200c_stage_d_ramp_decay_off,Stage D (heating ramp; decay OFF),1200,4085,79,8.894954e-3,2.029346e-7,1.000000e0,1.000000e0
+1200c_stage_d_ramp_decay_on,Stage D (heating ramp; decay ON),1200,4085,79,2.903460e-2,3.036306e-7,1.000001e0,1.000001e0
+1200c_stage_d_combined,Stage D (combined: G + decay + D(r; T(t))),1200,4085,79,3.343458e-2,1.527493e-7,1.000001e0,1.000001e0
+1350c_stage_a,Stage A,1350,10000,1,3.254573e-3,7.558522e-8,1.000000e0,1.000000e0
+1350c_stage_b,Stage B,1350,10000,1,3.254574e-3,3.850352e-8,1.000000e0,1.000000e0
+1350c_stage_c,Stage C (G + decay),1350,10000,1,3.447427e-3,4.041184e-8,1.000003e0,1.000003e0
+1350c_stage_c_decay_only,Stage C (decay-only; G=0),1350,10000,1,3.447405e-3,7.896842e-8,1.000003e0,1.000003e0
+1350c_stage_d_isothermal,Stage D (isothermal dynamic C16),1350,10000,1,3.254573e-3,7.558522e-8,1.000000e0,1.000000e0
+1350c_stage_d_ramp_decay_off,Stage D (heating ramp; decay OFF),1350,4097,91,8.416349e-3,2.810676e-8,1.000000e0,1.000000e0
+1350c_stage_d_ramp_decay_on,Stage D (heating ramp; decay ON),1350,4097,91,3.215325e-2,2.529570e-8,1.000001e0,1.000001e0
+1350c_stage_d_combined,Stage D (combined: G + decay + D(r; T(t))),1350,4097,91,3.487485e-2,1.292483e-8,1.000001e0,1.000001e0
+1500c_stage_a,Stage A,1500,10002,4,1.757751e-2,1.549303e-7,1.000000e0,1.000000e0
+1500c_stage_b,Stage B,1500,10002,4,1.757746e-2,1.497426e-7,1.000000e0,1.000000e0
+1500c_stage_c,Stage C (G + decay),1500,10002,4,4.748240e-2,1.183603e-7,1.000003e0,1.000003e0
+1500c_stage_c_decay_only,Stage C (decay-only; G=0),1500,10002,4,4.748256e-2,2.542284e-7,1.000003e0,1.000003e0
+1500c_stage_d_isothermal,Stage D (isothermal dynamic C16),1500,10002,4,1.757751e-2,1.549303e-7,1.000000e0,1.000000e0
+1500c_stage_d_ramp_decay_off,Stage D (heating ramp; decay OFF),1500,4111,106,8.756185e-3,1.500108e-7,1.000000e0,1.000000e0
+1500c_stage_d_ramp_decay_on,Stage D (heating ramp; decay ON),1500,4111,106,3.299307e-2,4.508443e-7,1.000001e0,1.000001e0
+1500c_stage_d_combined,Stage D (combined: G + decay + D(r; T(t))),1500,4111,106,3.487485e-2,3.014265e-7,1.000001e0,1.000001e0
+1600c_stage_a,Stage A,1600,10000,1,3.774467e-3,3.352683e-9,1.000000e0,1.000000e0
+1600c_stage_b,Stage B,1600,10000,1,3.774531e-3,1.695191e-9,1.000000e0,1.000000e0
+1600c_stage_c,Stage C (G + decay),1600,10000,1,5.125736e-3,2.301251e-9,1.000000e0,1.000000e0
+1600c_stage_c_decay_only,Stage C (decay-only; G=0),1600,10000,1,5.125768e-3,4.550614e-9,1.000000e0,1.000000e0
+1600c_stage_d_isothermal,Stage D (isothermal dynamic C16),1600,10000,1,3.774467e-3,3.352683e-9,1.000000e0,1.000000e0
+1600c_stage_d_ramp_decay_off,Stage D (heating ramp; decay OFF),1600,4126,73,1.419463e-2,2.138432e-9,1.000000e0,1.000000e0
+1600c_stage_d_ramp_decay_on,Stage D (heating ramp; decay ON),1600,4126,73,3.798446e-2,1.869026e-8,1.000000e0,1.000000e0
+1600c_stage_d_combined,Stage D (combined: G + decay + D(r; T(t))),1600,4126,73,4.976146e-2,9.776261e-9,1.000000e0,1.000000e0
+1700c_stage_a,Stage A,1700,10087,9,1.667968e-2,2.754528e-9,1.000000e0,1.000000e0
+1700c_stage_b,Stage B,1700,10087,9,1.667846e-2,3.016195e-9,1.000000e0,1.000000e0
+1700c_stage_c,Stage C (G + decay),1700,10087,9,4.935136e-2,4.193112e-9,1.000000e0,1.000000e0
+1700c_stage_c_decay_only,Stage C (decay-only; G=0),1700,10085,7,2.129809e-2,1.145686e-8,1.000000e0,1.000000e0
+1700c_stage_d_isothermal,Stage D (isothermal dynamic C16),1700,10085,7,5.315359e-3,2.823196e-9,1.000000e0,1.000000e0
+1700c_stage_d_ramp_decay_off,Stage D (heating ramp; decay OFF),1700,4139,89,1.419463e-2,2.334389e-9,1.000000e0,1.000000e0
+1700c_stage_d_ramp_decay_on,Stage D (heating ramp; decay ON),1700,4138,87,3.798446e-2,1.206698e-8,1.000000e0,1.000000e0
+1700c_stage_d_combined,Stage D (combined: G + decay + D(r; T(t))),1700,4139,89,4.976146e-2,6.569083e-9,1.000000e0,1.000000e0
+1800c_stage_a,Stage A,1800,10006,11,8.675771e-3,7.432911e-10,1.000000e0,1.000000e0
+1800c_stage_b,Stage B,1800,10006,11,1.164407e-2,6.865623e-10,1.000000e0,1.000000e0
+1800c_stage_c,Stage C (G + decay),1800,10006,11,3.776965e-2,3.174856e-9,1.000000e0,1.000000e0
+1800c_stage_c_decay_only,Stage C (decay-only; G=0),1800,10004,9,2.661130e-2,4.338674e-9,1.000000e0,1.000000e0
+1800c_stage_d_isothermal,Stage D (isothermal dynamic C16),1800,10004,9,8.769145e-3,8.393701e-10,1.000000e0,1.000000e0
+1800c_stage_d_ramp_decay_off,Stage D (heating ramp; decay OFF),1800,4147,99,1.419463e-2,1.446580e-9,1.000000e0,1.000000e0
+1800c_stage_d_ramp_decay_on,Stage D (heating ramp; decay ON),1800,4146,97,3.798446e-2,3.587579e-9,1.000000e0,1.000000e0
+1800c_stage_d_combined,Stage D (combined: G + decay + D(r; T(t))),1800,4147,99,4.976146e-2,4.831370e-9,1.000000e0,1.000000e0

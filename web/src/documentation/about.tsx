@@ -148,8 +148,9 @@ export const about: DocContribution = {
       title: 'Where Method B applies',
       body: (
         <p>
-          {METHOD_2} applies where the problem is the one it solves: a constant diffusivity per layer, no source, no decay and a constant
-          temperature. Each checks the other.
+          {METHOD_2} applies at constant temperature with a constant diffusivity per layer, including the documented extensions for
+          radioactive decay (B2) and piecewise-constant kernel sources (B3–B5) within its convergence mask; it never applies when
+          temperature varies in time.
         </p>
       ),
     },
