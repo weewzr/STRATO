@@ -131,31 +131,35 @@ export function Phase2StudyEvidence() {
       <TableBox label="Stage A to D exact deviation and improvement summary (ACT3 1700 °C and ACT4 1800 °C)">
         <table className="table table--compact" data-testid="study39-exact-table">
           <caption className="table__caption">
-            <strong>Table P2-1.</strong> Exact time-series deviation and Stage A→D improvement metrics for comparable Minato et al. (2000) HRB-22 tests.
+            <strong>Table P2-1.</strong> Exact time-series deviation (pp) and Stage A→D RMSE change for comparable Minato et al. (2000) HRB-22 tests (ACT3 N=8, ACT4 N=11).
           </caption>
           <thead>
             <tr>
               <th scope="col">Dataset</th>
               <th scope="col">Stage</th>
-              <th scope="col" className="num-col">MAE (pp)</th>
-              <th scope="col" className="num-col">RMSE (pp)</th>
-              <th scope="col" className="num-col">IAE (pp)</th>
-              <th scope="col" className="num-col">Final Δ (pp)</th>
-              <th scope="col" className="num-col">RMSE vs A (%)</th>
+              <th scope="col" className="num-col">MAE</th>
+              <th scope="col" className="num-col">RMSE</th>
+              <th scope="col" className="num-col">IAE</th>
+              <th scope="col" className="num-col">End Δ</th>
+              <th scope="col" className="num-col">vs A</th>
             </tr>
           </thead>
           <tbody>
-            {study39.stage_improvement.map((r) => (
-              <tr key={`${r.case_id}-${r.stage_key}`}>
-                <th scope="row">{r.case_id.includes('ACT3') ? 'ACT3 (1700 °C, N=8)' : 'ACT4 (1800 °C, N=11)'}</th>
-                <td>{r.stage_key}</td>
-                <td className="num-col num">{r.mae_pp.toFixed(3)}</td>
-                <td className="num-col num">{r.rmse_pp.toFixed(3)}</td>
-                <td className="num-col num">{r.iae_time_avg_pp.toFixed(3)}</td>
-                <td className="num-col num">{r.final_delta_pp >= 0 ? `+${r.final_delta_pp.toFixed(3)}` : r.final_delta_pp.toFixed(3)}</td>
-                <td className="num-col num">{r.rmse_improvement_vs_A_pct >= 0 ? `+${r.rmse_improvement_vs_A_pct.toFixed(2)}%` : `${r.rmse_improvement_vs_A_pct.toFixed(2)}%`}</td>
-              </tr>
-            ))}
+            {study39.stage_improvement.map((r) => {
+              const stageShort =
+                STAGE_LABELS[r.stage_key as StageKey]?.split('—')[0]?.trim().replace('Stage ', '') ?? r.stage_key;
+              return (
+                <tr key={`${r.case_id}-${r.stage_key}`}>
+                  <th scope="row">{r.case_id.includes('ACT3') ? 'ACT3 (1700 °C)' : 'ACT4 (1800 °C)'}</th>
+                  <td>{stageShort}</td>
+                  <td className="num-col num">{r.mae_pp.toFixed(3)}</td>
+                  <td className="num-col num">{r.rmse_pp.toFixed(3)}</td>
+                  <td className="num-col num">{r.iae_time_avg_pp.toFixed(3)}</td>
+                  <td className="num-col num">{r.final_delta_pp >= 0 ? `+${r.final_delta_pp.toFixed(3)}` : r.final_delta_pp.toFixed(3)}</td>
+                  <td className="num-col num">{r.rmse_improvement_vs_A_pct >= 0 ? `+${r.rmse_improvement_vs_A_pct.toFixed(2)}%` : `${r.rmse_improvement_vs_A_pct.toFixed(2)}%`}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </TableBox>
