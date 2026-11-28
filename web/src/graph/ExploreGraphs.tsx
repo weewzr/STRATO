@@ -217,7 +217,7 @@ export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
       </div>
 
       <div className="gchecks" role="group" aria-label="Graph overlays" data-testid="graph-overlays">
-        <label className="gcheck">
+        <label className="gcheck gcheck--a">
           <input
             type="checkbox"
             checked={overlays.methodA}
@@ -226,7 +226,7 @@ export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
           />
           <span>{METHOD_1}</span>
         </label>
-        <label className="gcheck">
+        <label className="gcheck gcheck--b">
           <input
             type="checkbox"
             checked={overlays.methodB}
@@ -235,7 +235,7 @@ export function ExploreGraphs({ choices }: { choices: GraphChoices }) {
           />
           <span>{METHOD_2}</span>
         </label>
-        <label className="gcheck">
+        <label className="gcheck gcheck--exp">
           <input
             type="checkbox"
             checked={overlays.experiment}
