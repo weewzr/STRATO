@@ -284,6 +284,7 @@ test.describe('interactive graphs', () => {
     void problems;
     await gotoSection(page, 'explore');
     await page.getByTestId('mech-decay').check();
+    await expect.poll(() => page.getByTestId('species-select').locator('option').count(), { timeout: 30_000 }).toBeGreaterThanOrEqual(4);
     const ids = await page.getByTestId('species-select').locator('option').evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value));
     expect(ids.length).toBeGreaterThanOrEqual(4);
     for (const id of ids) {
